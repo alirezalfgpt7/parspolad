@@ -7,6 +7,10 @@ import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
+import { PersianDatePicker } from '../../components/ui/PersianDatePicker.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+
+type DeleteTarget = { type: 'contract'; id: number } | { type: 'license'; id: number };
 
 export const ContractsLicensesAdminPage: React.FC = () => {
   const { addToast } = useAppStore();
@@ -14,6 +18,8 @@ export const ContractsLicensesAdminPage: React.FC = () => {
   const [licenses, setLicenses] = useState<License[]>([]);
   const [contractModal, setContractModal] = useState<Partial<Contract> | null>(null);
   const [licenseModal, setLicenseModal] = useState<Partial<License> | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = async () => {
     const [c, l] = await Promise.all([
@@ -28,6 +34,23 @@ export const ContractsLicensesAdminPage: React.FC = () => {
     load().catch(() => {});
   }, []);
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    try {
+      const { type, id } = deleteTarget;
+      await apiRequest(`/admin/${type === 'contract' ? 'contracts' : 'licenses'}/${id}`, { method: 'DELETE' });
+      setDeleteTarget(null);
+      await load();
+      addToast('success', type === 'contract' ? 'قرارداد حذف شد.' : 'گواهینامه حذف شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'حذف مورد ناموفق بود.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const contractCols: Column<Contract>[] = [
     { key: 'num', header: 'شماره قرارداد', render: (c) => <span className="font-mono text-xs">{c.contract_number}</span> },
     { key: 'title', header: 'عنوان', render: (c) => <span className="font-semibold">{c.title_fa}</span> },
@@ -39,11 +62,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
       render: (c) => (
         <button
           type="button"
-          onClick={async () => {
-            await apiRequest(`/admin/contracts/${c.id}`, { method: 'DELETE' });
-            load();
-            addToast('success', 'قرارداد حذف شد.');
-          }}
+          onClick={() => setDeleteTarget({ type: 'contract', id: c.id })}
           className="text-red-600"
         >
           <Trash2 className="h-4 w-4" />
@@ -91,11 +110,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
               <div className="mt-1 text-xs text-slate-500">{lic.issuer_fa}</div>
               <button
                 type="button"
-                onClick={async () => {
-                  await apiRequest(`/admin/licenses/${lic.id}`, { method: 'DELETE' });
-                  load();
-                  addToast('success', 'گواهینامه حذف شد.');
-                }}
+                onClick={() => setDeleteTarget({ type: 'license', id: lic.id })}
                 className="mt-3 text-xs text-red-600 hover:underline"
               >
                 حذف گواهینامه
@@ -142,6 +157,14 @@ export const ContractsLicensesAdminPage: React.FC = () => {
             <input required placeholder="کد استاندارد (مثل API 6A)" value={licenseModal.code || ''} onChange={(e) => setLicenseModal({ ...licenseModal, code: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="عنوان فارسی" value={licenseModal.title_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="مرجع صادرکننده" value={licenseModal.issuer_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="block text-xs">
+              تاریخ صدور
+              <PersianDatePicker
+                value={licenseModal.issue_date || ''}
+                onChange={(issue_date) => setLicenseModal({ ...licenseModal, issue_date })}
+                className="mt-1"
+              />
+            </label>
             <SearchableSelect
               label="دسته"
               options={[{ value: 'iso', label: 'ISO' }, { value: 'api', label: 'API' }, { value: 'knowledge_based', label: 'دانش‌بنیان' }]}
@@ -153,6 +176,14 @@ export const ContractsLicensesAdminPage: React.FC = () => {
           </form>
         )}
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        message={deleteTarget?.type === 'contract' ? 'آیا از حذف این قرارداد اطمینان دارید؟' : 'آیا از حذف این گواهینامه اطمینان دارید؟'}
+        loading={deleting}
+      />
     </div>
   );
 };

@@ -25,7 +25,9 @@ use App\Models\Slider;
 use App\Models\TeamMember;
 use App\Models\ThemePreset;
 use App\Models\ThemeSetting;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use RuntimeException;
@@ -122,7 +124,7 @@ class PortalContentSeeder extends Seeder
                 unset($attributes['slider_id']);
                 $attributes['sort_order'] = $slideData['sort_order'] ?? $sortOrder + 1;
 
-                Slide::query()->updateOrCreate(
+                $this->queryFor(Slide::class)->updateOrCreate(
                     [
                         'slider_id' => $slider->id,
                         'title_fa' => $slideData['title_fa'],
@@ -211,7 +213,7 @@ class PortalContentSeeder extends Seeder
         foreach ($data['team_members'] as $memberData) {
             $memberData['department_id'] = $departmentIds[$memberData['department_id']];
             $member = new TeamMember;
-            TeamMember::query()->updateOrCreate(
+            $this->queryFor(TeamMember::class)->updateOrCreate(
                 [
                     'department_id' => $memberData['department_id'],
                     'name_en' => $memberData['name_en'],
@@ -221,7 +223,7 @@ class PortalContentSeeder extends Seeder
         }
 
         foreach ($data['partners'] as $partner) {
-            Partner::query()->updateOrCreate(
+            $this->queryFor(Partner::class)->updateOrCreate(
                 ['name_en' => $partner['name_en']],
                 Arr::only($partner, (new Partner)->getFillable()),
             );
@@ -231,7 +233,7 @@ class PortalContentSeeder extends Seeder
     private function seedCms(array $data): void
     {
         foreach ($data['banners'] as $banner) {
-            Banner::query()->updateOrCreate(
+            $this->queryFor(Banner::class)->updateOrCreate(
                 ['placement' => $banner['placement'], 'title_fa' => $banner['title_fa']],
                 Arr::only($banner, (new Banner)->getFillable()),
             );
@@ -254,7 +256,7 @@ class PortalContentSeeder extends Seeder
         }
 
         foreach ($data['media'] as $media) {
-            MediaFile::query()->updateOrCreate(
+            $this->queryFor(MediaFile::class)->updateOrCreate(
                 ['url' => $media['url']],
                 Arr::only($media, (new MediaFile)->getFillable()),
             );
@@ -265,9 +267,16 @@ class PortalContentSeeder extends Seeder
     {
         $model = new $modelClass;
 
-        return $modelClass::query()->updateOrCreate(
+        return $this->queryFor($modelClass)->updateOrCreate(
             [$key => $attributes[$key]],
             Arr::only($attributes, $model->getFillable()),
         );
+    }
+
+    private function queryFor(string $modelClass): Builder
+    {
+        return in_array(SoftDeletes::class, class_uses_recursive($modelClass), true)
+            ? $modelClass::withTrashed()
+            : $modelClass::query();
     }
 }

@@ -8,6 +8,8 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
+import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'نام و نام خانوادگی را وارد کنید'),
@@ -16,6 +18,8 @@ const contactSchema = z.object({
   company: z.string().optional(),
   subject: z.string().min(3, 'موضوع پیام را وارد کنید'),
   message: z.string().min(10, 'متن پیام حداقل ۱۰ کاراکتر باشد'),
+  captcha: z.string().min(1, 'کد امنیتی را وارد کنید'),
+  website: z.string().optional(),
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -23,14 +27,26 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 export const ContactPage: React.FC = () => {
   const { bootstrap, language, addToast } = useAppStore();
   const [submitted, setSubmitted] = useState(false);
+  const [captchaKey, setCaptchaKey] = useState('');
+  const [captchaRefreshToken, setCaptchaRefreshToken] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
-  } = useForm<ContactFormValues>({ resolver: zodResolver(contactSchema) });
+  } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { captcha: '', website: '' },
+  });
+
+  const refreshCaptcha = () => {
+    setCaptchaKey('');
+    setCaptchaRefreshToken((token) => token + 1);
+    setValue('captcha', '', { shouldValidate: false });
+  };
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -68,12 +84,14 @@ export const ContactPage: React.FC = () => {
     try {
       await apiRequest('/contact', {
         method: 'POST',
-        body: JSON.stringify({ ...data, type: 'contact' }),
+        body: JSON.stringify({ ...data, captcha_key: captchaKey, type: 'contact' }),
       });
       setSubmitted(true);
       reset();
+      refreshCaptcha();
       addToast('success', 'پیام شما با موفقیت ثبت و به واحد مربوطه ارجاع شد.');
     } catch (err) {
+      refreshCaptcha();
       addToast('error', err instanceof Error ? err.message : 'خطا در ارسال پیام');
     }
   };
@@ -104,6 +122,7 @@ export const ContactPage: React.FC = () => {
             </div>
           )}
           <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-4">
+            <PublicHoneypotField registration={register('website')} />
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-xs font-medium">نام و نام خانوادگی</label>
@@ -141,9 +160,17 @@ export const ContactPage: React.FC = () => {
               {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message.message}</p>}
             </div>
 
+            <SelfHostedCaptcha
+              registration={register('captcha')}
+              refreshToken={captchaRefreshToken}
+              onKeyChange={setCaptchaKey}
+              onRefresh={refreshCaptcha}
+              error={errors.captcha?.message}
+            />
+
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !captchaKey}
               style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
               className="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold shadow-xs disabled:opacity-60"
             >

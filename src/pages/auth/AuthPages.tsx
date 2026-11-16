@@ -2,10 +2,26 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, ShieldCheck, UserPlus } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { User } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
+import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
+import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
+
+const registerSchema = z.object({
+  name: z.string().min(2, 'نام و نام خانوادگی را وارد کنید'),
+  email: z.string().email('ایمیل معتبر وارد کنید'),
+  phone: z.string().optional(),
+  password: z.string().min(8, 'رمز عبور باید حداقل ۸ کاراکتر باشد'),
+  captcha: z.string().min(1, 'کد امنیتی را وارد کنید'),
+  website: z.string().optional(),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -146,27 +162,40 @@ export const LoginPage: React.FC = () => {
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const { setAuth, addToast } = useAppStore();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [captchaKey, setCaptchaKey] = useState('');
+  const [captchaRefreshToken, setCaptchaRefreshToken] = useState(0);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { captcha: '', website: '' },
+  });
+
+  const refreshCaptcha = () => {
+    setCaptchaKey('');
+    setCaptchaRefreshToken((token) => token + 1);
+    setValue('captcha', '', { shouldValidate: false });
+  };
+
+  const handleRegister = async (data: RegisterFormValues) => {
     try {
       const res = await apiRequest<{ token: string; user: User }>('/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({ ...data, captcha_key: captchaKey }),
       });
       setAuth(res.user, res.token);
       addToast('success', 'ثبت‌نام شما با موفقیت انجام شد.');
+      reset();
+      refreshCaptcha();
       navigate('/admin/profile');
     } catch (err) {
+      refreshCaptcha();
       addToast('error', err instanceof Error ? err.message : 'خطا در ثبت‌نام');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -182,30 +211,41 @@ export const RegisterPage: React.FC = () => {
           <span className="text-base font-extrabold">ثبت‌نام کارفرمایان و کاربران</span>
           <UserPlus className="h-5 w-5 text-[var(--theme-primary)]" />
         </div>
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={handleSubmit(handleRegister)} className="space-y-4">
+          <PublicHoneypotField registration={register('website')} />
           <div>
             <label className="mb-1 block text-xs text-slate-300">نام و نام خانوادگی</label>
-            <input required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            <input {...register('name')} className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>}
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-300">ایمیل</label>
-            <input type="email" required dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            <input {...register('email')} type="email" dir="ltr" className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
           </div>
           <div>
             <label className="mb-1 block text-xs text-slate-300">شماره تماس</label>
-            <input dir="ltr" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            <input {...register('phone')} dir="ltr" className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-slate-300">رمز عبور (حداقل ۶ کاراکتر)</label>
-            <input type="password" required minLength={6} dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs text-slate-300">رمز عبور (حداقل ۸ کاراکتر)</label>
+            <input {...register('password')} type="password" dir="ltr" className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm" />
+            {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
           </div>
+          <SelfHostedCaptcha
+            registration={register('captcha')}
+            refreshToken={captchaRefreshToken}
+            onKeyChange={setCaptchaKey}
+            onRefresh={refreshCaptcha}
+            error={errors.captcha?.message}
+          />
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting || !captchaKey}
             style={{ backgroundColor: 'var(--theme-primary)' }}
             className="w-full rounded-lg py-2.5 text-sm font-semibold text-white"
           >
-            {loading ? 'در حال ثبت...' : 'ایجاد حساب'}
+            {isSubmitting ? 'در حال ثبت...' : 'ایجاد حساب'}
           </button>
         </form>
         <div className="mt-4 text-center text-xs text-slate-400">

@@ -4,8 +4,21 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article, Banner, KPI, PageContent, Product, Service } from '../../types/index.ts';
 import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
+import { PersianDatePicker, gregorianToJalali } from '../../components/ui/PersianDatePicker.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 type Tab = 'pages' | 'services' | 'products' | 'articles' | 'banners' | 'kpis';
+
+const getTodayJalali = (): string => {
+  const date = new Date();
+  const localDate = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+
+  return gregorianToJalali(localDate);
+};
 
 export const ContentCmsAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap } = useAppStore();
@@ -18,6 +31,9 @@ export const ContentCmsAdminPage: React.FC = () => {
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [editPage, setEditPage] = useState<PageContent | null>(null);
   const [newArticleTitle, setNewArticleTitle] = useState('');
+  const [newArticleDate, setNewArticleDate] = useState(getTodayJalali);
+  const [deleteArticle, setDeleteArticle] = useState<Article | null>(null);
+  const [deletingArticle, setDeletingArticle] = useState(false);
 
   const load = async () => {
     const [pg, sv, pr, ar, bn, kp] = await Promise.all([
@@ -40,6 +56,22 @@ export const ContentCmsAdminPage: React.FC = () => {
   useEffect(() => {
     load().catch(() => {});
   }, []);
+
+  const confirmDeleteArticle = async () => {
+    if (!deleteArticle) return;
+
+    setDeletingArticle(true);
+    try {
+      await apiRequest(`/admin/articles/${deleteArticle.id}`, { method: 'DELETE' });
+      setDeleteArticle(null);
+      await load();
+      addToast('success', 'مقاله حذف شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'حذف مقاله ناموفق بود.');
+    } finally {
+      setDeletingArticle(false);
+    }
+  };
 
   const tabs: Array<{ key: Tab; label: string }> = [
     { key: 'pages', label: 'صفحات داینامیک' },
@@ -108,12 +140,19 @@ export const ContentCmsAdminPage: React.FC = () => {
 
       {tab === 'articles' && (
         <div className="space-y-4">
-          <div className="flex gap-2 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-            <input value={newArticleTitle} onChange={(e) => setNewArticleTitle(e.target.value)} placeholder="عنوان مقاله یا خبر جدید..." className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-[1fr_220px_auto]">
+            <input value={newArticleTitle} onChange={(e) => setNewArticleTitle(e.target.value)} placeholder="عنوان مقاله یا خبر جدید..." className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="text-xs">
+              تاریخ انتشار
+              <PersianDatePicker value={newArticleDate} onChange={setNewArticleDate} className="mt-1" />
+            </label>
             <button
               type="button"
               onClick={async () => {
-                if (!newArticleTitle.trim()) return;
+                if (!newArticleTitle.trim() || !newArticleDate) {
+                  addToast('error', 'عنوان و تاریخ انتشار را وارد کنید.');
+                  return;
+                }
                 await apiRequest('/admin/articles', {
                   method: 'POST',
                   body: JSON.stringify({
@@ -128,11 +167,12 @@ export const ContentCmsAdminPage: React.FC = () => {
                     category_en: 'Corporate News',
                     cover_image: '/storage/hero/hero-rig.jpg',
                     author_fa: 'روابط عمومی و مهندسی',
-                    published_at: '1404/08/25',
+                    published_at: newArticleDate,
                     read_minutes: 3,
                   }),
                 });
                 setNewArticleTitle('');
+                setNewArticleDate(getTodayJalali());
                 load();
                 addToast('success', 'مقاله منتشر شد.');
               }}
@@ -150,7 +190,7 @@ export const ContentCmsAdminPage: React.FC = () => {
                   <div className="text-sm font-bold">{a.title_fa}</div>
                   <div className="mt-1 text-xs text-slate-500">{a.published_at}</div>
                 </div>
-                <button type="button" onClick={async () => { await apiRequest(`/admin/articles/${a.id}`, { method: 'DELETE' }); load(); }} className="text-red-600"><Trash2 className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setDeleteArticle(a)} className="text-red-600" aria-label="حذف مقاله"><Trash2 className="h-4 w-4" /></button>
               </div>
             ))}
           </div>
@@ -195,6 +235,13 @@ export const ContentCmsAdminPage: React.FC = () => {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={Boolean(deleteArticle)}
+        onClose={() => setDeleteArticle(null)}
+        onConfirm={confirmDeleteArticle}
+        message="آیا از حذف این مقاله اطمینان دارید؟"
+        loading={deletingArticle}
+      />
     </div>
   );
 };

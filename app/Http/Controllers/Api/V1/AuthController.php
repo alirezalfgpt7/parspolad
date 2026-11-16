@@ -64,7 +64,11 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'string', Password::min(8)],
+            'website' => ['prohibited'],
+            'captcha_key' => ['required', 'string', 'max:512'],
+            'captcha' => ['required', 'string', 'max:20', 'captcha_api:'.$request->input('captcha_key').',public'],
         ]);
+        unset($data['captcha'], $data['captcha_key'], $data['website']);
 
         $user = User::query()->create([
             ...$data,

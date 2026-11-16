@@ -15,6 +15,7 @@ class RoleAndAdminSeeder extends Seeder
     {
         $permissions = [
             'dashboard.view',
+            'analytics.view',
             'theme.manage',
             'themes.manage',
             'slider.manage',
@@ -32,6 +33,7 @@ class RoleAndAdminSeeder extends Seeder
             'media.manage',
             'messages.manage',
             'messages.view',
+            'comments.manage',
             'users.manage',
             'users.view',
             'settings.manage',
@@ -49,7 +51,7 @@ class RoleAndAdminSeeder extends Seeder
         $roles = [
             UserRoleEnum::SUPER_ADMIN->value => ['label_fa' => 'سوپر ادمین', 'label_en' => 'Super Admin', 'perms' => $permissions],
             UserRoleEnum::ADMIN->value => ['label_fa' => 'مدیر سامانه', 'label_en' => 'Admin', 'perms' => $permissions],
-            UserRoleEnum::EDITOR->value => ['label_fa' => 'ویرایشگر محتوا', 'label_en' => 'Content Editor', 'perms' => ['dashboard.view', 'slider.manage', 'sliders.manage', 'cms.manage', 'pages.manage', 'media.manage', 'messages.view']],
+            UserRoleEnum::EDITOR->value => ['label_fa' => 'ویرایشگر محتوا', 'label_en' => 'Content Editor', 'perms' => ['dashboard.view', 'slider.manage', 'sliders.manage', 'cms.manage', 'pages.manage', 'media.manage', 'messages.view', 'comments.manage']],
             UserRoleEnum::PROJECT_MANAGER->value => ['label_fa' => 'اپراتور فنی', 'label_en' => 'Technical Operator', 'perms' => ['dashboard.view', 'projects.view', 'projects.manage', 'contracts.view', 'contracts.manage', 'licenses.view', 'messages.manage']],
             UserRoleEnum::CLIENT->value => ['label_fa' => 'کاربر ثبت‌نام‌شده', 'label_en' => 'Registered User', 'perms' => ['dashboard.view', 'documents.download_authorized', 'profile.manage', 'notifications.view']],
         ];

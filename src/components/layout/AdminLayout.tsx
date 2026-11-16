@@ -40,6 +40,7 @@ const navGroups = [
   { to: '/admin/organization', label_fa: 'ساختار سازمانی و شرکا', label_en: 'Org & Partners', icon: Building2 },
   { to: '/admin/media', label_fa: 'کتابخانه رسانه و فایل‌ها', label_en: 'Media Library', icon: ImageIcon },
   { to: '/admin/messages', label_fa: 'پیام‌ها و RFQ', label_en: 'Messages & RFQ', icon: MessageSquare },
+  { to: '/admin/comments', label_fa: 'دیدگاه‌های مقالات', label_en: 'Article Comments', icon: MessageSquare },
   { to: '/admin/users', label_fa: 'کاربران و ماتریس نقش‌ها', label_en: 'Users & RBAC', icon: Shield },
   { to: '/admin/reports', label_fa: 'گزارش اکسل و لاگ‌ها', label_en: 'Reports & Logs', icon: FileSpreadsheet },
   { to: '/admin/settings', label_fa: 'تنظیمات و پشتیبان‌گیری', label_en: 'Settings & Backup', icon: Settings },

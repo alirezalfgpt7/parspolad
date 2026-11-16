@@ -128,7 +128,17 @@ class AdminContentController extends Controller
     {
         $this->ensureResourcePermission($request, $resource);
         $modelClass = $this->modelFor($resource);
-        $modelClass::query()->findOrFail($id)->delete();
+        $item = $modelClass::query()->findOrFail($id);
+
+        if ($resource === 'categories' && $item->projects()->exists()) {
+            abort(409, 'ابتدا پروژه‌های وابسته به این دسته را منتقل یا حذف کنید.');
+        }
+
+        if ($resource === 'departments' && ($item->children()->exists() || $item->members()->exists())) {
+            abort(409, 'ابتدا زیرواحدها و اعضای وابسته به این واحد را منتقل یا حذف کنید.');
+        }
+
+        $item->delete();
 
         return response()->json(['ok' => true]);
     }

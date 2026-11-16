@@ -17,6 +17,7 @@ export const ProjectsAdminPage: React.FC = () => {
   const [editing, setEditing] = useState<Partial<Project> | null>(null);
   const [catModal, setCatModal] = useState<Partial<ProjectCategory> | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deletingProject, setDeletingProject] = useState(false);
 
   const load = async () => {
     const [pr, ct] = await Promise.all([
@@ -63,6 +64,22 @@ export const ProjectsAdminPage: React.FC = () => {
       addToast('success', 'دسته‌بندی فنی ذخیره شد.');
     } catch {
       addToast('error', 'خطا در ذخیره دسته‌بندی');
+    }
+  };
+
+  const confirmDeleteProject = async () => {
+    if (deleteId === null) return;
+
+    setDeletingProject(true);
+    try {
+      await apiRequest(`/admin/projects/${deleteId}`, { method: 'DELETE' });
+      setDeleteId(null);
+      await load();
+      addToast('success', 'پروژه حذف شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'حذف پروژه ناموفق بود.');
+    } finally {
+      setDeletingProject(false);
     }
   };
 
@@ -204,13 +221,8 @@ export const ProjectsAdminPage: React.FC = () => {
         open={Boolean(deleteId)}
         onClose={() => setDeleteId(null)}
         message="آیا از حذف این پروژه اطمینان دارید؟"
-        onConfirm={async () => {
-          if (!deleteId) return;
-          await apiRequest(`/admin/projects/${deleteId}`, { method: 'DELETE' });
-          setDeleteId(null);
-          await load();
-          addToast('success', 'پروژه حذف شد.');
-        }}
+        onConfirm={confirmDeleteProject}
+        loading={deletingProject}
       />
     </div>
   );

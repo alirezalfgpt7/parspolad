@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\Enums\NotificationChannelEnum;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NotificationTemplate extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['event_key', 'name_fa', 'channel', 'subject_fa', 'body_html', 'sms_text', 'is_active'];
 
     protected function casts(): array

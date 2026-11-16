@@ -172,7 +172,9 @@ class PublicController extends Controller
 
     public function submitContact(StoreContactMessageRequest $request): JsonResponse
     {
-        $message = ContactMessage::query()->create($request->validated() + ['status' => 'new']);
+        $message = ContactMessage::query()->create(
+            $request->safe()->except(['captcha', 'captcha_key', 'website']) + ['status' => 'new'],
+        );
 
         DispatchNotificationJob::dispatch(
             userId: 1,

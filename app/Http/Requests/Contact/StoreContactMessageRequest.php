@@ -22,6 +22,9 @@ class StoreContactMessageRequest extends FormRequest
             'message' => ['required', 'string', 'min:5'],
             'type' => ['required', 'in:contact,rfq,ticket'],
             'attachment_url' => ['nullable', 'string', 'max:255'],
+            'website' => ['prohibited'],
+            'captcha_key' => ['required', 'string', 'max:512'],
+            'captcha' => ['required', 'string', 'max:20', 'captcha_api:'.$this->input('captcha_key').',public'],
         ];
     }
 }

@@ -7,6 +7,7 @@ import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 const EFFECTS: Array<{ value: SlideEffect; label: string }> = [
   { value: 'ken-burns', label: 'Ken Burns (زوم نرم سینمایی)' },
@@ -29,6 +30,8 @@ export const SliderAdminPage: React.FC = () => {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [editing, setEditing] = useState<Slide | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     apiRequest<{ data: Slider[] }>('/admin/sliders')
@@ -42,14 +45,14 @@ export const SliderAdminPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  const persistSlides = async (nextSlides: Slide[]) => {
+  const persistSlides = async (nextSlides: Slide[], successMessage = 'ترتیب و تنظیمات اسلایدر با موفقیت ذخیره شد.') => {
     if (!slider) return;
     await apiRequest(`/admin/sliders/${slider.id}/slides`, {
       method: 'PUT',
       body: JSON.stringify({ slides: nextSlides }),
     });
     await fetchBootstrap();
-    addToast('success', 'ترتیب و تنظیمات اسلایدر با موفقیت ذخیره شد.');
+    addToast('success', successMessage);
   };
 
   const handleDrop = async (targetIdx: number) => {
@@ -103,10 +106,20 @@ export const SliderAdminPage: React.FC = () => {
     await persistSlides(next);
   };
 
-  const deleteSlide = async (id: number) => {
-    const next = slides.filter((s) => s.id !== id).map((s, idx) => ({ ...s, sort_order: idx + 1 }));
-    setSlides(next);
-    await persistSlides(next);
+  const confirmDeleteSlide = async () => {
+    if (deleteId === null) return;
+
+    const next = slides.filter((s) => s.id !== deleteId).map((s, idx) => ({ ...s, sort_order: idx + 1 }));
+    setDeleting(true);
+    try {
+      await persistSlides(next, 'اسلاید حذف شد.');
+      setSlides(next);
+      setDeleteId(null);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'حذف اسلاید ناموفق بود.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -166,7 +179,7 @@ export const SliderAdminPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => deleteSlide(slide.id)}
+                onClick={() => setDeleteId(slide.id)}
                 className="rounded-lg border border-red-200 p-1.5 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40"
                 aria-label="حذف"
               >
@@ -277,6 +290,14 @@ export const SliderAdminPage: React.FC = () => {
           </form>
         )}
       </Modal>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        onConfirm={confirmDeleteSlide}
+        message="حذف این اسلاید از صفحه اول را تأیید می‌کنید؟"
+        loading={deleting}
+      />
     </div>
   );
 };

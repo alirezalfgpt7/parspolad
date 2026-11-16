@@ -17,7 +17,17 @@ it('lists and searches projects and blocks unauthorized project creation', funct
 });
 
 it('allows authenticated super admin to create projects and submit RFQ messages', function (): void {
-    $this->postJson('/api/v1/contact', [
+    config([
+        'captcha.public.math' => false,
+        'captcha.public.characters' => ['a'],
+        'captcha.public.length' => 1,
+    ]);
+    $captcha = $this->getJson('/captcha/api/public')
+        ->assertOk()
+        ->assertJsonStructure(['key', 'img'])
+        ->json();
+
+    $rfqMessage = [
         'name' => 'مهندس رضایی',
         'email' => 'rezaei@nisoc.ir',
         'phone' => '09161234567',
@@ -25,6 +35,18 @@ it('allows authenticated super admin to create projects and submit RFQ messages'
         'subject' => 'استعلام قیمت گیت ولو سرچاهی',
         'message' => 'درخواست پیش‌فاکتور ۱۰ دستگاه گیت ولو ۳ اینچ ۱۰۰۰۰ PSI',
         'type' => 'rfq',
+        'website' => '',
+    ];
+
+    $this->postJson('/api/v1/contact', $rfqMessage + [
+        'captcha_key' => $captcha['key'],
+        'captcha' => 'wrong',
+    ])->assertUnprocessable()->assertJsonValidationErrors('captcha');
+
+    $captcha = $this->getJson('/captcha/api/public')->assertOk()->json();
+    $this->postJson('/api/v1/contact', $rfqMessage + [
+        'captcha_key' => $captcha['key'],
+        'captcha' => 'a',
     ])->assertCreated();
 
     $token = $this->postJson('/api/v1/auth/login', [
@@ -45,4 +67,17 @@ it('allows authenticated super admin to create projects and submit RFQ messages'
         'cover_image' => '/storage/products/christmas-tree.jpg',
         'is_featured' => true,
     ])->assertCreated();
+});
+
+it('rejects public messages that fill the honeypot field', function (): void {
+    $this->postJson('/api/v1/contact', [
+        'name' => 'Automated sender',
+        'email' => 'bot@example.test',
+        'phone' => '09120000000',
+        'subject' => 'Spam submission',
+        'message' => 'Automated form submission',
+        'type' => 'contact',
+        'website' => 'https://spam.example.test',
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('website');
 });

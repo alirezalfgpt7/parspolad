@@ -87,6 +87,7 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
       proxy: {
         '/api': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/captcha': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/storage': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/sitemap.xml': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/robots.txt': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',

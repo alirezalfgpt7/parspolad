@@ -58,10 +58,22 @@ it('supports protected admin content endpoints and public account registration',
         ->assertOk()
         ->assertJsonPath('data.value', 999);
 
+    config([
+        'captcha.public.math' => false,
+        'captcha.public.characters' => ['a'],
+        'captcha.public.length' => 1,
+    ]);
+    $captcha = $this->getJson('/captcha/api/public')
+        ->assertOk()
+        ->assertJsonStructure(['key', 'img'])
+        ->json();
+
     $this->postJson('/api/v1/auth/register', [
         'name' => 'Registered Client',
         'email' => 'registered-client@example.test',
         'password' => 'StrongPassword123!',
+        'captcha_key' => $captcha['key'],
+        'captcha' => 'a',
     ])->assertCreated()
         ->assertJsonPath('user.role', 'user');
 });

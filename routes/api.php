@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AdminContentController;
 use App\Http\Controllers\Api\V1\AdminResourceController;
+use App\Http\Controllers\Api\V1\ArticleCommentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ContractController;
 use App\Http\Controllers\Api\V1\LicenseController;
@@ -10,13 +11,15 @@ use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SliderController;
 use App\Http\Controllers\Api\V1\ThemeController;
+use App\Http\Controllers\Api\V1\VisitAnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     // Public API endpoints
     Route::get('/bootstrap', [PublicController::class, 'bootstrap']);
     Route::get('/search', [PublicController::class, 'search']);
-    Route::post('/contact', [PublicController::class, 'submitContact']);
+    Route::post('/contact', [PublicController::class, 'submitContact'])->middleware('throttle:5,1');
+    Route::post('/page-views', [VisitAnalyticsController::class, 'record'])->middleware('throttle:120,1');
     Route::get('/projects', [ProjectController::class, 'index']);
     Route::get('/projects/{slug}', [ProjectController::class, 'show']);
     Route::get('/products', [PublicController::class, 'products']);
@@ -26,6 +29,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/partners', [PublicController::class, 'partners']);
     Route::get('/departments', [PublicController::class, 'departments']);
     Route::get('/articles', [PublicController::class, 'articles']);
+    Route::get('/articles/{slug}/comments', [ArticleCommentController::class, 'publicIndex'])->middleware('throttle:60,1');
+    Route::post('/articles/{slug}/comments', [ArticleCommentController::class, 'store'])->middleware('throttle:3,1');
     Route::get('/articles/{slug}', [PublicController::class, 'article']);
     Route::get('/pages/{slug}', [PublicController::class, 'page']);
     Route::get('/sliders', [SliderController::class, 'index']);
@@ -33,7 +38,7 @@ Route::prefix('v1')->group(function (): void {
 
     // Authentication
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
-    Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 
     // Protected API routes (Laravel Sanctum)
     Route::middleware('auth:sanctum')->group(function (): void {
@@ -47,6 +52,7 @@ Route::prefix('v1')->group(function (): void {
         // Admin CMS & Management
         Route::prefix('admin')->group(function (): void {
             Route::get('/dashboard', [AdminContentController::class, 'dashboard'])->middleware('permission:dashboard.view');
+            Route::get('/analytics', [VisitAnalyticsController::class, 'analytics'])->middleware('permission:analytics.view');
             Route::get('/projects', [ProjectController::class, 'adminIndex'])->middleware('permission:projects.view');
             Route::get('/contracts', [ContractController::class, 'adminIndex'])->middleware('permission:contracts.view');
             Route::get('/licenses', [LicenseController::class, 'adminIndex'])->middleware('permission:licenses.view');
@@ -99,6 +105,9 @@ Route::prefix('v1')->group(function (): void {
             Route::put('/roles/{role}', [AdminResourceController::class, 'updateRole']);
             Route::get('/messages', [AdminResourceController::class, 'messages'])->middleware('permission:messages.view');
             Route::put('/messages/{message}', [AdminResourceController::class, 'updateMessageStatus']);
+            Route::get('/comments', [ArticleCommentController::class, 'adminIndex'])->middleware('permission:comments.manage');
+            Route::put('/comments/{comment}', [ArticleCommentController::class, 'updateStatus'])->middleware('permission:comments.manage');
+            Route::delete('/comments/{comment}', [ArticleCommentController::class, 'destroy'])->middleware('permission:comments.manage');
             Route::get('/notifications', [AdminResourceController::class, 'notifications'])
                 ->middleware('permission:notifications.view');
             Route::post('/media/upload', [AdminResourceController::class, 'uploadMedia']);

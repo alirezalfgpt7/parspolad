@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AOS from 'aos';
 import { useAppStore } from './store/useAppStore.ts';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal.tsx';
@@ -22,6 +22,7 @@ import { RfqPage } from './pages/public/RfqPage.tsx';
 import { ServicesPage } from './pages/public/ServicesPage.tsx';
 import { LoginPage, RegisterPage } from './pages/auth/AuthPages.tsx';
 import { ContentCmsAdminPage } from './pages/admin/ContentCmsAdminPage.tsx';
+import { ArticleCommentsAdminPage } from './pages/admin/ArticleCommentsAdminPage.tsx';
 import { ContractsLicensesAdminPage } from './pages/admin/ContractsLicensesAdminPage.tsx';
 import { DashboardPage } from './pages/admin/DashboardPage.tsx';
 import { MediaLibraryPage } from './pages/admin/MediaLibraryPage.tsx';
@@ -35,11 +36,29 @@ import { SettingsAdminPage } from './pages/admin/SettingsAdminPage.tsx';
 import { SliderAdminPage } from './pages/admin/SliderAdminPage.tsx';
 import { ThemeAdminPage } from './pages/admin/ThemeAdminPage.tsx';
 import { UsersRolesAdminPage } from './pages/admin/UsersRolesAdminPage.tsx';
+import { apiRequest } from './services/api.ts';
 
 const ProtectedAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token } = useAppStore();
   if (!token) return <Navigate to="/login" replace />;
   return <>{children}</>;
+};
+
+const PageViewTracker: React.FC = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    if (pathname.startsWith('/admin') || pathname === '/login' || pathname === '/register') return;
+
+    apiRequest<{ ok: boolean }>('/page-views', {
+      method: 'POST',
+      body: JSON.stringify({ path: pathname }),
+    }).catch((error: unknown) => {
+      console.error('Failed to record public page view.', error);
+    });
+  }, [pathname]);
+
+  return null;
 };
 
 export default function App() {
@@ -56,6 +75,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <PageViewTracker />
       <ThemeProvider>
         <Suspense fallback={<div className="py-20 text-center text-sm">در حال بارگذاری...</div>}>
           <Routes>
@@ -98,6 +118,7 @@ export default function App() {
               <Route path="themes" element={<ThemeAdminPage />} />
               <Route path="menus" element={<MegaMenuAdminPage />} />
               <Route path="content" element={<ContentCmsAdminPage />} />
+              <Route path="comments" element={<ArticleCommentsAdminPage />} />
               <Route path="organization" element={<OrganizationAdminPage />} />
               <Route path="media" element={<MediaLibraryPage />} />
               <Route path="messages" element={<MessagesRfqAdminPage />} />

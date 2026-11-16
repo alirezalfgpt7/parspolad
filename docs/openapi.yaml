@@ -3,7 +3,7 @@ info:
   title: Pars Poolad Aghaee Corporate Portal API
   version: 1.0.0
   description: >
-    Modular RESTful API (Laravel 11 / Sanctum / Spatie RBAC) powering the corporate portal,
+    Modular RESTful API (Laravel 13 / Sanctum / Spatie RBAC) powering the corporate portal,
     dynamic theme engine, wellhead & downhole projects showcase, contracts, licenses, and RFQ workflows.
 servers:
   - url: /api/v1
@@ -31,10 +31,111 @@ paths:
           description: Filtered list of engineering projects
   /contact:
     post:
-      summary: Submit contact inquiry, engineering ticket, or RFQ (Request for Quotation)
+      summary: Submit public contact inquiry or RFQ with CAPTCHA and honeypot validation
       responses:
         '201':
           description: Submission recorded and notification queued
+        '422':
+          description: Invalid form, CAPTCHA, or honeypot value
+        '429':
+          description: Public form rate limit exceeded
+  /articles/{slug}/comments:
+    get:
+      summary: List approved comments for a public article
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Approved comments only
+    post:
+      summary: Submit a comment for moderation using the self-hosted CAPTCHA
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Comment queued for moderation
+        '422':
+          description: Invalid form, CAPTCHA, or honeypot value
+        '429':
+          description: Public comment rate limit exceeded
+  /page-views:
+    post:
+      summary: Record an anonymous public page view as a daily path aggregate
+      responses:
+        '202':
+          description: Page view counted without storing visitor identifiers
+        '422':
+          description: Invalid path
+  /admin/analytics:
+    get:
+      summary: Retrieve daily, monthly, and selected-range aggregate page views
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Aggregate analytics without visitor-level data
+        '403':
+          description: Analytics permission required
+        '422':
+          description: Invalid or incomplete date range
+  /admin/comments:
+    get:
+      summary: List public article comments for moderation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Comments ordered by most recent
+        '403':
+          description: Comment moderation permission required
+  /admin/comments/{comment}:
+    put:
+      summary: Approve, reject, or return a comment to pending
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: comment
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated moderation state
+    delete:
+      summary: Soft-delete a comment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: comment
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comment removed from public and moderation lists
   /admin/theme:
     put:
       summary: Update active color palette, dark/light mode, and landing page theme variables

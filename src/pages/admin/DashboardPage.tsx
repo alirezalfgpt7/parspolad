@@ -4,6 +4,23 @@ import { Award, Bell, FileSpreadsheet, FolderKanban, MessageSquare, ShieldCheck 
 import { apiRequest } from '../../services/api.ts';
 import type { ActivityLog, ContactMessage, NotificationItem } from '../../types/index.ts';
 import { CategoryBarChart, YearlyTrendChart } from '../../components/charts/IndustrialCharts.tsx';
+import { PersianDatePicker, gregorianToJalali, jalaliToGregorian } from '../../components/ui/PersianDatePicker.tsx';
+
+interface AnalyticsPoint {
+  date: string;
+  views: number;
+}
+
+interface AnalyticsData {
+  daily: AnalyticsPoint[];
+  monthly: Array<{ month: string; views: number }>;
+  range: {
+    from: string;
+    to: string;
+    total: number;
+    daily: AnalyticsPoint[];
+  };
+}
 
 interface DashboardData {
   stats: {
@@ -25,9 +42,38 @@ interface DashboardData {
 
 export const DashboardPage: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [rangeFrom, setRangeFrom] = useState('');
+  const [rangeTo, setRangeTo] = useState('');
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState('');
+
+  const loadAnalytics = async (from = '', to = '') => {
+    setAnalyticsLoading(true);
+    setAnalyticsError('');
+
+    try {
+      if (Boolean(from) !== Boolean(to)) {
+        throw new Error('برای گزارش بازه‌ای، تاریخ شروع و پایان را هر دو انتخاب کنید.');
+      }
+
+      const query = from && to
+        ? `?from=${encodeURIComponent(jalaliToGregorian(from))}&to=${encodeURIComponent(jalaliToGregorian(to))}`
+        : '';
+      const result = await apiRequest<AnalyticsData>(`/admin/analytics${query}`);
+      setAnalytics(result);
+      setRangeFrom(gregorianToJalali(result.range.from));
+      setRangeTo(gregorianToJalali(result.range.to));
+    } catch (error) {
+      setAnalyticsError(error instanceof Error ? error.message : 'دریافت آمار بازدید ناموفق بود.');
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   useEffect(() => {
     apiRequest<DashboardData>('/admin/dashboard').then(setData).catch(() => {});
+    loadAnalytics();
   }, []);
 
   if (!data) {
@@ -63,6 +109,69 @@ export const DashboardPage: React.FC = () => {
           );
         })}
       </div>
+
+      <section className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-bold">آمار بازدید وب‌سایت</h2>
+            <p className="mt-1 text-xs text-slate-500">آمار به‌صورت تجمیعی ثبت می‌شود و شناسه یا IP بازدیدکنندگان ذخیره نمی‌شود.</p>
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="w-40 text-xs">
+              از تاریخ
+              <PersianDatePicker value={rangeFrom} onChange={setRangeFrom} className="mt-1" />
+            </label>
+            <label className="w-40 text-xs">
+              تا تاریخ
+              <PersianDatePicker value={rangeTo} onChange={setRangeTo} className="mt-1" />
+            </label>
+            <button
+              type="button"
+              onClick={() => loadAnalytics(rangeFrom, rangeTo)}
+              disabled={analyticsLoading}
+              className="rounded-lg bg-[var(--theme-primary)] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+            >
+              {analyticsLoading ? 'در حال دریافت...' : 'اعمال بازه'}
+            </button>
+          </div>
+        </div>
+
+        {analyticsError && <p role="alert" className="text-xs text-red-600">{analyticsError}</p>}
+
+        {analytics && (
+          <>
+            <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800/60">
+              <p className="text-xs text-slate-500">بازدید در بازه انتخاب‌شده</p>
+              <p className="mt-1 text-2xl font-extrabold tabular-nums">{analytics.range.total.toLocaleString('fa-IR')}</p>
+              <p className="mt-1 text-[11px] text-slate-500">
+                {gregorianToJalali(analytics.range.from)} تا {gregorianToJalali(analytics.range.to)}
+              </p>
+            </div>
+            <div className="grid gap-5 lg:grid-cols-2">
+              <div>
+                <h3 className="mb-3 text-xs font-semibold">بازدید روزانه · ۱۴ روز اخیر</h3>
+                <AnalyticsBars
+                  points={analytics.daily.slice(-14).map((point) => ({
+                    label: new Date(`${point.date}T00:00:00`).toLocaleDateString('fa-IR', { day: '2-digit' }),
+                    value: point.views,
+                    key: point.date,
+                  }))}
+                />
+              </div>
+              <div>
+                <h3 className="mb-3 text-xs font-semibold">بازدید ماهانه · ۱۲ ماه اخیر</h3>
+                <AnalyticsBars
+                  points={analytics.monthly.map((point) => ({
+                    label: new Date(`${point.month}-01T00:00:00`).toLocaleDateString('fa-IR', { month: 'short' }),
+                    value: point.views,
+                    key: point.month,
+                  }))}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -130,6 +239,32 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+    </div>
+  );
+};
+
+interface AnalyticsBarPoint {
+  key: string;
+  label: string;
+  value: number;
+}
+
+const AnalyticsBars: React.FC<{ points: AnalyticsBarPoint[] }> = ({ points }) => {
+  const maxValue = Math.max(1, ...points.map((point) => point.value));
+
+  return (
+    <div className="flex h-36 items-end gap-1 border-b border-slate-200 dark:border-slate-700">
+      {points.map((point) => (
+        <div key={point.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
+          <span className="text-[9px] tabular-nums text-slate-500">{point.value.toLocaleString('fa-IR')}</span>
+          <div
+            title={`${point.label}: ${point.value}`}
+            className="w-full rounded-t bg-[var(--theme-primary)] opacity-80"
+            style={{ height: `${point.value === 0 ? 2 : Math.max(6, (point.value / maxValue) * 100)}%` }}
+          />
+          <span className="text-[9px] text-slate-500">{point.label}</span>
+        </div>
+      ))}
     </div>
   );
 };

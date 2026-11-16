@@ -4,10 +4,13 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 export const MediaLibraryPage: React.FC = () => {
   const { addToast } = useAppStore();
   const [files, setFiles] = useState<MediaFile[]>([]);
+  const [deleteFile, setDeleteFile] = useState<MediaFile | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = () => {
     apiRequest<{ data: MediaFile[] }>('/admin/media').then((r) => setFiles(r.data)).catch(() => {});
@@ -16,6 +19,22 @@ export const MediaLibraryPage: React.FC = () => {
   useEffect(() => {
     load();
   }, []);
+
+  const confirmDelete = async () => {
+    if (!deleteFile) return;
+
+    setDeleting(true);
+    try {
+      await apiRequest(`/admin/media/${deleteFile.id}`, { method: 'DELETE' });
+      setDeleteFile(null);
+      load();
+      addToast('success', 'فایل از کتابخانه رسانه حذف شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'حذف فایل ناموفق بود.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -67,16 +86,20 @@ export const MediaLibraryPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={async () => {
-                    await apiRequest(`/admin/media/${f.id}`, { method: 'DELETE' });
-                    load();
-                    addToast('success', 'فایل حذف شد.');
-                  }}
+                  onClick={() => setDeleteFile(f)}
                   className="rounded p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                  aria-label={`حذف ${f.name}`}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
+              <ConfirmDialog
+                open={Boolean(deleteFile)}
+                onClose={() => setDeleteFile(null)}
+                onConfirm={confirmDelete}
+                message="این فایل از کتابخانه پنهان می‌شود و فایل ذخیره‌شده برای حذف فیزیکی پاک نمی‌شود. ادامه می‌دهید؟"
+                loading={deleting}
+              />
             </div>
           </div>
         ))}

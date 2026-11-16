@@ -4,6 +4,7 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Department, Partner, TeamMember } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 export const OrganizationAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap } = useAppStore();
@@ -12,6 +13,8 @@ export const OrganizationAdminPage: React.FC = () => {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [newPartnerName, setNewPartnerName] = useState('');
   const [newPartnerLogo, setNewPartnerLogo] = useState('/storage/partners/nisoc.png');
+  const [deletePartner, setDeletePartner] = useState<Partner | null>(null);
+  const [deletingPartner, setDeletingPartner] = useState(false);
 
   const load = async () => {
     const [d, t, p] = await Promise.all([
@@ -27,6 +30,23 @@ export const OrganizationAdminPage: React.FC = () => {
   useEffect(() => {
     load().catch(() => {});
   }, []);
+
+  const confirmDeletePartner = async () => {
+    if (!deletePartner) return;
+
+    setDeletingPartner(true);
+    try {
+      await apiRequest(`/admin/partners/${deletePartner.id}`, { method: 'DELETE' });
+      setDeletePartner(null);
+      await load();
+      await fetchBootstrap();
+      addToast('success', 'کارفرما حذف شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'حذف کارفرما ناموفق بود.');
+    } finally {
+      setDeletingPartner(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -89,12 +109,9 @@ export const OrganizationAdminPage: React.FC = () => {
               <div className="mt-2 text-xs font-semibold">{p.name_fa}</div>
               <button
                 type="button"
-                onClick={async () => {
-                  await apiRequest(`/admin/partners/${p.id}`, { method: 'DELETE' });
-                  await load();
-                  await fetchBootstrap();
-                }}
+                onClick={() => setDeletePartner(p)}
                 className="mt-2 text-red-600"
+                aria-label={`حذف ${p.name_fa}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -102,6 +119,13 @@ export const OrganizationAdminPage: React.FC = () => {
           ))}
         </div>
       </div>
+      <ConfirmDialog
+        open={Boolean(deletePartner)}
+        onClose={() => setDeletePartner(null)}
+        onConfirm={confirmDeletePartner}
+        message="آیا از حذف این کارفرما یا شریک راهبردی اطمینان دارید؟"
+        loading={deletingPartner}
+      />
     </div>
   );
 };

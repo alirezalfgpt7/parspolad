@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Article extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'slug',
         'title_fa',
@@ -25,5 +29,10 @@ class Article extends Model
     protected function casts(): array
     {
         return ['read_minutes' => 'integer'];
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ArticleComment::class);
     }
 }
