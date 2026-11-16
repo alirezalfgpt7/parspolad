@@ -1,0 +1,116 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@import "@fontsource/vazirmatn/300.css";
+@import "@fontsource/vazirmatn/400.css";
+@import "@fontsource/vazirmatn/500.css";
+@import "@fontsource/vazirmatn/600.css";
+@import "@fontsource/vazirmatn/700.css";
+@import "@fontsource/vazirmatn/800.css";
+@import "swiper/css";
+@import "swiper/css/effect-fade";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+@import "leaflet/dist/leaflet.css";
+@import "aos/dist/aos.css";
+
+:root {
+  --theme-primary: #B91C1C;
+  --theme-primary-hover: #991B1B;
+  --theme-secondary: #1E293B;
+  --theme-accent: #D97706;
+  --theme-bg: #F8FAFC;
+  --theme-surface: #FFFFFF;
+  --theme-text: #0F172A;
+  --theme-text-muted: #475569;
+  --theme-border: #E2E8F0;
+  --theme-header-bg: #FFFFFF;
+  --theme-header-text: #0F172A;
+  --theme-footer-bg: #0F172A;
+  --theme-footer-text: #F8FAFC;
+  --theme-btn-bg: #B91C1C;
+  --theme-btn-text: #FFFFFF;
+  --theme-link: #B91C1C;
+}
+
+.dark {
+  --theme-bg: #0B1120;
+  --theme-surface: #111827;
+  --theme-text: #F8FAFC;
+  --theme-text-muted: #94A3B8;
+  --theme-border: #1F2937;
+  --theme-header-bg: #0F172A;
+  --theme-header-text: #F8FAFC;
+  --theme-footer-bg: #060913;
+  --theme-footer-text: #E2E8F0;
+}
+
+html {
+  font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes kenburns {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.12) translate3d(-1.5%, -1.5%, 0);
+  }
+}
+
+.animate-kenburns {
+  animation: kenburns 14s ease-out infinite alternate;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Leaflet RTL & Dark compatibility */
+.leaflet-container {
+  font-family: "Vazirmatn", system-ui, sans-serif;
+  z-index: 10;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--theme-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary);
+}

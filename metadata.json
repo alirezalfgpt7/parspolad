@@ -1,0 +1,6 @@
+{
+  "name": "پارس پولاد آقایی | Pars Poolad Aghaee",
+  "description": "وبسایت رسمی و سامانه مدیریت یکپارچه شرکت دانش‌بنیان پارس پولاد آقایی — طراحی، ساخت، تأمین و اجرای تجهیزات سرچاهی و درون‌چاهی صنعت نفت، گاز و پتروشیمی",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
