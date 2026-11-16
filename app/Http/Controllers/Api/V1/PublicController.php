@@ -10,6 +10,7 @@ use App\Models\Article;
 use App\Models\ContactMessage;
 use App\Models\Contract;
 use App\Models\Department;
+use App\Models\Faq;
 use App\Models\License;
 use App\Models\Notification;
 use App\Models\Page;
@@ -129,6 +130,13 @@ class PublicController extends Controller
                 'departments' => Department::query()->with('children')->orderBy('id')->get(),
                 'team' => TeamMember::query()->with('department')->orderBy('id')->get(),
             ],
+        ]);
+    }
+
+    public function faqs(): JsonResponse
+    {
+        return response()->json([
+            'data' => Faq::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 

@@ -12,6 +12,7 @@ import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
 import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 
 interface ArticleComment {
   id: number;
@@ -138,7 +139,7 @@ export const NewsPage: React.FC = () => {
             </h1>
             <div
               className="prose mt-6 max-w-none text-sm leading-8 text-slate-700 dark:prose-invert dark:text-slate-300"
-              dangerouslySetInnerHTML={{ __html: language === 'fa' ? single.content_fa : single.content_en }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? single.content_fa : single.content_en) }}
             />
             <section className="mt-10 border-t border-slate-200 pt-8 dark:border-slate-800">
               <h2 className="text-lg font-bold">دیدگاه‌ها</h2>

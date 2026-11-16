@@ -293,6 +293,7 @@ export interface PageContent {
   content_en: string;
   meta_title: string;
   meta_description: string;
+  metadata?: Record<string, unknown> | null;
   updated_at: string;
 }
 

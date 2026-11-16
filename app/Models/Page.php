@@ -23,7 +23,13 @@ class Page extends Model
         'content_en',
         'meta_title',
         'meta_description',
+        'metadata',
     ];
+
+    protected function casts(): array
+    {
+        return ['metadata' => 'array'];
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Banner;
 use App\Models\Contract;
 use App\Models\Department;
+use App\Models\Faq;
 use App\Models\Kpi;
 use App\Models\License;
 use App\Models\MediaFile;
@@ -52,6 +53,14 @@ class PortalContentSeeder extends Seeder
         $this->seedCatalog($data);
         $this->seedOrganization($data);
         $this->seedCms($data);
+        $this->seedFaqs($data['faqs']);
+    }
+
+    private function seedFaqs(array $faqs): void
+    {
+        foreach ($faqs as $faq) {
+            $this->upsert(Faq::class, 'question_fa', $faq);
+        }
     }
 
     private function seedThemes(array $data): void

@@ -124,6 +124,14 @@ class AdminResourceController extends Controller
         return response()->json($message);
     }
 
+    public function destroyMessage(Request $request, ContactMessage $message): JsonResponse
+    {
+        $this->ensurePermission($request, 'messages.manage');
+        $message->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
     public function notifications(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'notifications.view');

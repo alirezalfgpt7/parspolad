@@ -39,6 +39,111 @@ paths:
           description: Invalid form, CAPTCHA, or honeypot value
         '429':
           description: Public form rate limit exceeded
+  /faqs:
+    get:
+      summary: List active FAQ entries managed through the admin CMS
+      responses:
+        '200':
+          description: Active FAQs ordered by sort order
+  /pages/{slug}:
+    get:
+      summary: Fetch a published, database-managed content page
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Page content and editable metadata
+        '404':
+          description: Page not found
+  /admin/content-schema/{resource}:
+    get:
+      summary: Get the editable field definitions for a CMS resource
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [categories, faqs, services, products, departments, team, partners, articles, pages, banners, kpis, notification-templates]
+      responses:
+        '200':
+          description: Resource fields, types and required status
+        '403':
+          description: Required management permission missing
+  /admin/{resource}:
+    get:
+      summary: List records for a managed CMS resource
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CMS records
+    post:
+      summary: Create a record for a managed CMS resource
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: CMS record created
+        '422':
+          description: Invalid CMS record
+  /admin/{resource}/{id}:
+    put:
+      summary: Update a managed CMS record
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: CMS record updated
+        '422':
+          description: Invalid CMS record
+    delete:
+      summary: Soft-delete a managed CMS record
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: CMS record soft-deleted
   /articles/{slug}/comments:
     get:
       summary: List approved comments for a public article
@@ -136,6 +241,81 @@ paths:
       responses:
         '200':
           description: Comment removed from public and moderation lists
+  /admin/messages/{message}:
+    put:
+      summary: Update the follow-up status and internal note for a contact message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: message
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Message status updated
+        '403':
+          description: Message management permission required
+    delete:
+      summary: Soft-delete a contact or RFQ message
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: message
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Message removed from the administration list
+        '403':
+          description: Message management permission required
+  /admin/faqs:
+    get:
+      summary: List FAQ entries for administration
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: FAQ records including inactive entries
+    post:
+      summary: Create an FAQ entry
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: FAQ created
+        '422':
+          description: Invalid FAQ data
+  /admin/faqs/{id}:
+    put:
+      summary: Update an FAQ entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: FAQ updated
+    delete:
+      summary: Soft-delete an FAQ entry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: FAQ soft-deleted
   /admin/theme:
     put:
       summary: Update active color palette, dark/light mode, and landing page theme variables

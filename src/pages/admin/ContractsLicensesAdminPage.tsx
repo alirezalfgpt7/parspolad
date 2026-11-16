@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Contract, License } from '../../types/index.ts';
@@ -51,6 +51,38 @@ export const ContractsLicensesAdminPage: React.FC = () => {
     }
   };
 
+  const saveContract = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!contractModal) return;
+    try {
+      await apiRequest(
+        contractModal.id ? `/admin/contracts/${contractModal.id}` : '/admin/contracts',
+        { method: contractModal.id ? 'PUT' : 'POST', body: JSON.stringify(contractModal) },
+      );
+      setContractModal(null);
+      await load();
+      addToast('success', 'قرارداد ذخیره شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره قرارداد ناموفق بود.');
+    }
+  };
+
+  const saveLicense = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!licenseModal) return;
+    try {
+      await apiRequest(
+        licenseModal.id ? `/admin/licenses/${licenseModal.id}` : '/admin/licenses',
+        { method: licenseModal.id ? 'PUT' : 'POST', body: JSON.stringify(licenseModal) },
+      );
+      setLicenseModal(null);
+      await load();
+      addToast('success', 'گواهینامه ذخیره شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره گواهینامه ناموفق بود.');
+    }
+  };
+
   const contractCols: Column<Contract>[] = [
     { key: 'num', header: 'شماره قرارداد', render: (c) => <span className="font-mono text-xs">{c.contract_number}</span> },
     { key: 'title', header: 'عنوان', render: (c) => <span className="font-semibold">{c.title_fa}</span> },
@@ -58,15 +90,12 @@ export const ContractsLicensesAdminPage: React.FC = () => {
     { key: 'amt', header: 'مبلغ (میلیارد ریال)', render: (c) => <span>{c.amount_billion_irr}</span> },
     {
       key: 'del',
-      header: 'حذف',
+      header: 'عملیات',
       render: (c) => (
-        <button
-          type="button"
-          onClick={() => setDeleteTarget({ type: 'contract', id: c.id })}
-          className="text-red-600"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setContractModal(c)} aria-label="ویرایش قرارداد" className="text-slate-600"><Pencil className="h-4 w-4" /></button>
+          <button type="button" onClick={() => setDeleteTarget({ type: 'contract', id: c.id })} aria-label="حذف قرارداد" className="text-red-600"><Trash2 className="h-4 w-4" /></button>
+        </div>
       ),
     },
   ];
@@ -108,30 +137,18 @@ export const ContractsLicensesAdminPage: React.FC = () => {
               <div className="font-mono text-xs font-bold text-[var(--theme-primary)]">{lic.code}</div>
               <div className="mt-1 text-sm font-bold">{lic.title_fa}</div>
               <div className="mt-1 text-xs text-slate-500">{lic.issuer_fa}</div>
-              <button
-                type="button"
-                onClick={() => setDeleteTarget({ type: 'license', id: lic.id })}
-                className="mt-3 text-xs text-red-600 hover:underline"
-              >
-                حذف گواهینامه
-              </button>
+              <div className="mt-3 flex gap-3">
+                <button type="button" onClick={() => setLicenseModal(lic)} className="inline-flex items-center gap-1 text-xs text-slate-600 hover:underline"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
+                <button type="button" onClick={() => setDeleteTarget({ type: 'license', id: lic.id })} className="text-xs text-red-600 hover:underline">حذف گواهینامه</button>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      <Modal open={Boolean(contractModal)} onClose={() => setContractModal(null)} title="ثبت قرارداد جدید" size="md">
+      <Modal open={Boolean(contractModal)} onClose={() => setContractModal(null)} title={contractModal?.id ? 'ویرایش قرارداد' : 'ثبت قرارداد جدید'} size="md">
         {contractModal && (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              await apiRequest('/admin/contracts', { method: 'POST', body: JSON.stringify(contractModal) });
-              setContractModal(null);
-              load();
-              addToast('success', 'قرارداد ثبت شد.');
-            }}
-            className="space-y-3"
-          >
+          <form onSubmit={saveContract} className="space-y-3">
             <input required placeholder="شماره قرارداد" value={contractModal.contract_number || ''} onChange={(e) => setContractModal({ ...contractModal, contract_number: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="عنوان قرارداد" value={contractModal.title_fa || ''} onChange={(e) => setContractModal({ ...contractModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="کارفرما" value={contractModal.client_fa || ''} onChange={(e) => setContractModal({ ...contractModal, client_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
@@ -142,18 +159,9 @@ export const ContractsLicensesAdminPage: React.FC = () => {
         )}
       </Modal>
 
-      <Modal open={Boolean(licenseModal)} onClose={() => setLicenseModal(null)} title="افزودن گواهینامه و استاندارد" size="md">
+      <Modal open={Boolean(licenseModal)} onClose={() => setLicenseModal(null)} title={licenseModal?.id ? 'ویرایش گواهینامه' : 'افزودن گواهینامه و استاندارد'} size="md">
         {licenseModal && (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              await apiRequest('/admin/licenses', { method: 'POST', body: JSON.stringify(licenseModal) });
-              setLicenseModal(null);
-              load();
-              addToast('success', 'گواهینامه جدید ثبت شد.');
-            }}
-            className="space-y-3"
-          >
+          <form onSubmit={saveLicense} className="space-y-3">
             <input required placeholder="کد استاندارد (مثل API 6A)" value={licenseModal.code || ''} onChange={(e) => setLicenseModal({ ...licenseModal, code: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="عنوان فارسی" value={licenseModal.title_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="مرجع صادرکننده" value={licenseModal.issuer_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />

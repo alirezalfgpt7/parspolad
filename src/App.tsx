@@ -13,6 +13,8 @@ import { ContactPage } from './pages/public/ContactPage.tsx';
 import { ContractsLicensesPage } from './pages/public/ContractsLicensesPage.tsx';
 import { HomePage } from './pages/public/HomePage.tsx';
 import { ErrorPage, FaqPage, LegalPage, SitemapPage } from './pages/public/MiscPages.tsx';
+import { FaqAdminPage } from './pages/admin/FaqAdminPage.tsx';
+import { ContentRecordsAdminPage } from './pages/admin/ContentRecordsAdminPage.tsx';
 import { NewsPage } from './pages/public/NewsPage.tsx';
 import { OrgChartPage } from './pages/public/OrgChartPage.tsx';
 import { ProductsPage } from './pages/public/ProductsPage.tsx';
@@ -118,6 +120,8 @@ export default function App() {
               <Route path="themes" element={<ThemeAdminPage />} />
               <Route path="menus" element={<MegaMenuAdminPage />} />
               <Route path="content" element={<ContentCmsAdminPage />} />
+              <Route path="faqs" element={<FaqAdminPage />} />
+              <Route path="content-records" element={<ContentRecordsAdminPage />} />
               <Route path="comments" element={<ArticleCommentsAdminPage />} />
               <Route path="organization" element={<OrganizationAdminPage />} />
               <Route path="media" element={<MediaLibraryPage />} />

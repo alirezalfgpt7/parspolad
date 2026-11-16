@@ -4,11 +4,13 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Menu, MenuItem } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 export const MegaMenuAdminPage: React.FC = () => {
   const { fetchBootstrap, addToast } = useAppStore();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [selectedMenuId, setSelectedMenuId] = useState<number>(1);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'root'; index: number } | { type: 'child'; parentIndex: number; childIndex: number } | null>(null);
 
   useEffect(() => {
     apiRequest<{ data: Menu[] }>('/admin/menus').then((r) => setMenus(r.data)).catch(() => {});
@@ -38,6 +40,49 @@ export const MegaMenuAdminPage: React.FC = () => {
       is_active: true,
     };
     updateItem(idx, { children: [...(parent.children || []), child] });
+  };
+
+  const addRootItem = () => {
+    if (!currentMenu) return;
+    const item: MenuItem = {
+      id: Date.now(),
+      menu_id: currentMenu.id,
+      parent_id: null,
+      title_fa: 'آیتم منوی جدید',
+      title_en: 'New Menu Item',
+      url: '/',
+      image: '',
+      description_fa: '',
+      sort_order: currentMenu.items.length + 1,
+      is_active: true,
+    };
+    setMenus((prev) => prev.map((menu) => (
+      menu.id === currentMenu.id ? { ...menu, items: [...menu.items, item] } : menu
+    )));
+  };
+
+  const removeRootItem = (idx: number) => {
+    if (!currentMenu) return;
+    setMenus((prev) => prev.map((menu) => (
+      menu.id === currentMenu.id
+        ? { ...menu, items: menu.items.filter((_, itemIndex) => itemIndex !== idx) }
+        : menu
+    )));
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === 'root') {
+      removeRootItem(deleteTarget.index);
+    } else {
+      const parent = currentMenu?.items[deleteTarget.parentIndex];
+      if (parent) {
+        updateItem(deleteTarget.parentIndex, {
+          children: (parent.children || []).filter((_, idx) => idx !== deleteTarget.childIndex),
+        });
+      }
+    }
+    setDeleteTarget(null);
   };
 
   const saveMenu = async () => {
@@ -72,6 +117,14 @@ export const MegaMenuAdminPage: React.FC = () => {
           ))}
           <button
             type="button"
+            onClick={addRootItem}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-slate-700"
+          >
+            <Plus className="h-4 w-4" />
+            <span>آیتم اصلی جدید</span>
+          </button>
+          <button
+            type="button"
             onClick={saveMenu}
             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white"
           >
@@ -90,6 +143,9 @@ export const MegaMenuAdminPage: React.FC = () => {
                 <input dir="ltr" value={item.title_en} onChange={(e) => updateItem(idx, { title_en: e.target.value })} placeholder="English Title" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
                 <input dir="ltr" value={item.url} onChange={(e) => updateItem(idx, { url: e.target.value })} placeholder="/url" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
                 <div className="flex items-center justify-end gap-2">
+                  <button type="button" onClick={() => setDeleteTarget({ type: 'root', index: idx })} aria-label="حذف آیتم اصلی" className="rounded-lg p-2 text-red-600 hover:bg-red-50">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                   {currentMenu.key === 'header' && (
                     <button type="button" onClick={() => addChild(idx)} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-slate-700">
                       <Plus className="h-3.5 w-3.5" />
@@ -114,7 +170,7 @@ export const MegaMenuAdminPage: React.FC = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => updateItem(idx, { children: item.children!.filter((_, j) => j !== cIdx) })}
+                          onClick={() => setDeleteTarget({ type: 'child', parentIndex: idx, childIndex: cIdx })}
                           className="text-red-600 p-1"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -141,6 +197,12 @@ export const MegaMenuAdminPage: React.FC = () => {
                   ))}
                 </div>
               )}
+              <ConfirmDialog
+                open={Boolean(deleteTarget)}
+                onClose={() => setDeleteTarget(null)}
+                onConfirm={confirmDelete}
+                message="این آیتم و زیرمنوهای وابسته از منو حذف خواهند شد. ادامه می‌دهید؟"
+              />
             </div>
           ))}
         </div>

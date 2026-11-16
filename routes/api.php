@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/licenses', [PublicController::class, 'licenses']);
     Route::get('/partners', [PublicController::class, 'partners']);
     Route::get('/departments', [PublicController::class, 'departments']);
+    Route::get('/faqs', [PublicController::class, 'faqs']);
     Route::get('/articles', [PublicController::class, 'articles']);
     Route::get('/articles/{slug}/comments', [ArticleCommentController::class, 'publicIndex'])->middleware('throttle:60,1');
     Route::post('/articles/{slug}/comments', [ArticleCommentController::class, 'store'])->middleware('throttle:3,1');
@@ -105,6 +106,7 @@ Route::prefix('v1')->group(function (): void {
             Route::put('/roles/{role}', [AdminResourceController::class, 'updateRole']);
             Route::get('/messages', [AdminResourceController::class, 'messages'])->middleware('permission:messages.view');
             Route::put('/messages/{message}', [AdminResourceController::class, 'updateMessageStatus']);
+            Route::delete('/messages/{message}', [AdminResourceController::class, 'destroyMessage']);
             Route::get('/comments', [ArticleCommentController::class, 'adminIndex'])->middleware('permission:comments.manage');
             Route::put('/comments/{comment}', [ArticleCommentController::class, 'updateStatus'])->middleware('permission:comments.manage');
             Route::delete('/comments/{comment}', [ArticleCommentController::class, 'destroy'])->middleware('permission:comments.manage');
@@ -116,15 +118,17 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/activity-logs-export', [AdminResourceController::class, 'exportLogs'])
                 ->middleware('permission:reports.export');
 
+            Route::get('/content-schema/{resource}', [AdminContentController::class, 'schema'])
+                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates');
             Route::get('/{resource}', [AdminContentController::class, 'index'])
-                ->where('resource', 'categories|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates');
+                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates');
             Route::post('/{resource}', [AdminContentController::class, 'store'])
-                ->where('resource', 'categories|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates');
+                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates');
             Route::put('/{resource}/{id}', [AdminContentController::class, 'update'])
-                ->where('resource', 'categories|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates')
+                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates')
                 ->whereNumber('id');
             Route::delete('/{resource}/{id}', [AdminContentController::class, 'destroy'])
-                ->where('resource', 'categories|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates')
+                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates')
                 ->whereNumber('id');
         });
     });

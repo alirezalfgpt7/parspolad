@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Bold, Code, Italic, Link2, List, ListOrdered } from 'lucide-react';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 
 interface RichTextEditorProps {
   value: string;
@@ -20,7 +21,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const exec = (cmd: string, arg?: string) => {
     document.execCommand(cmd, false, arg);
     if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
+      onChange(sanitizeHtml(editorRef.current.innerHTML));
     }
   };
 
@@ -73,8 +74,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             ref={editorRef}
             contentEditable
             suppressContentEditableWarning
-            onInput={(e) => onChange((e.target as HTMLDivElement).innerHTML)}
-            dangerouslySetInnerHTML={{ __html: value }}
+            onInput={(e) => onChange(sanitizeHtml((e.target as HTMLDivElement).innerHTML))}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
             style={{ minHeight }}
             className="prose prose-sm max-w-none p-3.5 text-sm text-slate-800 focus:outline-none dark:prose-invert dark:text-slate-200"
           />

@@ -6,47 +6,49 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { PageContent } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 
-const FAQS = [
-  {
-    q: 'آیا تجهیزات سرچاهی و درون‌چاهی پارس پولاد آقایی دارای تاییدیه‌های استاندارد بین‌المللی هستند؟',
-    a: 'بله، تمامی تجهیزات بر اساس استانداردهای API 6A، API 6FA، API 19LH و سیستم‌های مدیریت کیفیت ISO 29001:2020 و ISO 10423:2022 طراحی، ساخته و آزمون می‌شوند.',
-  },
-  {
-    q: 'آیا شرکت خدمات نصب سر دکل و عملیات راندن لاینر هنگر را نیز انجام می‌دهد؟',
-    a: 'بله، تیم عملیات میدانی پارس پولاد آقایی با تجربه اجرا در میادین کیش، پارس جنوبی، آزادگان و مناطق نفت‌خیز جنوب، خدمات کامل نصب، راه‌اندازی و راندن آستری را ارائه می‌دهد.',
-  },
-  {
-    q: 'چگونه می‌توان کاتالوگ‌های فنی یا سوابق پروژه‌ها را دریافت کرد؟',
-    a: 'از بخش پروژه‌ها و قراردادها می‌توانید فایل‌های PDF عمومی را مستقیماً دریافت نمایید. برخی اسناد تفصیلی کنترل کیفیت نیز پس از ورود به پرتال کاربری قابل دانلود هستند.',
-  },
-  {
-    q: 'آیا امکان ساخت سفارشی قطعات توربین، کمپرسور و شیرآلات فشارقوی وجود دارد؟',
-    a: 'بله، واحد R&D و مهندسی معکوس شرکت تاکنون بیش از ۱۴۰ قلم قطعه حساس کمپرسورهای Elliott، Ruston و Rolls-Royce را با دقت میکرونی بومی‌سازی کرده است.',
-  },
-];
+interface FaqItem {
+  id: number;
+  question_fa: string;
+  answer_fa: string;
+}
 
 export const FaqPage: React.FC = () => {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    apiRequest<{ data: FaqItem[] }>('/faqs')
+      .then((response) => {
+        setFaqs(response.data);
+        setOpenIdx(response.data[0]?.id ?? null);
+      })
+      .catch(() => setError('دریافت سوالات متداول با خطا روبه‌رو شد.'));
+  }, []);
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <SeoHead title="سوالات متداول" />
       <Breadcrumb items={[{ label: 'سوالات متداول' }]} />
       <h1 className="mb-6 text-3xl font-extrabold text-slate-900 dark:text-white">سوالات متداول</h1>
       <div className="space-y-3">
-        {FAQS.map((item, idx) => (
-          <div key={idx} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : faqs.length === 0 ? (
+          <p className="text-sm text-slate-500">سوال متداولی ثبت نشده است.</p>
+        ) : faqs.map((item, idx) => (
+          <div key={item.id} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <button
               type="button"
-              onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
+              onClick={() => setOpenIdx(openIdx === item.id ? null : item.id)}
               className="flex w-full items-center justify-between gap-4 p-4 text-start text-sm font-bold"
             >
-              <span>{item.q}</span>
-              <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${openIdx === idx ? 'rotate-180' : ''}`} />
+              <span>{item.question_fa}</span>
+              <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${openIdx === item.id ? 'rotate-180' : ''}`} />
             </button>
-            {openIdx === idx && (
+            {openIdx === item.id && (
               <div className="border-t border-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
-                {item.a}
+                {item.answer_fa}
               </div>
             )}
           </div>
@@ -68,7 +70,7 @@ export const LegalPage: React.FC = () => {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
         <h1 className="text-2xl font-extrabold">{page?.title_fa || 'حریم خصوصی و قوانین استفاده'}</h1>
         <p className="mt-2 text-xs text-slate-500">{page?.subtitle_fa}</p>
-        <div className="prose mt-6 max-w-none text-sm leading-8 dark:prose-invert" dangerouslySetInnerHTML={{ __html: page?.content_fa || '' }} />
+        <div className="prose mt-6 max-w-none text-sm leading-8 dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHtml(page?.content_fa || '') }} />
       </div>
     </div>
   );

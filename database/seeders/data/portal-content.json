@@ -1463,6 +1463,32 @@
       "read_minutes": 6
     }
   ],
+  "faqs": [
+    {
+      "question_fa": "آیا تجهیزات سرچاهی و درون‌چاهی پارس پولاد آقایی دارای تاییدیه‌های استاندارد بین‌المللی هستند؟",
+      "answer_fa": "بله، تجهیزات بر اساس استانداردهای API 6A، API 6FA، API 19LH و سیستم‌های مدیریت کیفیت ISO 29001:2020 و ISO 10423:2022 طراحی، ساخته و آزمون می‌شوند.",
+      "sort_order": 1,
+      "is_active": true
+    },
+    {
+      "question_fa": "آیا شرکت خدمات نصب سر دکل و عملیات راندن لاینر هنگر را نیز انجام می‌دهد؟",
+      "answer_fa": "بله، تیم عملیات میدانی پارس پولاد آقایی خدمات نصب، راه‌اندازی و راندن آستری را ارائه می‌دهد.",
+      "sort_order": 2,
+      "is_active": true
+    },
+    {
+      "question_fa": "چگونه می‌توان کاتالوگ‌های فنی یا سوابق پروژه‌ها را دریافت کرد؟",
+      "answer_fa": "از بخش پروژه‌ها و قراردادها می‌توانید فایل‌های عمومی را دریافت کنید. برخی اسناد تفصیلی کنترل کیفیت پس از ورود به پرتال کاربری قابل دانلود هستند.",
+      "sort_order": 3,
+      "is_active": true
+    },
+    {
+      "question_fa": "آیا امکان ساخت سفارشی قطعات توربین، کمپرسور و شیرآلات فشارقوی وجود دارد؟",
+      "answer_fa": "بله، واحد مهندسی و ساخت شرکت قطعات صنعتی متناسب با مشخصات فنی پروژه را تولید می‌کند.",
+      "sort_order": 4,
+      "is_active": true
+    }
+  ],
   "pages": [
     {
       "id": 1,
@@ -1471,10 +1497,19 @@
       "title_en": "About Pars Poolad Aghaee Co.",
       "subtitle_fa": "بیش از نیم قرن تجربه از ۱۳۴۸ در مهندسی، ساخت و خودکفایی تجهیزات صنعت نفت، گاز و فولاد",
       "subtitle_en": "Over half a century of engineering excellence since 1969 in oil, gas & steel industries",
-      "content_fa": "<p>شرکت پارس پولاد آقایی با بیش از نیم قرن تجربه ارزشمند، در سال ۱۳۴۸ تأسیس شد و از سال ۱۳۸۲ با هویتی نوین مسیر تازه‌ای در صنایع سنگین کشور گشود. آغاز فعالیت با تولید قطعات یدکی مجتمع عظیم فولاد خوزستان رقم خورد و به تولید بیش از ۱۴۰ قلم قطعه حیاتی توربین و کمپرسورهای برندهای Ruston، Rolls-Royce، Elliott و Sulzer گسترش یافت.</p><p>در دوران تحریم‌ها، این شرکت با تمرکز بر بومی‌سازی تجهیزات سرچاهی (Wellhead) و ادوات درون‌چاهی (Liner Hanger & Packer)، نمونه‌های پیچیده خارجی را با دقت مهندسی برابر و یک‌دهم هزینه تمام‌شده تولید و بیش از ۲۰۰ دستگاه به وزارت نفت تحویل داد.</p>",
-      "content_en": "<p>Founded in 1969 and restructured in 2003, Pars Poolad Aghaee is a Knowledge-Based pioneer manufacturing strategic API 6A wellheads, downhole liner hangers, production packers, and precision turbine bearings.</p>",
+      "content_fa": "<p>شرکت پارس پولاد آقایی با بیش از نیم قرن تجربه ارزشمند، در سال ۱۳۴۸ تأسیس شد و از سال ۱۳۸۲ با هویتی نوین مسیر تازه‌ای در صنایع سنگین کشور گشود. آغاز فعالیت با تولید قطعات یدکی مجتمع عظیم فولاد خوزستان رقم خورد و به تولید بیش از ۱۴۰ قلم قطعه حیاتی توربین و کمپرسورهای برندهای Ruston، Rolls-Royce، Elliott و Sulzer گسترش یافت.</p><p>در دوران تحریم‌ها، این شرکت با تمرکز بر بومی‌سازی تجهیزات سرچاهی (Wellhead) و ادوات درون‌چاهی (Liner Hanger & Packer)، نمونه‌های پیچیده خارجی را با دقت مهندسی برابر و یک‌دهم هزینه تمام‌شده تولید و بیش از ۲۰۰ دستگاه به وزارت نفت تحویل داد.</p><h2>چشم‌انداز و اهداف آرمانی</h2><p>برترین برند ملی در ارائه خدمات و تجهیزات درون‌چاهی و سرچاهی با نگاه بنگاه‌داری اقتصادی و تبدیل‌شدن به صادرکننده برجسته خدمات مهندسی در سطح منطقه.</p><h2>خط‌مشی کیفیت و HSE</h2><p>استقرار نظام مدیریت ایمنی، بهداشت و محیط‌زیست مطابق استانداردهای ISO 14001:2015، ISO 45001:2018 و ISO 29001:2020 با هدف حذف حوادث شغلی.</p><h2>دستاوردهای دانش‌بنیان</h2><p>ساخت بیش از ۱۴۰ قلم قطعه توربین و کمپرسورهای Elliott، Ruston، Rolls-Royce و Sulzer برای نخستین بار در خاورمیانه و تحویل بیش از ۲۰۰ دستگاه به وزارت نفت.</p>",
+      "content_en": "<p>Founded in 1969 and restructured in 2003, Pars Poolad Aghaee is a Knowledge-Based pioneer manufacturing strategic API 6A wellheads, downhole liner hangers, production packers, and precision turbine bearings.</p><h2>Vision and strategic goals</h2><p>To become a leading national provider of wellhead and downhole equipment and an outstanding regional exporter of engineering services.</p><h2>Quality and HSE policy</h2><p>Our management system aligns with ISO 14001:2015, ISO 45001:2018 and ISO 29001:2020, with the goal of preventing workplace incidents.</p><h2>Knowledge-based achievements</h2><p>More than 140 turbine and compressor components have been localized for the first time in the region, with over 200 units delivered to Iran's Ministry of Oil.</p>",
       "meta_title": "درباره پارس پولاد آقایی | پیشگام تجهیزات نفت و گاز",
       "meta_description": "تاریخچه، دستاوردهای دانش‌بنیان، خط‌مشی کیفیت و اهداف آرمانی شرکت پارس پولاد آقایی.",
+      "metadata": {
+        "image_url": "/images/factory_ahvaz_exterior_1794834721582.jpg",
+        "download_1_label_fa": "فهرست ماشین‌آلات CNC و تولیدی کارخانه",
+        "download_1_label_en": "Factory CNC and production machinery list",
+        "download_1_url": "/storage/documents/machinery-list.pdf",
+        "download_2_label_fa": "فهرست تجهیزات آزمایشگاه و کنترل کیفیت",
+        "download_2_label_en": "Laboratory and quality-control equipment list",
+        "download_2_url": "/storage/documents/qc-equipment-list.pdf"
+      },
       "updated_at": "2026-11-16T13:27:41.661Z"
     },
     {
@@ -1501,6 +1536,57 @@
       "content_en": "<p>All RFQ technical files and tender inquiries are stored securely under strict non-disclosure standards.</p>",
       "meta_title": "حریم خصوصی و قوانین | پارس پولاد آقایی",
       "meta_description": "قوانین استفاده، حریم خصوصی و سیاست کوکی‌های وب‌سایت شرکت پارس پولاد آقایی.",
+      "updated_at": "2026-11-16T13:27:41.661Z"
+    },
+    {
+      "id": 4,
+      "slug": "home-spotlight",
+      "title_fa": "تولید بومی تجهیزات حیاتی نفت و گاز",
+      "title_en": "Domestic Manufacturing of Critical Oil and Gas Equipment",
+      "subtitle_fa": "زیرساخت کارخانه اهواز · تاییدیه دانش‌بنیان",
+      "subtitle_en": "Ahvaz Manufacturing Plant · Knowledge-Based",
+      "content_fa": "<p>مجموعه پارس پولاد آقایی با بیش از ۲۰۰ دستگاه تحویلی به وزارت نفت، تولید ۱۴۰ قلم قطعه توربین و کمپرسورهای الیوت، راستون و رولزرویس و آزمایشگاه تست فشار تا ۱۵۰۰۰ PSI، ضامن پایداری عملیات حفاری کشور است.</p>",
+      "content_en": "<p>With over 200 critical assemblies delivered to the Ministry of Oil and more than 140 turbine and compressor components localized, Pars Poolad supports reliable drilling operations.</p>",
+      "meta_title": "توانمندی‌های تولیدی پارس پولاد آقایی",
+      "meta_description": "توانمندی کارخانه اهواز در تولید تجهیزات حیاتی صنعت نفت و گاز.",
+      "metadata": {
+        "primary_link": "/about",
+        "primary_label_fa": "تاریخچه و توان تولید",
+        "primary_label_en": "Plant and heritage",
+        "secondary_link": "/contracts-licenses",
+        "secondary_label_fa": "گواهینامه‌های API و ISO",
+        "secondary_label_en": "API and ISO certificates",
+        "image_url": "/images/factory_ahvaz_exterior_1794834721582.jpg",
+        "secondary_image_url": "/images/qc_testing_lab_1794834723950.jpg",
+        "capabilities_eyebrow_fa": "توانمندی‌های مهندسی و تولیدی",
+        "capabilities_eyebrow_en": "Engineering & Manufacturing Capabilities",
+        "capabilities_title_fa": "چرخه کامل طراحی تا نصب تجهیزات سرچاهی و درون‌چاهی",
+        "capabilities_title_en": "End-to-End Oilfield Wellhead & Downhole Hardware",
+        "services_all_fa": "همه خدمات مهندسی",
+        "services_all_en": "All Services",
+        "service_details_fa": "مشاهده شرح فنی",
+        "service_details_en": "Technical Scope",
+        "projects_eyebrow_fa": "کارنامه اجرایی در میادین نفت و گاز",
+        "projects_eyebrow_en": "Field Proven Track Record",
+        "projects_title_fa": "پروژه‌های شاخص سرچاهی و درون‌چاهی",
+        "projects_title_en": "Selected Oilfield Projects",
+        "projects_all_fa": "فیلتر پیشرفته همه پروژه‌ها",
+        "projects_all_en": "Filter All Projects",
+        "project_completed_fa": "تکمیل‌شده",
+        "project_completed_en": "Completed",
+        "project_in_progress_fa": "در حال اجرا",
+        "project_in_progress_en": "In progress",
+        "partners_eyebrow_fa": "اعتماد کارفرمایان بزرگ صنعت نفت، گاز و حفاری",
+        "partners_eyebrow_en": "Trusted by Major National Oil & Drilling Operators",
+        "partners_title_fa": "کارفرمایان و شرکای راهبردی",
+        "partners_title_en": "Clients & Strategic Partners",
+        "news_eyebrow_fa": "دانش مهندسی و تازه‌ها",
+        "news_eyebrow_en": "Engineering Insights",
+        "news_title_fa": "مقالات فنی و اخبار صنعتی",
+        "news_title_en": "Technical Articles & News",
+        "articles_all_fa": "آرشیو مقالات",
+        "articles_all_en": "All Articles"
+      },
       "updated_at": "2026-11-16T13:27:41.661Z"
     }
   ],

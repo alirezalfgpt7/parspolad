@@ -4,16 +4,18 @@ import { ArrowLeft, ArrowRight, PlayCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { Article, Project } from '../../types/index.ts';
+import type { Article, PageContent, Project } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { HeroSlider } from '../../components/slider/HeroSlider.tsx';
 import { StatCounter } from '../../components/ui/StatCounter.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 
 export const HomePage: React.FC = () => {
   const { bootstrap, language } = useAppStore();
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [spotlight, setSpotlight] = useState<PageContent | null>(null);
 
   useEffect(() => {
     apiRequest<{ data: Project[] }>('/projects?per_page=6')
@@ -32,6 +34,9 @@ export const HomePage: React.FC = () => {
         setArticles(res.data.slice(0, 3));
       })
       .catch((error: unknown) => console.error('Could not load home page articles:', error));
+    apiRequest<{ data: PageContent }>('/pages/home-spotlight')
+      .then((response) => setSpotlight(response.data))
+      .catch((error: unknown) => console.error('Could not load home page spotlight:', error));
   }, []);
 
   const heroSlider = bootstrap?.sliders?.find((s) => s.key === 'landing_hero') || bootstrap?.sliders?.[0];
@@ -40,11 +45,15 @@ export const HomePage: React.FC = () => {
   const partners = bootstrap?.partners || [];
   const banner = bootstrap?.banners?.find((b) => b.placement === 'landing_mid');
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
+  const homeText = (key: string): string => {
+    const value = spotlight?.metadata?.[`${key}_${language}`];
+    return typeof value === 'string' ? value : '';
+  };
 
   return (
     <div>
       <SeoHead
-        title={language === 'fa' ? 'صفحه اصلی' : 'Home'}
+        title={bootstrap?.seo?.site_title ?? ''}
         description={bootstrap?.seo?.meta_description}
       />
 
@@ -69,20 +78,16 @@ export const HomePage: React.FC = () => {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-(--theme-primary)">
-              {language === 'fa' ? 'توانمندی‌های مهندسی و تولیدی' : 'Engineering & Manufacturing Capabilities'}
-            </p>
+            <p className="text-xs font-semibold text-(--theme-primary)">{homeText('capabilities_eyebrow')}</p>
             <h2 className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white" style={{ textWrap: 'balance' }}>
-              {language === 'fa'
-                ? 'چرخه کامل طراحی تا نصب تجهیزات سرچاهی و درون‌چاهی'
-                : 'End-to-End Oilfield Wellhead & Downhole Hardware'}
+              {homeText('capabilities_title')}
             </h2>
           </div>
           <Link
             to="/services"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-(--theme-link) hover:underline whitespace-nowrap"
           >
-            <span>{language === 'fa' ? 'همه خدمات مهندسی' : 'All Services'}</span>
+            <span>{homeText('services_all')}</span>
             <ArrowIcon className="h-4 w-4" />
           </Link>
         </div>
@@ -118,7 +123,7 @@ export const HomePage: React.FC = () => {
                       to="/services"
                       className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-primary) hover:underline"
                     >
-                      <span>{language === 'fa' ? 'مشاهده شرح فنی' : 'Technical Scope'}</span>
+                      <span>{homeText('service_details')}</span>
                       <ArrowIcon className="h-3.5 w-3.5" />
                     </Link>
                   </div>
@@ -136,77 +141,64 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Industrial Facility & QC Lab Spotlight */}
-      <section className="border-y border-slate-200 bg-slate-900 py-16 text-white dark:border-slate-800">
-        <div className="mx-auto grid max-w-7xl items-stretch gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
-          <div className="flex flex-col justify-between gap-6 lg:col-span-6">
-            <div>
-              <p className="text-xs font-semibold text-amber-400">
-                {language === 'fa' ? 'زیرساخت کارخانه اهواز · تاییدیه دانش‌بنیان' : 'Ahvaz Manufacturing Plant · Knowledge-Based'}
-              </p>
-              <h2 className="mt-2 text-2xl font-extrabold leading-snug sm:text-3xl" style={{ textWrap: 'balance' }}>
-                {language === 'fa'
-                  ? 'تولید بومی تجهیزات حیاتی نفت و گاز با یک‌دهم هزینه نمونه‌های وارداتی'
-                  : 'Domestic Oilfield Precision Manufacturing at 1/10th Import Cost'}
-              </h2>
-              <p className="mt-4 text-sm leading-relaxed text-slate-300">
-                {language === 'fa'
-                  ? 'مجموعه پارس پولاد آقایی با بیش از ۲۰۰ دستگاه تحویلی به وزارت نفت، تولید ۱۴۰ قلم قطعه توربین و کمپرسورهای الیوت، راستون و رولزرویس و آزمایشگاه تست فشار تا ۱۵۰۰۰ PSI، ضامن پایداری عملیات حفاری کشور است.'
-                  : 'With over 200 critical assemblies delivered to the Ministry of Oil and 140+ turbine & compressor bearings localized, Pars Poolad ensures continuous drilling uptime.'}
-              </p>
+      {spotlight && (
+        <section className="border-y border-slate-200 bg-slate-900 py-16 text-white dark:border-slate-800">
+          <div className="mx-auto grid max-w-7xl items-stretch gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+            <div className="flex flex-col justify-between gap-6 lg:col-span-6">
+              <div>
+                <p className="text-xs font-semibold text-amber-400">
+                  {language === 'fa' ? spotlight.subtitle_fa : spotlight.subtitle_en}
+                </p>
+                <h2 className="mt-2 text-2xl font-extrabold leading-snug sm:text-3xl" style={{ textWrap: 'balance' }}>
+                  {language === 'fa' ? spotlight.title_fa : spotlight.title_en}
+                </h2>
+                <div
+                  className="prose prose-invert mt-4 max-w-none text-sm leading-relaxed text-slate-300"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? spotlight.content_fa : spotlight.content_en) }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {typeof spotlight.metadata?.primary_link === 'string' && (
+                  <Link to={spotlight.metadata.primary_link} className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap">
+                    {String(spotlight.metadata[language === 'fa' ? 'primary_label_fa' : 'primary_label_en'] || '')}
+                  </Link>
+                )}
+                {typeof spotlight.metadata?.secondary_link === 'string' && (
+                  <Link to={spotlight.metadata.secondary_link} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10 whitespace-nowrap">
+                    <PlayCircle className="h-4 w-4" />
+                    <span>{String(spotlight.metadata[language === 'fa' ? 'secondary_label_fa' : 'secondary_label_en'] || '')}</span>
+                  </Link>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                to="/about"
-                className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
-              >
-                {language === 'fa' ? 'تاریخچه و توان تولید' : 'Plant & Heritage'}
-              </Link>
-              <Link
-                to="/contracts-licenses"
-                className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10 whitespace-nowrap"
-              >
-                <PlayCircle className="h-4 w-4" />
-                <span>{language === 'fa' ? 'گواهینامه‌های API و ISO' : 'API & ISO Certificates'}</span>
-              </Link>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4 lg:col-span-6">
-            <div className="overflow-hidden rounded-xl border border-white/10">
-              <ZeroBrokenImage
-                src="/src/assets/images/factory_ahvaz_exterior_1794834721582.jpg"
-                alt="کارخانه پارس پولاد آقایی اهواز"
-                className="h-full min-h-55 w-full object-cover"
-              />
-            </div>
-            <div className="overflow-hidden rounded-xl border border-white/10">
-              <ZeroBrokenImage
-                src="/src/assets/images/qc_testing_lab_1794834723950.jpg"
-                alt="آزمایشگاه کنترل کیفیت و تست فشار ۱۵۰۰۰ PSI"
-                className="h-full min-h-55 w-full object-cover"
-              />
+            <div className="grid grid-cols-2 gap-4 lg:col-span-6">
+              {[spotlight.metadata?.image_url, spotlight.metadata?.secondary_image_url]
+                .filter((image): image is string => typeof image === 'string' && image.length > 0)
+                .map((image) => (
+                  <div key={image} className="overflow-hidden rounded-xl border border-white/10">
+                    <ZeroBrokenImage src={image} alt={spotlight.title_fa} className="h-full min-h-55 w-full object-cover" />
+                  </div>
+                ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Featured Projects */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-(--theme-primary)">
-              {language === 'fa' ? 'کارنامه اجرایی در میادین نفت و گاز' : 'Field Proven Track Record'}
-            </p>
+            <p className="text-xs font-semibold text-(--theme-primary)">{homeText('projects_eyebrow')}</p>
             <h2 className="mt-1.5 text-2xl font-extrabold text-slate-900 sm:text-3xl dark:text-white">
-              {language === 'fa' ? 'پروژه‌های شاخص سرچاهی و درون‌چاهی' : 'Selected Oilfield Projects'}
+              {homeText('projects_title')}
             </h2>
           </div>
           <Link
             to="/projects"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-(--theme-link) hover:underline whitespace-nowrap"
           >
-            <span>{language === 'fa' ? 'فیلتر پیشرفته همه پروژه‌ها' : 'Filter All Projects'}</span>
+            <span>{homeText('projects_all')}</span>
             <ArrowIcon className="h-4 w-4" />
           </Link>
         </div>
@@ -232,7 +224,7 @@ export const HomePage: React.FC = () => {
                     <span aria-hidden="true">·</span>
                     <span>{p.year}</span>
                     <span aria-hidden="true">·</span>
-                    <span>{p.status === 'completed' ? 'تکمیل‌شده' : 'در حال اجرا'}</span>
+                    <span>{p.status === 'completed' ? homeText('project_completed') : homeText('project_in_progress')}</span>
                   </div>
                   <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
                     {language === 'fa' ? p.title_fa : p.title_en}
@@ -254,11 +246,9 @@ export const HomePage: React.FC = () => {
       {/* Rotating Partners & Clients Strip */}
       <section className="border-y border-slate-200 bg-white py-12 overflow-hidden dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-xs font-semibold text-(--theme-primary)">
-            {language === 'fa' ? 'اعتماد کارفرمایان بزرگ صنعت نفت، گاز و حفاری' : 'Trusted by Major National Oil & Drilling Operators'}
-          </p>
+          <p className="text-xs font-semibold text-(--theme-primary)">{homeText('partners_eyebrow')}</p>
           <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
-            {language === 'fa' ? 'کارفرمایان و شرکای راهبردی' : 'Clients & Strategic Partners'}
+            {homeText('partners_title')}
           </h2>
         </div>
 
@@ -288,15 +278,13 @@ export const HomePage: React.FC = () => {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between">
           <div>
-            <p className="text-xs font-semibold text-(--theme-primary)">
-              {language === 'fa' ? 'دانش مهندسی و تازه‌ها' : 'Engineering Insights'}
-            </p>
+            <p className="text-xs font-semibold text-(--theme-primary)">{homeText('news_eyebrow')}</p>
             <h2 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">
-              {language === 'fa' ? 'مقالات فنی و اخبار صنعتی' : 'Technical Articles & News'}
+              {homeText('news_title')}
             </h2>
           </div>
           <Link to="/news" className="text-sm font-semibold text-(--theme-link) hover:underline">
-            {language === 'fa' ? 'آرشیو مقالات' : 'All Articles'}
+            {homeText('articles_all')}
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
