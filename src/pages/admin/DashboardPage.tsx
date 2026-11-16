@@ -96,13 +96,13 @@ export const DashboardPage: React.FC = () => {
             <Link
               key={c.label}
               to={c.to}
-              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900"
+              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
             >
               <div>
                 <p className="text-xs text-slate-500">{c.label}</p>
                 <p className="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white">{c.val}</p>
               </div>
-              <div className="rounded-lg bg-red-50 p-2.5 text-[var(--theme-primary)] dark:bg-red-950/40">
+              <div className="rounded-lg bg-red-50 p-2.5 text-(--theme-primary) dark:bg-red-950/40">
                 <Icon className="h-5 w-5" />
               </div>
             </Link>
@@ -129,7 +129,7 @@ export const DashboardPage: React.FC = () => {
               type="button"
               onClick={() => loadAnalytics(rangeFrom, rangeTo)}
               disabled={analyticsLoading}
-              className="rounded-lg bg-[var(--theme-primary)] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+              className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
             >
               {analyticsLoading ? 'در حال دریافت...' : 'اعمال بازه'}
             </button>
@@ -188,7 +188,7 @@ export const DashboardPage: React.FC = () => {
         <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-bold">پیام‌ها و RFQهای اخیر</h2>
-            <Link to="/admin/messages" className="text-xs text-[var(--theme-primary)] hover:underline">همه</Link>
+            <Link to="/admin/messages" className="text-xs text-(--theme-primary) hover:underline">همه</Link>
           </div>
           <div className="space-y-3">
             {data.recent_messages.map((m) => (
@@ -203,10 +203,10 @@ export const DashboardPage: React.FC = () => {
         <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-1.5 text-sm font-bold">
-              <ShieldCheck className="h-4 w-4 text-[var(--theme-primary)]" />
+              <ShieldCheck className="h-4 w-4 text-(--theme-primary)" />
               <span>لاگ‌های اخیر سیستم</span>
             </h2>
-            <Link to="/admin/reports" className="text-xs text-[var(--theme-primary)] hover:underline">مشاهده</Link>
+            <Link to="/admin/reports" className="text-xs text-(--theme-primary) hover:underline">مشاهده</Link>
           </div>
           <div className="space-y-2.5">
             {data.recent_logs.map((l) => (
@@ -227,7 +227,7 @@ export const DashboardPage: React.FC = () => {
               <Bell className="h-4 w-4 text-amber-500" />
               <span>اعلان‌های اخیر</span>
             </h2>
-            <Link to="/admin/notifications" className="text-xs text-[var(--theme-primary)] hover:underline">مرکز اعلان‌ها</Link>
+            <Link to="/admin/notifications" className="text-xs text-(--theme-primary) hover:underline">مرکز اعلان‌ها</Link>
           </div>
           <div className="space-y-3">
             {data.notifications.map((n) => (
@@ -259,7 +259,7 @@ const AnalyticsBars: React.FC<{ points: AnalyticsBarPoint[] }> = ({ points }) =>
           <span className="text-[9px] tabular-nums text-slate-500">{point.value.toLocaleString('fa-IR')}</span>
           <div
             title={`${point.label}: ${point.value}`}
-            className="w-full rounded-t bg-[var(--theme-primary)] opacity-80"
+            className="w-full rounded-t bg-(--theme-primary) opacity-80"
             style={{ height: `${point.value === 0 ? 2 : Math.max(6, (point.value / maxValue) * 100)}%` }}
           />
           <span className="text-[9px] text-slate-500">{point.label}</span>

@@ -8,21 +8,28 @@ use App\Http\Requests\Contract\StoreContractRequest;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ContractController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return response()->json(ContractResource::collection(Contract::query()->orderByDesc('start_year')->get()));
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return ContractResource::collection(
+            Contract::query()->orderByDesc('start_year')->paginate($perPage)->withQueryString(),
+        );
     }
 
-    public function adminIndex(): JsonResponse
+    public function adminIndex(Request $request): AnonymousResourceCollection
     {
-        return response()->json([
-            'data' => ContractResource::collection(Contract::query()->with('documents')->orderByDesc('start_year')->get()),
-        ]);
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return ContractResource::collection(
+            Contract::query()->orderByDesc('start_year')->paginate($perPage)->withQueryString(),
+        );
     }
 
     public function store(StoreContractRequest $request): JsonResponse

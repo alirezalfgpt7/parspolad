@@ -3,33 +3,28 @@ import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Service } from '../../types/index.ts';
-import { SeoHead } from '../../components/common/SeoHead.tsx';
-import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 export const ServicesPage: React.FC = () => {
-  const language = useAppStore((s) => s.language);
+  const { language, addToast } = useAppStore();
   const [services, setServices] = useState<Service[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
-    apiRequest<{ data: Service[] }>('/services').then((r) => setServices(r.data)).catch(() => {});
-  }, []);
+    apiRequest<{ data: Service[]; meta: { last_page: number } }>(`/services?page=${page}&per_page=8`)
+      .then((response) => {
+        setServices(response.data);
+        setLastPage(response.meta.last_page);
+      })
+      .catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'بارگذاری خدمات ناموفق بود.'));
+  }, [page]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title={language === 'fa' ? 'خدمات مهندسی و تولیدی' : 'Services'} />
-      <Breadcrumb items={[{ label: language === 'fa' ? 'خدمات مهندسی' : 'Services' }]} />
-
-      <div className="mb-10 max-w-3xl">
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-          {language === 'fa' ? 'خدمات طراحی، ساخت، نصب و کنترل کیفیت' : 'Engineering, Manufacturing & Field Services'}
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          {language === 'fa'
-            ? 'ارائه زنجیره کامل مهندسی معکوس، ماشین‌کاری دقیق CNC، آزمون فشار ۱۵۰۰۰ PSI و عملیات سر دکل در میادین نفت و گاز.'
-            : 'Complete lifecycle support from CAD/CAE design and CNC machining to 15,000 PSI testing and rig-site installation.'}
-        </p>
-      </div>
+      <CmsPageIntro slug="services" />
 
       <div className="space-y-8">
         {services.map((svc, idx) => (
@@ -46,8 +41,8 @@ export const ServicesPage: React.FC = () => {
             </div>
             <div className="flex flex-col justify-between p-6 sm:p-8 md:col-span-7">
               <div>
-                <span className="text-xs font-bold text-[var(--theme-primary)] tabular-nums">
-                  {String(idx + 1).padStart(2, '0')}.
+                <span className="text-xs font-bold text-(--theme-primary) tabular-nums">
+                  {String((page - 1) * 8 + idx + 1).padStart(2, '0')}.
                 </span>
                 <h2 className="mt-1.5 text-xl font-bold text-slate-900 dark:text-white">
                   {language === 'fa' ? svc.title_fa : svc.title_en}
@@ -62,7 +57,7 @@ export const ServicesPage: React.FC = () => {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   to="/rfq"
-                  className="rounded-lg bg-[var(--theme-primary)] px-4 py-2 text-xs font-semibold text-white whitespace-nowrap"
+                  className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white whitespace-nowrap"
                 >
                   {language === 'fa' ? 'درخواست مشاوره و استعلام' : 'Request Service Quote'}
                 </Link>
@@ -77,6 +72,7 @@ export const ServicesPage: React.FC = () => {
           </div>
         ))}
       </div>
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
     </div>
   );
 };

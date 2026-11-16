@@ -3,51 +3,59 @@ import { Download } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Product } from '../../types/index.ts';
-import { SeoHead } from '../../components/common/SeoHead.tsx';
-import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 export const ProductsPage: React.FC = () => {
-  const language = useAppStore((s) => s.language);
+  const { language, addToast } = useAppStore();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categoryFilters, setCategoryFilters] = useState<Array<{ category_fa: string; category_en: string }>>([]);
   const [catFilter, setCatFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
-    apiRequest<{ data: Product[] }>('/products').then((r) => setProducts(r.data)).catch(() => {});
-  }, []);
+    apiRequest<{ data: Array<{ category_fa: string; category_en: string }> }>('/products/filters')
+      .then((response) => setCategoryFilters(response.data))
+      .catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'دریافت دسته‌های محصولات ناموفق بود.'));
+  }, [addToast]);
+
+  useEffect(() => {
+    const query = new URLSearchParams({ page: String(page), per_page: '9' });
+    if (catFilter) query.set('category', catFilter);
+    apiRequest<{ data: Product[]; meta: { last_page: number } }>(`/products?${query.toString()}`)
+      .then((response) => {
+        setProducts(response.data);
+        setLastPage(response.meta.last_page);
+      })
+      .catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'دریافت محصولات ناموفق بود.'));
+  }, [catFilter, page, addToast]);
 
   const categories = useMemo(() => {
-    const uniq = Array.from(new Set(products.map((p) => p.category_fa)));
-    return [{ value: '', label: 'همه دسته‌های تجهیزاتی' }, ...uniq.map((c) => ({ value: c, label: c }))];
-  }, [products]);
-
-  const filtered = useMemo(
-    () => (catFilter ? products.filter((p) => p.category_fa === catFilter) : products),
-    [products, catFilter]
-  );
+    return [
+      { value: '', label: 'همه دسته‌های تجهیزاتی' },
+      ...categoryFilters.map((category) => ({
+        value: language === 'fa' ? category.category_fa : category.category_en,
+        label: language === 'fa' ? category.category_fa : category.category_en,
+      })),
+    ];
+  }, [categoryFilters, language]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title={language === 'fa' ? 'محصولات و توانمندی‌های تجهیزاتی' : 'Products'} />
-      <Breadcrumb items={[{ label: language === 'fa' ? 'محصولات و تجهیزات' : 'Products' }]} />
+      <CmsPageIntro slug="products" />
 
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-            {language === 'fa' ? 'محصولات و تجهیزات استراتژیک نفت و گاز' : 'Strategic Oilfield Products'}
-          </h1>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-            {language === 'fa'
-              ? 'تجهیزات سرچاهی API 6A، انواع لاینر هنگر، پکرهای تولیدی و ادوات تمیزکاری چاه'
-              : 'API 6A Wellheads, Liner Hangers, Production Packers & Cleanout Tools'}
-          </p>
-        </div>
         <div className="w-full sm:w-72">
           <SearchableSelect
             options={categories}
             value={catFilter}
-            onChange={setCatFilter}
+            onChange={(value) => {
+              setCatFilter(value);
+              setPage(1);
+            }}
             placeholder="فیلتر بر اساس دسته فنی..."
             allowClear
           />
@@ -55,7 +63,7 @@ export const ProductsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((pr) => (
+        {products.map((pr) => (
           <div
             key={pr.id}
             className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
@@ -93,7 +101,7 @@ export const ProductsPage: React.FC = () => {
                   href={pr.catalog_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] dark:border-slate-700 dark:text-slate-200"
+                  className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 py-2 text-xs font-semibold text-slate-700 hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-slate-700 dark:text-slate-200"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>دریافت کاتالوگ فنی PDF</span>
@@ -103,6 +111,7 @@ export const ProductsPage: React.FC = () => {
           </div>
         ))}
       </div>
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
     </div>
   );
 };

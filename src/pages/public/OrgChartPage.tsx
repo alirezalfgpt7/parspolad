@@ -3,8 +3,7 @@ import { Users } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Department, TeamMember } from '../../types/index.ts';
-import { SeoHead } from '../../components/common/SeoHead.tsx';
-import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 
 export const OrgChartPage: React.FC = () => {
   const language = useAppStore((s) => s.language);
@@ -28,17 +27,7 @@ export const OrgChartPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title={language === 'fa' ? 'ساختار سازمانی' : 'Organization Chart'} />
-      <Breadcrumb items={[{ label: language === 'fa' ? 'ساختار سازمانی' : 'Org Chart' }]} />
-
-      <div className="mb-10">
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-          ساختار سازمانی و تیم مدیریتی پارس پولاد آقایی
-        </h1>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          روی هر واحد سازمانی کلیک کنید تا جزئیات مدیریت، تعداد پرسنل و اعضای کلیدی نمایش داده شود.
-        </p>
-      </div>
+      <CmsPageIntro slug="org-chart" />
 
       {/* Interactive Org Tree */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
@@ -48,7 +37,7 @@ export const OrgChartPage: React.FC = () => {
               type="button"
               onClick={() => setSelectedDeptId(root.id)}
               style={{ borderColor: selectedDeptId === root.id ? root.color : undefined }}
-              className="w-full max-w-xs rounded-xl border-2 border-slate-200 bg-slate-50 p-4 text-center transition-all hover:border-[var(--theme-primary)] dark:border-slate-700 dark:bg-slate-800"
+              className="w-full max-w-xs rounded-xl border-2 border-slate-200 bg-slate-50 p-4 text-center transition-all hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
             >
               <div className="text-xs font-bold" style={{ color: root.color }}>
                 {language === 'fa' ? root.name_fa : root.name_en}
@@ -72,7 +61,7 @@ export const OrgChartPage: React.FC = () => {
                     onClick={() => setSelectedDeptId(dept.id)}
                     className={`flex flex-col justify-between rounded-xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
                       isSelected
-                        ? 'border-[var(--theme-primary)] bg-red-50/40 dark:bg-red-950/20'
+                        ? 'border-(--theme-primary) bg-red-50/40 dark:bg-red-950/20'
                         : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'
                     }`}
                   >
@@ -110,7 +99,7 @@ export const OrgChartPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setSelectedDeptId(null)}
-              className="text-xs font-semibold text-[var(--theme-primary)] hover:underline"
+              className="text-xs font-semibold text-(--theme-primary) hover:underline"
             >
               نمایش همه واحدها
             </button>
@@ -126,7 +115,7 @@ export const OrgChartPage: React.FC = () => {
               <div className="text-base font-bold text-slate-900 dark:text-white">
                 {language === 'fa' ? m.name_fa : m.name_en}
               </div>
-              <div className="mt-0.5 text-xs font-semibold text-[var(--theme-primary)]">
+              <div className="mt-0.5 text-xs font-semibold text-(--theme-primary)">
                 {language === 'fa' ? m.role_fa : m.role_en}
               </div>
               <div className="mt-3 text-xs text-slate-500 tabular-nums">

@@ -9,10 +9,12 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
 import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 
 interface ArticleComment {
   id: number;
@@ -35,8 +37,12 @@ export const NewsPage: React.FC = () => {
   const language = useAppStore((s) => s.language);
   const addToast = useAppStore((s) => s.addToast);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [articlePage, setArticlePage] = useState(1);
+  const [articleLastPage, setArticleLastPage] = useState(1);
   const [single, setSingle] = useState<Article | null>(null);
   const [comments, setComments] = useState<ArticleComment[]>([]);
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [commentsLastPage, setCommentsLastPage] = useState(1);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentsError, setCommentsError] = useState('');
   const [captchaKey, setCaptchaKey] = useState('');
@@ -66,37 +72,69 @@ export const NewsPage: React.FC = () => {
       setSingle(null);
       setComments([]);
       setCommentsError('');
-      setCommentsLoading(true);
+      setCommentsPage(1);
       reset();
       apiRequest<{ data: Article }>(`/articles/${slug}`)
         .then((r) => {
           if (active) setSingle(r.data);
         })
-        .catch(() => {});
-      apiRequest<{ data: ArticleComment[] }>(`/articles/${slug}/comments`)
-        .then((r) => {
-          if (active) setComments(r.data);
-        })
-        .catch(() => {
-          if (active) setCommentsError('دریافت دیدگاه‌ها با خطا روبه‌رو شد.');
-        })
-        .finally(() => {
-          if (active) setCommentsLoading(false);
+        .catch((error: unknown) => {
+          if (active) addToast('error', error instanceof Error ? error.message : 'دریافت مقاله ناموفق بود.');
         });
     } else {
       setSingle(null);
       setCommentsLoading(false);
-      apiRequest<{ data: Article[] }>('/articles')
-        .then((r) => {
-          if (active) setArticles(r.data);
-        })
-        .catch(() => {});
     }
 
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, reset, addToast]);
+
+  useEffect(() => {
+    if (!slug) return;
+    let active = true;
+    setCommentsLoading(true);
+    setCommentsError('');
+    apiRequest<{ data: ArticleComment[]; meta: { last_page: number } }>(
+      `/articles/${slug}/comments?page=${commentsPage}&per_page=20`,
+    )
+      .then((response) => {
+        if (active) {
+          setComments(response.data);
+          setCommentsLastPage(response.meta.last_page);
+        }
+      })
+      .catch(() => {
+        if (active) setCommentsError('دریافت دیدگاه‌ها با خطا روبه‌رو شد.');
+      })
+      .finally(() => {
+        if (active) setCommentsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [slug, commentsPage]);
+
+  useEffect(() => {
+    if (slug) return;
+    let active = true;
+    apiRequest<{ data: Article[]; meta: { last_page: number } }>(`/articles?page=${articlePage}&per_page=9`)
+      .then((response) => {
+        if (active) {
+          setArticles(response.data);
+          setArticleLastPage(response.meta.last_page);
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'دریافت فهرست مقالات ناموفق بود.');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [slug, articlePage, addToast]);
 
   const submitComment = async (data: CommentFormValues) => {
     if (!slug) return;
@@ -167,6 +205,9 @@ export const NewsPage: React.FC = () => {
                   ))}
                 </div>
               )}
+              {comments.length > 0 && (
+                <Pagination page={commentsPage} lastPage={commentsLastPage} onChange={setCommentsPage} />
+              )}
 
               <form onSubmit={handleSubmit(submitComment)} className="relative mt-8 space-y-4 rounded-xl border border-slate-200 p-4 dark:border-slate-800 sm:p-5">
                 <PublicHoneypotField registration={register('website')} />
@@ -202,13 +243,13 @@ export const NewsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !captchaKey}
-                  className="rounded-lg bg-[var(--theme-primary)] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                  className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
                 >
                   {isSubmitting ? 'در حال ارسال...' : 'ارسال دیدگاه'}
                 </button>
               </form>
             </section>
-            <Link to="/news" className="mt-8 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--theme-primary)] hover:underline">
+            <Link to="/news" className="mt-8 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-primary) hover:underline">
               <ArrowRight className="h-3.5 w-3.5" />
               <span>بازگشت به فهرست مقالات</span>
             </Link>
@@ -220,17 +261,13 @@ export const NewsPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title="اخبار و مقالات فنی" />
-      <Breadcrumb items={[{ label: 'اخبار و مقالات' }]} />
-      <h1 className="mb-8 text-3xl font-extrabold text-slate-900 dark:text-white">
-        اخبار صنعتی و مقالات مهندسی
-      </h1>
+      <CmsPageIntro slug="news" className="mb-8" />
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {articles.map((art) => (
           <Link
             key={art.id}
             to={`/news/${art.slug}`}
-            className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900"
+            className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
           >
             <div className="h-48 overflow-hidden bg-slate-100 dark:bg-slate-800">
               <ZeroBrokenImage src={art.cover_image} alt={art.title_fa} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -241,7 +278,7 @@ export const NewsPage: React.FC = () => {
                 <span>·</span>
                 <span>{art.published_at}</span>
               </div>
-              <h2 className="mt-2 text-base font-bold text-slate-900 group-hover:text-[var(--theme-primary)] dark:text-white">
+              <h2 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
                 {language === 'fa' ? art.title_fa : art.title_en}
               </h2>
               <p className="mt-2 line-clamp-3 text-xs text-slate-600 dark:text-slate-300">
@@ -251,6 +288,7 @@ export const NewsPage: React.FC = () => {
           </Link>
         ))}
       </div>
+      <Pagination page={articlePage} lastPage={articleLastPage} onChange={setArticlePage} />
     </div>
   );
 };

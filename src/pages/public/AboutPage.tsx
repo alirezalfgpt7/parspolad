@@ -46,7 +46,7 @@ export const AboutPage: React.FC = () => {
             <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
               {language === 'fa' ? page.title_fa : page.title_en}
             </h1>
-            <p className="text-base font-medium text-[var(--theme-primary)]">
+            <p className="text-base font-medium text-(--theme-primary)">
               {language === 'fa' ? page.subtitle_fa : page.subtitle_en}
             </p>
             <div
@@ -56,9 +56,9 @@ export const AboutPage: React.FC = () => {
             {downloads.length > 0 && (
               <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-2">
                 {downloads.map((download) => (
-                  <a key={download.url} href={download.url} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900">
+                  <a key={download.url} href={download.url} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900">
                     <span>{download.label}</span>
-                    <Download className="h-4 w-4 text-[var(--theme-primary)]" />
+                    <Download className="h-4 w-4 text-(--theme-primary)" />
                   </a>
                 ))}
               </div>
@@ -66,7 +66,7 @@ export const AboutPage: React.FC = () => {
           </div>
           {imageUrl && (
             <div className="overflow-hidden rounded-2xl border border-slate-200 lg:col-span-5 dark:border-slate-800">
-              <ZeroBrokenImage src={imageUrl} alt={page.title_fa} className="h-full min-h-[320px] w-full object-cover" />
+              <ZeroBrokenImage src={imageUrl} alt={page.title_fa} className="h-full min-h-80 w-full object-cover" />
             </div>
           )}
         </div>

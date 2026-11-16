@@ -5,27 +5,37 @@ import type { ContactMessage } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { Trash2 } from 'lucide-react';
 
 export const MessagesRfqAdminPage: React.FC = () => {
   const { addToast, user } = useAppStore();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<ContactMessage | null>(null);
   const [deleting, setDeleting] = useState(false);
   const canManageMessages = Boolean(user?.permissions.includes('messages.manage'));
 
-  const load = async () => {
+  const load = async (targetPage = page) => {
     try {
-      const response = await apiRequest<{ data: ContactMessage[] }>('/admin/messages');
+      const response = await apiRequest<{ data: ContactMessage[]; meta: { last_page: number } }>(
+        `/admin/messages?page=${targetPage}&per_page=8`,
+      );
+      if (targetPage > response.meta.last_page) {
+        setPage(Math.max(1, response.meta.last_page));
+        return;
+      }
       setMessages(response.data);
+      setLastPage(response.meta.last_page);
     } catch (error) {
       addToast('error', error instanceof Error ? error.message : 'بارگذاری پیام‌ها ناموفق بود.');
     }
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    load(page);
+  }, [page]);
 
   const cols: Column<ContactMessage>[] = [
     {
@@ -43,7 +53,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
       header: 'موضوع و شرح',
       render: (m) => (
         <div className="max-w-md">
-          <div className="font-semibold text-xs text-[var(--theme-primary)]">{m.type.toUpperCase()} · {m.subject}</div>
+          <div className="font-semibold text-xs text-(--theme-primary)">{m.type.toUpperCase()} · {m.subject}</div>
           <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{m.message}</p>
         </div>
       ),
@@ -105,7 +115,8 @@ export const MessagesRfqAdminPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-extrabold">مدیریت پیام‌های تماس، استعلام‌های RFQ و تیکت‌ها</h1>
-      <DataTable data={messages} columns={cols} searchKeys={[(m) => m.name, (m) => m.subject, (m) => m.company || '']} />
+      <DataTable data={messages} columns={cols} pageSize={8} searchKeys={[(m) => m.name, (m) => m.subject, (m) => m.company || '']} />
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}

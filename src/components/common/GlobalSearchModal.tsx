@@ -61,7 +61,7 @@ export const GlobalSearchModal: React.FC = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={language === 'fa' ? 'نام پروژه، شماره قرارداد، محصول (مثل لاینر هنگر، سرچاهی، API 6FA)...' : 'Search projects, products, ISO certificates...'}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pe-4 ps-11 text-sm text-slate-900 focus:border-[var(--theme-primary)] focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pe-4 ps-11 text-sm text-slate-900 focus:border-(--theme-primary) focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
       </div>
 

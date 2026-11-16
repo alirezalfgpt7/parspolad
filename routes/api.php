@@ -21,7 +21,9 @@ Route::prefix('v1')->group(function (): void {
     Route::post('/contact', [PublicController::class, 'submitContact'])->middleware('throttle:5,1');
     Route::post('/page-views', [VisitAnalyticsController::class, 'record'])->middleware('throttle:120,1');
     Route::get('/projects', [ProjectController::class, 'index']);
+    Route::get('/projects/filters', [ProjectController::class, 'filters']);
     Route::get('/projects/{slug}', [ProjectController::class, 'show']);
+    Route::get('/products/filters', [PublicController::class, 'productFilters']);
     Route::get('/products', [PublicController::class, 'products']);
     Route::get('/services', [PublicController::class, 'services']);
     Route::get('/contracts', [PublicController::class, 'contracts']);
@@ -103,7 +105,10 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/users', [AdminResourceController::class, 'users'])->middleware('permission:users.view');
             Route::post('/users', [AdminResourceController::class, 'storeUser']);
             Route::put('/users/{user}', [AdminResourceController::class, 'updateUser']);
+            Route::delete('/users/{user}', [AdminResourceController::class, 'destroyUser']);
+            Route::post('/roles', [AdminResourceController::class, 'storeRole']);
             Route::put('/roles/{role}', [AdminResourceController::class, 'updateRole']);
+            Route::delete('/roles/{role}', [AdminResourceController::class, 'destroyRole']);
             Route::get('/messages', [AdminResourceController::class, 'messages'])->middleware('permission:messages.view');
             Route::put('/messages/{message}', [AdminResourceController::class, 'updateMessageStatus']);
             Route::delete('/messages/{message}', [AdminResourceController::class, 'destroyMessage']);

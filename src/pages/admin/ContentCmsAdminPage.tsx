@@ -91,7 +91,7 @@ export const ContentCmsAdminPage: React.FC = () => {
             type="button"
             onClick={() => setTab(t.key)}
             className={`rounded-lg px-4 py-2 text-xs font-semibold ${
-              tab === t.key ? 'bg-[var(--theme-primary)] text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+              tab === t.key ? 'bg-(--theme-primary) text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
             }`}
           >
             {t.label}
@@ -108,7 +108,7 @@ export const ContentCmsAdminPage: React.FC = () => {
                 type="button"
                 onClick={() => setEditPage(p)}
                 className={`block w-full rounded-xl border p-3.5 text-start text-xs font-bold ${
-                  editPage?.id === p.id ? 'border-[var(--theme-primary)] bg-red-50/40 dark:bg-red-950/30' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+                  editPage?.id === p.id ? 'border-(--theme-primary) bg-red-50/40 dark:bg-red-950/30' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
                 }`}
               >
                 {p.title_fa}
@@ -225,7 +225,7 @@ export const ContentCmsAdminPage: React.FC = () => {
                         addToast('success', 'آمار داشبورد بروزرسانی شد.');
                       }
                     }}
-                    className="rounded-lg bg-[var(--theme-primary)] px-3 py-1 text-xs font-semibold text-white"
+                    className="rounded-lg bg-(--theme-primary) px-3 py-1 text-xs font-semibold text-white"
                   >
                     ذخیره KPI
                   </button>

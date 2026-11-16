@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Pencil, Save, Trash2 } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 
 interface FaqItem {
   id: number;
@@ -13,40 +17,56 @@ interface FaqItem {
 }
 
 const emptyFaq = { question_fa: '', answer_fa: '', sort_order: 0, is_active: true };
+const faqSchema = z.object({
+  question_fa: z.string().trim().min(1, 'پرسش الزامی است.').max(500, 'پرسش نمی‌تواند بیش از ۵۰۰ نویسه باشد.'),
+  answer_fa: z.string().trim().min(1, 'پاسخ الزامی است.').max(10000, 'پاسخ بیش از حد طولانی است.'),
+  sort_order: z.number().int().min(0, 'ترتیب نمی‌تواند منفی باشد.'),
+  is_active: z.boolean(),
+});
+type FaqForm = z.infer<typeof faqSchema>;
 
 export const FaqAdminPage: React.FC = () => {
   const { addToast } = useAppStore();
   const [items, setItems] = useState<FaqItem[]>([]);
-  const [form, setForm] = useState(emptyFaq);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const [editing, setEditing] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<FaqItem | null>(null);
-  const [saving, setSaving] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<FaqForm>({ resolver: zodResolver(faqSchema), defaultValues: emptyFaq });
 
-  const load = async () => {
-    const response = await apiRequest<{ data: FaqItem[] }>('/admin/faqs');
+  const load = async (targetPage = page) => {
+    const response = await apiRequest<{ data: FaqItem[]; meta: { last_page: number } }>(
+      `/admin/faqs?page=${targetPage}&per_page=20`,
+    );
+    if (targetPage > response.meta.last_page) {
+      setPage(Math.max(1, response.meta.last_page));
+      return;
+    }
     setItems(response.data);
+    setLastPage(response.meta.last_page);
   };
 
   useEffect(() => {
-    load().catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'بارگذاری سوالات ناموفق بود.'));
-  }, []);
+    load(page).catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'بارگذاری سوالات ناموفق بود.'));
+  }, [page]);
 
-  const save = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setSaving(true);
+  const save = async (values: FaqForm) => {
     try {
       await apiRequest(editing ? `/admin/faqs/${editing}` : '/admin/faqs', {
         method: editing ? 'PUT' : 'POST',
-        body: JSON.stringify(form),
+        body: JSON.stringify(values),
       });
-      setForm(emptyFaq);
+      reset(emptyFaq);
       setEditing(null);
       await load();
       addToast('success', 'سوال متداول ذخیره شد.');
     } catch (error) {
       addToast('error', error instanceof Error ? error.message : 'ذخیره سوال ناموفق بود.');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -64,19 +84,26 @@ export const FaqAdminPage: React.FC = () => {
 
   return (
     <div className="grid gap-6 xl:grid-cols-2">
-      <form onSubmit={save} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <form onSubmit={handleSubmit(save)} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <h1 className="text-lg font-extrabold">{editing ? 'ویرایش سوال متداول' : 'افزودن سوال متداول'}</h1>
-        <input required maxLength={500} value={form.question_fa} onChange={(event) => setForm({ ...form, question_fa: event.target.value })} placeholder="پرسش" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-        <textarea required maxLength={10000} rows={6} value={form.answer_fa} onChange={(event) => setForm({ ...form, answer_fa: event.target.value })} placeholder="پاسخ" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+        <label className="block space-y-1">
+          <input maxLength={500} {...register('question_fa')} placeholder="پرسش" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          {errors.question_fa && <span role="alert" className="text-xs text-red-600">{errors.question_fa.message}</span>}
+        </label>
+        <label className="block space-y-1">
+          <textarea maxLength={10000} rows={6} {...register('answer_fa')} placeholder="پاسخ" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          {errors.answer_fa && <span role="alert" className="text-xs text-red-600">{errors.answer_fa.message}</span>}
+        </label>
         <div className="flex flex-wrap items-center gap-4">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.is_active} onChange={(event) => setForm({ ...form, is_active: event.target.checked })} />فعال</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('is_active')} />فعال</label>
           <label className="flex items-center gap-2 text-sm">ترتیب
-            <input type="number" min={0} value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) })} className="w-24 rounded-lg border border-slate-200 px-2 py-1 dark:border-slate-700 dark:bg-slate-800" />
+            <input type="number" min={0} {...register('sort_order', { valueAsNumber: true })} className="w-24 rounded-lg border border-slate-200 px-2 py-1 dark:border-slate-700 dark:bg-slate-800" />
           </label>
+          {errors.sort_order && <span role="alert" className="text-xs text-red-600">{errors.sort_order.message}</span>}
         </div>
         <div className="flex gap-2">
-          <button disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-[var(--theme-primary)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />ذخیره</button>
-          {editing && <button type="button" onClick={() => { setEditing(null); setForm(emptyFaq); }} className="rounded-lg border px-4 py-2 text-sm">انصراف</button>}
+          <button disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-lg bg-(--theme-primary) px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />ذخیره</button>
+          {editing && <button type="button" onClick={() => { setEditing(null); reset(emptyFaq); }} className="rounded-lg border px-4 py-2 text-sm">انصراف</button>}
         </div>
       </form>
 
@@ -88,13 +115,14 @@ export const FaqAdminPage: React.FC = () => {
               <span className="shrink-0 text-xs text-slate-500">{item.is_active ? 'فعال' : 'غیرفعال'} · {item.sort_order}</span>
             </div>
             <div className="mt-3 flex gap-2">
-              <button type="button" onClick={() => { setEditing(item.id); setForm({ question_fa: item.question_fa, answer_fa: item.answer_fa, sort_order: item.sort_order, is_active: item.is_active }); }} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
+              <button type="button" onClick={() => { setEditing(item.id); reset({ question_fa: item.question_fa, answer_fa: item.answer_fa, sort_order: item.sort_order, is_active: item.is_active }); }} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
               <button type="button" onClick={() => setDeleting(item)} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-700"><Trash2 className="h-3.5 w-3.5" />حذف</button>
             </div>
           </article>
         ))}
         {items.length === 0 && <p className="text-sm text-slate-500">سوالی برای نمایش وجود ندارد.</p>}
       </div>
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
       <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} onConfirm={remove} message="این سوال نرم حذف می‌شود و از سایت عمومی نمایش داده نخواهد شد. ادامه می‌دهید؟" />
     </div>
   );

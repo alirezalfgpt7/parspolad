@@ -6,6 +6,7 @@ import type {
   KPI,
   Language,
   Menu,
+  PageContent,
   Partner,
   ProjectCategory,
   Service,
@@ -33,6 +34,7 @@ interface BootstrapPayload {
   categories: ProjectCategory[];
   partners: Partner[];
   services: Service[];
+  pages: PageContent[];
   company: SiteSettings['company'];
   map: SiteSettings['map'];
   seo: SiteSettings['seo'];

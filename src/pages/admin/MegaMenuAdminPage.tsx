@@ -109,7 +109,7 @@ export const MegaMenuAdminPage: React.FC = () => {
               type="button"
               onClick={() => setSelectedMenuId(m.id)}
               className={`rounded-lg px-3.5 py-2 text-xs font-semibold ${
-                selectedMenuId === m.id ? 'bg-[var(--theme-primary)] text-white' : 'border border-slate-200 dark:border-slate-700'
+                selectedMenuId === m.id ? 'bg-(--theme-primary) text-white' : 'border border-slate-200 dark:border-slate-700'
               }`}
             >
               {m.title_fa}

@@ -11,16 +11,17 @@ use Illuminate\Http\Request;
 
 class ArticleCommentController extends Controller
 {
-    public function publicIndex(string $slug): JsonResponse
+    public function publicIndex(Request $request, string $slug): JsonResponse
     {
         $article = Article::query()->where('slug', $slug)->firstOrFail();
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
         $comments = $article->comments()
             ->where('status', 'approved')
             ->oldest()
-            ->limit(100)
-            ->get(['id', 'author_name', 'body', 'created_at']);
+            ->paginate($perPage, ['id', 'author_name', 'body', 'created_at'])
+            ->withQueryString();
 
-        return response()->json(['data' => $comments]);
+        return response()->json($comments);
     }
 
     public function store(StoreArticleCommentRequest $request, string $slug): JsonResponse
@@ -40,14 +41,15 @@ class ArticleCommentController extends Controller
         $filters = $request->validate([
             'status' => ['nullable', 'in:pending,approved,rejected'],
         ]);
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
         $comments = ArticleComment::query()
             ->with('article:id,slug,title_fa')
             ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->latest()
-            ->limit(200)
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return response()->json(['data' => $comments]);
+        return response()->json($comments);
     }
 
     public function updateStatus(Request $request, ArticleComment $comment): JsonResponse

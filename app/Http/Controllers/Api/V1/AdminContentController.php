@@ -6,7 +6,11 @@ use App\Exports\ActivityLogsExport;
 use App\Exports\ContractsExport;
 use App\Exports\ProjectsExport;
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\Model;
+use App\Http\Requests\AdminContent\StoreAdminContentRecordRequest;
+use App\Http\Requests\AdminContent\UpdateAdminContentRecordRequest;
+use App\Http\Resources\AdminContentRecordResource;
+use App\Support\AdminContentRegistry;
+use Illuminate\Support\Arr;
 use App\Models\Article;
 use App\Models\Banner;
 use App\Models\ContactMessage;
@@ -31,64 +35,17 @@ use App\Models\TeamMember;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminContentController extends Controller
 {
-    private const COLLECTIONS = [
-        'categories' => ProjectCategory::class,
-        'faqs' => Faq::class,
-        'services' => Service::class,
-        'products' => Product::class,
-        'departments' => Department::class,
-        'team' => TeamMember::class,
-        'partners' => Partner::class,
-        'articles' => Article::class,
-        'pages' => Page::class,
-        'banners' => Banner::class,
-        'kpis' => Kpi::class,
-        'notification-templates' => NotificationTemplate::class,
-    ];
-
-    private const PERMISSIONS = [
-        'categories' => 'projects.manage',
-        'faqs' => 'pages.manage',
-        'services' => 'pages.manage',
-        'products' => 'pages.manage',
-        'departments' => 'pages.manage',
-        'team' => 'pages.manage',
-        'partners' => 'pages.manage',
-        'articles' => 'pages.manage',
-        'pages' => 'pages.manage',
-        'banners' => 'pages.manage',
-        'kpis' => 'pages.manage',
-        'notification-templates' => 'settings.manage',
-    ];
-
-    private const REQUIRED_FIELDS = [
-        'categories' => ['slug', 'name_fa', 'name_en'],
-        'faqs' => ['question_fa', 'answer_fa'],
-        'services' => ['slug', 'title_fa', 'title_en', 'summary_fa', 'image_url'],
-        'products' => ['slug', 'name_fa', 'name_en', 'category_fa', 'category_en', 'model_code', 'standard', 'summary_fa', 'image_url'],
-        'departments' => ['name_fa', 'name_en', 'head_name_fa', 'head_name_en', 'head_title_fa', 'head_title_en'],
-        'team' => ['department_id', 'name_fa', 'name_en', 'role_fa', 'role_en'],
-        'partners' => ['name_fa', 'name_en', 'logo_url'],
-        'articles' => ['slug', 'title_fa', 'title_en', 'excerpt_fa', 'content_fa', 'category_fa', 'category_en', 'cover_image', 'author_fa', 'published_at'],
-        'pages' => ['slug', 'title_fa', 'title_en', 'content_fa'],
-        'banners' => ['title_fa', 'title_en', 'image_url'],
-        'kpis' => ['key', 'label_fa', 'label_en', 'value'],
-        'notification-templates' => ['event_key', 'name_fa', 'channel', 'subject_fa'],
-    ];
-
     public function index(Request $request, string $resource): JsonResponse
     {
         $this->ensureResourcePermission($request, $resource);
-        $modelClass = $this->modelFor($resource);
+        $modelClass = AdminContentRegistry::modelClass($resource);
         $query = $modelClass::query();
 
         if ($resource === 'articles') {
@@ -99,13 +56,17 @@ class AdminContentController extends Controller
             $query->orderBy('id');
         }
 
-        return response()->json(['data' => $query->get()]);
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
+
+        return AdminContentRecordResource::collection(
+            $query->paginate($perPage)->withQueryString(),
+        )->response();
     }
 
     public function schema(Request $request, string $resource): JsonResponse
     {
         $this->ensureResourcePermission($request, $resource);
-        $model = new ($this->modelFor($resource));
+        $model = new (AdminContentRegistry::modelClass($resource));
         $schema = $model->getConnection()->getSchemaBuilder();
         $columns = collect($schema->getColumns($model->getTable()))->keyBy('name');
         $fields = [];
@@ -128,7 +89,7 @@ class AdminContentController extends Controller
             $fields[] = [
                 'name' => $field,
                 'type' => $type,
-                'required' => in_array($field, self::REQUIRED_FIELDS[$resource], true)
+                'required' => in_array($field, AdminContentRegistry::requiredFields($resource), true)
                     || (($column['nullable'] ?? true) === false && ($column['default'] ?? null) === null),
             ];
         }
@@ -136,33 +97,31 @@ class AdminContentController extends Controller
         return response()->json(['data' => ['resource' => $resource, 'fields' => $fields]]);
     }
 
-    public function store(Request $request, string $resource): JsonResponse
+    public function store(StoreAdminContentRecordRequest $request, string $resource): JsonResponse
     {
-        $this->ensureResourcePermission($request, $resource);
-        $modelClass = $this->modelFor($resource);
+        $modelClass = AdminContentRegistry::modelClass($resource);
         $model = new $modelClass;
-        $request->validate($this->validationRules($resource, $model));
-        $item = $modelClass::query()->create(Arr::only($request->all(), $model->getFillable()));
+        $item = $modelClass::query()->create($request->safe()->only($model->getFillable()));
 
-        return response()->json(['data' => $item], 201);
+        return response()->json(['data' => (new AdminContentRecordResource($item))->resolve($request)], 201);
     }
 
-    public function update(Request $request, string $resource, int $id): JsonResponse
+    public function update(UpdateAdminContentRecordRequest $request, string $resource, int $id): JsonResponse
     {
-        $this->ensureResourcePermission($request, $resource);
-        $modelClass = $this->modelFor($resource);
+        $modelClass = AdminContentRegistry::modelClass($resource);
         $model = new $modelClass;
         $item = $modelClass::query()->findOrFail($id);
-        $request->validate($this->validationRules($resource, $model, $id));
-        $item->update(Arr::only($request->all(), $model->getFillable()));
+        $item->update($request->safe()->only($model->getFillable()));
 
-        return response()->json(['data' => $item->fresh()]);
+        return response()->json([
+            'data' => (new AdminContentRecordResource($item->fresh()))->resolve($request),
+        ]);
     }
 
     public function destroy(Request $request, string $resource, int $id): JsonResponse
     {
-        $this->ensureResourcePermission($request, $resource);
-        $modelClass = $this->modelFor($resource);
+        $this->ensureResourcePermission($request, $resource, 'delete');
+        $modelClass = AdminContentRegistry::modelClass($resource);
         $item = $modelClass::query()->findOrFail($id);
 
         if ($resource === 'categories' && $item->projects()->exists()) {
@@ -363,10 +322,10 @@ class AdminContentController extends Controller
         ]);
     }
 
-    private function ensureResourcePermission(Request $request, string $resource): void
+    private function ensureResourcePermission(Request $request, string $resource, string $ability = 'viewAny'): void
     {
-        abort_unless(isset(self::PERMISSIONS[$resource]), 404);
-        $this->ensurePermission($request, self::PERMISSIONS[$resource]);
+        $modelClass = AdminContentRegistry::modelClass($resource);
+        $this->authorize($ability, [$modelClass, $resource]);
     }
 
     private function ensurePermission(Request $request, string $permission): void
@@ -374,77 +333,8 @@ class AdminContentController extends Controller
         abort_unless($request->user()?->can($permission), 403);
     }
 
-    private function validationRules(string $resource, Model $model, ?int $ignoreId = null): array
-    {
-        if ($resource === 'faqs') {
-            return [
-                'question_fa' => [$ignoreId === null ? 'required' : 'sometimes', 'string', 'max:500'],
-                'answer_fa' => [$ignoreId === null ? 'required' : 'sometimes', 'string', 'max:10000'],
-                'sort_order' => ['sometimes', 'integer', 'min:0'],
-                'is_active' => ['sometimes', 'boolean'],
-            ];
-        }
-
-        $requiredFields = self::REQUIRED_FIELDS[$resource];
-        $columns = collect($model->getConnection()->getSchemaBuilder()->getColumns($model->getTable()))->keyBy('name');
-        $uniqueFields = match ($resource) {
-            'categories', 'services', 'products', 'articles', 'pages' => ['slug'],
-            'kpis' => ['key'],
-            'notification-templates' => ['event_key'],
-            default => [],
-        };
-        $rules = [];
-
-        foreach ($model->getFillable() as $field) {
-            $column = $columns->get($field, []);
-            $cast = $model->getCasts()[$field] ?? null;
-            $columnType = strtolower((string) ($column['type_name'] ?? $column['type'] ?? ''));
-            $isRequired = in_array($field, $requiredFields, true)
-                || (($column['nullable'] ?? true) === false && ($column['default'] ?? null) === null);
-            $fieldRules = $ignoreId === null
-                ? [$isRequired ? 'required' : 'sometimes']
-                : ($isRequired ? ['sometimes', 'required'] : ['sometimes']);
-
-            if (! $isRequired) {
-                $fieldRules[] = 'nullable';
-            }
-
-            if (in_array($cast, ['boolean', 'bool'], true) || in_array($columnType, ['boolean', 'bool'], true)) {
-                $fieldRules[] = 'boolean';
-            } elseif (in_array($cast, ['array', 'json', 'object', 'collection'], true) || in_array($columnType, ['json', 'jsonb'], true)) {
-                $fieldRules[] = 'array';
-            } elseif (in_array($cast, ['integer', 'int'], true) || preg_match('/int/', $columnType) === 1) {
-                $fieldRules[] = 'integer';
-            } elseif (preg_match('/decimal|numeric|float|double/', $columnType) === 1) {
-                $fieldRules[] = 'numeric';
-            } elseif (in_array($cast, ['float', 'double', 'decimal'], true)) {
-                $fieldRules[] = 'numeric';
-            } else {
-                $fieldRules[] = 'string';
-                $fieldRules[] = 'max:10000';
-            }
-
-            if (in_array($field, $uniqueFields, true)) {
-                $unique = Rule::unique($model->getTable(), $field);
-                if ($ignoreId !== null) {
-                    $unique->ignore($ignoreId);
-                }
-                if (isset($columns['deleted_at'])) {
-                    $unique->withoutTrashed();
-                }
-                $fieldRules[] = $unique;
-            }
-
-            $rules[$field] = $fieldRules;
-        }
-
-        return $rules;
-    }
-
     private function modelFor(string $resource): string
     {
-        abort_unless(isset(self::COLLECTIONS[$resource]), 404);
-
-        return self::COLLECTIONS[$resource];
+        return AdminContentRegistry::modelClass($resource);
     }
 }

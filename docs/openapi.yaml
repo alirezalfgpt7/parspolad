@@ -42,9 +42,22 @@ paths:
   /faqs:
     get:
       summary: List active FAQ entries managed through the admin CMS
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
       responses:
         '200':
-          description: Active FAQs ordered by sort order
+          description: Active FAQs with data and pagination metadata, ordered by sort order
   /pages/{slug}:
     get:
       summary: Fetch a published, database-managed content page

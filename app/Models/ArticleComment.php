@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ArticleCommentStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,7 +22,10 @@ class ArticleComment extends Model
 
     protected function casts(): array
     {
-        return ['reviewed_at' => 'datetime'];
+        return [
+            'status' => ArticleCommentStatusEnum::class,
+            'reviewed_at' => 'datetime',
+        ];
     }
 
     public function article(): BelongsTo

@@ -61,7 +61,7 @@ export const ProjectDetailPage: React.FC = () => {
                   type="button"
                   onClick={() => setActiveImage(img)}
                   className={`h-20 w-28 overflow-hidden rounded-lg border-2 transition-colors ${
-                    activeImage === img ? 'border-[var(--theme-primary)]' : 'border-transparent'
+                    activeImage === img ? 'border-(--theme-primary)' : 'border-transparent'
                   }`}
                 >
                   <ZeroBrokenImage src={img} alt="" className="h-full w-full object-cover" />
@@ -145,10 +145,10 @@ export const ProjectDetailPage: React.FC = () => {
                       href={doc.file_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-xs font-semibold hover:border-[var(--theme-primary)] dark:border-slate-700"
+                      className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-xs font-semibold hover:border-(--theme-primary) dark:border-slate-700"
                     >
                       <span>{doc.title_fa} · {doc.file_type}</span>
-                      <Download className="h-4 w-4 text-[var(--theme-primary)] shrink-0" />
+                      <Download className="h-4 w-4 text-(--theme-primary) shrink-0" />
                     </a>
                   );
                 })}

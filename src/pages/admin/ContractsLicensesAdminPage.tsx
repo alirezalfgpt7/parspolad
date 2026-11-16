@@ -1,38 +1,86 @@
 import React, { useEffect, useState } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Contract, License } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { PersianDatePicker } from '../../components/ui/PersianDatePicker.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 type DeleteTarget = { type: 'contract'; id: number } | { type: 'license'; id: number };
 
+const contractFormSchema = z.object({
+  contract_number: z.string().trim().min(1, 'شماره قرارداد الزامی است.').max(120),
+  title_fa: z.string().trim().min(1, 'عنوان فارسی الزامی است.').max(255),
+  title_en: z.string().trim().min(1, 'عنوان انگلیسی الزامی است.').max(255),
+  client_fa: z.string().trim().min(1, 'نام فارسی کارفرما الزامی است.').max(255),
+  client_en: z.string().trim().min(1, 'نام انگلیسی کارفرما الزامی است.').max(255),
+  amount_billion_irr: z.number().min(0, 'مبلغ نمی‌تواند منفی باشد.'),
+  start_year: z.number().int().min(1348).max(1450),
+  end_year: z.number().int().min(1348).max(1450).nullable().optional(),
+  status: z.enum(['active', 'completed', 'pending', 'archived']),
+  scope_fa: z.string().nullable().optional(),
+  scope_en: z.string().nullable().optional(),
+  document_url: z.string().max(255).nullable().optional(),
+  requires_auth: z.boolean().optional(),
+});
+
+const licenseFormSchema = z.object({
+  code: z.string().trim().min(1, 'کد استاندارد الزامی است.').max(80),
+  title_fa: z.string().trim().min(1, 'عنوان فارسی الزامی است.').max(255),
+  title_en: z.string().trim().min(1, 'عنوان انگلیسی الزامی است.').max(255),
+  issuer_fa: z.string().trim().min(1, 'مرجع فارسی الزامی است.').max(255),
+  issuer_en: z.string().trim().min(1, 'مرجع انگلیسی الزامی است.').max(255),
+  issue_date: z.string().trim().min(1, 'تاریخ صدور الزامی است.').max(30),
+  expiry_date: z.string().max(30).nullable().optional(),
+  category: z.enum(['iso', 'api', 'knowledge_based', 'association']),
+  image_url: z.string().trim().min(1, 'تصویر گواهینامه الزامی است.').max(255),
+  document_url: z.string().max(255).nullable().optional(),
+  requires_auth: z.boolean().optional(),
+});
+
 export const ContractsLicensesAdminPage: React.FC = () => {
   const { addToast } = useAppStore();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
+  const [contractPage, setContractPage] = useState(1);
+  const [contractLastPage, setContractLastPage] = useState(1);
+  const [licensePage, setLicensePage] = useState(1);
+  const [licenseLastPage, setLicenseLastPage] = useState(1);
   const [contractModal, setContractModal] = useState<Partial<Contract> | null>(null);
   const [licenseModal, setLicenseModal] = useState<Partial<License> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const load = async () => {
+  const load = async (targetContractPage = contractPage, targetLicensePage = licensePage) => {
     const [c, l] = await Promise.all([
-      apiRequest<{ data: Contract[] }>('/admin/contracts'),
-      apiRequest<{ data: License[] }>('/admin/licenses'),
+      apiRequest<{ data: Contract[]; meta: { last_page: number } }>(`/admin/contracts?page=${targetContractPage}&per_page=8`),
+      apiRequest<{ data: License[]; meta: { last_page: number } }>(`/admin/licenses?page=${targetLicensePage}&per_page=8`),
     ]);
-    setContracts(c.data);
-    setLicenses(l.data);
+    if (targetContractPage > c.meta.last_page) {
+      setContractPage(Math.max(1, c.meta.last_page));
+    } else {
+      setContracts(c.data);
+      setContractLastPage(c.meta.last_page);
+    }
+    if (targetLicensePage > l.meta.last_page) {
+      setLicensePage(Math.max(1, l.meta.last_page));
+    } else {
+      setLicenses(l.data);
+      setLicenseLastPage(l.meta.last_page);
+    }
   };
 
   useEffect(() => {
-    load().catch(() => {});
-  }, []);
+    load().catch((error: unknown) => {
+      addToast('error', error instanceof Error ? error.message : 'بارگذاری قراردادها و گواهینامه‌ها ناموفق بود.');
+    });
+  }, [contractPage, licensePage]);
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
@@ -54,10 +102,15 @@ export const ContractsLicensesAdminPage: React.FC = () => {
   const saveContract = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!contractModal) return;
+    const parsed = contractFormSchema.safeParse(contractModal);
+    if (!parsed.success) {
+      addToast('error', parsed.error.issues[0]?.message ?? 'اطلاعات قرارداد معتبر نیست.');
+      return;
+    }
     try {
       await apiRequest(
         contractModal.id ? `/admin/contracts/${contractModal.id}` : '/admin/contracts',
-        { method: contractModal.id ? 'PUT' : 'POST', body: JSON.stringify(contractModal) },
+        { method: contractModal.id ? 'PUT' : 'POST', body: JSON.stringify(parsed.data) },
       );
       setContractModal(null);
       await load();
@@ -70,10 +123,15 @@ export const ContractsLicensesAdminPage: React.FC = () => {
   const saveLicense = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!licenseModal) return;
+    const parsed = licenseFormSchema.safeParse(licenseModal);
+    if (!parsed.success) {
+      addToast('error', parsed.error.issues[0]?.message ?? 'اطلاعات گواهینامه معتبر نیست.');
+      return;
+    }
     try {
       await apiRequest(
         licenseModal.id ? `/admin/licenses/${licenseModal.id}` : '/admin/licenses',
-        { method: licenseModal.id ? 'PUT' : 'POST', body: JSON.stringify(licenseModal) },
+        { method: licenseModal.id ? 'PUT' : 'POST', body: JSON.stringify(parsed.data) },
       );
       setLicenseModal(null);
       await load();
@@ -107,7 +165,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
           <h1 className="text-lg font-extrabold">مدیریت قراردادهای کلان</h1>
           <button
             type="button"
-            onClick={() => setContractModal({ contract_number: '', title_fa: '', client_fa: '', amount_billion_irr: 100, start_year: 1404, status: 'active', scope_fa: '', requires_auth: false })}
+            onClick={() => setContractModal({ contract_number: '', title_fa: '', title_en: '', client_fa: '', client_en: '', amount_billion_irr: 100, start_year: 1404, status: 'active', scope_fa: '', scope_en: '', requires_auth: false })}
             style={{ backgroundColor: 'var(--theme-primary)' }}
             className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
           >
@@ -115,7 +173,8 @@ export const ContractsLicensesAdminPage: React.FC = () => {
             <span>ثبت قرارداد</span>
           </button>
         </div>
-        <DataTable data={contracts} columns={contractCols} searchKeys={[(c) => c.title_fa, (c) => c.contract_number]} />
+        <DataTable data={contracts} columns={contractCols} pageSize={8} searchKeys={[(c) => c.title_fa, (c) => c.contract_number]} />
+        <Pagination page={contractPage} lastPage={contractLastPage} onChange={setContractPage} />
       </div>
 
       <div className="space-y-4">
@@ -123,7 +182,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
           <h2 className="text-lg font-extrabold">مدیریت لایسنس‌ها و گواهینامه‌های استاندارد</h2>
           <button
             type="button"
-            onClick={() => setLicenseModal({ code: 'ISO-9001', title_fa: '', issuer_fa: '', issue_date: '1404/01/01', category: 'iso', image_url: '/storage/certificates/iso-9001.jpg', requires_auth: false })}
+            onClick={() => setLicenseModal({ code: 'ISO-9001', title_fa: '', title_en: '', issuer_fa: '', issuer_en: '', issue_date: '1404/01/01', category: 'iso', image_url: '/storage/certificates/iso-9001.jpg', requires_auth: false })}
             style={{ backgroundColor: 'var(--theme-primary)' }}
             className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
           >
@@ -134,7 +193,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {licenses.map((lic) => (
             <div key={lic.id} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <div className="font-mono text-xs font-bold text-[var(--theme-primary)]">{lic.code}</div>
+              <div className="font-mono text-xs font-bold text-(--theme-primary)">{lic.code}</div>
               <div className="mt-1 text-sm font-bold">{lic.title_fa}</div>
               <div className="mt-1 text-xs text-slate-500">{lic.issuer_fa}</div>
               <div className="mt-3 flex gap-3">
@@ -144,6 +203,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
             </div>
           ))}
         </div>
+        <Pagination page={licensePage} lastPage={licenseLastPage} onChange={setLicensePage} />
       </div>
 
       <Modal open={Boolean(contractModal)} onClose={() => setContractModal(null)} title={contractModal?.id ? 'ویرایش قرارداد' : 'ثبت قرارداد جدید'} size="md">
@@ -151,8 +211,14 @@ export const ContractsLicensesAdminPage: React.FC = () => {
           <form onSubmit={saveContract} className="space-y-3">
             <input required placeholder="شماره قرارداد" value={contractModal.contract_number || ''} onChange={(e) => setContractModal({ ...contractModal, contract_number: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="عنوان قرارداد" value={contractModal.title_fa || ''} onChange={(e) => setContractModal({ ...contractModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input required placeholder="عنوان انگلیسی قرارداد" value={contractModal.title_en || ''} onChange={(e) => setContractModal({ ...contractModal, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="کارفرما" value={contractModal.client_fa || ''} onChange={(e) => setContractModal({ ...contractModal, client_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input required placeholder="کارفرما (انگلیسی)" value={contractModal.client_en || ''} onChange={(e) => setContractModal({ ...contractModal, client_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input type="number" placeholder="مبلغ (میلیارد ریال)" value={contractModal.amount_billion_irr || 0} onChange={(e) => setContractModal({ ...contractModal, amount_billion_irr: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input required type="number" min={1348} max={1450} placeholder="سال شروع" value={contractModal.start_year || ''} onChange={(e) => setContractModal({ ...contractModal, start_year: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <select value={contractModal.status || 'active'} onChange={(e) => setContractModal({ ...contractModal, status: e.target.value as Contract['status'] })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+              <option value="active">فعال</option><option value="completed">تکمیل‌شده</option><option value="pending">در انتظار</option><option value="archived">بایگانی</option>
+            </select>
             <FileUploader folder="documents" label="پیوست PDF قرارداد" onUploaded={(url) => setContractModal({ ...contractModal, document_url: url })} />
             <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">ذخیره قرارداد</button>
           </form>
@@ -164,7 +230,9 @@ export const ContractsLicensesAdminPage: React.FC = () => {
           <form onSubmit={saveLicense} className="space-y-3">
             <input required placeholder="کد استاندارد (مثل API 6A)" value={licenseModal.code || ''} onChange={(e) => setLicenseModal({ ...licenseModal, code: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="عنوان فارسی" value={licenseModal.title_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input required placeholder="عنوان انگلیسی" value={licenseModal.title_en || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input required placeholder="مرجع صادرکننده" value={licenseModal.issuer_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input required placeholder="مرجع صادرکننده (انگلیسی)" value={licenseModal.issuer_en || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <label className="block text-xs">
               تاریخ صدور
               <PersianDatePicker

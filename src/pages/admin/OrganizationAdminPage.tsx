@@ -5,6 +5,7 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { Department, Partner, TeamMember } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 export const OrganizationAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap } = useAppStore();
@@ -105,7 +106,7 @@ export const OrganizationAdminPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
           {partners.map((p) => (
             <div key={p.id} className="flex flex-col items-center justify-between rounded-xl border border-slate-200 p-3 text-center dark:border-slate-800">
-              <img src={p.logo_url} alt={p.name_fa} className="h-12 object-contain" />
+              <ZeroBrokenImage src={p.logo_url} alt={p.name_fa} className="h-12 w-full object-contain" />
               <div className="mt-2 text-xs font-semibold">{p.name_fa}</div>
               <button
                 type="button"

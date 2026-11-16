@@ -29,6 +29,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { cn } from '../../utils/i18n.ts';
 
 const navGroups = [
@@ -71,7 +72,7 @@ export const AdminLayout: React.FC = () => {
       {/* Collapsible & Mini Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 start-0 z-40 flex flex-col border-e border-slate-200 bg-white transition-all duration-200 lg:static dark:border-slate-800 dark:bg-slate-900',
+          'fixed inset-y-0 inset-s-0 z-40 flex flex-col border-e border-slate-200 bg-white transition-all duration-200 lg:static dark:border-slate-800 dark:bg-slate-900',
           mini ? 'w-20' : 'w-64',
           mobileOpen ? 'translate-x-0' : 'max-lg:hidden'
         )}
@@ -79,7 +80,7 @@ export const AdminLayout: React.FC = () => {
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4 dark:border-slate-800">
           {!mini && (
             <Link to="/" className="flex items-center gap-2 font-extrabold text-sm truncate">
-              <img src="/storage/logos/logo-small.png" alt="PPA" className="h-7 w-7 object-contain" />
+              <ZeroBrokenImage src="/storage/logos/logo-small.png" alt="PPA" className="h-7 w-7 object-contain" />
               <span className="truncate">پارس پولاد آقایی</span>
             </Link>
           )}
@@ -106,7 +107,7 @@ export const AdminLayout: React.FC = () => {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors',
                   active
-                    ? 'bg-[var(--theme-primary)] text-white shadow-xs'
+                    ? 'bg-(--theme-primary) text-white shadow-xs'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
                 )}
               >
@@ -186,12 +187,12 @@ export const AdminLayout: React.FC = () => {
               className="flex items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
             >
               <HardDrive className="hidden" />
-              <img
+              <ZeroBrokenImage
                 src={user?.avatar || '/storage/logos/logo-small.png'}
-                alt={user?.name}
+                alt={user?.name ?? ''}
                 className="h-5 w-5 rounded-full object-cover"
               />
-              <span className="hidden max-w-[140px] truncate sm:inline">{user?.name}</span>
+              <span className="hidden max-w-35 truncate sm:inline">{user?.name}</span>
             </Link>
           </div>
         </header>

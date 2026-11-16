@@ -47,7 +47,7 @@ export const PWAInstallButton: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowIOSGuide(false)}
-                className="mt-4 w-full rounded-lg bg-[var(--theme-primary)] py-2 text-sm font-medium text-white"
+                className="mt-4 w-full rounded-lg bg-(--theme-primary) py-2 text-sm font-medium text-white"
               >
                 متوجه شدم
               </button>

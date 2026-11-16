@@ -11,11 +11,15 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class AdminResourceController extends Controller
@@ -23,8 +27,17 @@ class AdminResourceController extends Controller
     public function users(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'users.view');
-        $users = User::query()->with(['roles.permissions'])->orderBy('id')->get()
-            ->map(fn (User $user): array => (new UserResource($user))->resolve());
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+        $users = User::query()->with(['roles.permissions'])->orderBy('id')->paginate($perPage);
+        $userRows = $users->getCollection()
+            ->map(fn (User $user): array => (new UserResource($user))->resolve())
+            ->values();
+        $roleUserCounts = DB::table('model_has_roles')
+            ->where('model_type', (new User)->getMorphClass())
+            ->select('role_id')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->groupBy('role_id')
+            ->pluck('aggregate', 'role_id');
         $roles = Role::query()->with('permissions')->orderBy('id')->get()
             ->map(fn (Role $role): array => [
                 'id' => $role->id,
@@ -32,9 +45,25 @@ class AdminResourceController extends Controller
                 'label_fa' => $role->label_fa,
                 'label_en' => $role->label_en,
                 'permissions' => $role->permissions->pluck('name')->values(),
+                'users_count' => (int) ($roleUserCounts[$role->id] ?? 0),
             ]);
+        $permissions = Permission::query()
+            ->where('guard_name', 'web')
+            ->orderBy('name')
+            ->pluck('name')
+            ->values();
 
-        return response()->json(['users' => $users, 'roles' => $roles]);
+        return response()->json([
+            'users' => $userRows,
+            'users_meta' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ],
+            'roles' => $roles,
+            'permissions' => $permissions,
+        ]);
     }
 
     public function storeUser(Request $request): JsonResponse
@@ -48,7 +77,7 @@ class AdminResourceController extends Controller
             'role' => ['required', 'string'],
         ]);
         $roleName = $this->storedRoleName($data['role']);
-        abort_unless(Role::query()->where('name', $roleName)->exists(), 422, 'نقش انتخاب‌شده معتبر نیست.');
+        abort_unless(Role::query()->where('name', $roleName)->where('guard_name', 'web')->exists(), 422, 'نقش انتخاب‌شده معتبر نیست.');
 
         $user = User::query()->create([
             'name' => $data['name'],
@@ -68,31 +97,103 @@ class AdminResourceController extends Controller
         abort_unless(! $user->hasRole('super_admin') || $request->user()->hasRole('super_admin'), 403);
         $data = $request->validate([
             'name' => ['sometimes', 'required', 'string', 'max:120'],
+            'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'password' => ['sometimes', 'required', 'string', 'min:8'],
             'role' => ['sometimes', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
+        abort_if($user->is($request->user()) && array_key_exists('is_active', $data) && ! $data['is_active'], 422, 'حساب کاربری خودتان را نمی‌توانید غیرفعال کنید.');
+        if (array_key_exists('is_active', $data) && ! $data['is_active'] && $user->hasRole('super_admin')) {
+            abort_if(User::role('super_admin')->where('is_active', true)->count() <= 1, 409, 'آخرین حساب سوپر ادمین را نمی‌توان غیرفعال کرد.');
+        }
 
         if (isset($data['role'])) {
             $roleName = $this->storedRoleName($data['role']);
-            $role = Role::query()->where('name', $roleName)->firstOrFail();
+            $role = Role::query()->where('name', $roleName)->where('guard_name', 'web')->firstOrFail();
+            if ($user->hasRole('super_admin') && $roleName !== 'super_admin') {
+                abort_if($user->is($request->user()), 422, 'حساب سوپر ادمین خودتان را نمی‌توانید تنزل دهید.');
+                abort_if(User::role('super_admin')->count() <= 1, 409, 'آخرین حساب سوپر ادمین را نمی‌توان تنزل داد.');
+            }
             $user->syncRoles([$role]);
             unset($data['role']);
         }
 
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
         $user->update($data);
+        if (array_key_exists('is_active', $data) && ! $data['is_active']) {
+            $user->tokens()->delete();
+        }
 
         return response()->json(['data' => new UserResource($user->fresh())]);
+    }
+
+    public function destroyUser(Request $request, User $user): JsonResponse
+    {
+        $this->ensurePermission($request, 'users.manage');
+        abort_if($user->is($request->user()), 422, 'نمی‌توانید حساب کاربری خودتان را حذف کنید.');
+        abort_if($user->hasRole('super_admin'), 403, 'حساب سوپر ادمین قابل حذف نیست.');
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function storeRole(Request $request): JsonResponse
+    {
+        $this->ensurePermission($request, 'users.manage');
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:64', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('roles', 'name')->where('guard_name', 'web')],
+            'label_fa' => ['required', 'string', 'max:120'],
+            'label_en' => ['required', 'string', 'max:120'],
+            'permissions' => ['required', 'array'],
+            'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
+        ]);
+        abort_if(in_array($data['name'], [
+            'super_admin', 'admin', 'editor', 'project_manager', 'client',
+            'super-admin', 'content-manager', 'operator', 'user',
+        ], true), 422, 'نام این نقش برای نقش‌های سیستمی رزرو شده است.');
+
+        $role = Role::query()->create([
+            'name' => $data['name'],
+            'guard_name' => 'web',
+            'label_fa' => $data['label_fa'],
+            'label_en' => $data['label_en'],
+        ]);
+        $role->syncPermissions($data['permissions']);
+
+        return response()->json([
+            'data' => [
+                'id' => $role->id,
+                'name' => $role->name,
+                'label_fa' => $role->label_fa,
+                'label_en' => $role->label_en,
+                'permissions' => $role->permissions()->pluck('name')->values(),
+            ],
+        ], 201);
     }
 
     public function updateRole(Request $request, Role $role): JsonResponse
     {
         $this->ensurePermission($request, 'users.manage');
+        abort_unless($role->guard_name === 'web', 404);
         abort_unless($role->name !== 'super_admin', 403);
         $data = $request->validate([
-            'permissions' => ['required', 'array'],
-            'permissions.*' => ['string', 'exists:permissions,name'],
+            'label_fa' => ['sometimes', 'required', 'string', 'max:120'],
+            'label_en' => ['sometimes', 'required', 'string', 'max:120'],
+            'permissions' => ['sometimes', 'required', 'array'],
+            'permissions.*' => ['string', Rule::exists('permissions', 'name')->where('guard_name', 'web')],
         ]);
-        $role->syncPermissions($data['permissions']);
+        abort_if($data === [], 422, 'حداقل یک فیلد برای بروزرسانی ارسال کنید.');
+        foreach (Arr::only($data, ['label_fa', 'label_en']) as $field => $value) {
+            $role->{$field} = $value;
+        }
+        $role->save();
+        if (array_key_exists('permissions', $data)) {
+            $role->syncPermissions($data['permissions']);
+        }
 
         return response()->json([
             'data' => [
@@ -101,15 +202,42 @@ class AdminResourceController extends Controller
                 'label_fa' => $role->label_fa,
                 'label_en' => $role->label_en,
                 'permissions' => $role->permissions()->pluck('name')->values(),
+                'users_count' => DB::table('model_has_roles')
+                    ->where('role_id', $role->id)
+                    ->where('model_type', (new User)->getMorphClass())
+                    ->count(),
             ],
         ]);
+    }
+
+    public function destroyRole(Request $request, Role $role): JsonResponse
+    {
+        $this->ensurePermission($request, 'users.manage');
+        abort_unless($role->guard_name === 'web', 404);
+        abort_if(in_array($role->name, [
+            'super_admin', 'admin', 'editor', 'project_manager', 'client',
+            'super-admin', 'content-manager', 'operator', 'user',
+        ], true), 403, 'نقش سیستمی قابل حذف نیست.');
+        abort_if(
+            DB::table('model_has_roles')
+                ->where('role_id', $role->id)
+                ->where('model_type', (new User)->getMorphClass())
+                ->exists(),
+            409,
+            'ابتدا کاربران این نقش را به نقش دیگری منتقل کنید.',
+        );
+        $role->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     public function messages(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'messages.view');
 
-        return response()->json(['data' => ContactMessage::query()->latest()->get()]);
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return response()->json(ContactMessage::query()->latest()->paginate($perPage)->withQueryString());
     }
 
     public function updateMessageStatus(Request $request, ContactMessage $message): JsonResponse
@@ -136,14 +264,18 @@ class AdminResourceController extends Controller
     {
         $this->ensurePermission($request, 'notifications.view');
 
-        return response()->json(['data' => Notification::query()->latest()->limit(50)->get()]);
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
+
+        return response()->json(Notification::query()->latest()->paginate($perPage)->withQueryString());
     }
 
     public function media(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'media.manage');
 
-        return response()->json(['data' => MediaFile::query()->latest()->get()]);
+        $perPage = min(max($request->integer('per_page', 12), 1), 100);
+
+        return response()->json(MediaFile::query()->latest()->paginate($perPage)->withQueryString());
     }
 
     public function updateMedia(Request $request, MediaFile $media): JsonResponse
@@ -219,7 +351,9 @@ class AdminResourceController extends Controller
     public function activityLogs(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'logs.view');
-        $logs = Activity::query()->with(['causer', 'subject'])->latest()->limit(200)->get()
+        $perPage = min(max($request->integer('per_page', 50), 1), 100);
+        $logs = Activity::query()->with(['causer', 'subject'])->latest()->paginate($perPage);
+        $rows = $logs->getCollection()
             ->map(fn (Activity $activity): array => [
                 'id' => $activity->id,
                 'user_name' => $activity->causer?->name ?? 'سامانه',
@@ -228,9 +362,17 @@ class AdminResourceController extends Controller
                 'subject_label' => $activity->subject?->title_fa ?? $activity->subject?->name ?? '',
                 'ip_address' => $activity->properties['ip_address'] ?? '',
                 'created_at' => $activity->created_at,
-            ]);
+            ])->values();
 
-        return response()->json(['data' => $logs]);
+        return response()->json([
+            'data' => $rows,
+            'meta' => [
+                'current_page' => $logs->currentPage(),
+                'last_page' => $logs->lastPage(),
+                'per_page' => $logs->perPage(),
+                'total' => $logs->total(),
+            ],
+        ]);
     }
 
     public function exportLogs(Request $request)

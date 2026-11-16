@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LicenseCategoryEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,7 +31,10 @@ class License extends Model
 
     protected function casts(): array
     {
-        return ['requires_auth' => 'boolean'];
+        return [
+            'category' => LicenseCategoryEnum::class,
+            'requires_auth' => 'boolean',
+        ];
     }
 
     public function getActivitylogOptions(): LogOptions

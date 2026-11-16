@@ -110,7 +110,7 @@ export const ThemeAdminPage: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <div>
           <h1 className="flex items-center gap-2 text-lg font-extrabold">
-            <Palette className="h-5 w-5 text-[var(--theme-primary)]" />
+            <Palette className="h-5 w-5 text-(--theme-primary)" />
             <span>موتور مدیریت تم رنگی و پیش‌نمایش لحظه‌ای (CSS Variables)</span>
           </h1>
           <p className="mt-1 text-xs text-slate-500">
@@ -189,7 +189,7 @@ export const ThemeAdminPage: React.FC = () => {
               type="checkbox"
               checked={settings.landing_theme_enabled}
               onChange={(e) => setSettings({ ...settings, landing_theme_enabled: e.target.checked })}
-              className="h-4 w-4 accent-[var(--theme-primary)]"
+              className="h-4 w-4 accent-(--theme-primary)"
             />
             <span>اعمال تم رنگی مستقل برای صفحه اول (Landing Page) جدا از سایر صفحات</span>
           </label>

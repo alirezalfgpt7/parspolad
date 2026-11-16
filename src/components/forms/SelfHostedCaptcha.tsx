@@ -80,10 +80,10 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
           <img
             src={challenge.img}
             alt="تصویر کد امنیتی"
-            className="h-[76px] w-[300px] max-w-full rounded-lg border border-slate-200 bg-slate-100 object-contain dark:border-slate-700"
+            className="h-19 w-75 max-w-full rounded-lg border border-slate-200 bg-slate-100 object-contain dark:border-slate-700"
           />
         ) : (
-          <div className="flex h-[76px] w-[300px] max-w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex h-19 w-75 max-w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800">
             {loadError ? 'تصویر امنیتی بارگذاری نشد' : 'در حال بارگذاری تصویر امنیتی...'}
           </div>
         )}

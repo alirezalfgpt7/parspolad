@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { User } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
@@ -22,24 +23,40 @@ const registerSchema = z.object({
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
+const loginSchema = z.object({
+  email: z.string().email('ایمیل معتبر وارد کنید'),
+  password: z.string().min(1, 'رمز عبور الزامی است'),
+});
+type LoginFormValues = z.infer<typeof loginSchema>;
+const twoFactorSchema = z.string().regex(/^\d{6}$/, 'کد تایید باید ۶ رقم باشد.');
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { setAuth, addToast } = useAppStore();
-  const [email, setEmail] = useState('admin@parspooladaghaei.ir');
-  const [password, setPassword] = useState('ParsPolad@1404');
   const [challengeToken, setChallengeToken] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [demoHint, setDemoHint] = useState('');
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit: submitLogin,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: 'admin@parspooladaghaei.ir', password: 'ParsPolad@1404' },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleSubmit = async (values: LoginFormValues) => {
+    if (challengeToken) {
+      const parsedCode = twoFactorSchema.safeParse(twoFactorCode);
+      if (!parsedCode.success) {
+        addToast('error', parsedCode.error.issues[0]?.message ?? 'کد تایید معتبر نیست.');
+        return;
+      }
+    }
     try {
       const payload = challengeToken
         ? { challenge_token: challengeToken, two_factor_code: twoFactorCode }
-        : { email, password };
+        : values;
       const res = await apiRequest<{
         token?: string;
         user?: User;
@@ -65,8 +82,6 @@ export const LoginPage: React.FC = () => {
       }
     } catch (err) {
       addToast('error', err instanceof Error ? err.message : 'ورود ناموفق بود');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -81,10 +96,10 @@ export const LoginPage: React.FC = () => {
       >
         <div className="mb-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/storage/logos/logo-small.png" alt="PPA" className="h-9 w-9 rounded bg-white p-1" />
+            <ZeroBrokenImage src="/storage/logos/logo-small.png" alt="PPA" className="h-9 w-9 rounded bg-white p-1" />
             <span className="text-base font-extrabold">پارس پولاد آقایی</span>
           </Link>
-          <Lock className="h-5 w-5 text-[var(--theme-primary)]" />
+          <Lock className="h-5 w-5 text-(--theme-primary)" />
         </div>
 
         <h1 className="text-xl font-bold">
@@ -96,30 +111,28 @@ export const LoginPage: React.FC = () => {
             : 'ورود سوپر ادمین، مدیران محتوا و کارفرمایان مجاز'}
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={submitLogin(handleSubmit)} className="mt-6 space-y-4">
           {!challengeToken ? (
             <>
               <div>
                 <label className="mb-1.5 block text-xs text-slate-300">ایمیل سازمانی</label>
                 <input
                   type="email"
-                  required
                   dir="ltr"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-sm text-white focus:border-[var(--theme-primary)] focus:outline-none"
+                  {...register('email')}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-sm text-white focus:border-(--theme-primary) focus:outline-none"
                 />
+                {errors.email && <p role="alert" className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
               </div>
               <div>
                 <label className="mb-1.5 block text-xs text-slate-300">رمز عبور</label>
                 <input
                   type="password"
-                  required
                   dir="ltr"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-sm text-white focus:border-[var(--theme-primary)] focus:outline-none"
+                  {...register('password')}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-sm text-white focus:border-(--theme-primary) focus:outline-none"
                 />
+                {errors.password && <p role="alert" className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
               </div>
             </>
           ) : (
@@ -135,18 +148,18 @@ export const LoginPage: React.FC = () => {
                 value={twoFactorCode}
                 onChange={(e) => setTwoFactorCode(e.target.value)}
                 placeholder="482910"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-center font-mono text-lg tracking-widest text-white focus:border-[var(--theme-primary)] focus:outline-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-center font-mono text-lg tracking-widest text-white focus:border-(--theme-primary) focus:outline-none"
               />
             </div>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             style={{ backgroundColor: 'var(--theme-primary)' }}
             className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            {loading ? 'در حال بررسی...' : challengeToken ? 'تایید و ورود' : 'ورود به حساب'}
+            {isSubmitting ? 'در حال بررسی...' : challengeToken ? 'تایید و ورود' : 'ورود به حساب'}
           </button>
         </form>
 
@@ -209,7 +222,7 @@ export const RegisterPage: React.FC = () => {
       >
         <div className="mb-5 flex items-center justify-between">
           <span className="text-base font-extrabold">ثبت‌نام کارفرمایان و کاربران</span>
-          <UserPlus className="h-5 w-5 text-[var(--theme-primary)]" />
+          <UserPlus className="h-5 w-5 text-(--theme-primary)" />
         </div>
         <form onSubmit={handleSubmit(handleRegister)} className="space-y-4">
           <PublicHoneypotField registration={register('website')} />

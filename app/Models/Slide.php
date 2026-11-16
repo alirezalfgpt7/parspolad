@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\SlideEffectEnum;
+use App\Enums\SlideMediaTypeEnum;
 use App\Enums\SlideTextAnimationEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,6 +40,7 @@ class Slide extends Model
     protected function casts(): array
     {
         return [
+            'media_type' => SlideMediaTypeEnum::class,
             'effect' => SlideEffectEnum::class,
             'text_animation' => SlideTextAnimationEnum::class,
             'duration_ms' => 'integer',

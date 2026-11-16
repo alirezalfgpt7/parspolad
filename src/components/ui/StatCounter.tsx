@@ -32,7 +32,7 @@ export const StatCounter: React.FC<StatCounterProps> = ({ target, suffix, label,
 
   return (
     <div className="flex flex-col gap-1.5 border-b border-slate-200/70 pb-4 md:border-b-0 md:border-e md:pb-0 md:pe-6 last:border-0 dark:border-slate-800">
-      <div className="flex items-baseline gap-1.5 text-3xl font-extrabold tracking-tight text-[var(--theme-primary)] tabular-nums sm:text-4xl">
+      <div className="flex items-baseline gap-1.5 text-3xl font-extrabold tracking-tight text-(--theme-primary) tabular-nums sm:text-4xl">
         <span>{formatLocalizedNumber(val, lang)}</span>
         <span className="text-lg font-bold text-slate-600 dark:text-slate-300">{suffix}</span>
       </div>

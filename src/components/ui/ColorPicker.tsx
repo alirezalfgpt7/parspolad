@@ -26,7 +26,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange
         value={value}
         onChange={(e) => onChange(e.target.value)}
         dir="ltr"
-        className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-center font-mono text-xs text-slate-800 focus:border-[var(--theme-primary)] focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+        className="w-20 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-center font-mono text-xs text-slate-800 focus:border-(--theme-primary) focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
       />
     </div>
   );

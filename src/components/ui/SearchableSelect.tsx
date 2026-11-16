@@ -81,7 +81,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'flex min-h-[42px] w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
+          'flex min-h-10.5 w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary) dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
           disabled && 'cursor-not-allowed opacity-60'
         )}
       >
@@ -145,7 +145,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                       }}
                       className={cn(
                         'flex w-full items-center justify-between gap-2 px-3 py-2 text-start text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-800',
-                        isSelected && 'bg-slate-50 font-semibold text-[var(--theme-primary)] dark:bg-slate-800/70'
+                        isSelected && 'bg-slate-50 font-semibold text-(--theme-primary) dark:bg-slate-800/70'
                       )}
                     >
                       <span className="truncate">
@@ -156,7 +156,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                           </span>
                         )}
                       </span>
-                      {isSelected && <Check className="h-4 w-4 shrink-0 text-[var(--theme-primary)]" />}
+                      {isSelected && <Check className="h-4 w-4 shrink-0 text-(--theme-primary)" />}
                     </button>
                   </li>
                 );

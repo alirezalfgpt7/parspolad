@@ -4,18 +4,19 @@ import { ArrowLeft, ArrowRight, PlayCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { Article, PageContent, Project } from '../../types/index.ts';
+import type { Article, Project } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { HeroSlider } from '../../components/slider/HeroSlider.tsx';
 import { StatCounter } from '../../components/ui/StatCounter.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { useCmsPage } from '../../hooks/useCmsPage.ts';
 
 export const HomePage: React.FC = () => {
   const { bootstrap, language } = useAppStore();
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
-  const [spotlight, setSpotlight] = useState<PageContent | null>(null);
+  const { page: spotlight } = useCmsPage('home-spotlight');
 
   useEffect(() => {
     apiRequest<{ data: Project[] }>('/projects?per_page=6')
@@ -26,17 +27,14 @@ export const HomePage: React.FC = () => {
         setFeaturedProjects(res.data);
       })
       .catch((error: unknown) => console.error('Could not load featured projects:', error));
-    apiRequest<{ data: Article[] }>('/articles')
+    apiRequest<{ data: Article[] }>('/articles?per_page=3')
       .then((res) => {
         if (!Array.isArray(res.data)) {
           throw new TypeError('The articles API response must include a data array.');
         }
-        setArticles(res.data.slice(0, 3));
+        setArticles(res.data);
       })
       .catch((error: unknown) => console.error('Could not load home page articles:', error));
-    apiRequest<{ data: PageContent }>('/pages/home-spotlight')
-      .then((response) => setSpotlight(response.data))
-      .catch((error: unknown) => console.error('Could not load home page spotlight:', error));
   }, []);
 
   const heroSlider = bootstrap?.sliders?.find((s) => s.key === 'landing_hero') || bootstrap?.sliders?.[0];
@@ -259,10 +257,9 @@ export const HomePage: React.FC = () => {
                 key={`${partner.id}-${idx}`}
                 className="flex h-24 w-48 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/40"
               >
-                <img
+                <ZeroBrokenImage
                   src={partner.logo_url}
                   alt={partner.name_fa}
-                  loading="lazy"
                   className="h-11 max-w-35 object-contain"
                 />
                 <span className="truncate max-w-full text-[11px] font-medium text-slate-600 dark:text-slate-300">
@@ -323,7 +320,7 @@ export const HomePage: React.FC = () => {
       {banner && (
         <section className="mx-auto mb-16 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-2xl bg-slate-900 px-6 py-12 text-white sm:px-12">
-            <img
+            <ZeroBrokenImage
               src={banner.image_url}
               alt={banner.title_fa}
               className="absolute inset-0 h-full w-full object-cover opacity-25"

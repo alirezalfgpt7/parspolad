@@ -8,38 +8,89 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
+import { z } from 'zod';
+
+const projectFormSchema = z.object({
+  slug: z.string().max(160).nullish(),
+  title_fa: z.string().trim().min(1, 'عنوان فارسی پروژه الزامی است.').max(255),
+  title_en: z.string().trim().min(1, 'عنوان انگلیسی پروژه الزامی است.').max(255),
+  category_id: z.number().int().positive('دسته‌بندی پروژه را انتخاب کنید.'),
+  client_name_fa: z.string().trim().min(1, 'نام کارفرما الزامی است.').max(255),
+  client_name_en: z.string().trim().min(1, 'نام انگلیسی کارفرما الزامی است.').max(255),
+  contract_number: z.string().trim().min(1, 'شماره قرارداد الزامی است.').max(120),
+  contract_type_fa: z.string().max(120).nullish(),
+  contract_type_en: z.string().max(120).nullish(),
+  location_fa: z.string().max(200).nullish(),
+  location_en: z.string().max(200).nullish(),
+  year: z.number().int().min(1348).max(1450),
+  status: z.enum(['completed', 'in_progress', 'planned', 'contracted']),
+  summary_fa: z.string().trim().min(1, 'خلاصه پروژه الزامی است.'),
+  summary_en: z.string().nullish(),
+  description_fa: z.string().nullish(),
+  description_en: z.string().nullish(),
+  cover_image: z.string().trim().min(1, 'تصویر کاور پروژه الزامی است.').max(255),
+  is_featured: z.boolean().optional(),
+});
+const categoryFormSchema = z.object({
+  slug: z.string().trim().min(1).max(120),
+  name_fa: z.string().trim().min(1, 'نام فارسی دسته الزامی است.').max(255),
+  name_en: z.string().trim().min(1, 'نام انگلیسی دسته الزامی است.').max(255),
+  icon: z.string().max(80).optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'رنگ دسته باید کد HEX معتبر باشد.'),
+  description_fa: z.string().optional(),
+});
 
 export const ProjectsAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap } = useAppStore();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<ProjectCategory[]>([]);
   const [editing, setEditing] = useState<Partial<Project> | null>(null);
   const [catModal, setCatModal] = useState<Partial<ProjectCategory> | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deletingProject, setDeletingProject] = useState(false);
 
-  const load = async () => {
+  const load = async (targetPage = page) => {
+    setLoading(true);
     const [pr, ct] = await Promise.all([
-      apiRequest<{ data: Project[] }>('/admin/projects'),
+      apiRequest<{ data: Project[]; meta: { last_page: number } }>(`/admin/projects?page=${targetPage}&per_page=8`),
       apiRequest<{ data: ProjectCategory[] }>('/admin/categories'),
     ]);
+    if (targetPage > pr.meta.last_page) {
+      setPage(Math.max(1, pr.meta.last_page));
+      setLoading(false);
+      return;
+    }
     setProjects(pr.data);
+    setLastPage(pr.meta.last_page);
     setCategories(ct.data);
+    setLoading(false);
   };
 
   useEffect(() => {
-    load().catch(() => {});
-  }, []);
+    load(page).catch((error: unknown) => {
+      setLoading(false);
+      addToast('error', error instanceof Error ? error.message : 'بارگذاری پروژه‌ها ناموفق بود.');
+    });
+  }, [page]);
 
   const saveProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
+    const parsed = projectFormSchema.safeParse(editing);
+    if (!parsed.success) {
+      addToast('error', parsed.error.issues[0]?.message ?? 'اطلاعات پروژه معتبر نیست.');
+      return;
+    }
     try {
       if (editing.id) {
-        await apiRequest(`/admin/projects/${editing.id}`, { method: 'PUT', body: JSON.stringify(editing) });
+        await apiRequest(`/admin/projects/${editing.id}`, { method: 'PUT', body: JSON.stringify({ ...editing, ...parsed.data }) });
       } else {
-        await apiRequest('/admin/projects', { method: 'POST', body: JSON.stringify({ ...editing, images: [editing.cover_image || '/storage/hero/hero-rig.jpg'], videos: [], documents: [], standards: ['API 6A', 'ISO 9001'] }) });
+        await apiRequest('/admin/projects', { method: 'POST', body: JSON.stringify({ ...editing, ...parsed.data, images: [parsed.data.cover_image], videos: [], documents: [], standards: ['API 6A', 'ISO 9001'] }) });
       }
       setEditing(null);
       await load();
@@ -52,18 +103,23 @@ export const ProjectsAdminPage: React.FC = () => {
   const saveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!catModal) return;
+    const parsed = categoryFormSchema.safeParse(catModal);
+    if (!parsed.success) {
+      addToast('error', parsed.error.issues[0]?.message ?? 'اطلاعات دسته‌بندی معتبر نیست.');
+      return;
+    }
     try {
       if (catModal.id) {
-        await apiRequest(`/admin/categories/${catModal.id}`, { method: 'PUT', body: JSON.stringify(catModal) });
+        await apiRequest(`/admin/categories/${catModal.id}`, { method: 'PUT', body: JSON.stringify(parsed.data) });
       } else {
-        await apiRequest('/admin/categories', { method: 'POST', body: JSON.stringify(catModal) });
+        await apiRequest('/admin/categories', { method: 'POST', body: JSON.stringify(parsed.data) });
       }
       setCatModal(null);
       await load();
       await fetchBootstrap();
       addToast('success', 'دسته‌بندی فنی ذخیره شد.');
-    } catch {
-      addToast('error', 'خطا در ذخیره دسته‌بندی');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'خطا در ذخیره دسته‌بندی');
     }
   };
 
@@ -132,12 +188,13 @@ export const ProjectsAdminPage: React.FC = () => {
               <span className="h-3.5 w-3.5 rounded shrink-0" style={{ backgroundColor: c.color }} />
               <span className="truncate text-xs font-bold">{c.name_fa}</span>
             </div>
-            <button type="button" onClick={() => setCatModal(c)} className="text-xs text-[var(--theme-primary)] hover:underline shrink-0">ویرایش</button>
+            <button type="button" onClick={() => setCatModal(c)} className="text-xs text-(--theme-primary) hover:underline shrink-0">ویرایش</button>
           </div>
         ))}
       </div>
 
-      <DataTable data={projects} columns={cols} searchKeys={[(p) => p.title_fa, (p) => p.client_name_fa, (p) => p.contract_number]} />
+      <DataTable data={projects} columns={cols} pageSize={8} loading={loading} searchKeys={[(p) => p.title_fa, (p) => p.client_name_fa, (p) => p.contract_number]} />
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
 
       <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={editing?.id ? 'ویرایش پروژه' : 'افزودن پروژه جدید'} size="lg">
         {editing && (
@@ -149,7 +206,7 @@ export const ProjectsAdminPage: React.FC = () => {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium">عنوان انگلیسی</label>
-                <input dir="ltr" value={editing.title_en || ''} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <input required dir="ltr" value={editing.title_en || ''} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -164,8 +221,12 @@ export const ProjectsAdminPage: React.FC = () => {
                 <input required value={editing.client_name_fa || ''} onChange={(e) => setEditing({ ...editing, client_name_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
               </div>
               <div>
+                <label className="mb-1 block text-xs font-medium">کارفرما (انگلیسی)</label>
+                <input required dir="ltr" value={editing.client_name_en || ''} onChange={(e) => setEditing({ ...editing, client_name_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              </div>
+              <div>
                 <label className="mb-1 block text-xs font-medium">شماره قرارداد</label>
-                <input dir="ltr" value={editing.contract_number || ''} onChange={(e) => setEditing({ ...editing, contract_number: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <input required dir="ltr" value={editing.contract_number || ''} onChange={(e) => setEditing({ ...editing, contract_number: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">

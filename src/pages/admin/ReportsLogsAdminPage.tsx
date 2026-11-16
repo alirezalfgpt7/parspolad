@@ -5,14 +5,31 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ActivityLog } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 
 export const ReportsLogsAdminPage: React.FC = () => {
   const { token, addToast } = useAppStore();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
-    apiRequest<{ data: ActivityLog[] }>('/admin/activity-logs').then((r) => setLogs(r.data)).catch(() => {});
-  }, []);
+    let active = true;
+    apiRequest<{ data: ActivityLog[]; meta: { last_page: number } }>(`/admin/activity-logs?page=${page}&per_page=50`)
+      .then((response) => {
+        if (active) {
+          setLogs(response.data);
+          setLastPage(response.meta.last_page);
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'دریافت گزارش فعالیت‌ها ناموفق بود.');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [page, addToast]);
 
   const exportExcel = async (entity: 'projects' | 'contracts' | 'logs') => {
     const res = await fetch(`/api/v1/admin/reports/export/${entity}`, {
@@ -69,7 +86,7 @@ export const ReportsLogsAdminPage: React.FC = () => {
 
   const cols: Column<ActivityLog>[] = [
     { key: 'user', header: 'کاربر', render: (l) => <span className="font-semibold">{l.user_name}</span> },
-    { key: 'action', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-[var(--theme-primary)]">{l.action}</span> },
+    { key: 'action', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-(--theme-primary)">{l.action}</span> },
     { key: 'subject', header: 'بخش / موضوع', render: (l) => <span>{l.subject_type} · {l.subject_label}</span> },
     { key: 'ip', header: 'IP', render: (l) => <span className="font-mono text-xs">{l.ip_address}</span> },
     { key: 'date', header: 'زمان', render: (l) => <span className="text-xs text-slate-500">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
@@ -103,7 +120,8 @@ export const ReportsLogsAdminPage: React.FC = () => {
         </div>
       </div>
 
-      <DataTable data={logs} columns={cols} searchKeys={[(l) => l.user_name, (l) => l.action, (l) => l.subject_label]} />
+      <DataTable data={logs} columns={cols} pageSize={50} searchKeys={[(l) => l.user_name, (l) => l.action, (l) => l.subject_label]} />
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
     </div>
   );
 };

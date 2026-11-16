@@ -65,7 +65,7 @@ export const SettingsAdminPage: React.FC = () => {
               type="button"
               onClick={() => setTab(t.id as typeof tab)}
               className={`rounded-lg px-3.5 py-2 text-xs font-semibold ${
-                tab === t.id ? 'bg-[var(--theme-primary)] text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                tab === t.id ? 'bg-(--theme-primary) text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               {t.label}
@@ -108,6 +108,22 @@ export const SettingsAdminPage: React.FC = () => {
           <div>
             <label className="mb-1 block text-xs font-medium">متن کپی‌رایت فوتر</label>
             <input value={settings.company.footer_note_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, footer_note_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium">آخرین به‌روزرسانی کاتالوگ (فارسی)</label>
+            <input value={settings.company.last_updated_fa || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, last_updated_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium">آخرین به‌روزرسانی کاتالوگ (انگلیسی)</label>
+            <input dir="ltr" value={settings.company.last_updated_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, last_updated_en: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium">استانداردهای قابل نمایش در فوتر (فارسی)</label>
+            <input value={settings.company.standards_fa || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, standards_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium">استانداردهای قابل نمایش در فوتر (انگلیسی)</label>
+            <input dir="ltr" value={settings.company.standards_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, standards_en: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
           </div>
           <div className="sm:col-span-2">
             <FileUploader folder="logos" label="تغییر لوگو شرکت" onUploaded={(url) => setSettings({ ...settings, company: { ...settings.company, logo_url: url, logo_small_url: url } })} />
@@ -177,6 +193,9 @@ export const SettingsAdminPage: React.FC = () => {
 
       {tab === 'map_seo' && (
         <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
+          <input value={settings.site.header_cta_text_fa || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_text_fa: e.target.value } })} placeholder="متن دکمه اصلی هدر (فارسی)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <input dir="ltr" value={settings.site.header_cta_text_en || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_text_en: e.target.value } })} placeholder="Header CTA text (English)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <input dir="ltr" value={settings.site.header_cta_url || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_url: e.target.value } })} placeholder="Header CTA URL" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
           <input value={settings.seo.site_title} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, site_title: e.target.value } })} placeholder="عنوان سئو سایت" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
           <input value={settings.seo.keywords} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, keywords: e.target.value } })} placeholder="کلمات کلیدی" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
           <input type="number" step="0.0001" dir="ltr" value={settings.map.factory_lat} onChange={(e) => setSettings({ ...settings, map: { ...settings.map, factory_lat: Number(e.target.value) } })} placeholder="Lat" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
@@ -185,13 +204,18 @@ export const SettingsAdminPage: React.FC = () => {
             <input type="checkbox" checked={settings.site.maintenance_mode} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, maintenance_mode: e.target.checked } })} />
             <span>فعال‌سازی حالت نگهداری موقت سایت (Maintenance Mode) برای بازدیدکنندگان عمومی</span>
           </label>
+          <input value={settings.site.maintenance_message_fa || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, maintenance_message_fa: e.target.value } })} placeholder="پیام حالت نگهداری" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input type="checkbox" checked={settings.site.allow_registration} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, allow_registration: e.target.checked } })} />
+            <span>اجازهٔ ثبت‌نام کاربران جدید</span>
+          </label>
         </div>
       )}
 
       {tab === 'backup' && (
         <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center gap-2 text-base font-bold">
-            <Database className="h-5 w-5 text-[var(--theme-primary)]" />
+            <Database className="h-5 w-5 text-(--theme-primary)" />
             <span>پشتیبان‌گیری دستی از پایگاه داده</span>
           </div>
           <p className="text-xs text-slate-500">

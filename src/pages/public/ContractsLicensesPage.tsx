@@ -4,22 +4,43 @@ import { Download, Eye, Lock } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Contract, License } from '../../types/index.ts';
-import { SeoHead } from '../../components/common/SeoHead.tsx';
-import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 export const ContractsLicensesPage: React.FC = () => {
-  const { language, user } = useAppStore();
+  const { language, user, addToast } = useAppStore();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
+  const [contractPage, setContractPage] = useState(1);
+  const [contractLastPage, setContractLastPage] = useState(1);
+  const [licensePage, setLicensePage] = useState(1);
+  const [licenseLastPage, setLicenseLastPage] = useState(1);
   const [previewLicense, setPreviewLicense] = useState<License | null>(null);
 
   useEffect(() => {
-    apiRequest<{ data: Contract[] }>('/contracts').then((r) => setContracts(r.data)).catch(() => {});
-    apiRequest<{ data: License[] }>('/licenses').then((r) => setLicenses(r.data)).catch(() => {});
-  }, []);
+    let active = true;
+    Promise.all([
+      apiRequest<{ data: Contract[]; meta: { last_page: number } }>(`/contracts?page=${contractPage}&per_page=8`),
+      apiRequest<{ data: License[]; meta: { last_page: number } }>(`/licenses?page=${licensePage}&per_page=8`),
+    ])
+      .then(([contractResponse, licenseResponse]) => {
+        if (!active) return;
+        setContracts(contractResponse.data);
+        setContractLastPage(contractResponse.meta.last_page);
+        setLicenses(licenseResponse.data);
+        setLicenseLastPage(licenseResponse.meta.last_page);
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'دریافت قراردادها و گواهینامه‌ها ناموفق بود.');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [contractPage, licensePage, addToast]);
 
   const contractCols: Column<Contract>[] = [
     {
@@ -65,7 +86,7 @@ export const ContractsLicensesPage: React.FC = () => {
               <span>ورود</span>
             </Link>
           ) : (
-            <a href={c.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--theme-primary)] hover:underline">
+            <a href={c.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-(--theme-primary) hover:underline">
               <Download className="h-3.5 w-3.5" />
               <span>PDF</span>
             </a>
@@ -78,17 +99,7 @@ export const ContractsLicensesPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title="قراردادها و گواهینامه‌های بین‌المللی" />
-      <Breadcrumb items={[{ label: 'قراردادها و گواهینامه‌ها' }]} />
-
-      <div className="mb-10">
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-          گواهینامه‌های بین‌المللی، افتخارات و سوابق قراردادها
-        </h1>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          تاییدیه رسمی شرکت دانش‌بنیان، آزمون آتش API 6FA و استانداردهای ایزو ۹۰۰۱، ۱۴۰۰۱، ۴۵۰۰۱، ۲۹۰۰۱ و ۱۰۴۲۳
-        </p>
-      </div>
+      <CmsPageIntro slug="contracts-licenses" />
 
       {/* Certificates Grid */}
       <section className="mb-14">
@@ -118,7 +129,7 @@ export const ContractsLicensesPage: React.FC = () => {
               </button>
               <div className="flex flex-1 flex-col justify-between p-4">
                 <div>
-                  <div className="font-mono text-xs font-bold text-[var(--theme-primary)]">{lic.code}</div>
+                  <div className="font-mono text-xs font-bold text-(--theme-primary)">{lic.code}</div>
                   <h3 className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
                     {language === 'fa' ? lic.title_fa : lic.title_en}
                   </h3>
@@ -129,7 +140,7 @@ export const ContractsLicensesPage: React.FC = () => {
                     href={lic.document_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--theme-link)] hover:underline"
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-link) hover:underline"
                   >
                     <Download className="h-3.5 w-3.5" />
                     <span>دانلود گواهینامه PDF</span>
@@ -139,6 +150,7 @@ export const ContractsLicensesPage: React.FC = () => {
             </div>
           ))}
         </div>
+        <Pagination page={licensePage} lastPage={licenseLastPage} onChange={setLicensePage} />
       </section>
 
       {/* Contracts Table */}
@@ -149,9 +161,11 @@ export const ContractsLicensesPage: React.FC = () => {
         <DataTable
           data={contracts}
           columns={contractCols}
+          pageSize={8}
           searchKeys={[(c) => c.title_fa, (c) => c.client_fa, (c) => c.contract_number]}
           searchPlaceholder="جستجو در شماره قرارداد، عنوان یا کارفرما..."
         />
+        <Pagination page={contractPage} lastPage={contractLastPage} onChange={setContractPage} />
       </section>
 
       <Modal
@@ -162,7 +176,7 @@ export const ContractsLicensesPage: React.FC = () => {
       >
         {previewLicense && (
           <div className="space-y-4">
-            <img
+            <ZeroBrokenImage
               src={previewLicense.image_url}
               alt={previewLicense.title_fa}
               className="max-h-[70vh] w-full rounded-lg object-contain"
@@ -174,7 +188,7 @@ export const ContractsLicensesPage: React.FC = () => {
                   href={previewLicense.document_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-semibold text-[var(--theme-primary)] hover:underline"
+                  className="inline-flex items-center gap-1 font-semibold text-(--theme-primary) hover:underline"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>دریافت فایل اصلی</span>

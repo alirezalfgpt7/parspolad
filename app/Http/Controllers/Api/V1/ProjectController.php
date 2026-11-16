@@ -8,6 +8,7 @@ use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use App\Models\ProjectCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -18,7 +19,7 @@ class ProjectController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Project::query()->with(['category', 'images', 'videos', 'documents']);
+        $query = Project::query()->with('category');
 
         if ($request->filled('category_id')) {
             $query->where('category_id', (int) $request->input('category_id'));
@@ -32,17 +33,31 @@ class ProjectController extends Controller
             $query->where('year', (int) $request->input('year'));
         }
         if ($request->filled('client')) {
-            $query->where('client_name_fa', $request->input('client'));
+            $client = $request->string('client')->toString();
+            $query->where(fn ($sub) => $sub
+                ->where('client_name_fa', $client)
+                ->orWhere('client_name_en', $client));
         }
         if ($request->filled('location')) {
-            $query->where('location_fa', $request->input('location'));
+            $location = $request->string('location')->toString();
+            $query->where(fn ($sub) => $sub
+                ->where('location_fa', $location)
+                ->orWhere('location_en', $location));
         }
         if ($request->filled('contract_type')) {
-            $query->where('contract_type_fa', $request->input('contract_type'));
+            $contractType = $request->string('contract_type')->toString();
+            $query->where(fn ($sub) => $sub
+                ->where('contract_type_fa', $contractType)
+                ->orWhere('contract_type_en', $contractType));
         }
         if ($request->filled('q')) {
-            $q = $request->string('q');
-            $query->where(fn ($sub) => $sub->where('title_fa', 'like', "%{$q}%")->orWhere('client_name_fa', 'like', "%{$q}%"));
+            $search = trim($request->string('q')->toString());
+            $query->where(fn ($sub) => $sub
+                ->where('title_fa', 'like', "%{$search}%")
+                ->orWhere('title_en', 'like', "%{$search}%")
+                ->orWhere('client_name_fa', 'like', "%{$search}%")
+                ->orWhere('client_name_en', 'like', "%{$search}%")
+                ->orWhere('contract_number', 'like', "%{$search}%"));
         }
 
         $perPage = min(max($request->integer('per_page', 15), 1), 100);
@@ -52,13 +67,59 @@ class ProjectController extends Controller
         );
     }
 
-    public function adminIndex(): JsonResponse
+    public function filters(): JsonResponse
     {
         return response()->json([
-            'data' => ProjectResource::collection(
-                Project::query()->with(['category', 'images', 'videos', 'documents'])->orderByDesc('year')->get(),
-            ),
+            'data' => [
+                'categories' => ProjectCategory::query()
+                    ->whereHas('projects')
+                    ->orderBy('name_fa')
+                    ->get(['id', 'slug', 'name_fa', 'name_en']),
+                'years' => Project::query()->select('year')->distinct()->orderByDesc('year')->pluck('year'),
+                'clients' => Project::query()
+                    ->select('client_name_fa', 'client_name_en')
+                    ->where(fn ($query) => $query
+                        ->whereNotNull('client_name_fa')
+                        ->where('client_name_fa', '<>', '')
+                        ->orWhere(fn ($sub) => $sub
+                            ->whereNotNull('client_name_en')
+                            ->where('client_name_en', '<>', '')))
+                    ->distinct()
+                    ->orderBy('client_name_fa')
+                    ->get(),
+                'locations' => Project::query()
+                    ->select('location_fa', 'location_en')
+                    ->where(fn ($query) => $query
+                        ->whereNotNull('location_fa')
+                        ->where('location_fa', '<>', '')
+                        ->orWhere(fn ($sub) => $sub
+                            ->whereNotNull('location_en')
+                            ->where('location_en', '<>', '')))
+                    ->distinct()
+                    ->orderBy('location_fa')
+                    ->get(),
+                'contract_types' => Project::query()
+                    ->select('contract_type_fa', 'contract_type_en')
+                    ->where(fn ($query) => $query
+                        ->whereNotNull('contract_type_fa')
+                        ->where('contract_type_fa', '<>', '')
+                        ->orWhere(fn ($sub) => $sub
+                            ->whereNotNull('contract_type_en')
+                            ->where('contract_type_en', '<>', '')))
+                    ->distinct()
+                    ->orderBy('contract_type_fa')
+                    ->get(),
+            ],
         ]);
+    }
+
+    public function adminIndex(Request $request): AnonymousResourceCollection
+    {
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return ProjectResource::collection(
+            Project::query()->with('category')->orderByDesc('year')->paginate($perPage)->withQueryString(),
+        );
     }
 
     public function show(string $slug): JsonResponse

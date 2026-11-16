@@ -27,7 +27,7 @@ class ProjectFactory extends Factory
             'status' => ProjectStatusEnum::COMPLETED,
             'summary_fa' => 'ساخت و آزمون تجهیزات سرچاهی بر اساس استاندارد API 6A',
             'standards' => ['API 6A', 'ISO 29001:2020'],
-            'cover_image' => '/storage/products/christmas-tree.jpg',
+            'cover_image' => '/storage/products/wellhead-api6a.png',
             'is_featured' => true,
         ];
     }

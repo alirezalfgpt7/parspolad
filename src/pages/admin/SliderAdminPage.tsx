@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { GripVertical, Plus, Save, Trash2 } from 'lucide-react';
+import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Slide, SlideEffect, Slider, SlideTextAnimation } from '../../types/index.ts';
@@ -8,6 +9,7 @@ import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 const EFFECTS: Array<{ value: SlideEffect; label: string }> = [
   { value: 'ken-burns', label: 'Ken Burns (زوم نرم سینمایی)' },
@@ -23,6 +25,30 @@ const TEXT_ANIMS: Array<{ value: SlideTextAnimation; label: string }> = [
   { value: 'typewriter', label: 'Typewriter (ماشین تحریر)' },
   { value: 'mask-reveal', label: 'Mask Reveal' },
 ];
+
+const slideFormSchema = z.object({
+  slider_id: z.number().int().positive(),
+  title_fa: z.string().trim().min(1, 'عنوان فارسی الزامی است.').max(255),
+  title_en: z.string().trim().min(1, 'عنوان انگلیسی الزامی است.').max(255),
+  subtitle_fa: z.string().max(500).nullish().transform((value) => value ?? ''),
+  subtitle_en: z.string().max(500).nullish().transform((value) => value ?? ''),
+  cta_text_fa: z.string().max(120).nullish().transform((value) => value ?? ''),
+  cta_text_en: z.string().max(120).nullish().transform((value) => value ?? ''),
+  cta_link: z.string().max(255).nullish().transform((value) => value ?? ''),
+  media_type: z.enum(['image', 'video']),
+  desktop_media: z.string().trim().min(1, 'رسانه دسکتاپ الزامی است.').max(255),
+  mobile_media: z.string().max(255).nullish().transform((value) => value ?? ''),
+  text_position: z.enum(['right', 'center', 'left']),
+  text_color: z.string().min(1).max(20),
+  button_color: z.string().min(1).max(20),
+  overlay_gradient: z.string().max(255).nullish().transform((value) => value ?? ''),
+  duration_ms: z.number().int().min(2000).max(30000),
+  effect: z.enum(['ken-burns', 'fade', 'slide', 'zoom-in', 'parallax']),
+  text_animation: z.enum(['fade-up', 'split-text', 'typewriter', 'mask-reveal']),
+  particles_enabled: z.boolean(),
+  sort_order: z.number().int().min(0),
+  is_active: z.boolean(),
+});
 
 export const SliderAdminPage: React.FC = () => {
   const { fetchBootstrap, addToast } = useAppStore();
@@ -97,10 +123,16 @@ export const SliderAdminPage: React.FC = () => {
   const saveSlideEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
+    const parsed = slideFormSchema.safeParse(editing);
+    if (!parsed.success) {
+      addToast('error', parsed.error.issues[0]?.message ?? 'اطلاعات اسلاید معتبر نیست.');
+      return;
+    }
+    const validatedSlide = { ...editing, ...parsed.data };
     const exists = slides.some((s) => s.id === editing.id);
     const next = exists
-      ? slides.map((s) => (s.id === editing.id ? editing : s))
-      : [...slides, editing];
+      ? slides.map((s) => (s.id === editing.id ? validatedSlide : s))
+      : [...slides, validatedSlide];
     setSlides(next);
     setEditing(null);
     await persistSlides(next);
@@ -150,7 +182,7 @@ export const SliderAdminPage: React.FC = () => {
             onDragStart={() => setDragIdx(idx)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(idx)}
-            className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
           >
             <div className="flex items-center gap-3 min-w-0">
               <GripVertical className="h-5 w-5 cursor-grab text-slate-400 shrink-0" />
@@ -158,7 +190,7 @@ export const SliderAdminPage: React.FC = () => {
                 {slide.media_type === 'video' ? (
                   <video src={slide.desktop_media} muted className="h-full w-full object-cover" />
                 ) : (
-                  <img src={slide.desktop_media} alt={slide.title_fa} className="h-full w-full object-cover" />
+                  <ZeroBrokenImage src={slide.desktop_media} alt={slide.title_fa} className="h-full w-full object-cover" />
                 )}
               </div>
               <div className="min-w-0">

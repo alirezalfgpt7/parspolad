@@ -20,6 +20,7 @@ use App\Models\Project;
 use App\Models\Service;
 use App\Models\TeamMember;
 use App\Services\BootstrapService;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -98,29 +99,67 @@ class PublicController extends Controller
         return response()->json(compact('projects', 'products', 'services', 'articles', 'licenses', 'pages'));
     }
 
-    public function products(): JsonResponse
+    public function products(Request $request): JsonResponse
     {
-        return response()->json(['data' => Product::query()->orderBy('id')->get()]);
+        $perPage = min(max($request->integer('per_page', 9), 1), 100);
+        $category = trim($request->string('category')->toString());
+        $query = Product::query();
+        if ($category !== '') {
+            $query->where(fn ($sub) => $sub
+                ->where('category_fa', $category)
+                ->orWhere('category_en', $category));
+        }
+
+        return $this->paginatedResponse(
+            $query->orderBy('id')->paginate($perPage)->withQueryString(),
+        );
     }
 
-    public function services(): JsonResponse
+    public function productFilters(): JsonResponse
     {
-        return response()->json(['data' => Service::query()->orderBy('sort_order')->get()]);
+        return response()->json([
+            'data' => Product::query()
+                ->select('category_fa', 'category_en')
+                ->distinct()
+                ->orderBy('category_fa')
+                ->get(),
+        ]);
     }
 
-    public function contracts(): JsonResponse
+    public function services(Request $request): JsonResponse
     {
-        return response()->json(['data' => Contract::query()->with('documents')->orderByDesc('start_year')->get()]);
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return $this->paginatedResponse(
+            Service::query()->orderBy('sort_order')->paginate($perPage)->withQueryString(),
+        );
     }
 
-    public function licenses(): JsonResponse
+    public function contracts(Request $request): JsonResponse
     {
-        return response()->json(['data' => License::query()->with('attachments')->orderBy('id')->get()]);
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return $this->paginatedResponse(
+            Contract::query()->orderByDesc('start_year')->paginate($perPage)->withQueryString(),
+        );
     }
 
-    public function partners(): JsonResponse
+    public function licenses(Request $request): JsonResponse
     {
-        return response()->json(['data' => Partner::query()->where('is_active', true)->orderBy('id')->get()]);
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return $this->paginatedResponse(
+            License::query()->orderBy('id')->paginate($perPage)->withQueryString(),
+        );
+    }
+
+    public function partners(Request $request): JsonResponse
+    {
+        $perPage = min(max($request->integer('per_page', 12), 1), 100);
+
+        return $this->paginatedResponse(
+            Partner::query()->where('is_active', true)->orderBy('id')->paginate($perPage)->withQueryString(),
+        );
     }
 
     public function departments(): JsonResponse
@@ -133,16 +172,22 @@ class PublicController extends Controller
         ]);
     }
 
-    public function faqs(): JsonResponse
+    public function faqs(Request $request): JsonResponse
     {
-        return response()->json([
-            'data' => Faq::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(),
-        ]);
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
+
+        return $this->paginatedResponse(
+            Faq::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->paginate($perPage)->withQueryString(),
+        );
     }
 
-    public function articles(): JsonResponse
+    public function articles(Request $request): JsonResponse
     {
-        return response()->json(['data' => Article::query()->orderByDesc('published_at')->get()]);
+        $perPage = min(max($request->integer('per_page', 9), 1), 100);
+
+        return $this->paginatedResponse(
+            Article::query()->orderByDesc('published_at')->paginate($perPage)->withQueryString(),
+        );
     }
 
     public function article(string $slug): JsonResponse
@@ -162,12 +207,14 @@ class PublicController extends Controller
     public function notifications(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
+        $perPage = min(max($request->integer('per_page', 20), 1), 100);
         $notifications = Notification::query()
             ->where(fn ($query) => $query->whereNull('user_id')->orWhere('user_id', $userId))
             ->latest()
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
-        return response()->json(['data' => $notifications]);
+        return response()->json($notifications);
     }
 
     public function markNotificationRead(Request $request, Notification $notification): JsonResponse
@@ -194,5 +241,18 @@ class PublicController extends Controller
         );
 
         return response()->json(['message' => 'درخواست شما با موفقیت ثبت شد.', 'data' => $message], 201);
+    }
+
+    private function paginatedResponse(LengthAwarePaginator $paginator): JsonResponse
+    {
+        return response()->json([
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ]);
     }
 }

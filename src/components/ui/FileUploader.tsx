@@ -53,7 +53,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         handleFile(e.dataTransfer.files[0]);
       }}
       onClick={() => inputRef.current?.click()}
-      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-5 text-center transition-colors hover:border-[var(--theme-primary)] hover:bg-slate-100/60 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+      className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-5 text-center transition-colors hover:border-(--theme-primary) hover:bg-slate-100/60 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800"
     >
       <input
         ref={inputRef}

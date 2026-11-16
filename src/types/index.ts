@@ -14,6 +14,7 @@ export interface Role {
   label_fa: string;
   label_en: string;
   permissions: string[];
+  users_count?: number;
 }
 
 export interface User {
@@ -408,6 +409,9 @@ export interface SiteSettings {
     footer_note_fa: string;
     footer_note_en: string;
     last_updated_fa: string;
+    last_updated_en: string;
+    standards_fa: string;
+    standards_en: string;
   };
   map: {
     factory_lat: number;
@@ -439,5 +443,8 @@ export interface SiteSettings {
     maintenance_mode: boolean;
     maintenance_message_fa: string;
     allow_registration: boolean;
+    header_cta_text_fa: string;
+    header_cta_text_en: string;
+    header_cta_url: string;
   };
 }

@@ -19,7 +19,7 @@ class SlideResource extends JsonResource
             'cta_text_fa' => $this->cta_text_fa,
             'cta_text_en' => $this->cta_text_en,
             'cta_link' => $this->cta_link,
-            'media_type' => $this->media_type,
+            'media_type' => $this->media_type?->value ?? $this->media_type,
             'desktop_media' => $this->desktop_media,
             'mobile_media' => $this->mobile_media,
             'text_position' => $this->text_position,

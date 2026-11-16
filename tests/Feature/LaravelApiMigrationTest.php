@@ -42,7 +42,7 @@ it('supports protected admin content endpoints and public account registration',
     $this->withToken($token)
         ->getJson('/api/v1/admin/pages')
         ->assertOk()
-        ->assertJsonCount(4, 'data');
+        ->assertJsonCount(14, 'data');
     $this->withToken($token)->getJson('/api/v1/admin/contracts')->assertOk()->assertJsonCount(5, 'data');
     $this->withToken($token)->getJson('/api/v1/admin/licenses')->assertOk()->assertJsonCount(8, 'data');
     $this->withToken($token)->getJson('/api/v1/admin/settings')

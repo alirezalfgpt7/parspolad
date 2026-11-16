@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Globe, Mail, MapPin, Moon, Phone, Search, Sun, UserCheck } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { PWAInstallButton } from '../common/PWAInstallButton.tsx';
 
 export const PublicFooter: React.FC = () => {
@@ -23,9 +24,9 @@ export const PublicFooter: React.FC = () => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img
+              <ZeroBrokenImage
                 src={company?.logo_small_url || '/storage/logos/logo-small.png'}
-                alt="Pars Poolad"
+                alt={language === 'fa' ? company?.name_fa || '' : company?.name_en || ''}
                 className="h-9 w-9 rounded bg-white p-1 object-contain"
               />
               <span className="text-base font-extrabold">
@@ -96,7 +97,7 @@ export const PublicFooter: React.FC = () => {
               {language === 'fa' ? 'اطلاعات تماس اهواز' : 'Contact Information'}
             </h4>
             <p className="flex items-start gap-2">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--theme-primary)]" />
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-(--theme-primary)" />
               <span>
                 <strong>{language === 'fa' ? 'کارخانه:' : 'Plant:'}</strong>{' '}
                 {language === 'fa' ? company?.factory_address_fa : company?.factory_address_en}
@@ -128,7 +129,9 @@ export const PublicFooter: React.FC = () => {
                 {language === 'fa' ? 'آخرین به‌روزرسانی کاتالوگ و سوابق:' : 'Latest Catalog Update:'}
               </div>
               <div className="mt-1 opacity-85">
-                {company?.last_updated_fa || 'آبان ۱۴۰۴'} · استانداردهای API 6A / 6FA / ISO 29001
+                {language === 'fa' ? company?.last_updated_fa : company?.last_updated_en}
+                {' · '}
+                {language === 'fa' ? company?.standards_fa : company?.standards_en}
               </div>
               <div className="mt-3">
                 <PWAInstallButton />

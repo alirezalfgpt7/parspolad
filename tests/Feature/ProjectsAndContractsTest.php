@@ -1,6 +1,18 @@
 <?php
 
 use Database\Seeders\DatabaseSeeder;
+use App\Models\Article;
+use App\Models\Banner;
+use App\Models\Department;
+use App\Models\Faq;
+use App\Models\Kpi;
+use App\Models\NotificationTemplate;
+use App\Models\Page;
+use App\Models\Partner;
+use App\Models\Project;
+use App\Models\Product;
+use App\Models\Service;
+use App\Models\TeamMember;
 
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
@@ -14,6 +26,87 @@ it('lists and searches projects and blocks unauthorized project creation', funct
     $this->postJson('/api/v1/admin/projects', [
         'title_fa' => 'Unauthorized',
     ])->assertUnauthorized();
+});
+
+it('filters projects in both languages and exposes complete filter metadata', function (): void {
+    $project = Project::query()->firstOrFail();
+
+    $this->getJson('/api/v1/projects?' . http_build_query([
+    'client' => $project->client_name_en,
+    'location' => $project->location_en,
+    'contract_type' => $project->contract_type_en,
+    'status' => $project->status->value,
+    'year' => $project->year,
+    'category_id' => $project->category_id,
+    'q' => $project->contract_number,
+    ]))->assertOk()
+    ->assertJsonFragment(['id' => $project->id]);
+
+    $this->getJson('/api/v1/projects/filters')
+    ->assertOk()
+    ->assertJsonFragment(['slug' => $project->category->slug])
+    ->assertJsonFragment(['client_name_en' => $project->client_name_en])
+    ->assertJsonFragment(['location_en' => $project->location_en])
+    ->assertJsonFragment(['contract_type_en' => $project->contract_type_en]);
+});
+
+it('creates model factories with their required aggregate relations', function (): void {
+    $project = Project::factory()->create();
+
+    expect($project->category)->not->toBeNull()
+    ->and($project->category_id)->toBe($project->category->id)
+    ->and(Faq::factory()->create()->exists)->toBeTrue()
+    ->and(Service::factory()->create()->exists)->toBeTrue()
+    ->and(Product::factory()->create()->exists)->toBeTrue()
+    ->and(Article::factory()->create()->exists)->toBeTrue()
+    ->and(Partner::factory()->create()->exists)->toBeTrue()
+    ->and(Department::factory()->create()->exists)->toBeTrue()
+    ->and(TeamMember::factory()->create()->exists)->toBeTrue()
+    ->and(Page::factory()->create()->exists)->toBeTrue()
+    ->and(Banner::factory()->create()->exists)->toBeTrue()
+    ->and(Kpi::factory()->create()->exists)->toBeTrue()
+    ->and(NotificationTemplate::factory()->create()->exists)->toBeTrue();
+});
+
+it('paginates the administrative project list', function (): void {
+    $token = $this->postJson('/api/v1/auth/login', [
+    'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
+    'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
+    ])->assertOk()->json('token');
+
+    $this->withToken($token)->getJson('/api/v1/admin/projects?per_page=1')
+    ->assertOk()
+    ->assertJsonCount(1, 'data')
+    ->assertJsonPath('meta.per_page', 1)
+    ->assertJsonPath('meta.current_page', 1);
+});
+
+it('paginates public catalog, services, FAQs and news and returns complete product filter options', function (): void {
+    Service::factory()->count(2)->create();
+    Faq::factory()->count(2)->create();
+
+    foreach (['/products', '/services', '/contracts', '/licenses', '/partners', '/faqs', '/articles'] as $path) {
+    $this->getJson('/api/v1' . $path . '?per_page=1')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('meta.per_page', 1)
+        ->assertJsonPath('meta.current_page', 1);
+    }
+
+    foreach (['/services', '/faqs'] as $path) {
+    $this->getJson('/api/v1' . $path . '?per_page=1&page=2')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('meta.current_page', 2);
+    }
+
+    $product = Product::query()->firstOrFail();
+    $this->getJson('/api/v1/products?category=' . urlencode($product->category_en) . '&per_page=1')
+    ->assertOk()
+    ->assertJsonFragment(['id' => $product->id]);
+    $this->getJson('/api/v1/products/filters')
+    ->assertOk()
+    ->assertJsonFragment(['category_en' => $product->category_en]);
 });
 
 it('allows authenticated super admin to create projects and submit RFQ messages', function (): void {

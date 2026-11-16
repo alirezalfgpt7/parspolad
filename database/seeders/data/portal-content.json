@@ -993,7 +993,7 @@
       "description_fa": "تمامی تجهیزات پیش از ارسال به میادین نفتی تحت آزمون‌های سخت‌گیرانه تحت نظارت بازرسان ثالث و کارفرما قرار می‌گیرند.",
       "description_en": "Every unit passes strict witness testing and third-party certification prior to field dispatch.",
       "icon": "ShieldCheck",
-      "image_url": "/src/assets/images/qc_testing_lab_1794834723950.jpg",
+      "image_url": "/images/qc_testing_lab_1794834723950.jpg",
       "sort_order": 4
     }
   ],
@@ -1466,25 +1466,33 @@
   "faqs": [
     {
       "question_fa": "آیا تجهیزات سرچاهی و درون‌چاهی پارس پولاد آقایی دارای تاییدیه‌های استاندارد بین‌المللی هستند؟",
+      "question_en": "Are Pars Poolad Aghaee wellhead and downhole products certified to international standards?",
       "answer_fa": "بله، تجهیزات بر اساس استانداردهای API 6A، API 6FA، API 19LH و سیستم‌های مدیریت کیفیت ISO 29001:2020 و ISO 10423:2022 طراحی، ساخته و آزمون می‌شوند.",
+      "answer_en": "Yes. Products are designed, manufactured and tested against API 6A, API 6FA, API 19LH and quality-management standards including ISO 29001:2020 and ISO 10423:2022.",
       "sort_order": 1,
       "is_active": true
     },
     {
       "question_fa": "آیا شرکت خدمات نصب سر دکل و عملیات راندن لاینر هنگر را نیز انجام می‌دهد؟",
+      "question_en": "Does the company provide rig-site installation and liner-hanger running services?",
       "answer_fa": "بله، تیم عملیات میدانی پارس پولاد آقایی خدمات نصب، راه‌اندازی و راندن آستری را ارائه می‌دهد.",
+      "answer_en": "Yes. The Pars Poolad Aghaee field operations team provides installation, commissioning and liner-running services.",
       "sort_order": 2,
       "is_active": true
     },
     {
       "question_fa": "چگونه می‌توان کاتالوگ‌های فنی یا سوابق پروژه‌ها را دریافت کرد؟",
+      "question_en": "How can I obtain technical catalogs or project references?",
       "answer_fa": "از بخش پروژه‌ها و قراردادها می‌توانید فایل‌های عمومی را دریافت کنید. برخی اسناد تفصیلی کنترل کیفیت پس از ورود به پرتال کاربری قابل دانلود هستند.",
+      "answer_en": "Public files are available in the Projects and Contracts sections. Some detailed quality-control documents can be downloaded after signing in to the user portal.",
       "sort_order": 3,
       "is_active": true
     },
     {
       "question_fa": "آیا امکان ساخت سفارشی قطعات توربین، کمپرسور و شیرآلات فشارقوی وجود دارد؟",
+      "question_en": "Can turbine, compressor and high-pressure valve components be manufactured to order?",
       "answer_fa": "بله، واحد مهندسی و ساخت شرکت قطعات صنعتی متناسب با مشخصات فنی پروژه را تولید می‌کند.",
+      "answer_en": "Yes. The company's engineering and manufacturing teams produce industrial components to project specifications.",
       "sort_order": 4,
       "is_active": true
     }
@@ -1502,6 +1510,7 @@
       "meta_title": "درباره پارس پولاد آقایی | پیشگام تجهیزات نفت و گاز",
       "meta_description": "تاریخچه، دستاوردهای دانش‌بنیان، خط‌مشی کیفیت و اهداف آرمانی شرکت پارس پولاد آقایی.",
       "metadata": {
+        "path": "/about",
         "image_url": "/images/factory_ahvaz_exterior_1794834721582.jpg",
         "download_1_label_fa": "فهرست ماشین‌آلات CNC و تولیدی کارخانه",
         "download_1_label_en": "Factory CNC and production machinery list",
@@ -1523,6 +1532,9 @@
       "content_en": "",
       "meta_title": "سوالات متداول | پارس پولاد آقایی",
       "meta_description": "پاسخ سوالات متداول درباره استاندارد API، زمان تحویل، خدمات نصب و مدارک فنی.",
+      "metadata": {
+        "path": "/faq"
+      },
       "updated_at": "2026-11-16T13:27:41.661Z"
     },
     {
@@ -1536,6 +1548,9 @@
       "content_en": "<p>All RFQ technical files and tender inquiries are stored securely under strict non-disclosure standards.</p>",
       "meta_title": "حریم خصوصی و قوانین | پارس پولاد آقایی",
       "meta_description": "قوانین استفاده، حریم خصوصی و سیاست کوکی‌های وب‌سایت شرکت پارس پولاد آقایی.",
+      "metadata": {
+        "path": "/legal"
+      },
       "updated_at": "2026-11-16T13:27:41.661Z"
     },
     {
@@ -1588,6 +1603,156 @@
         "articles_all_en": "All Articles"
       },
       "updated_at": "2026-11-16T13:27:41.661Z"
+    },
+    {
+      "id": 5,
+      "slug": "home",
+      "title_fa": "صفحه اصلی",
+      "title_en": "Home",
+      "subtitle_fa": "تولید تجهیزات سرچاهی و درون‌چاهی با تکیه بر توان مهندسی و ساخت داخل.",
+      "subtitle_en": "Wellhead and downhole equipment, engineered and manufactured in Iran.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "پارس پولاد آقایی | تجهیزات نفت و گاز",
+      "meta_description": "تولید و تأمین تجهیزات مهندسی‌شده صنعت نفت و گاز.",
+      "metadata": {
+        "path": "/"
+      }
+    },
+    {
+      "id": 6,
+      "slug": "services",
+      "title_fa": "خدمات مهندسی و تولیدی",
+      "title_en": "Engineering and Manufacturing Services",
+      "subtitle_fa": "از مهندسی معکوس و ماشین‌کاری دقیق تا آزمون، نصب و پشتیبانی میدانی.",
+      "subtitle_en": "From reverse engineering and precision machining to testing, installation and field support.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "خدمات مهندسی و تولیدی | پارس پولاد آقایی",
+      "meta_description": "خدمات طراحی، ساخت، آزمون و پشتیبانی تجهیزات نفت و گاز.",
+      "metadata": {
+        "path": "/services"
+      }
+    },
+    {
+      "id": 7,
+      "slug": "products",
+      "title_fa": "محصولات و تجهیزات نفت و گاز",
+      "title_en": "Oil and Gas Products",
+      "subtitle_fa": "مرور محصولات، مشخصات فنی و کاتالوگ‌های قابل دریافت.",
+      "subtitle_en": "Explore products, technical specifications and available catalogs.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "محصولات نفت و گاز | پارس پولاد آقایی",
+      "meta_description": "محصولات سرچاهی و درون‌چاهی و مشخصات فنی آن‌ها.",
+      "metadata": {
+        "path": "/products"
+      }
+    },
+    {
+      "id": 8,
+      "slug": "projects",
+      "title_fa": "پروژه‌ها و سوابق اجرایی",
+      "title_en": "Projects and Track Record",
+      "subtitle_fa": "سوابق پروژه‌ها را بر اساس حوزه، سال، کارفرما، موقعیت و نوع قرارداد بررسی کنید.",
+      "subtitle_en": "Browse projects by discipline, year, client, location and contract type.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "پروژه‌ها و سوابق اجرایی | پارس پولاد آقایی",
+      "meta_description": "سوابق اجرایی و پروژه‌های شرکت پارس پولاد آقایی.",
+      "metadata": {
+        "path": "/projects"
+      }
+    },
+    {
+      "id": 9,
+      "slug": "contracts-licenses",
+      "title_fa": "قراردادها و گواهینامه‌ها",
+      "title_en": "Contracts and Certifications",
+      "subtitle_fa": "گواهینامه‌ها، تأییدیه‌ها و سوابق قراردادهای شاخص شرکت.",
+      "subtitle_en": "Company certifications, approvals and selected contract history.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "قراردادها و گواهینامه‌ها | پارس پولاد آقایی",
+      "meta_description": "گواهینامه‌ها و سوابق قراردادهای شرکت.",
+      "metadata": {
+        "path": "/contracts-licenses"
+      }
+    },
+    {
+      "id": 10,
+      "slug": "org-chart",
+      "title_fa": "ساختار سازمانی",
+      "title_en": "Organization",
+      "subtitle_fa": "با واحدهای سازمانی و اعضای کلیدی تیم آشنا شوید.",
+      "subtitle_en": "Meet the company departments and key team members.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "ساختار سازمانی | پارس پولاد آقایی",
+      "meta_description": "ساختار سازمانی و اعضای کلیدی شرکت.",
+      "metadata": {
+        "path": "/org-chart"
+      }
+    },
+    {
+      "id": 11,
+      "slug": "contact",
+      "title_fa": "تماس با ما",
+      "title_en": "Contact Us",
+      "subtitle_fa": "برای ارتباط با کارخانه، دفتر مرکزی و واحد بازرگانی از راه‌های زیر استفاده کنید.",
+      "subtitle_en": "Contact our manufacturing plant, head office or commercial team.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "تماس با ما | پارس پولاد آقایی",
+      "meta_description": "اطلاعات تماس کارخانه و دفتر مرکزی پارس پولاد آقایی.",
+      "metadata": {
+        "path": "/contact"
+      }
+    },
+    {
+      "id": 12,
+      "slug": "rfq",
+      "title_fa": "درخواست همکاری و استعلام فنی",
+      "title_en": "Request for Quotation",
+      "subtitle_fa": "برای ثبت درخواست، مشخصات فنی و اطلاعات تماس را تکمیل کنید.",
+      "subtitle_en": "Submit technical details and contact information to start an inquiry.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "درخواست همکاری و استعلام فنی | پارس پولاد آقایی",
+      "meta_description": "ثبت درخواست همکاری، استعلام فنی و RFQ.",
+      "metadata": {
+        "path": "/rfq"
+      }
+    },
+    {
+      "id": 13,
+      "slug": "news",
+      "title_fa": "اخبار و مقالات فنی",
+      "title_en": "News and Technical Articles",
+      "subtitle_fa": "تازه‌ها و دانش فنی صنعت را دنبال کنید.",
+      "subtitle_en": "Read company updates and engineering insights.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "اخبار و مقالات فنی | پارس پولاد آقایی",
+      "meta_description": "اخبار صنعتی و مقالات مهندسی شرکت.",
+      "metadata": {
+        "path": "/news"
+      }
+    },
+    {
+      "id": 14,
+      "slug": "sitemap",
+      "title_fa": "نقشه سایت",
+      "title_en": "Sitemap",
+      "subtitle_fa": "دسترسی به صفحه‌ها و بخش‌های اصلی وب‌سایت.",
+      "subtitle_en": "Quick access to the main pages and sections of the website.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "نقشه سایت | پارس پولاد آقایی",
+      "meta_description": "فهرست صفحه‌های عمومی وب‌سایت.",
+      "metadata": {
+        "path": "/sitemap"
+      }
     }
   ],
   "notification_templates": [
@@ -1737,7 +1902,10 @@
       "aparat_url": "https://aparat.com",
       "footer_note_fa": "کلیه حقوق مادی و معنوی این وب‌سایت متعلق به شرکت دانش‌بنیان پارس پولاد آقایی می‌باشد.",
       "footer_note_en": "All rights reserved © Pars Poolad Aghaee Knowledge-Based Industrial Co.",
-      "last_updated_fa": "آبان ۱۴۰۴"
+      "last_updated_fa": "آبان ۱۴۰۴",
+      "last_updated_en": "November 2025",
+      "standards_fa": "استانداردهای API 6A / 6FA / ISO 29001",
+      "standards_en": "API 6A / 6FA / ISO 29001 standards"
     },
     "map": {
       "factory_lat": 31.2682,
@@ -1754,7 +1922,10 @@
     "site": {
       "maintenance_mode": false,
       "maintenance_message_fa": "سامانه در حال بروزرسانی فنی برنامه‌ریزی‌شده است. لطفاً دقایقی دیگر مراجعه فرمایید.",
-      "allow_registration": true
+      "allow_registration": true,
+      "header_cta_text_fa": "درخواست همکاری",
+      "header_cta_text_en": "Request Quote",
+      "header_cta_url": "/rfq"
     }
   }
 }

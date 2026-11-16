@@ -7,19 +7,27 @@ use App\Http\Requests\License\StoreLicenseRequest;
 use App\Http\Resources\LicenseResource;
 use App\Models\License;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class LicenseController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return response()->json(LicenseResource::collection(License::query()->orderBy('id')->get()));
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return LicenseResource::collection(
+            License::query()->orderBy('id')->paginate($perPage)->withQueryString(),
+        );
     }
 
-    public function adminIndex(): JsonResponse
+    public function adminIndex(Request $request): AnonymousResourceCollection
     {
-        return response()->json([
-            'data' => LicenseResource::collection(License::query()->with('attachments')->orderBy('id')->get()),
-        ]);
+        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+
+        return LicenseResource::collection(
+            License::query()->orderBy('id')->paginate($perPage)->withQueryString(),
+        );
     }
 
     public function store(StoreLicenseRequest $request): JsonResponse

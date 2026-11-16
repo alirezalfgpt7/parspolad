@@ -16,7 +16,7 @@ export const Breadcrumb: React.FC<{ items: BreadcrumbItem[] }> = ({ items }) => 
     <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
       <Link
         to="/"
-        className="flex items-center gap-1 transition-colors hover:text-[var(--theme-primary)]"
+        className="flex items-center gap-1 transition-colors hover:text-(--theme-primary)"
       >
         <Home className="h-3.5 w-3.5" />
         <span>{language === 'fa' ? 'خانه' : 'Home'}</span>
@@ -25,7 +25,7 @@ export const Breadcrumb: React.FC<{ items: BreadcrumbItem[] }> = ({ items }) => 
         <React.Fragment key={idx}>
           <Sep className="h-3.5 w-3.5 opacity-60" />
           {item.to ? (
-            <Link to={item.to} className="transition-colors hover:text-[var(--theme-primary)]">
+            <Link to={item.to} className="transition-colors hover:text-(--theme-primary)">
               {item.label}
             </Link>
           ) : (

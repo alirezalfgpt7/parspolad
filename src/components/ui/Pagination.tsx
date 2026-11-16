@@ -10,7 +10,13 @@ interface PaginationProps {
 
 export const Pagination: React.FC<PaginationProps> = ({ page, lastPage, onChange }) => {
   if (lastPage <= 1) return null;
-  const pages = Array.from({ length: lastPage }, (_, i) => i + 1);
+  const pages: Array<number | 'left-ellipsis' | 'right-ellipsis'> = lastPage <= 7
+    ? Array.from({ length: lastPage }, (_, i) => i + 1)
+    : page <= 4
+      ? [1, 2, 3, 4, 5, 'right-ellipsis', lastPage]
+      : page >= lastPage - 3
+        ? [1, 'left-ellipsis', lastPage - 4, lastPage - 3, lastPage - 2, lastPage - 1, lastPage]
+        : [1, 'left-ellipsis', page - 1, page, page + 1, 'right-ellipsis', lastPage];
 
   return (
     <div className="mt-6 flex items-center justify-center gap-1.5 tabular-nums">
@@ -23,15 +29,18 @@ export const Pagination: React.FC<PaginationProps> = ({ page, lastPage, onChange
       >
         <ChevronRight className="h-4 w-4" />
       </button>
-      {pages.map((p) => (
+      {pages.map((p) => p === 'left-ellipsis' || p === 'right-ellipsis' ? (
+        <span key={p} className="px-1 text-slate-500" aria-hidden="true">…</span>
+      ) : (
         <button
           key={p}
           type="button"
           onClick={() => onChange(p)}
+          aria-current={p === page ? 'page' : undefined}
           className={cn(
             'flex h-9 min-w-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors',
             p === page
-              ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white'
+              ? 'border-(--theme-primary) bg-(--theme-primary) text-white'
               : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
           )}
         >

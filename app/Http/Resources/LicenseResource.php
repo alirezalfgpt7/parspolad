@@ -18,7 +18,7 @@ class LicenseResource extends JsonResource
             'issuer_en' => $this->issuer_en,
             'issue_date' => $this->issue_date,
             'expiry_date' => $this->expiry_date,
-            'category' => $this->category,
+            'category' => $this->category?->value ?? $this->category,
             'image_url' => $this->image_url,
             'document_url' => $this->document_url,
             'requires_auth' => (bool) $this->requires_auth,

@@ -8,6 +8,7 @@ import type { Swiper as SwiperInstance } from 'swiper';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Slide, SlideTextAnimation } from '../../types/index.ts';
 import { cn } from '../../utils/i18n.ts';
+import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 
 const ParticleCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -205,11 +206,10 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
                   className="absolute inset-0 h-full w-full object-cover"
                 />
               ) : (
-                <img
+                <ZeroBrokenImage
                   src={mediaSrc}
                   alt={title}
                   loading={idx === 0 ? 'eager' : 'lazy'}
-                  referrerPolicy="no-referrer"
                   className={cn(
                     'absolute inset-0 h-full w-full object-cover transition-transform duration-1000',
                     slide.effect === 'ken-burns' && 'animate-kenburns',

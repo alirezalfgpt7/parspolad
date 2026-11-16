@@ -5,20 +5,35 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 
 export const MediaLibraryPage: React.FC = () => {
   const { addToast } = useAppStore();
   const [files, setFiles] = useState<MediaFile[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const [deleteFile, setDeleteFile] = useState<MediaFile | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const load = () => {
-    apiRequest<{ data: MediaFile[] }>('/admin/media').then((r) => setFiles(r.data)).catch(() => {});
+  const load = async (targetPage = page) => {
+    try {
+      const response = await apiRequest<{ data: MediaFile[]; meta: { last_page: number } }>(
+        `/admin/media?page=${targetPage}&per_page=12`,
+      );
+      if (targetPage > response.meta.last_page) {
+        setPage(Math.max(1, response.meta.last_page));
+        return;
+      }
+      setFiles(response.data);
+      setLastPage(response.meta.last_page);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'بارگذاری رسانه‌ها ناموفق بود.');
+    }
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    void load(page);
+  }, [page]);
 
   const confirmDelete = async () => {
     if (!deleteFile) return;
@@ -104,6 +119,7 @@ export const MediaLibraryPage: React.FC = () => {
           </div>
         ))}
       </div>
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
     </div>
   );
 };

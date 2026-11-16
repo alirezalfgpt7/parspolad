@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { Pagination } from '../../components/ui/Pagination.tsx';
 
 type CommentStatus = 'pending' | 'approved' | 'rejected';
 
@@ -24,21 +25,29 @@ const statusLabels: Record<CommentStatus, string> = {
 export const ArticleCommentsAdminPage: React.FC = () => {
   const { addToast } = useAppStore();
   const [comments, setComments] = useState<ArticleComment[]>([]);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<CommentStatus | 'all'>('pending');
   const [deleteTarget, setDeleteTarget] = useState<ArticleComment | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const load = async () => {
-    const query = statusFilter === 'all' ? '' : `?status=${statusFilter}`;
-    const response = await apiRequest<{ data: ArticleComment[] }>(`/admin/comments${query}`);
+  const load = async (targetPage = page) => {
+    const query = new URLSearchParams({ page: String(targetPage), per_page: '20' });
+    if (statusFilter !== 'all') query.set('status', statusFilter);
+    const response = await apiRequest<{ data: ArticleComment[]; meta: { last_page: number } }>(`/admin/comments?${query}`);
+    if (targetPage > response.meta.last_page) {
+      setPage(Math.max(1, response.meta.last_page));
+      return;
+    }
     setComments(response.data);
+    setLastPage(response.meta.last_page);
   };
 
   useEffect(() => {
-    load().catch((error: unknown) => {
+    load(page).catch((error: unknown) => {
       addToast('error', error instanceof Error ? error.message : 'دریافت دیدگاه‌ها ناموفق بود.');
     });
-  }, [statusFilter]);
+  }, [statusFilter, page]);
 
   const moderate = async (comment: ArticleComment, status: CommentStatus) => {
     try {
@@ -80,7 +89,10 @@ export const ArticleCommentsAdminPage: React.FC = () => {
           وضعیت
           <select
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as CommentStatus | 'all')}
+            onChange={(event) => {
+              setStatusFilter(event.target.value as CommentStatus | 'all');
+              setPage(1);
+            }}
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
           >
             <option value="pending">در انتظار بررسی</option>
@@ -112,7 +124,7 @@ export const ArticleCommentsAdminPage: React.FC = () => {
                   </time>
                 </div>
                 {comment.article && (
-                  <Link to={`/news/${comment.article.slug}`} target="_blank" className="text-xs text-[var(--theme-primary)] hover:underline">
+                  <Link to={`/news/${comment.article.slug}`} target="_blank" className="text-xs text-(--theme-primary) hover:underline">
                     {comment.article.title_fa}
                   </Link>
                 )}
@@ -151,6 +163,7 @@ export const ArticleCommentsAdminPage: React.FC = () => {
           ))}
         </div>
       )}
+      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}

@@ -15,9 +15,9 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
   className,
   loading = 'lazy',
 }) => {
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  if (!src || failed) {
+  if (!src || failedSrc === src) {
     return (
       <div
         className={cn(
@@ -37,7 +37,7 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
       alt={alt}
       loading={loading}
       referrerPolicy="no-referrer"
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src)}
       className={className}
     />
   );

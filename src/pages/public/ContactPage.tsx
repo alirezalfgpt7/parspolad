@@ -6,8 +6,7 @@ import L from 'leaflet';
 import { Clock, Mail, MapPin, Phone, Send } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import { SeoHead } from '../../components/common/SeoHead.tsx';
-import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
+import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
 import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
 
@@ -23,6 +22,16 @@ const contactSchema = z.object({
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
+
+const createMapPopup = (title: string, address: string): HTMLElement => {
+  const container = document.createElement('div');
+  const heading = document.createElement('strong');
+  const location = document.createElement('div');
+  heading.textContent = title;
+  location.textContent = address;
+  container.append(heading, location);
+  return container;
+};
 
 export const ContactPage: React.FC = () => {
   const { bootstrap, language, addToast } = useAppStore();
@@ -67,18 +76,24 @@ export const ContactPage: React.FC = () => {
       iconAnchor: [9, 9],
     });
 
+    const companyName = language === 'fa' ? bootstrap?.company?.name_fa : bootstrap?.company?.name_en;
+    const factoryAddress = language === 'fa' ? bootstrap?.company?.factory_address_fa : bootstrap?.company?.factory_address_en;
+    const officeAddress = language === 'fa' ? bootstrap?.company?.office_address_fa : bootstrap?.company?.office_address_en;
+    const factoryLabel = language === 'fa' ? 'کارخانه تولیدی' : 'Manufacturing Plant';
+    const officeLabel = language === 'fa' ? 'دفتر مرکزی' : 'Head Office';
+
     L.marker([lat, lng], { icon: pinIcon })
       .addTo(map)
-      .bindPopup('<strong>کارخانه پارس پولاد آقایی</strong><br/>اهواز، شهرک صنعتی شماره ۳، خیابان ابتکار ۶');
+      .bindPopup(createMapPopup(`${companyName || ''} - ${factoryLabel}`, factoryAddress || ''));
 
     L.marker([oLat, oLng], { icon: pinIcon })
       .addTo(map)
-      .bindPopup('<strong>دفتر مرکزی پارس پولاد آقایی</strong><br/>اهواز، شهرک صنعتی شماره ۱، فاز ۳، واحد ۷');
+      .bindPopup(createMapPopup(`${companyName || ''} - ${officeLabel}`, officeAddress || ''));
 
     return () => {
       map.remove();
     };
-  }, [bootstrap]);
+  }, [bootstrap, language]);
 
   const onSubmit = async (data: ContactFormValues) => {
     try {
@@ -100,17 +115,7 @@ export const ContactPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title={language === 'fa' ? 'تماس با ما' : 'Contact Us'} />
-      <Breadcrumb items={[{ label: language === 'fa' ? 'تماس با ما' : 'Contact' }]} />
-
-      <div className="mb-10">
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-          تماس با شرکت پارس پولاد آقایی
-        </h1>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          ارتباط مستقیم با دفتر مرکزی، کارخانه شهرک صنعتی اهواز و واحد بازرگانی
-        </p>
-      </div>
+      <CmsPageIntro slug="contact" />
 
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Form */}
@@ -184,7 +189,7 @@ export const ContactPage: React.FC = () => {
         <div className="space-y-6 lg:col-span-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-slate-200 bg-white p-5 text-xs space-y-2 dark:border-slate-800 dark:bg-slate-900">
-              <div className="font-bold text-sm text-[var(--theme-primary)]">کارخانه تولیدی</div>
+              <div className="font-bold text-sm text-(--theme-primary)">کارخانه تولیدی</div>
               <p className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{company?.factory_address_fa}</span>
@@ -205,7 +210,7 @@ export const ContactPage: React.FC = () => {
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <div ref={mapRef} className="h-[340px] w-full" />
+            <div ref={mapRef} className="h-85 w-full" />
           </div>
         </div>
       </div>
