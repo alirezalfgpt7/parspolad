@@ -65,6 +65,12 @@ export default defineConfig(() => {
           const distDir = path.resolve(import.meta.dirname, 'dist');
           const srcAssets = path.resolve(import.meta.dirname, 'src/assets');
           const distAssets = path.resolve(distDir, 'src/assets');
+          for (const entrypoint of ['index.php', '.htaccess']) {
+            const backendEntrypoint = path.resolve(distDir, entrypoint);
+            if (fs.existsSync(backendEntrypoint)) {
+              fs.rmSync(backendEntrypoint);
+            }
+          }
           if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {
             fs.cpSync(srcAssets, distAssets, { recursive: true, force: true });
           }
@@ -79,6 +85,12 @@ export default defineConfig(() => {
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      proxy: {
+        '/api': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/storage': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/sitemap.xml': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/robots.txt': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+      },
     },
   };
 });

@@ -6,6 +6,7 @@
 ---
 
 ## اقدامات انجام‌شده
+
 1. **مرتب‌سازی منابع مخزن گیت‌هاب:** انتقال تمامی فایل‌های اولیه مخزن (تصاویر تجهیزات، ویدیوها، مدارک قراردادها، گواهینامه‌های ISO/API، چارت سازمانی و اسناد Word/Excel) به پوشه `منابع سایت/` و آماده‌سازی دارایی‌های استاندارد وب در `public/storage/`.
 2. **زیرساخت محلی و بدون CDN:** نصب محلی پکیج‌های `Vazirmatn`, `Swiper.js`, `Leaflet`, `Lucide React`, `Framer Motion`, `AOS`, `React Hook Form`, `Zod`, `Zustand`, `SheetJS (xlsx)` و `VitePWA` همراه با آیکون‌ها و مانیفست آفلاین PWA.
 3. **موتور تم داینامیک (Theme Engine):** پیاده‌سازی پیش‌فرض «قرمز صنعتی (#B91C1C)»، تم‌های آماده (Preset Themes)، تم مستقل صفحه لندینگ، پیش‌نمایش زنده پیش از ذخیره، و پشتیبانی کامل از حالت تاریک/روشن (Dark/Light Mode) مبتنی بر CSS Variables.
@@ -15,15 +16,22 @@
    - پنل مدیریت یکپارچه: داشبورد نمودارها، تنظیمات تم، مدیریت اسلایدر با Drag & Drop، مدیریت پروژه‌ها/قراردادها/گواهینامه‌ها + خروجی اکسل، مگامنو، CMS صفحات و اخبار، کتابخانه رسانه، صندوق پیام و RFQ، مدیریت کاربران/نقش‌ها/2FA، تنظیمات SMTP/SMS و لاگ رویدادها.
    - کامپوننت استاندارد `SearchableSelect` در تمامی منوهای کشویی (Dropdown) سامانه.
 5. **بک‌اند و دیتابیس:**
-   - سرور اجرای زنده در محیط پیش‌نمایش (`server.ts` + `/server/*`) با احراز هویت Sanctum-مانند، رمزنگاری AES-256، RBAC و خروجی اکسل.
-   - کدبیس کامل و ماژولار **Laravel 11+ (PHP 8.2+)** در پوشه `/backend` شامل Migrations، Models، Enums، FormRequests، API Resources، Policies، AuditObserver، Laravel Excel Exports، Queue Jobs، Seeders، Factories، تست‌های Pest PHP و مستندات OpenAPI 3.1.
+
+   - کدبیس کامل و ماژولار **Laravel 13+ (PHP 8.5+)** در ساختار ریشه پروژه شامل Migrations، Models، Enums، FormRequests، API Resources، Policies، AuditObserver، Laravel Excel Exports، Queue Jobs، Seeders، Factories، تست‌های Pest PHP و مستندات OpenAPI 3.1.
+   - محتوای عمومی پایگاه دادهٔ قبلی به `database/seeders/data/portal-content.json` منتقل شده و Seederهای تکرارپذیر Laravel از آن استفاده می‌کنند؛ داده‌های حساس حساب‌ها و پیام‌ها وارد seed عمومی نمی‌شوند.
+   - APIهای فرانت‌اند در Laravel پیاده‌سازی شده‌اند؛ احراز هویت و مجوزها با Sanctum و Spatie، رمزنگاری تنظیمات با Laravel و فایل‌ها در `app/Http`, `routes/`, `database/seeders/` و `storage/` مدیریت می‌شوند.
+6. **راه‌اندازی توسعه:** ساختار استاندارد Laravel در ریشه پروژه؛ Vite روی پورت ۳۰۰۰ درخواست‌های API و storage را به Laravel روی پورت ۸۰۰۰ پروکسی می‌کند؛ اجرای هم‌زمان با `composer run dev` و کلید معتبر AES-256.
 
 ## اقدامات در حال انجام
-- بررسی نهایی کامپایل TypeScript (`tsc --noEmit`) و بیلد Vite (`npm run build`) و بررسی اجرای سرور و API.
+
+- توسعه و تکمیل قابلیت‌های وب‌سایت و API مطابق مستندات پروژه.
 
 ## اقدامات باقیمانده
+
 - ارسال (Push) نهایی کل کدها و پوشه `منابع سایت/` روی مخزن گیت‌هاب.
 
 ## مشکلات و نکات فنی
-- فایل `.gitignore` صرفاً شامل `node_modules/` و `vendor/` تنظیم شده تا تمام فایل‌های پروژه و پوشه `منابع سایت/` بدون محدودیت ذخیره شوند.
+
+- فایل `.gitignore` علاوه بر `node_modules/` و `vendor/`، فایل‌های محیطی و cacheهای تولیدشده لاراول را نیز نادیده می‌گیرد؛ پوشه `منابع سایت/` دست‌نخورده باقی می‌ماند.
+- جدول‌های `cache`، `sessions`، `jobs` و `failed_jobs` با migrationهای استاندارد Laravel ایجاد می‌شوند؛ پس از دریافت migration جدید، `php artisan migrate` را پیش از seed اجرا کنید.
 - کلیه فونت‌ها و استایل‌های کتابخانه‌ها به‌صورت آفلاین و محلی باندل شده‌اند و هیچ لینک CDN خارجی در پروژه وجود ندارد.

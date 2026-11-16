@@ -17,11 +17,21 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     apiRequest<{ data: Project[] }>('/projects?per_page=6')
-      .then((res) => setFeaturedProjects(res.data))
-      .catch(() => {});
+      .then((res) => {
+        if (!Array.isArray(res.data)) {
+          throw new TypeError('The projects API response must include a data array.');
+        }
+        setFeaturedProjects(res.data);
+      })
+      .catch((error: unknown) => console.error('Could not load featured projects:', error));
     apiRequest<{ data: Article[] }>('/articles')
-      .then((res) => setArticles(res.data.slice(0, 3)))
-      .catch(() => {});
+      .then((res) => {
+        if (!Array.isArray(res.data)) {
+          throw new TypeError('The articles API response must include a data array.');
+        }
+        setArticles(res.data.slice(0, 3));
+      })
+      .catch((error: unknown) => console.error('Could not load home page articles:', error));
   }, []);
 
   const heroSlider = bootstrap?.sliders?.find((s) => s.key === 'landing_hero') || bootstrap?.sliders?.[0];
@@ -59,7 +69,7 @@ export const HomePage: React.FC = () => {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-[var(--theme-primary)]">
+            <p className="text-xs font-semibold text-(--theme-primary)">
               {language === 'fa' ? 'توانمندی‌های مهندسی و تولیدی' : 'Engineering & Manufacturing Capabilities'}
             </p>
             <h2 className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white" style={{ textWrap: 'balance' }}>
@@ -70,7 +80,7 @@ export const HomePage: React.FC = () => {
           </div>
           <Link
             to="/services"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--theme-link)] hover:underline whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-(--theme-link) hover:underline whitespace-nowrap"
           >
             <span>{language === 'fa' ? 'همه خدمات مهندسی' : 'All Services'}</span>
             <ArrowIcon className="h-4 w-4" />
@@ -87,7 +97,7 @@ export const HomePage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.4, delay: idx * 0.06 }}
-                className={`group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900 ${
+                className={`group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 ${
                   isWide ? 'md:col-span-2' : 'md:col-span-1'
                 }`}
               >
@@ -106,7 +116,7 @@ export const HomePage: React.FC = () => {
                     </div>
                     <Link
                       to="/services"
-                      className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--theme-primary)] hover:underline"
+                      className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-primary) hover:underline"
                     >
                       <span>{language === 'fa' ? 'مشاهده شرح فنی' : 'Technical Scope'}</span>
                       <ArrowIcon className="h-3.5 w-3.5" />
@@ -148,7 +158,7 @@ export const HomePage: React.FC = () => {
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/about"
-                className="rounded-lg bg-[var(--theme-primary)] px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
+                className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
               >
                 {language === 'fa' ? 'تاریخچه و توان تولید' : 'Plant & Heritage'}
               </Link>
@@ -167,14 +177,14 @@ export const HomePage: React.FC = () => {
               <ZeroBrokenImage
                 src="/src/assets/images/factory_ahvaz_exterior_1794834721582.jpg"
                 alt="کارخانه پارس پولاد آقایی اهواز"
-                className="h-full min-h-[220px] w-full object-cover"
+                className="h-full min-h-55 w-full object-cover"
               />
             </div>
             <div className="overflow-hidden rounded-xl border border-white/10">
               <ZeroBrokenImage
                 src="/src/assets/images/qc_testing_lab_1794834723950.jpg"
                 alt="آزمایشگاه کنترل کیفیت و تست فشار ۱۵۰۰۰ PSI"
-                className="h-full min-h-[220px] w-full object-cover"
+                className="h-full min-h-55 w-full object-cover"
               />
             </div>
           </div>
@@ -185,7 +195,7 @@ export const HomePage: React.FC = () => {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-[var(--theme-primary)]">
+            <p className="text-xs font-semibold text-(--theme-primary)">
               {language === 'fa' ? 'کارنامه اجرایی در میادین نفت و گاز' : 'Field Proven Track Record'}
             </p>
             <h2 className="mt-1.5 text-2xl font-extrabold text-slate-900 sm:text-3xl dark:text-white">
@@ -194,7 +204,7 @@ export const HomePage: React.FC = () => {
           </div>
           <Link
             to="/projects"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--theme-link)] hover:underline whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-(--theme-link) hover:underline whitespace-nowrap"
           >
             <span>{language === 'fa' ? 'فیلتر پیشرفته همه پروژه‌ها' : 'Filter All Projects'}</span>
             <ArrowIcon className="h-4 w-4" />
@@ -206,7 +216,7 @@ export const HomePage: React.FC = () => {
             <Link
               key={p.id}
               to={`/projects/${p.slug}`}
-              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900"
+              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
             >
               <div className="h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <ZeroBrokenImage
@@ -224,7 +234,7 @@ export const HomePage: React.FC = () => {
                     <span aria-hidden="true">·</span>
                     <span>{p.status === 'completed' ? 'تکمیل‌شده' : 'در حال اجرا'}</span>
                   </div>
-                  <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 group-hover:text-[var(--theme-primary)] dark:text-white">
+                  <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
                     {language === 'fa' ? p.title_fa : p.title_en}
                   </h3>
                   <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
@@ -244,7 +254,7 @@ export const HomePage: React.FC = () => {
       {/* Rotating Partners & Clients Strip */}
       <section className="border-y border-slate-200 bg-white py-12 overflow-hidden dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-xs font-semibold text-[var(--theme-primary)]">
+          <p className="text-xs font-semibold text-(--theme-primary)">
             {language === 'fa' ? 'اعتماد کارفرمایان بزرگ صنعت نفت، گاز و حفاری' : 'Trusted by Major National Oil & Drilling Operators'}
           </p>
           <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
@@ -263,7 +273,7 @@ export const HomePage: React.FC = () => {
                   src={partner.logo_url}
                   alt={partner.name_fa}
                   loading="lazy"
-                  className="h-11 max-w-[140px] object-contain"
+                  className="h-11 max-w-35 object-contain"
                 />
                 <span className="truncate max-w-full text-[11px] font-medium text-slate-600 dark:text-slate-300">
                   {language === 'fa' ? partner.name_fa : partner.name_en}
@@ -278,14 +288,14 @@ export const HomePage: React.FC = () => {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between">
           <div>
-            <p className="text-xs font-semibold text-[var(--theme-primary)]">
+            <p className="text-xs font-semibold text-(--theme-primary)">
               {language === 'fa' ? 'دانش مهندسی و تازه‌ها' : 'Engineering Insights'}
             </p>
             <h2 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">
               {language === 'fa' ? 'مقالات فنی و اخبار صنعتی' : 'Technical Articles & News'}
             </h2>
           </div>
-          <Link to="/news" className="text-sm font-semibold text-[var(--theme-link)] hover:underline">
+          <Link to="/news" className="text-sm font-semibold text-(--theme-link) hover:underline">
             {language === 'fa' ? 'آرشیو مقالات' : 'All Articles'}
           </Link>
         </div>
@@ -294,7 +304,7 @@ export const HomePage: React.FC = () => {
             <Link
               key={art.id}
               to={`/news/${art.slug}`}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-[var(--theme-primary)] dark:border-slate-800 dark:bg-slate-900"
+              className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
             >
               <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
                 <ZeroBrokenImage
@@ -309,7 +319,7 @@ export const HomePage: React.FC = () => {
                   <span>·</span>
                   <span>{art.published_at}</span>
                 </div>
-                <h3 className="mt-2 text-base font-bold text-slate-900 group-hover:text-[var(--theme-primary)] dark:text-white">
+                <h3 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
                   {language === 'fa' ? art.title_fa : art.title_en}
                 </h3>
                 <p className="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">

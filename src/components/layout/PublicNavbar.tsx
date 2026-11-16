@@ -64,6 +64,14 @@ export const PublicNavbar: React.FC = () => {
 
         {/* Zone 3: 1 Primary Action CTA */}
         <div className="flex items-center gap-3 shrink-0">
+          {!user && (
+            <Link
+              to="/login"
+              className="hidden rounded-lg px-3 py-2 text-xs font-semibold opacity-80 transition-opacity hover:opacity-100 sm:inline-flex whitespace-nowrap"
+            >
+              {language === 'fa' ? 'ورود' : 'Login'}
+            </Link>
+          )}
           <Link
             to={user ? '/admin' : '/rfq'}
             style={{

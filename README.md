@@ -1,11 +1,13 @@
 # پورتال شرکتی و سامانه مدیریت یکپارچه پارس پولاد آقایی
-**Pars Poolad Aghaee Knowledge-Based Co. — Wellhead & Downhole Engineering Portal**
+
+## Pars Poolad Aghaee Knowledge-Based Co. — Wellhead & Downhole Engineering Portal
 
 وب‌سایت رسمی، کاتالوگ فنی تجهیزات سرچاهی و درون‌چاهی، مدیریت پروژه‌ها/قراردادها/گواهینامه‌ها و پنل مدیریت تم‌محور شرکت دانش‌بنیان **پارس پولاد آقایی**.
 
 ---
 
 ## ویژگی‌های کلیدی معماری
+
 - **کاملاً بدون CDN و بدون هوش مصنوعی/چت‌بات:** تمامی فونت‌ها (`@fontsource/vazirmatn`)، آیکون‌ها (`lucide-react`)، نقشه‌ها (`leaflet`)، اسلایدر (`swiper`) و انیمیشن‌ها (`motion`, `aos`) به‌صورت محلی نصب و باندل می‌شوند.
 - **موتور تم داینامیک (CSS Variables):** تم پیش‌فرض «قرمز صنعتی (#B91C1C)»، تم‌های آماده قابل انتخاب، تم مستقل صفحه نخست، پیش‌نمایش زنده و تغییر حالت Dark/Light.
 - **اسلایدر پیشرفته Hero:** مدیریت ترتیب Drag & Drop، افکت‌های Ken Burns / Parallax / Zoom / Fade / Slide، انیمیشن متن، ذرات و پشتیبانی از ویدیو MP4 و تصویر مجزا برای دسکتاپ و موبایل.
@@ -14,36 +16,33 @@
 
 ---
 
-## راه‌اندازی محیط فرانت‌اند + سرور اجرای سریع (Port 3000)
+## اجرای پروژه
 
 ```bash
+composer install
 npm install
-npm run dev
+composer run dev
 ```
 
 - آدرس سایت: `http://localhost:3000`
+- آدرس API لاراول: `http://localhost:8000`
 - آدرس پنل مدیریت: `http://localhost:3000/admin`
-- مستندات OpenAPI: `backend/docs/openapi.yaml`
+- مستندات OpenAPI: `docs/openapi.yaml`
+
+فرانت‌اند با Vite اجرا می‌شود و درخواست‌های `/api` و `/storage` را به Laravel پروکسی می‌کند؛ منطق API و داده‌ها در ساختار استاندارد Laravel نگهداری می‌شوند.
 
 ---
 
-## راه‌اندازی بک‌اند Laravel 11+ (PHP 8.2+)
+## راه‌اندازی بک‌اند Laravel 13+ (PHP 8.5+)
 
-پروژه لاراول در پوشه `backend/` قرار دارد. می‌توانید دستور `composer install` را هم مستقیماً از ریشه پروژه (`D:\parspoolad`) اجرا کنید (به‌صورت خودکار به `backend` هدایت می‌شود) و هم وارد پوشه `backend` شوید:
+ساختار Laravel مستقیماً در ریشه پروژه قرار دارد؛ بنابراین دستورهای Artisan را از همین پوشه اجرا کنید:
 
 ```bash
-cd backend
-cp .env.example .env
-composer install
-php artisan key:generate
-php artisan storage:link
-php artisan migrate --seed
-php artisan test
-php artisan serve
+php artisan migrate
+composer test
 ```
 
-> یا از ریشه پروژه:
-> `composer install` و سپس `php backend/artisan portal:bootstrap` و `php backend/artisan serve`.
+در نصب تازه، `.env.example` را به `.env` کپی کنید، دیتابیس را پیکربندی کنید و سپس `php artisan key:generate` و `php artisan migrate --seed` را اجرا کنید. برای دیتابیسی که قبلاً مهاجرت شده، ابتدا `php artisan migrate` و سپس `php artisan db:seed` را اجرا کنید تا جدول‌های cache، session و queue نیز ساخته شوند. فایل `.env` موجود را بازنویسی نکنید. این پروژه به‌صورت پیش‌فرض از MySQL استفاده می‌کند.
 
 ---
 

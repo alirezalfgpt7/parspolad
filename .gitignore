@@ -1,2 +1,14 @@
 node_modules/
 vendor/
+.env
+.env.*
+!.env.example
+/token.txt
+/bootstrap/cache/*.php
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*.log
+/storage/*.key
+/storage/app/private/legacy-database.json
