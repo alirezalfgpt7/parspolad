@@ -29,6 +29,8 @@ npm run dev
 
 ## راه‌اندازی بک‌اند Laravel 11+ (PHP 8.2+)
 
+پروژه لاراول در پوشه `backend/` قرار دارد. می‌توانید دستور `composer install` را هم مستقیماً از ریشه پروژه (`D:\parspoolad`) اجرا کنید (به‌صورت خودکار به `backend` هدایت می‌شود) و هم وارد پوشه `backend` شوید:
+
 ```bash
 cd backend
 cp .env.example .env
@@ -40,7 +42,8 @@ php artisan test
 php artisan serve
 ```
 
-> برای راه‌اندازی یک‌مرحله‌ای نیز می‌توانید دستور `php artisan portal:bootstrap` را اجرا کنید.
+> یا از ریشه پروژه:
+> `composer install` و سپس `php backend/artisan portal:bootstrap` و `php backend/artisan serve`.
 
 ---
 

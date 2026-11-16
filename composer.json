@@ -1,0 +1,19 @@
+{
+  "name": "parspooladaghaei/corporate-portal-workspace",
+  "description": "Root workspace helper that delegates Composer commands to the Laravel 11 backend in ./backend",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": "^8.2"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "@composer --working-dir=backend install"
+    ],
+    "post-update-cmd": [
+      "@composer --working-dir=backend update"
+    ],
+    "artisan": "php backend/artisan",
+    "test": "@composer --working-dir=backend test"
+  }
+}
