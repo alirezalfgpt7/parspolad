@@ -6,7 +6,6 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article, Project } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
-import { HeroSlider } from '../../components/slider/HeroSlider.tsx';
 import { StatCounter } from '../../components/ui/StatCounter.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
@@ -37,7 +36,6 @@ export const HomePage: React.FC = () => {
       .catch((error: unknown) => console.error('Could not load home page articles:', error));
   }, []);
 
-  const heroSlider = bootstrap?.sliders?.find((s) => s.key === 'landing_hero') || bootstrap?.sliders?.[0];
   const kpis = bootstrap?.kpis || [];
   const services = bootstrap?.services || [];
   const partners = bootstrap?.partners || [];
@@ -54,8 +52,6 @@ export const HomePage: React.FC = () => {
         title={bootstrap?.seo?.site_title ?? ''}
         description={bootstrap?.seo?.meta_description}
       />
-
-      {heroSlider && <HeroSlider slides={heroSlider.slides} />}
 
       {/* KPI Counter Strip */}
       <section className="border-b border-slate-200 bg-white py-10 dark:border-slate-800 dark:bg-slate-900">

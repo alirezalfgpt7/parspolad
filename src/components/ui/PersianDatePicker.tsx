@@ -1,5 +1,5 @@
 import React from 'react';
-import DatePicker, { DateObject } from 'react-multi-date-picker';
+import { default as DatePicker, DateObject } from 'react-multi-date-picker';
 import persian from 'react-date-object/calendars/persian';
 import gregorian from 'react-date-object/calendars/gregorian';
 import persian_fa from 'react-date-object/locales/persian_fa';

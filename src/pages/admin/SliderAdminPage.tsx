@@ -52,24 +52,47 @@ const slideFormSchema = z.object({
 
 export const SliderAdminPage: React.FC = () => {
   const { fetchBootstrap, addToast } = useAppStore();
-  const [slider, setSlider] = useState<Slider | null>(null);
+  const [sliders, setSliders] = useState<Slider[]>([]);
+  const [selectedSliderId, setSelectedSliderId] = useState<number | null>(null);
+  const [creatingSlider, setCreatingSlider] = useState(false);
+  const [newSlider, setNewSlider] = useState({ key: '', title_fa: '', title_en: '', page_slug: '' });
   const [slides, setSlides] = useState<Slide[]>([]);
   const [editing, setEditing] = useState<Slide | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const slider = sliders.find((item) => item.id === selectedSliderId) ?? null;
 
   useEffect(() => {
     apiRequest<{ data: Slider[] }>('/admin/sliders')
       .then((r) => {
-        const s = r.data[0];
-        if (s) {
-          setSlider(s);
-          setSlides([...s.slides].sort((a, b) => a.sort_order - b.sort_order));
-        }
+        setSliders(r.data);
+        setSelectedSliderId((current) => current ?? r.data[0]?.id ?? null);
       })
-      .catch(() => {});
-  }, []);
+      .catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'دریافت اسلایدرها ناموفق بود.'));
+  }, [addToast]);
+
+  useEffect(() => {
+    setSlides(slider ? [...slider.slides].sort((a, b) => a.sort_order - b.sort_order) : []);
+  }, [slider]);
+
+  const createSlider = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const response = await apiRequest<{ data: Slider }>('/admin/sliders', {
+        method: 'POST',
+        body: JSON.stringify(newSlider),
+      });
+      setSliders((current) => [...current, response.data]);
+      setSelectedSliderId(response.data.id);
+      setCreatingSlider(false);
+      setNewSlider({ key: '', title_fa: '', title_en: '', page_slug: '' });
+      await fetchBootstrap();
+      addToast('success', 'اسلایدر صفحه جدید ایجاد شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ایجاد اسلایدر ناموفق بود.');
+    }
+  };
 
   const persistSlides = async (nextSlides: Slide[], successMessage = 'ترتیب و تنظیمات اسلایدر با موفقیت ذخیره شد.') => {
     if (!slider) return;
@@ -158,21 +181,49 @@ export const SliderAdminPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <div>
-          <h1 className="text-lg font-extrabold">مدیریت اسلایدر صفحه اول (Drag & Drop + افکت‌ها)</h1>
+          <h1 className="text-lg font-extrabold">مدیریت اسلایدر صفحات (Drag & Drop + افکت‌ها)</h1>
           <p className="mt-1 text-xs text-slate-500">
-            برای تغییر ترتیب، کارت هر اسلاید را بکشید و رها کنید. پشتیبانی از تصویر و ویدیو MP4 برای دسکتاپ و موبایل.
+            اسلایدر را بر اساس صفحه انتخاب کنید؛ ترتیب اسلایدها را با کشیدن کارت‌ها تغییر دهید.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={openNewSlide}
-          style={{ backgroundColor: 'var(--theme-primary)' }}
-          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
-        >
-          <Plus className="h-4 w-4" />
-          <span>افزودن اسلاید جدید</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            aria-label="انتخاب اسلایدر"
+            value={selectedSliderId ?? ''}
+            onChange={(event) => setSelectedSliderId(Number(event.target.value) || null)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+          >
+            {sliders.map((item) => (
+              <option key={item.id} value={item.id}>{item.title_fa} · /{item.page_slug}</option>
+            ))}
+          </select>
+          <button type="button" onClick={() => setCreatingSlider((open) => !open)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-slate-700">
+            اسلایدر صفحه جدید
+          </button>
+          <button
+            type="button"
+            onClick={openNewSlide}
+            disabled={!slider}
+            style={{ backgroundColor: 'var(--theme-primary)' }}
+            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4" />
+            <span>افزودن اسلاید</span>
+          </button>
+        </div>
       </div>
+
+      {creatingSlider && (
+        <form onSubmit={createSlider} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
+          <input required value={newSlider.title_fa} onChange={(event) => setNewSlider({ ...newSlider, title_fa: event.target.value })} placeholder="عنوان فارسی" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <input required value={newSlider.title_en} onChange={(event) => setNewSlider({ ...newSlider, title_en: event.target.value })} placeholder="عنوان انگلیسی" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <input required pattern="[a-z0-9_-]+" value={newSlider.key} onChange={(event) => setNewSlider({ ...newSlider, key: event.target.value })} placeholder="کلید یکتا (مثلاً services)" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <input required pattern="[a-z0-9-]+" value={newSlider.page_slug} onChange={(event) => setNewSlider({ ...newSlider, page_slug: event.target.value })} placeholder="مسیر صفحه (مثلاً services)" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <button type="submit" className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white sm:col-span-2">ایجاد اسلایدر</button>
+        </form>
+      )}
+
+      {!slider && !creatingSlider && <p className="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">برای این بخش هنوز اسلایدری ایجاد نشده است.</p>}
 
       <div className="space-y-3">
         {slides.map((slide, idx) => (

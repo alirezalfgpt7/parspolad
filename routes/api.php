@@ -12,9 +12,10 @@ use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SliderController;
 use App\Http\Controllers\Api\V1\ThemeController;
 use App\Http\Controllers\Api\V1\VisitAnalyticsController;
+use App\Http\Middleware\MaintenanceMode;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('v1')->group(function (): void {
+Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void {
     // Public API endpoints
     Route::get('/bootstrap', [PublicController::class, 'bootstrap']);
     Route::get('/search', [PublicController::class, 'search']);
@@ -62,6 +63,9 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/themes', [ThemeController::class, 'show'])->middleware('permission:themes.manage');
             Route::put('/themes', [ThemeController::class, 'update']);
             Route::get('/sliders', [AdminContentController::class, 'sliders'])->middleware('permission:slider.manage');
+            Route::post('/sliders', [SliderController::class, 'store']);
+            Route::put('/sliders/{slider}', [SliderController::class, 'update']);
+            Route::delete('/sliders/{slider}', [SliderController::class, 'destroy']);
             Route::put('/sliders/{slider}/slides', [AdminContentController::class, 'updateSlides']);
             Route::get('/menus', [AdminContentController::class, 'menus'])->middleware('permission:menus.manage');
             Route::put('/menus/{menu}', [AdminContentController::class, 'updateMenu']);
