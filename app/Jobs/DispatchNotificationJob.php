@@ -5,13 +5,13 @@ namespace App\Jobs;
 use App\Enums\NotificationChannelEnum;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\SmtpEmailService;
 use App\Services\SmsDispatcherService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 
 class DispatchNotificationJob implements ShouldQueue
 {
@@ -26,7 +26,7 @@ class DispatchNotificationJob implements ShouldQueue
         public readonly NotificationChannelEnum $channel,
     ) {}
 
-    public function handle(SmsDispatcherService $sms): void
+    public function handle(SmsDispatcherService $sms, SmtpEmailService $email): void
     {
         Notification::query()->create([
             'user_id' => $this->userId,
@@ -51,9 +51,7 @@ class DispatchNotificationJob implements ShouldQueue
         }
 
         if ($this->channel === NotificationChannelEnum::EMAIL && $user->email) {
-            Mail::raw($this->bodyFa, static function ($mail) use ($user): void {
-                $mail->to($user->email)->subject('اطلاعیه سامانه پارس پولاد آقایی');
-            });
+            $email->send($user->email, 'اطلاعیه سامانه پارس پولاد آقایی', $this->bodyFa);
         }
     }
 }

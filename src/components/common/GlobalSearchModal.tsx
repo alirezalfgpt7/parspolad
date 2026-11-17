@@ -107,7 +107,7 @@ export const GlobalSearchModal: React.FC = () => {
                       className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       <span className="font-medium">{language === 'fa' ? pr.name_fa : pr.name_en}</span>
-                      <span className="text-xs text-slate-400 font-mono">{pr.model_code}</span>
+                      {pr.model_code && <span className="text-xs text-slate-400 font-mono">{pr.model_code}</span>}
                     </button>
                   ))}
                 </div>

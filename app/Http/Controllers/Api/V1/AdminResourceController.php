@@ -9,13 +9,14 @@ use App\Models\ContactMessage;
 use App\Models\MediaFile;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\PrivateDownloadUrl;
+use App\Services\PrivateMediaStorageService;
+use App\Services\MediaContentValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
@@ -269,22 +270,31 @@ class AdminResourceController extends Controller
         return response()->json(Notification::query()->latest()->paginate($perPage)->withQueryString());
     }
 
-    public function media(Request $request): JsonResponse
+    public function media(Request $request, PrivateDownloadUrl $downloadUrls): JsonResponse
     {
         $this->ensurePermission($request, 'media.manage');
 
         $perPage = min(max($request->integer('per_page', 12), 1), 100);
 
-        return response()->json(MediaFile::query()->latest()->paginate($perPage)->withQueryString());
+        $media = MediaFile::query()->latest()->paginate($perPage)->withQueryString();
+        $media->getCollection()->each(function (MediaFile $file) use ($downloadUrls, $request): void {
+            $file->url = $downloadUrls->resolve($file->url, (bool) $file->requires_auth, $request);
+        });
+
+        return response()->json($media);
     }
 
-    public function updateMedia(Request $request, MediaFile $media): JsonResponse
+    public function updateMedia(Request $request, MediaFile $media, PrivateMediaStorageService $storage): JsonResponse
     {
         $this->ensurePermission($request, 'media.manage');
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'requires_auth' => ['sometimes', 'boolean'],
         ]);
+        if (array_key_exists('requires_auth', $data)) {
+            $storage->setVisibility($media, (bool) $data['requires_auth']);
+            unset($data['requires_auth']);
+        }
         $media->update($data);
 
         return response()->json(['data' => $media->fresh()]);
@@ -298,21 +308,24 @@ class AdminResourceController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function uploadMedia(Request $request): JsonResponse
+    public function uploadMedia(
+        Request $request,
+        PrivateMediaStorageService $storage,
+        MediaContentValidator $contentValidator,
+    ): JsonResponse
     {
         $this->ensurePermission($request, 'media.manage');
         $request->validate([
             'file' => ['required_without:content_base64', 'file', 'max:25600'],
             'filename' => ['required_with:content_base64', 'string', 'max:255'],
-            'content_base64' => ['required_without:file', 'string'],
+            'content_base64' => ['required_without:file', 'string', 'max:35000000'],
             'folder' => ['nullable', 'string', 'max:60'],
+            'requires_auth' => ['sometimes', 'boolean'],
         ]);
 
         $file = $request->file('file');
         $filename = $file?->getClientOriginalName() ?? $request->string('filename')->toString();
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        $allowedExtensions = ['pdf', 'docx', 'xlsx', 'dwg', 'zip', 'mp4', 'webm', 'jpg', 'jpeg', 'png', 'webp', 'svg'];
-        abort_unless(in_array($extension, $allowedExtensions, true), 422, 'فرمت فایل مجاز نیست.');
+        $filename = basename(str_replace('\\', '/', $filename));
 
         $content = $file?->get();
         if ($content === null) {
@@ -320,30 +333,16 @@ class AdminResourceController extends Controller
             $content = base64_decode($encoded, true);
             abort_unless($content !== false, 422, 'محتوای فایل معتبر نیست.');
         }
-        abort_unless(strlen($content) <= 25 * 1024 * 1024, 422, 'حداکثر حجم مجاز فایل ۲۵ مگابایت است.');
+        abort_unless(is_string($content), 422, 'خواندن فایل بارگذاری‌شده ناموفق بود.');
+        $mimeType = $contentValidator->validate($filename, $content);
 
-        $folder = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $request->input('folder', 'uploads')) ?: 'uploads';
-        $safeName = Str::uuid().'.'.$extension;
-        $directory = public_path('storage/'.$folder);
-        File::ensureDirectoryExists($directory);
-        $path = $directory.DIRECTORY_SEPARATOR.$safeName;
-        abort_unless(file_put_contents($path, $content) !== false, 500, 'ذخیره فایل انجام نشد.');
-
-        $record = MediaFile::query()->create([
-            'name' => $filename,
-            'url' => '/storage/'.$folder.'/'.$safeName,
-            'mime_type' => $file?->getMimeType() ?? match ($extension) {
-                'pdf' => 'application/pdf',
-                'jpg', 'jpeg' => 'image/jpeg',
-                'png' => 'image/png',
-                'webp' => 'image/webp',
-                default => 'application/octet-stream',
-            },
-            'extension' => $extension,
-            'size_bytes' => strlen($content),
-            'folder' => $folder,
-            'requires_auth' => $request->boolean('requires_auth', false),
-        ]);
+        $record = $storage->store(
+            (string) $request->input('folder', 'uploads'),
+            $filename,
+            $content,
+            $mimeType,
+            $request->boolean('requires_auth'),
+        );
 
         return response()->json(['data' => $record], 201);
     }

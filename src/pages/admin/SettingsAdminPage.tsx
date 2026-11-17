@@ -12,6 +12,8 @@ export const SettingsAdminPage: React.FC = () => {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
   const [smtpPassPlain, setSmtpPassPlain] = useState('');
+  const [emailTestAddress, setEmailTestAddress] = useState('');
+  const [testingEmail, setTestingEmail] = useState(false);
   const [smsKeyPlain, setSmsKeyPlain] = useState('');
   const [tab, setTab] = useState<'company' | 'email' | 'sms' | 'map_seo' | 'backup'>('company');
 
@@ -33,6 +35,21 @@ export const SettingsAdminPage: React.FC = () => {
     });
     await fetchBootstrap();
     addToast('success', 'تنظیمات متمرکز سامانه ذخیره و رمزنگاری شد.');
+  };
+
+  const testEmail = async () => {
+    setTestingEmail(true);
+    try {
+      await apiRequest('/admin/settings/email/test', {
+        method: 'POST',
+        body: JSON.stringify({ to: emailTestAddress }),
+      });
+      addToast('success', 'ایمیل آزمایشی ارسال شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ارسال ایمیل آزمایشی ناموفق بود.');
+    } finally {
+      setTestingEmail(false);
+    }
   };
 
   const downloadBackup = async () => {
@@ -138,6 +155,14 @@ export const SettingsAdminPage: React.FC = () => {
             <input dir="ltr" type="number" placeholder="Port" value={settings.email.smtp_port} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_port: Number(e.target.value) } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input dir="ltr" placeholder="SMTP Username" value={settings.email.smtp_user} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_user: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             <input dir="ltr" type="password" placeholder="رمز عبور جدید SMTP (ذخیره رمزنگاری‌شده AES-256)" value={smtpPassPlain} onChange={(e) => setSmtpPassPlain(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input dir="ltr" type="email" placeholder="آدرس فرستنده" value={settings.email.from_address} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, from_address: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input placeholder="نام فرستنده" value={settings.email.from_name} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, from_name: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          </div>
+          <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <input dir="ltr" type="email" placeholder="آدرس دریافت‌کننده برای آزمون" value={emailTestAddress} onChange={(e) => setEmailTestAddress(e.target.value)} className="min-w-64 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <button type="button" onClick={testEmail} disabled={testingEmail || !emailTestAddress} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold disabled:opacity-50 dark:border-slate-700">
+              {testingEmail ? 'در حال ارسال...' : 'ارسال ایمیل آزمایشی'}
+            </button>
           </div>
           {templates[0] && (
             <div className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800">

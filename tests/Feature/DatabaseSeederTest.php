@@ -24,4 +24,17 @@ it('migrates the database cache and safely seeds portal content more than once',
     $this->assertDatabaseCount('partners', 10);
     $this->assertDatabaseCount('slides', 3);
     $this->assertDatabaseHas('projects', ['slug' => 'nisoc-wellhead-150-liner-hanger']);
+    $this->assertDatabaseHas('project_documents', [
+        'file_url' => '/storage/documents/qc-equipment-list.pdf',
+        'requires_auth' => false,
+    ]);
+    $this->assertDatabaseHas('contracts', [
+        'contract_number' => 'BA-PO-011-PPA-L00',
+        'document_url' => '/storage/documents/downhole-completed-projects.pdf',
+        'requires_auth' => false,
+    ]);
+    $this->assertDatabaseHas('media_files', [
+        'url' => '/storage/documents/qc-equipment-list.pdf',
+        'requires_auth' => false,
+    ]);
 });

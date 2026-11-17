@@ -23,6 +23,137 @@ const contactSchema = z.object({
 
 type ContactFormValues = z.infer<typeof contactSchema>;
 
+const ticketLookupSchema = z.object({
+  tracking_number: z.string().trim().min(5, 'شماره پیگیری را وارد کنید'),
+  email: z.string().email('ایمیل معتبر وارد کنید'),
+  phone: z.string().min(7, 'شماره تماس معتبر وارد کنید'),
+});
+
+const ticketReplySchema = z.object({
+  message: z.string().min(5, 'متن پاسخ حداقل ۵ کاراکتر باشد').max(5000),
+  captcha: z.string().min(1, 'کد امنیتی را وارد کنید'),
+  website: z.string().optional(),
+});
+
+interface PublicTicket {
+  tracking_number: string;
+  subject: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  messages: Array<{ author_name: string; author_type: string; body: string; created_at: string }>;
+}
+
+const TicketLookupPanel: React.FC = () => {
+  const { addToast } = useAppStore();
+  const [ticket, setTicket] = useState<PublicTicket | null>(null);
+  const [identity, setIdentity] = useState<z.infer<typeof ticketLookupSchema> | null>(null);
+  const [captchaKey, setCaptchaKey] = useState('');
+  const [captchaRefreshToken, setCaptchaRefreshToken] = useState(0);
+  const lookup = useForm<z.infer<typeof ticketLookupSchema>>({
+    resolver: zodResolver(ticketLookupSchema),
+  });
+  const reply = useForm<z.infer<typeof ticketReplySchema>>({
+    resolver: zodResolver(ticketReplySchema),
+    defaultValues: { message: '', captcha: '', website: '' },
+  });
+
+  const findTicket = async (data: z.infer<typeof ticketLookupSchema>): Promise<boolean> => {
+    try {
+      const query = new URLSearchParams({ email: data.email, phone: data.phone });
+      const response = await apiRequest<{ data: PublicTicket }>(
+        `/tickets/${encodeURIComponent(data.tracking_number)}?${query.toString()}`,
+      );
+      setTicket(response.data);
+      setIdentity(data);
+      return true;
+    } catch (error) {
+      setTicket(null);
+      addToast('error', error instanceof Error ? error.message : 'تیکت با مشخصات واردشده پیدا نشد.');
+      return false;
+    }
+  };
+
+  const sendReply = async (data: z.infer<typeof ticketReplySchema>) => {
+    if (!ticket || !identity || !captchaKey) return;
+    try {
+      await apiRequest(`/tickets/${encodeURIComponent(ticket.tracking_number)}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: identity.email,
+          phone: identity.phone,
+          message: data.message,
+          captcha: data.captcha,
+          captcha_key: captchaKey,
+        }),
+      });
+      const refreshed = await findTicket(identity);
+      reply.reset();
+      setCaptchaKey('');
+      setCaptchaRefreshToken((value) => value + 1);
+      addToast(refreshed ? 'success' : 'info', refreshed ? 'پاسخ شما به تیکت اضافه شد.' : 'پاسخ ثبت شد؛ برای بروزرسانی گفتگو دوباره جستجو کنید.');
+    } catch (error) {
+      setCaptchaKey('');
+      setCaptchaRefreshToken((value) => value + 1);
+      reply.setValue('captcha', '');
+      addToast('error', error instanceof Error ? error.message : 'ارسال پاسخ ناموفق بود.');
+    }
+  };
+
+  return (
+    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+      <h2 className="text-lg font-bold">پیگیری و پاسخ به تیکت</h2>
+      <form onSubmit={lookup.handleSubmit(findTicket)} className="mt-4 grid gap-3 sm:grid-cols-3">
+        <input {...lookup.register('tracking_number')} placeholder="شماره پیگیری مانند PPA-12345678" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+        <input {...lookup.register('email')} type="email" placeholder="ایمیل ثبت‌شده" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+        <input {...lookup.register('phone')} placeholder="شماره تماس ثبت‌شده" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+        <button type="submit" disabled={lookup.formState.isSubmitting} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-sm font-semibold text-white sm:col-span-3">
+          {lookup.formState.isSubmitting ? 'در حال جستجو...' : 'نمایش گفتگو'}
+        </button>
+      </form>
+
+      {ticket && (
+        <div className="mt-6 space-y-4">
+          <div className="flex flex-wrap justify-between gap-2 border-b border-slate-100 pb-3 text-sm dark:border-slate-800">
+            <strong>{ticket.subject}</strong>
+            <span>کد {ticket.tracking_number} · وضعیت: {ticket.status}</span>
+          </div>
+          <div className="space-y-3">
+            {ticket.messages.map((message, index) => (
+              <article key={`${message.created_at}-${index}`} className="rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800">
+                <div className="mb-1 flex justify-between text-xs text-slate-500">
+                  <span>{message.author_type === 'customer' ? 'شما' : message.author_name}</span>
+                  <time>{new Date(message.created_at).toLocaleString('fa-IR')}</time>
+                </div>
+                <p className="whitespace-pre-wrap">{message.body}</p>
+              </article>
+            ))}
+          </div>
+          <form onSubmit={reply.handleSubmit(sendReply)} className="space-y-3">
+            <PublicHoneypotField registration={reply.register('website')} />
+            <textarea {...reply.register('message')} rows={3} placeholder="پاسخ شما..." className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            {reply.formState.errors.message && <p className="text-xs text-red-600">{reply.formState.errors.message.message}</p>}
+            <SelfHostedCaptcha
+              registration={reply.register('captcha')}
+              refreshToken={captchaRefreshToken}
+              onKeyChange={setCaptchaKey}
+              onRefresh={() => {
+                setCaptchaKey('');
+                setCaptchaRefreshToken((value) => value + 1);
+                reply.setValue('captcha', '');
+              }}
+              error={reply.formState.errors.captcha?.message}
+            />
+            <button type="submit" disabled={reply.formState.isSubmitting || !captchaKey} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+              ارسال پاسخ
+            </button>
+          </form>
+        </div>
+      )}
+    </section>
+  );
+};
+
 const createMapPopup = (title: string, address: string): HTMLElement => {
   const container = document.createElement('div');
   const heading = document.createElement('strong');
@@ -38,6 +169,8 @@ export const ContactPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [captchaKey, setCaptchaKey] = useState('');
   const [captchaRefreshToken, setCaptchaRefreshToken] = useState(0);
+  const [messageType, setMessageType] = useState<'contact' | 'ticket'>('contact');
+  const [trackingNumber, setTrackingNumber] = useState('');
   const mapRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -97,11 +230,12 @@ export const ContactPage: React.FC = () => {
 
   const onSubmit = async (data: ContactFormValues) => {
     try {
-      await apiRequest('/contact', {
+      const response = await apiRequest<{ tracking_number?: string }>('/contact', {
         method: 'POST',
-        body: JSON.stringify({ ...data, captcha_key: captchaKey, type: 'contact' }),
+        body: JSON.stringify({ ...data, captcha_key: captchaKey, type: messageType }),
       });
       setSubmitted(true);
+      setTrackingNumber(response.tracking_number ?? '');
       reset();
       refreshCaptcha();
       addToast('success', 'پیام شما با موفقیت ثبت و به واحد مربوطه ارجاع شد.');
@@ -123,7 +257,9 @@ export const ContactPage: React.FC = () => {
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">ارسال پیام و مکاتبه</h2>
           {submitted && (
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
-              پیام شما با موفقیت دریافت شد. کارشناسان ما در ساعات اداری پاسخگوی شما خواهند بود.
+              {trackingNumber
+                ? `تیکت شما با شماره پیگیری ${trackingNumber} ثبت شد؛ این شماره را برای پیگیری نگه دارید.`
+                : 'پیام شما با موفقیت دریافت شد. کارشناسان ما در ساعات اداری پاسخگوی شما خواهند بود.'}
             </div>
           )}
           <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-4">
@@ -151,6 +287,14 @@ export const ContactPage: React.FC = () => {
                 <input {...register('phone')} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
                 {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
               </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium">نوع درخواست</label>
+              <select value={messageType} onChange={(event) => setMessageType(event.target.value as 'contact' | 'ticket')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+                <option value="contact">پیام عمومی</option>
+                <option value="ticket">ثبت تیکت قابل پیگیری</option>
+              </select>
             </div>
 
             <div>
@@ -214,6 +358,7 @@ export const ContactPage: React.FC = () => {
           </div>
         </div>
       </div>
+      <TicketLookupPanel />
     </div>
   );
 };

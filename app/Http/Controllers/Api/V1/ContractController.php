@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contract\StoreContractRequest;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
+use App\Services\PrivateMediaStorageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Request;
@@ -32,16 +33,26 @@ class ContractController extends Controller
         );
     }
 
-    public function store(StoreContractRequest $request): JsonResponse
+    public function store(StoreContractRequest $request, PrivateMediaStorageService $storage): JsonResponse
     {
-        $contract = Contract::query()->create($request->validated());
+        $data = $request->validated();
+        if (array_key_exists('document_url', $data)) {
+            $data['document_url'] = $storage->protectUrl($data['document_url'], (bool) ($data['requires_auth'] ?? false));
+        }
+        $contract = Contract::query()->create($data);
 
         return response()->json(new ContractResource($contract), 201);
     }
 
-    public function update(StoreContractRequest $request, Contract $contract): JsonResponse
+    public function update(StoreContractRequest $request, Contract $contract, PrivateMediaStorageService $storage): JsonResponse
     {
-        $contract->update($request->validated());
+        $data = $request->validated();
+        $requiresAuth = (bool) ($data['requires_auth'] ?? $contract->requires_auth);
+        $documentUrl = array_key_exists('document_url', $data) ? $data['document_url'] : $contract->document_url;
+        if (array_key_exists('document_url', $data) || array_key_exists('requires_auth', $data)) {
+            $data['document_url'] = $storage->protectUrl($documentUrl, $requiresAuth);
+        }
+        $contract->update($data);
 
         return response()->json(new ContractResource($contract));
     }

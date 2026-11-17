@@ -35,7 +35,9 @@ class SliderController extends Controller
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
-        return response()->json(['data' => Slider::query()->create($data)], 201);
+        $slider = Slider::query()->create($data)->load('slides');
+
+        return response()->json(['data' => $slider], 201);
     }
 
     public function update(Request $request, Slider $slider): JsonResponse

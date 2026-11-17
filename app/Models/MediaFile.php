@@ -9,7 +9,7 @@ class MediaFile extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'url', 'mime_type', 'extension', 'size_bytes', 'folder', 'requires_auth'];
+    protected $fillable = ['name', 'url', 'storage_path', 'mime_type', 'extension', 'size_bytes', 'folder', 'requires_auth'];
 
     protected function casts(): array
     {

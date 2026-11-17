@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmailSetting;
 use App\Models\Setting;
 use App\Models\SmsProviderSetting;
+use App\Services\SmtpEmailService;
 use App\Services\SmsDispatcherService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,7 +61,7 @@ class SettingsController extends Controller
             'email.smtp_host' => ['sometimes', 'string', 'max:255'],
             'email.smtp_port' => ['sometimes', 'integer', 'between:1,65535'],
             'email.smtp_user' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'email.smtp_password_plain' => ['sometimes', 'nullable', 'string'],
+            'email.smtp_password_plain' => ['sometimes', 'nullable', 'string', 'max:4096'],
             'email.from_address' => ['sometimes', 'nullable', 'email', 'max:255'],
             'email.from_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'sms' => ['sometimes', 'array'],
@@ -97,12 +98,12 @@ class SettingsController extends Controller
     {
         $this->ensurePermission($request, 'settings.manage');
         $data = $request->validate([
-            'smtp_host' => ['required', 'string'],
-            'smtp_port' => ['required', 'integer'],
-            'smtp_user' => ['nullable', 'string'],
-            'smtp_password' => ['nullable', 'string'],
-            'from_address' => ['required', 'email'],
-            'from_name' => ['required', 'string'],
+            'smtp_host' => ['required', 'string', 'max:255'],
+            'smtp_port' => ['required', 'integer', 'between:1,65535'],
+            'smtp_user' => ['nullable', 'string', 'max:255'],
+            'smtp_password' => ['nullable', 'string', 'max:4096'],
+            'from_address' => ['required', 'email', 'max:255'],
+            'from_name' => ['required', 'string', 'max:255'],
         ]);
 
         $this->saveEmailSettings([
@@ -137,6 +138,16 @@ class SettingsController extends Controller
         $data = $request->validate(['phone' => ['required', 'string'], 'message' => ['required', 'string']]);
 
         return response()->json($sms->send($data['phone'], $data['message']));
+    }
+
+    public function testEmail(Request $request, SmtpEmailService $email): JsonResponse
+    {
+        $this->ensurePermission($request, 'settings.manage');
+        $data = $request->validate(['to' => ['required', 'email', 'max:255']]);
+
+        $email->send($data['to'], 'آزمون تنظیمات ایمیل پارس پولاد آقایی', 'این پیام برای بررسی اتصال SMTP ارسال شده است.');
+
+        return response()->json(['message' => 'ایمیل آزمایشی با موفقیت ارسال شد.']);
     }
 
     private function ensurePermission(Request $request, string $permission): void

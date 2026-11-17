@@ -33,8 +33,11 @@ export const AboutPage: React.FC = () => {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <SeoHead
-        title={page ? (language === 'fa' ? page.meta_title : page.title_en) : ''}
-        description={page?.meta_description}
+        title={page ? (language === 'fa' ? page.meta_title : page.meta_title_en || page.title_en) : ''}
+        description={page ? (language === 'fa' ? page.meta_description : page.meta_description_en || page.meta_description) : ''}
+        image={page?.meta_image || imageUrl}
+        canonicalUrl={page?.canonical_url || undefined}
+        language={language}
       />
       <Breadcrumb items={[{ label: language === 'fa' ? 'درباره شرکت' : 'About Us' }]} />
 

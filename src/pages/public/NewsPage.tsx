@@ -156,7 +156,12 @@ export const NewsPage: React.FC = () => {
   if (slug && single) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <SeoHead title={language === 'fa' ? single.title_fa : single.title_en} />
+        <SeoHead
+          title={language === 'fa' ? single.title_fa : single.title_en}
+          description={language === 'fa' ? single.excerpt_fa : single.excerpt_en}
+          image={single.cover_image}
+          language={language}
+        />
         <Breadcrumb items={[{ label: 'اخبار و مقالات', to: '/news' }, { label: single.title_fa }]} />
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <div className="h-72 bg-slate-100 dark:bg-slate-800">

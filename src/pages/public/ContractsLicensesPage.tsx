@@ -80,11 +80,18 @@ export const ContractsLicensesPage: React.FC = () => {
       header: 'مستندات',
       render: (c) =>
         c.document_url ? (
-          c.requires_auth && !user ? (
-            <Link to="/login" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:underline">
-              <Lock className="h-3.5 w-3.5" />
-              <span>ورود</span>
-            </Link>
+          c.requires_auth && (!user || !c.document_url) ? (
+            !user ? (
+              <Link to="/login" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:underline">
+                <Lock className="h-3.5 w-3.5" />
+                <span>ورود</span>
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                <Lock className="h-3.5 w-3.5" />
+                <span>مدرک محافظت‌شده در دسترس نیست</span>
+              </span>
+            )
           ) : (
             <a href={c.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-(--theme-primary) hover:underline">
               <Download className="h-3.5 w-3.5" />

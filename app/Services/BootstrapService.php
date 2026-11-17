@@ -20,10 +20,11 @@ use App\Models\Slider;
 use App\Models\TeamMember;
 use App\Models\ThemePreset;
 use App\Models\ThemeSetting;
+use Illuminate\Http\Request;
 
 class BootstrapService
 {
-    public function getPublicBootstrap(): array
+    public function getPublicBootstrap(Request $request): array
     {
         return [
             'theme_presets' => ThemePreset::query()->orderBy('id')->get(),
@@ -33,8 +34,24 @@ class BootstrapService
             'kpis' => Kpi::query()->orderBy('sort_order')->get(),
             'project_categories' => ProjectCategory::query()->orderBy('id')->get(),
             'projects' => Project::query()->with('category')->orderByDesc('year')->get(),
-            'contracts' => Contract::query()->orderByDesc('start_year')->get(),
-            'licenses' => License::query()->orderBy('id')->get(),
+            'contracts' => Contract::query()->orderByDesc('start_year')->get()
+                ->map(fn (Contract $contract): array => [
+                    ...$contract->toArray(),
+                    'document_url' => app(PrivateDownloadUrl::class)->resolve(
+                        $contract->document_url,
+                        (bool) $contract->requires_auth,
+                        $request,
+                    ),
+                ]),
+            'licenses' => License::query()->orderBy('id')->get()
+                ->map(fn (License $license): array => [
+                    ...$license->toArray(),
+                    'document_url' => app(PrivateDownloadUrl::class)->resolve(
+                        $license->document_url,
+                        (bool) $license->requires_auth,
+                        $request,
+                    ),
+                ]),
             'services' => Service::query()->orderBy('sort_order')->get(),
             'products' => Product::query()->orderBy('id')->get(),
             'departments' => Department::query()->orderBy('id')->get(),

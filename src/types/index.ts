@@ -294,6 +294,10 @@ export interface PageContent {
   content_en: string;
   meta_title: string;
   meta_description: string;
+  meta_title_en?: string | null;
+  meta_description_en?: string | null;
+  meta_image?: string | null;
+  canonical_url?: string | null;
   metadata?: Record<string, unknown> | null;
   updated_at: string;
 }
@@ -335,6 +339,10 @@ export interface ContactMessage {
   attachment_url?: string;
   status: 'new' | 'reviewed' | 'replied';
   admin_note?: string;
+  tracking_number?: string | null;
+  ticket_status?: 'open' | 'in_progress' | 'waiting_customer' | 'resolved' | 'closed' | null;
+  priority?: 'low' | 'normal' | 'high' | 'urgent' | null;
+  assignee_id?: number | null;
   created_at: string;
 }
 

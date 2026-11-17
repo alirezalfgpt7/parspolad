@@ -10,7 +10,10 @@ const HeroSlider = lazy(() => import('../slider/HeroSlider.tsx').then((module) =
 export const PublicLayout: React.FC = () => {
   const { bootstrap, user } = useAppStore();
   const { pathname } = useLocation();
-  const isMaintenance = bootstrap?.site?.maintenance_mode && !user;
+  const canAccessMaintenance = Boolean(
+    user?.permissions.includes('settings.manage') || ['super-admin', 'admin'].includes(user?.role ?? ''),
+  );
+  const isMaintenance = bootstrap?.site?.maintenance_mode && !canAccessMaintenance;
   const pageSlug = pathname === '/' ? 'home' : pathname.split('/').filter(Boolean)[0];
   const pageSlider = bootstrap?.sliders?.find((slider) => slider.page_slug === pageSlug);
 

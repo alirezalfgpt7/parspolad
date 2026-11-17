@@ -20,6 +20,8 @@ use App\Models\Project;
 use App\Models\Service;
 use App\Models\TeamMember;
 use App\Services\BootstrapService;
+use App\Services\SitemapService;
+use App\Services\TicketService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,7 +30,7 @@ class PublicController extends Controller
 {
     public function bootstrap(BootstrapService $service, Request $request): JsonResponse
     {
-        $data = $service->getPublicBootstrap();
+        $data = $service->getPublicBootstrap($request);
 
         return response()->json($data + [
             'theme' => $data['theme_settings'],
@@ -40,6 +42,11 @@ class PublicController extends Controller
             'site' => $data['settings']['site'] ?? [],
             'is_authenticated' => $request->user('sanctum') !== null,
         ]);
+    }
+
+    public function sitemap(SitemapService $sitemap): JsonResponse
+    {
+        return response()->json(['data' => $sitemap->entries()]);
     }
 
     public function search(Request $request): JsonResponse
@@ -225,11 +232,12 @@ class PublicController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function submitContact(StoreContactMessageRequest $request): JsonResponse
+    public function submitContact(StoreContactMessageRequest $request, TicketService $tickets): JsonResponse
     {
-        $message = ContactMessage::query()->create(
-            $request->safe()->except(['captcha', 'captcha_key', 'website']) + ['status' => 'new'],
-        );
+        $data = $request->safe()->except(['captcha', 'captcha_key', 'website']);
+        $message = $data['type'] === 'ticket'
+            ? $tickets->open($data + ['status' => 'new'])
+            : ContactMessage::query()->create($data + ['status' => 'new']);
 
         DispatchNotificationJob::dispatch(
             userId: 1,
@@ -240,7 +248,11 @@ class PublicController extends Controller
             channel: NotificationChannelEnum::IN_APP,
         );
 
-        return response()->json(['message' => 'درخواست شما با موفقیت ثبت شد.', 'data' => $message], 201);
+        return response()->json([
+            'message' => 'درخواست شما با موفقیت ثبت شد.',
+            'data' => $message,
+            'tracking_number' => $message->tracking_number,
+        ], 201);
     }
 
     private function paginatedResponse(LengthAwarePaginator $paginator): JsonResponse

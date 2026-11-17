@@ -13,8 +13,8 @@ interface FileUploaderProps {
 
 export const FileUploader: React.FC<FileUploaderProps> = ({
   folder = 'uploads',
-  accept = '.pdf,.docx,.xlsx,.dwg,.zip,.mp4,.webm,.jpg,.jpeg,.png,.webp,.svg',
-  label = 'انتخاب یا رها کردن فایل (PDF, DOCX, XLSX, DWG, MP4, JPG, PNG)',
+  accept = '.pdf,.docx,.xlsx,.dwg,.zip,.mp4,.webm,.jpg,.jpeg,.png,.webp',
+  label = 'انتخاب یا رها کردن فایل (PDF, DOCX, XLSX, DWG, ZIP, MP4, WEBM, JPG, PNG, WEBP)',
   onUploaded,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);

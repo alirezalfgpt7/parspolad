@@ -25,6 +25,10 @@ class Page extends Model
         'meta_title',
         'meta_description',
         'metadata',
+        'meta_title_en',
+        'meta_description_en',
+        'meta_image',
+        'canonical_url',
     ];
 
     protected function casts(): array

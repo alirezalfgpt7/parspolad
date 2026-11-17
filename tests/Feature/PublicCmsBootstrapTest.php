@@ -18,3 +18,14 @@ it('provides editable public page intros and footer settings through bootstrap',
         ->assertOk()
         ->assertJsonPath('data.0.question_en', 'Are Pars Poolad Aghaee wellhead and downhole products certified to international standards?');
 });
+
+it('uses the same dynamic page and content entries in HTML and XML sitemaps', function (): void {
+    $paths = collect($this->getJson('/api/v1/sitemap')->assertOk()->json('data'))
+        ->pluck('path');
+
+    expect($paths)->toContain('/sitemap', '/projects/nisoc-surface-safety-valve-wellhead');
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertSee(url('/projects/nisoc-surface-safety-valve-wellhead'), false);
+});

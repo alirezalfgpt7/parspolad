@@ -11,7 +11,7 @@ class StoreSlideRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('sliders.manage') || $this->user()?->hasRole(['super_admin', 'admin', 'editor']);
+        return $this->user()?->can('slider.manage') || $this->user()?->hasRole(['super_admin', 'admin', 'editor']);
     }
 
     public function rules(): array

@@ -17,12 +17,18 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
   titleClassName = 'text-3xl font-extrabold text-slate-900 dark:text-white',
   showContent = true,
 }) => {
-  const { page, title, subtitle, content, metaTitle, metaDescription } = useCmsPage(slug);
+  const { page, title, subtitle, content, metaTitle, metaDescription, language } = useCmsPage(slug);
   if (!page) return null;
 
   return (
     <>
-      <SeoHead title={metaTitle} description={metaDescription} />
+      <SeoHead
+        title={metaTitle}
+        description={metaDescription}
+        image={page.meta_image || undefined}
+        canonicalUrl={page.canonical_url || undefined}
+        language={language}
+      />
       <Breadcrumb items={[{ label: title }]} />
       <header className={className}>
         <h1 className={titleClassName}>{title}</h1>

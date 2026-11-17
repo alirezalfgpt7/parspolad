@@ -20,7 +20,11 @@ class LicenseResource extends JsonResource
             'expiry_date' => $this->expiry_date,
             'category' => $this->category?->value ?? $this->category,
             'image_url' => $this->image_url,
-            'document_url' => $this->document_url,
+            'document_url' => app(\App\Services\PrivateDownloadUrl::class)->resolve(
+                $this->document_url,
+                (bool) $this->requires_auth,
+                $request,
+            ),
             'requires_auth' => (bool) $this->requires_auth,
         ];
     }

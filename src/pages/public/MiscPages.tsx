@@ -81,13 +81,15 @@ export const LegalPage: React.FC = () => {
 };
 
 export const SitemapPage: React.FC = () => {
-  const { bootstrap, language } = useAppStore();
-  const links = (bootstrap?.pages ?? []).flatMap((page) => {
-    const path = page.metadata?.path;
-    return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//')
-      ? [{ to: path, label: language === 'fa' ? page.title_fa : page.title_en }]
-      : [];
-  });
+  const { language, addToast } = useAppStore();
+  const [links, setLinks] = useState<Array<{ path: string; title_fa: string; title_en: string }>>([]);
+
+  useEffect(() => {
+    apiRequest<{ data: Array<{ path: string; title_fa: string; title_en: string }> }>('/sitemap')
+      .then((response) => setLinks(response.data))
+      .catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'دریافت نقشه سایت ناموفق بود.'));
+  }, [addToast]);
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <CmsPageIntro slug="sitemap" className="mb-6" />
@@ -99,9 +101,9 @@ export const SitemapPage: React.FC = () => {
           </a>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {links.map((l) => (
-            <Link key={l.to} to={l.to} className="rounded-lg border border-slate-100 px-4 py-3 text-sm font-medium hover:border-(--theme-primary) dark:border-slate-800">
-              {l.label}
+          {links.map((link) => (
+            <Link key={link.path} to={link.path} className="rounded-lg border border-slate-100 px-4 py-3 text-sm font-medium hover:border-(--theme-primary) dark:border-slate-800">
+              {language === 'fa' ? link.title_fa : link.title_en}
             </Link>
           ))}
         </div>

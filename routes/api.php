@@ -6,11 +6,13 @@ use App\Http\Controllers\Api\V1\ArticleCommentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ContractController;
 use App\Http\Controllers\Api\V1\LicenseController;
+use App\Http\Controllers\Api\V1\MediaDownloadController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\SliderController;
 use App\Http\Controllers\Api\V1\ThemeController;
+use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\V1\VisitAnalyticsController;
 use App\Http\Middleware\MaintenanceMode;
 use Illuminate\Support\Facades\Route;
@@ -18,8 +20,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void {
     // Public API endpoints
     Route::get('/bootstrap', [PublicController::class, 'bootstrap']);
+    Route::get('/sitemap', [PublicController::class, 'sitemap']);
     Route::get('/search', [PublicController::class, 'search']);
     Route::post('/contact', [PublicController::class, 'submitContact'])->middleware('throttle:5,1');
+    Route::get('/tickets/{trackingNumber}', [TicketController::class, 'show'])->middleware('throttle:10,1');
+    Route::post('/tickets/{trackingNumber}/messages', [TicketController::class, 'reply'])->middleware('throttle:5,1');
     Route::post('/page-views', [VisitAnalyticsController::class, 'record'])->middleware('throttle:120,1');
     Route::get('/projects', [ProjectController::class, 'index']);
     Route::get('/projects/filters', [ProjectController::class, 'filters']);
@@ -27,8 +32,8 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
     Route::get('/products/filters', [PublicController::class, 'productFilters']);
     Route::get('/products', [PublicController::class, 'products']);
     Route::get('/services', [PublicController::class, 'services']);
-    Route::get('/contracts', [PublicController::class, 'contracts']);
-    Route::get('/licenses', [PublicController::class, 'licenses']);
+    Route::get('/contracts', [ContractController::class, 'index']);
+    Route::get('/licenses', [LicenseController::class, 'index']);
     Route::get('/partners', [PublicController::class, 'partners']);
     Route::get('/departments', [PublicController::class, 'departments']);
     Route::get('/faqs', [PublicController::class, 'faqs']);
@@ -38,6 +43,7 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
     Route::get('/articles/{slug}', [PublicController::class, 'article']);
     Route::get('/pages/{slug}', [PublicController::class, 'page']);
     Route::get('/sliders', [SliderController::class, 'index']);
+    Route::get('/media/{media}/download', MediaDownloadController::class)->name('media.download');
     Route::get('/theme', [ThemeController::class, 'show']);
 
     // Authentication
@@ -103,6 +109,7 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
 
             Route::put('/settings', [SettingsController::class, 'updateGeneral']);
             Route::put('/settings/email', [SettingsController::class, 'updateEmail']);
+            Route::post('/settings/email/test', [SettingsController::class, 'testEmail']);
             Route::put('/settings/sms', [SettingsController::class, 'updateSms']);
             Route::post('/settings/sms/test', [SettingsController::class, 'testSms']);
 
@@ -114,6 +121,10 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::put('/roles/{role}', [AdminResourceController::class, 'updateRole']);
             Route::delete('/roles/{role}', [AdminResourceController::class, 'destroyRole']);
             Route::get('/messages', [AdminResourceController::class, 'messages'])->middleware('permission:messages.view');
+            Route::get('/tickets', [TicketController::class, 'adminIndex'])->middleware('permission:messages.view');
+            Route::get('/tickets/{ticket}', [TicketController::class, 'adminShow'])->middleware('permission:messages.view');
+            Route::put('/tickets/{ticket}', [TicketController::class, 'update'])->middleware('permission:messages.manage');
+            Route::post('/tickets/{ticket}/messages', [TicketController::class, 'adminReply'])->middleware('permission:messages.manage');
             Route::put('/messages/{message}', [AdminResourceController::class, 'updateMessageStatus']);
             Route::delete('/messages/{message}', [AdminResourceController::class, 'destroyMessage']);
             Route::get('/comments', [ArticleCommentController::class, 'adminIndex'])->middleware('permission:comments.manage');

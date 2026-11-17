@@ -33,7 +33,17 @@ class ProjectResource extends JsonResource
             'cover_image' => $this->cover_image,
             'images' => $this->whenLoaded('images', fn () => $this->images->pluck('image_url')),
             'videos' => $this->whenLoaded('videos', fn () => $this->videos->pluck('video_url')),
-            'documents' => $this->whenLoaded('documents'),
+            'documents' => $this->whenLoaded(
+                'documents',
+                fn () => $this->documents->map(fn ($document): array => [
+                    ...$document->toArray(),
+                    'file_url' => app(\App\Services\PrivateDownloadUrl::class)->resolve(
+                        $document->file_url,
+                        (bool) $document->requires_auth,
+                        $request,
+                    ),
+                ]),
+            ),
             'is_featured' => (bool) $this->is_featured,
         ];
     }

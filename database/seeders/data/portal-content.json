@@ -531,7 +531,7 @@
           "title_en": "QC & Inspection Equipment List",
           "file_url": "/storage/documents/qc-equipment-list.pdf",
           "file_type": "PDF",
-          "requires_auth": true
+          "requires_auth": false
         }
       ],
       "is_featured": true
@@ -816,7 +816,7 @@
       "scope_fa": "ساخت، بازرسی و ارسال تجهیزات درون‌چاهی پروژه توسعه میادین",
       "scope_en": "Downhole liner hanger supply",
       "document_url": "/storage/documents/downhole-completed-projects.pdf",
-      "requires_auth": true
+      "requires_auth": false
     },
     {
       "id": 5,
@@ -1005,17 +1005,12 @@
       "name_en": "Hydraulic Set Rotating Liner Hanger",
       "category_fa": "ادوات درون‌چاهی (Liner Hanger)",
       "category_en": "Downhole Tools",
-      "model_code": "PPA-HRLH-700",
-      "pressure_rating": "10,000 PSI / H2S Service",
-      "standard": "API Spec 19LH / ISO 14310",
-      "summary_fa": "مجهز به بلبرینگ کف‌گرد سنگین جهت چرخش آستری حین سیمان‌کاری برای یکنواختی کامل سیمان در چاه‌های زاویه‌دار و افقی.",
-      "summary_en": "Heavy-duty thrust bearing allowing liner rotation during cementing for superior zonal isolation in deviated wells.",
-      "specs": {
-        "سایزهای قابل ساخت": "4-1/2\" تا 13-3/8\"",
-        "گرید متالورژی": "L-80 / P-110 / C-110",
-        "نوع اسلیپس": "Single & Double Cone",
-        "سرویس محیطی": "Sweet & Sour (NACE)"
-      },
+      "model_code": "",
+      "pressure_rating": null,
+      "standard": "",
+      "summary_fa": "لاینر هنگر هیدرولیک چرخشی برای آویزش و چرخش رشته آستری در عملیات تکمیل چاه.",
+      "summary_en": "A hydraulic rotating liner hanger for suspending and rotating the liner during well completion.",
+      "specs": {},
       "image_url": "/storage/products/rotating-hanger.webp",
       "catalog_url": "/storage/documents/downhole-completed-projects.pdf"
     },
@@ -1026,17 +1021,12 @@
       "name_en": "Mechanical Set Liner Hanger (J-Slot)",
       "category_fa": "ادوات درون‌چاهی (Liner Hanger)",
       "category_en": "Downhole Tools",
-      "model_code": "PPA-MLH-550",
-      "pressure_rating": "10,000 PSI",
-      "standard": "API Spec 19LH",
-      "summary_fa": "طراحی مکانیزم J-Slot مطمئن، بدون محدودیت فشار گردشی، ایده‌آل برای چاه‌های با هرزروی کامل و امکان آزادسازی (Unset) مجدد.",
-      "summary_en": "Reliable J-Slot mechanical setting mechanism ideal for lost-circulation wells with zero pressure-surge limitations.",
-      "specs": {
-        "سایزهای قابل ساخت": "5\" تا 9-5/8\"",
-        "مکانیزم ست": "Right/Left-Hand J-Slot",
-        "قابلیت بازیابی": "Unsettable prior to cement",
-        "آلیاژ بدنه": "AISI 4140 / L-80"
-      },
+      "model_code": "",
+      "pressure_rating": null,
+      "standard": "",
+      "summary_fa": "لاینر هنگر مکانیکال ست برای آویزش رشته آستری در عملیات تکمیل چاه.",
+      "summary_en": "A mechanical-set liner hanger for suspending the liner during well completion.",
+      "specs": {},
       "image_url": "/storage/products/liner-hanger.webp",
       "catalog_url": "/storage/documents/downhole-completed-projects.pdf"
     },
@@ -1047,17 +1037,12 @@
       "name_en": "API 6A Wellhead & Christmas Tree System",
       "category_fa": "تجهیزات سرچاهی (Wellhead)",
       "category_en": "Wellhead Equipment",
-      "model_code": "PPA-WH-6A-15K",
-      "pressure_rating": "2,000 تا 15,000 PSI",
+      "model_code": "",
+      "pressure_rating": null,
       "standard": "API Spec 6A / API 6FA / ISO 10423",
-      "summary_fa": "طراحی و ساخت بخش‌های A, B, C سرچاهی شامل Casing Head، Spool، Tubing Hanger، Gate Valve و شیرآلات ایمنی SSV.",
-      "summary_en": "Complete Sections A, B & C wellhead assemblies including Casing Heads, Spools, Tubing Hangers and SSV Gate Valves.",
-      "specs": {
-        "فشار کاری": "2,000 / 3,000 / 5,000 / 10,000 / 15,000 PSI",
-        "سطح مشخصات (PSL)": "PSL 1 / PSL 2 / PSL 3 / PSL 3G",
-        "کلاس دما": "P / U / X (-29°C to +180°C)",
-        "تست آتش": "API 6FA Certified"
-      },
+      "summary_fa": "مجموعه تجهیزات سرچاهی و درخت کریسمس؛ ترکیب اجزا و مشخصات نهایی بر اساس طراحی و سفارش پروژه تعیین می‌شود.",
+      "summary_en": "Wellhead and Christmas tree equipment, configured to the design and requirements of each project.",
+      "specs": {},
       "image_url": "/storage/products/wellhead-api6a.png",
       "catalog_url": "/storage/documents/wellhead-completed-projects.pdf"
     },
@@ -1068,17 +1053,12 @@
       "name_en": "Hydraulic & Mechanical Production Packers",
       "category_fa": "ادوات درون‌چاهی (Packers)",
       "category_en": "Downhole Tools",
-      "model_code": "PPA-HPP-700",
-      "pressure_rating": "10,000 PSI Differential",
-      "standard": "API Spec 11D1 / ISO 14310 V0-V3",
-      "summary_fa": "ایزولاسیون مطمئن فضای حلقوی بین لوله مغزی و جداری در عملیات تولید، اسیدکاری و شکافت هیدرولیکی با المنت‌های آب‌بندی Viton/HNBR.",
-      "summary_en": "High-differential retrievable and permanent production packers protecting casing strings from corrosive reservoir fluids.",
-      "specs": {
-        "نوع ست": "Hydraulic / Mechanical / Wireline",
-        "المنت آب‌بندی": "HNBR / Viton High-Temp",
-        "دامنه دمایی": "Up to 180°C",
-        "کاربرد": "Production / Acidizing / Frac"
-      },
+      "model_code": "",
+      "pressure_rating": null,
+      "standard": "",
+      "summary_fa": "پکرهای تولیدی برای آب‌بندی و جداسازی بخش‌های چاه در عملیات تکمیل و تولید.",
+      "summary_en": "Production packers for sealing and isolating well sections during completion and production.",
+      "specs": {},
       "image_url": "/storage/products/hydraulic-packer.png"
     },
     {
@@ -1088,17 +1068,12 @@
       "name_en": "Liner Top Seal Unit & Tie-Back Assembly",
       "category_fa": "ادوات درون‌چاهی (Liner Hanger)",
       "category_en": "Downhole Tools",
-      "model_code": "PPA-TSU-400",
-      "pressure_rating": "12,000 PSI",
-      "standard": "API 19LH / NACE MR0175",
-      "summary_fa": "امتداد آستری تا سطح یا جداری بالاتر با دو پورت سیمان‌کاری و پکینگ‌های مقاوم شیمیایی برای افزایش مقاومت فشاری چاه.",
-      "summary_en": "Dual-port tie-back seal assembly restoring wellbore pressure integrity and corrosion barrier to surface.",
-      "specs": {
-        "نوع آب‌بندی": "Chevron / Molded Polymer Stack",
-        "جنس بدنه": "13Cr / L-80 / P-110",
-        "سایز": "4-1/2\" تا 9-5/8\"",
-        "پورت سیمان": "Dual Cementing Ports"
-      },
+      "model_code": "",
+      "pressure_rating": null,
+      "standard": "",
+      "summary_fa": "سیل یونیت و تای‌بک نیپل از تجهیزات اتصال و آب‌بندی رشته آستری.",
+      "summary_en": "Seal units and tie-back nipples are used to connect and seal liner assemblies.",
+      "specs": {},
       "image_url": "/storage/products/seal-unit.webp"
     },
     {
@@ -1108,17 +1083,12 @@
       "name_en": "Downhole String Magnet (PPAASS0013)",
       "category_fa": "ادوات مانده‌یابی و تمیزکاری",
       "category_en": "Fishing & Cleanout Tools",
-      "model_code": "PPA-ASS0013",
-      "pressure_rating": "15,000 PSI",
-      "standard": "API Spec 7-1",
-      "summary_fa": "جذب براده‌های فلزی، ذرات فرزکاری و قطعات آهنی معلق در گل حفاری پیش از راندن تجهیزات حساس تکمیل چاه.",
-      "summary_en": "High-flux neodymium/samarium-cobalt wellbore cleanout magnet capturing metallic debris prior to completion runs.",
-      "specs": {
-        "قدرت مغناطیسی": "High-Temp SmCo / NdFeB",
-        "رزوه اتصال": "API Reg / IF",
-        "کاتالوگ فنی": "PPAASS0013 پیوست",
-        "کاربرد": "Wellbore Cleanout & Milling"
-      },
+      "model_code": "PPAASS0013",
+      "pressure_rating": null,
+      "standard": "",
+      "summary_fa": "استرینگ مگنت برای جمع‌آوری ذرات فلزی در عملیات تمیزکاری چاه.",
+      "summary_en": "A string magnet for collecting metallic debris during wellbore cleanout operations.",
+      "specs": {},
       "image_url": "/storage/products/string-magnet.webp",
       "catalog_url": "/storage/documents/string-magnet-catalog.pdf"
     }
@@ -1505,8 +1475,8 @@
       "title_en": "About Pars Poolad Aghaee Co.",
       "subtitle_fa": "بیش از نیم قرن تجربه از ۱۳۴۸ در مهندسی، ساخت و خودکفایی تجهیزات صنعت نفت، گاز و فولاد",
       "subtitle_en": "Over half a century of engineering excellence since 1969 in oil, gas & steel industries",
-      "content_fa": "<p>شرکت پارس پولاد آقایی با بیش از نیم قرن تجربه ارزشمند، در سال ۱۳۴۸ تأسیس شد و از سال ۱۳۸۲ با هویتی نوین مسیر تازه‌ای در صنایع سنگین کشور گشود. آغاز فعالیت با تولید قطعات یدکی مجتمع عظیم فولاد خوزستان رقم خورد و به تولید بیش از ۱۴۰ قلم قطعه حیاتی توربین و کمپرسورهای برندهای Ruston، Rolls-Royce، Elliott و Sulzer گسترش یافت.</p><p>در دوران تحریم‌ها، این شرکت با تمرکز بر بومی‌سازی تجهیزات سرچاهی (Wellhead) و ادوات درون‌چاهی (Liner Hanger & Packer)، نمونه‌های پیچیده خارجی را با دقت مهندسی برابر و یک‌دهم هزینه تمام‌شده تولید و بیش از ۲۰۰ دستگاه به وزارت نفت تحویل داد.</p><h2>چشم‌انداز و اهداف آرمانی</h2><p>برترین برند ملی در ارائه خدمات و تجهیزات درون‌چاهی و سرچاهی با نگاه بنگاه‌داری اقتصادی و تبدیل‌شدن به صادرکننده برجسته خدمات مهندسی در سطح منطقه.</p><h2>خط‌مشی کیفیت و HSE</h2><p>استقرار نظام مدیریت ایمنی، بهداشت و محیط‌زیست مطابق استانداردهای ISO 14001:2015، ISO 45001:2018 و ISO 29001:2020 با هدف حذف حوادث شغلی.</p><h2>دستاوردهای دانش‌بنیان</h2><p>ساخت بیش از ۱۴۰ قلم قطعه توربین و کمپرسورهای Elliott، Ruston، Rolls-Royce و Sulzer برای نخستین بار در خاورمیانه و تحویل بیش از ۲۰۰ دستگاه به وزارت نفت.</p>",
-      "content_en": "<p>Founded in 1969 and restructured in 2003, Pars Poolad Aghaee is a Knowledge-Based pioneer manufacturing strategic API 6A wellheads, downhole liner hangers, production packers, and precision turbine bearings.</p><h2>Vision and strategic goals</h2><p>To become a leading national provider of wellhead and downhole equipment and an outstanding regional exporter of engineering services.</p><h2>Quality and HSE policy</h2><p>Our management system aligns with ISO 14001:2015, ISO 45001:2018 and ISO 29001:2020, with the goal of preventing workplace incidents.</p><h2>Knowledge-based achievements</h2><p>More than 140 turbine and compressor components have been localized for the first time in the region, with over 200 units delivered to Iran's Ministry of Oil.</p>",
+      "content_fa": "<p>شرکت پارس پولاد آقایی در سال ۱۳۴۸ تأسیس شد و از سال ۱۳۸۲ با هویتی نوین، فعالیت خود را در صنایع سنگین کشور ادامه داد. آغاز فعالیت شرکت با تولید و تأمین قطعات یدکی مجتمع فولاد خوزستان همراه بود.</p><h2>دستاوردهای فنی و مهندسی</h2><p>شرکت بیش از ۱۴۰ قلم قطعه حساس توربین و کمپرسور برای برندهای راستون (Ruston)، رولزرویس (Rolls-Royce)، الیوت (Elliott) و سولزر (Sulzer) تولید کرده است. طراحی و ساخت تراست بیرینگ (Thrust Bearing) و ژورنال بیرینگ (Journal Bearing) کمپرسورهای گازی الیوت نیز از دستاوردهای شاخص آن است.</p><p>شرکت در حوزه تجهیزات سرچاهی (Wellhead) و درون‌چاهی (Downhole)، از جمله لاینر هنگر و پکر، فعالیت مهندسی و تولیدی دارد و بیش از ۲۰۰ دستگاه تجهیزات به وزارت نفت تحویل داده است.</p><h2>حوزه‌های فعالیت</h2><ul><li>طراحی و ساخت تجهیزات سرچاهی و درون‌چاهی</li><li>خدمات مهندسی، نصب، راه‌اندازی و پشتیبانی فنی</li><li>مشاوره تخصصی برای بهینه‌سازی فرآیندهای حفاری و استخراج</li><li>ساخت قطعات توربین و کمپرسور و مهندسی معکوس</li></ul><h2>چشم‌انداز و اهداف آرمانی</h2><p>تبدیل‌شدن به برند ملی پیشرو در تجهیزات و خدمات سرچاهی و درون‌چاهی و توسعه صادرات خدمات مهندسی در منطقه.</p><h2>کیفیت و HSE</h2><p>رویکرد شرکت بر کنترل کیفیت و مدیریت ایمنی، بهداشت شغلی و محیط‌زیست استوار است. گواهی‌های شرکت شامل ISO 14001:2015، ISO 45001:2018 و ISO 29001:2020 است.</p>",
+      "content_en": "<p>Pars Poolad Aghaee was established in 1969 and continued its industrial activities under a renewed identity from 2003. Its work began with the manufacture and supply of spare parts for the Khuzestan Steel Complex.</p><h2>Engineering achievements</h2><p>The company has manufactured more than 140 critical turbine and compressor components for Ruston, Rolls-Royce, Elliott and Sulzer equipment. The design and manufacture of thrust and journal bearings for Elliott gas compressors are among its notable engineering achievements.</p><p>The company engineers and manufactures wellhead and downhole equipment, including liner hangers and packers, and has delivered more than 200 equipment units to Iran's Ministry of Oil.</p><h2>Areas of activity</h2><ul><li>Engineering and manufacturing wellhead and downhole equipment</li><li>Engineering, installation, commissioning and technical support</li><li>Consulting to improve drilling and extraction operations</li><li>Turbine and compressor component manufacturing and reverse engineering</li></ul><h2>Vision</h2><p>To become a leading national provider of wellhead and downhole equipment and to expand engineering-service exports across the region.</p><h2>Quality and HSE</h2><p>The company emphasizes quality control and occupational health, safety and environmental management. Its certificates include ISO 14001:2015, ISO 45001:2018 and ISO 29001:2020.</p>",
       "meta_title": "درباره پارس پولاد آقایی | پیشگام تجهیزات نفت و گاز",
       "meta_description": "تاریخچه، دستاوردهای دانش‌بنیان، خط‌مشی کیفیت و اهداف آرمانی شرکت پارس پولاد آقایی.",
       "metadata": {
@@ -1863,7 +1833,7 @@
       "extension": "pdf",
       "size_bytes": 469145,
       "folder": "documents",
-      "requires_auth": true,
+      "requires_auth": false,
       "created_at": "2026-11-16T13:27:41.661Z"
     },
     {
@@ -1897,9 +1867,9 @@
       "commercial_phone": "09369520082",
       "work_hours_fa": "شنبه تا چهارشنبه ۸:۰۰ الی ۱۶:۰۰ | پنجشنبه‌ها ۸:۰۰ الی ۱۳:۰۰",
       "work_hours_en": "Sat–Wed 08:00–16:00 | Thu 08:00–13:00",
-      "linkedin_url": "https://linkedin.com",
-      "instagram_url": "https://instagram.com",
-      "aparat_url": "https://aparat.com",
+      "linkedin_url": "",
+      "instagram_url": "",
+      "aparat_url": "",
       "footer_note_fa": "کلیه حقوق مادی و معنوی این وب‌سایت متعلق به شرکت دانش‌بنیان پارس پولاد آقایی می‌باشد.",
       "footer_note_en": "All rights reserved © Pars Poolad Aghaee Knowledge-Based Industrial Co.",
       "last_updated_fa": "آبان ۱۴۰۴",

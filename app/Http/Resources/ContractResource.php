@@ -22,7 +22,11 @@ class ContractResource extends JsonResource
             'status' => $this->status?->value ?? $this->status,
             'scope_fa' => $this->scope_fa,
             'scope_en' => $this->scope_en,
-            'document_url' => $this->document_url,
+            'document_url' => app(\App\Services\PrivateDownloadUrl::class)->resolve(
+                $this->document_url,
+                (bool) $this->requires_auth,
+                $request,
+            ),
             'requires_auth' => (bool) $this->requires_auth,
         ];
     }

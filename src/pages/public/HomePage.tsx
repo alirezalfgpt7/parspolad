@@ -51,6 +51,7 @@ export const HomePage: React.FC = () => {
       <SeoHead
         title={bootstrap?.seo?.site_title ?? ''}
         description={bootstrap?.seo?.meta_description}
+        language={language}
       />
 
       {/* KPI Counter Strip */}

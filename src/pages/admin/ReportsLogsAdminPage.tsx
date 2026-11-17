@@ -7,11 +7,22 @@ import type { ActivityLog } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 
+interface ProjectImportRow {
+  line: number;
+  title: string;
+  errors: string[];
+  payload?: Record<string, unknown>;
+  importError?: string;
+  imported?: boolean;
+}
+
 export const ReportsLogsAdminPage: React.FC = () => {
-  const { token, addToast } = useAppStore();
+  const { token, addToast, bootstrap } = useAppStore();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [importRows, setImportRows] = useState<ProjectImportRow[]>([]);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -32,56 +43,129 @@ export const ReportsLogsAdminPage: React.FC = () => {
   }, [page, addToast]);
 
   const exportExcel = async (entity: 'projects' | 'contracts' | 'logs') => {
-    const res = await fetch(`/api/v1/admin/reports/export/${entity}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `parspolad-${entity}.xlsx`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addToast('success', `گزارش اکسل (${entity}) دانلود شد.`);
+    try {
+      const res = await fetch(`/api/v1/admin/reports/export/${entity}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('دریافت فایل گزارش ناموفق بود.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `parspolad-${entity}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast('success', `گزارش اکسل (${entity}) دانلود شد.`);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'دانلود فایل گزارش ناموفق بود.');
+    }
   };
 
-  const handleImportExcel = async (file?: File) => {
+  const previewImport = async (file?: File) => {
     if (!file) return;
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: 'array' });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
-    for (const r of rows.slice(0, 10)) {
-      await apiRequest('/admin/projects', {
-        method: 'POST',
-        body: JSON.stringify({
-          slug: `import-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          title_fa: String(r['عنوان پروژه'] || r['title'] || 'پروژه ایمپورت‌شده'),
-          title_en: String(r['title_en'] || 'Imported Project'),
-          category_id: 1,
-          client_name_fa: String(r['کارفرما'] || r['client'] || 'کارفرما'),
-          client_name_en: String(r['client'] || 'Client'),
-          contract_number: String(r['شماره قرارداد'] || r['contract'] || 'IMP-1404'),
-          contract_type_fa: 'ساخت و تولید',
-          contract_type_en: 'Manufacturing',
-          location_fa: String(r['محل اجرا'] || 'اهواز'),
-          location_en: 'Ahvaz',
-          year: Number(r['سال'] || 1404),
-          status: 'in_progress',
-          summary_fa: 'وارد شده از فایل اکسل',
-          summary_en: 'Imported from Excel',
-          description_fa: 'وارد شده از فایل اکسل',
-          description_en: 'Imported from Excel',
-          standards: ['API 6A'],
-          cover_image: '/storage/hero/hero-rig.jpg',
-          images: ['/storage/hero/hero-rig.jpg'],
-          videos: [],
-          documents: [],
-          is_featured: false,
-        }),
-      });
+    if (!/\.(xlsx|xls|csv)$/i.test(file.name) || file.size > 10 * 1024 * 1024) {
+      addToast('error', 'فقط فایل xlsx، xls یا csv تا حجم ۱۰ مگابایت قابل بررسی است.');
+      return;
     }
-    addToast('success', `${Math.min(rows.length, 10)} ردیف از فایل اکسل وارد سیستم شد.`);
+
+    try {
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      if (!sheetName) throw new Error('فایل شیت قابل‌خواندن ندارد.');
+      const sourceRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[sheetName], { defval: '' });
+      if (sourceRows.length === 0) throw new Error('فایل هیچ ردیف داده‌ای ندارد.');
+      if (sourceRows.length > 500) throw new Error('حداکثر ۵۰۰ ردیف در هر بار قابل ورود است.');
+
+      const readText = (row: Record<string, unknown>, ...keys: string[]): string => {
+        for (const key of keys) {
+          const value = row[key];
+          if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+        }
+        return '';
+      };
+      const categories = bootstrap?.categories ?? [];
+      const preview = sourceRows.map((row, index): ProjectImportRow => {
+        const titleFa = readText(row, 'title_fa', 'عنوان پروژه');
+        const titleEn = readText(row, 'title_en', 'عنوان انگلیسی');
+        const clientFa = readText(row, 'client_name_fa', 'کارفرما');
+        const clientEn = readText(row, 'client_name_en', 'کارفرما انگلیسی', 'client');
+        const contract = readText(row, 'contract_number', 'شماره قرارداد');
+        const categoryLabel = readText(row, 'category_id', 'category', 'دسته‌بندی', 'دسته بندی');
+        const category = categories.find((item) =>
+          String(item.id) === categoryLabel || item.slug === categoryLabel || item.name_fa === categoryLabel || item.name_en === categoryLabel,
+        );
+        const year = Number(readText(row, 'year', 'سال'));
+        const status = readText(row, 'status', 'وضعیت');
+        const summaryFa = readText(row, 'summary_fa', 'خلاصه فارسی', 'خلاصه');
+        const coverImage = readText(row, 'cover_image', 'تصویر کاور', 'تصویر');
+        const errors: string[] = [];
+
+        if (!titleFa || !titleEn) errors.push('عنوان فارسی و انگلیسی لازم است.');
+        if (!clientFa || !clientEn) errors.push('نام فارسی و انگلیسی کارفرما لازم است.');
+        if (!contract) errors.push('شماره قرارداد لازم است.');
+        if (!category) errors.push('دسته‌بندی باید با شناسه، نام یا شناسه یکتای دسته موجود تطبیق داشته باشد.');
+        if (!Number.isInteger(year) || year < 1348 || year > 1450) errors.push('سال باید عددی بین ۱۳۴۸ تا ۱۴۵۰ باشد.');
+        if (!status) errors.push('وضعیت پروژه لازم است.');
+        if (!['completed', 'in_progress', 'planned', 'contracted'].includes(status)) errors.push('وضعیت پروژه معتبر نیست.');
+        if (!summaryFa) errors.push('خلاصه فارسی پروژه لازم است.');
+        if (!coverImage) errors.push('مسیر تصویر کاور لازم است.');
+
+        return {
+          line: index + 2,
+          title: titleFa || titleEn || `ردیف ${index + 2}`,
+          errors,
+          ...(errors.length === 0 && category ? {
+            payload: {
+              slug: `import-${Date.now()}-${index + 1}`,
+              title_fa: titleFa,
+              title_en: titleEn,
+              category_id: category.id,
+              client_name_fa: clientFa,
+              client_name_en: clientEn,
+              contract_number: contract,
+              contract_type_fa: readText(row, 'contract_type_fa', 'نوع قرارداد') || null,
+              contract_type_en: readText(row, 'contract_type_en', 'contract_type') || null,
+              location_fa: readText(row, 'location_fa', 'محل اجرا') || null,
+              location_en: readText(row, 'location_en', 'location') || null,
+              year,
+              status,
+              summary_fa: summaryFa,
+              summary_en: readText(row, 'summary_en', 'خلاصه انگلیسی') || null,
+              description_fa: readText(row, 'description_fa', 'شرح فارسی') || null,
+              description_en: readText(row, 'description_en', 'شرح انگلیسی') || null,
+              standards: readText(row, 'standards', 'استانداردها').split(/[,،]/).map((value) => value.trim()).filter(Boolean),
+              cover_image: coverImage,
+              is_featured: false,
+            },
+          } : {}),
+        };
+      });
+      setImportRows(preview);
+      addToast('info', `${preview.length} ردیف بررسی شد؛ ${preview.filter((row) => row.errors.length === 0).length} ردیف آماده ورود است.`);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'خواندن فایل اکسل ناموفق بود.');
+    }
+  };
+
+  const importValidRows = async () => {
+    setImporting(true);
+    let imported = 0;
+    const updatedRows = [...importRows];
+    for (let index = 0; index < updatedRows.length; index += 1) {
+      const row = updatedRows[index];
+      if (!row.payload || row.errors.length > 0 || row.imported) continue;
+      try {
+        await apiRequest('/admin/projects', { method: 'POST', body: JSON.stringify(row.payload) });
+        imported += 1;
+        row.imported = true;
+        delete row.importError;
+      } catch (error) {
+        row.importError = error instanceof Error ? error.message : 'خطای نامشخص هنگام ثبت ردیف.';
+      }
+    }
+    setImportRows(updatedRows);
+    setImporting(false);
+    addToast(imported > 0 ? 'success' : 'error', `${imported} ردیف وارد شد؛ ${updatedRows.filter((row) => row.importError).length} ردیف در ثبت نهایی خطا داشت.`);
   };
 
   const cols: Column<ActivityLog>[] = [
@@ -114,11 +198,36 @@ export const ReportsLogsAdminPage: React.FC = () => {
           </button>
           <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700">
             <Upload className="h-4 w-4" />
-            <span>ورود پروژه‌ها از اکسل</span>
-            <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => handleImportExcel(e.target.files?.[0])} />
+            <span>بررسی فایل اکسل پروژه‌ها</span>
+            <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => previewImport(e.target.files?.[0])} />
           </label>
         </div>
       </div>
+
+      {importRows.length > 0 && (
+        <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="text-sm font-bold">پیش‌نمایش ورود: {importRows.length} ردیف</div>
+            <button type="button" onClick={importValidRows} disabled={importing || !importRows.some((row) => row.payload && row.errors.length === 0 && !row.imported)} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
+              {importing ? 'در حال ورود...' : 'ثبت ردیف‌های معتبر'}
+            </button>
+          </div>
+          <div className="max-h-80 overflow-auto">
+            <table className="w-full text-start text-xs">
+              <thead><tr><th className="p-2">ردیف</th><th className="p-2">پروژه</th><th className="p-2">اعتبارسنجی</th></tr></thead>
+              <tbody>
+                {importRows.map((row) => (
+                  <tr key={row.line} className="border-t border-slate-100 align-top dark:border-slate-800">
+                    <td className="p-2 tabular-nums">{row.line}</td>
+                    <td className="p-2">{row.title}</td>
+                    <td className={`p-2 ${row.errors.length || row.importError ? 'text-red-600' : 'text-emerald-700'}`}>{[...row.errors, ...(row.importError ? [row.importError] : [])].join(' · ') || (row.imported ? 'وارد شد' : 'آماده ورود')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       <DataTable data={logs} columns={cols} pageSize={50} searchKeys={[(l) => l.user_name, (l) => l.action, (l) => l.subject_label]} />
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />

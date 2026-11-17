@@ -34,7 +34,12 @@ export const ProjectDetailPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <SeoHead title={language === 'fa' ? project.title_fa : project.title_en} />
+      <SeoHead
+        title={language === 'fa' ? project.title_fa : project.title_en}
+        description={language === 'fa' ? project.description_fa : project.description_en}
+        image={project.cover_image}
+        language={language}
+      />
       <Breadcrumb
         items={[
           { label: language === 'fa' ? 'پروژه‌ها' : 'Projects', to: '/projects' },
@@ -139,6 +144,14 @@ export const ProjectDetailPage: React.FC = () => {
                       <span>{doc.title_fa} (مخصوص کاربران ثبت‌نام‌شده)</span>
                       <Lock className="h-4 w-4 shrink-0" />
                     </Link>
+                  ) : !doc.file_url ? (
+                    <span
+                      key={doc.id}
+                      className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-xs text-slate-500 dark:border-slate-700"
+                    >
+                      <span>{doc.title_fa} · فایل محافظت‌شده در دسترس نیست</span>
+                      <Lock className="h-4 w-4 shrink-0" />
+                    </span>
                   ) : (
                     <a
                       key={doc.id}

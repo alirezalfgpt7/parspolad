@@ -79,7 +79,7 @@ export const ProductsPage: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
                   <span>{language === 'fa' ? pr.category_fa : pr.category_en}</span>
-                  <span className="font-mono font-semibold">{pr.model_code}</span>
+                  {pr.model_code && <span className="font-mono font-semibold">{pr.model_code}</span>}
                 </div>
                 <h2 className="mt-2 text-base font-bold text-slate-900 dark:text-white">
                   {language === 'fa' ? pr.name_fa : pr.name_en}
@@ -87,14 +87,16 @@ export const ProductsPage: React.FC = () => {
                 <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                   {language === 'fa' ? pr.summary_fa : pr.summary_en}
                 </p>
-                <dl className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
-                  {Object.entries(pr.specs).map(([k, v]) => (
-                    <div key={k} className="flex items-center justify-between gap-2">
-                      <dt className="text-slate-500">{k}</dt>
-                      <dd className="font-medium text-slate-800 dark:text-slate-200 tabular-nums">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
+                {Object.keys(pr.specs).length > 0 && (
+                  <dl className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
+                    {Object.entries(pr.specs).map(([k, v]) => (
+                      <div key={k} className="flex items-center justify-between gap-2">
+                        <dt className="text-slate-500">{k}</dt>
+                        <dd className="font-medium text-slate-800 dark:text-slate-200 tabular-nums">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
               </div>
               {pr.catalog_url && (
                 <a
