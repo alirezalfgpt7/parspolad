@@ -12,8 +12,8 @@ import type {
   Service,
   SiteSettings,
   Slider,
-  ThemePalette,
   ThemePreset,
+  ThemeScope,
   ThemeSettings,
   User,
 } from '../types/index.ts';
@@ -25,7 +25,7 @@ export interface ToastMessage {
 }
 
 interface BootstrapPayload {
-  theme: ThemeSettings;
+  theme: ThemeSettings | null;
   presets: ThemePreset[];
   menus: Menu[];
   sliders: Slider[];
@@ -49,8 +49,9 @@ interface AppState {
   user: User | null;
   token: string | null;
   bootstrap: BootstrapPayload | null;
-  previewPalette: ThemePalette | null;
-  previewLandingPalette: ThemePalette | null;
+  previewTheme: ThemeSettings | null;
+  previewScope: ThemeScope | null;
+  previewMode: ColorMode | null;
   searchOpen: boolean;
   toasts: ToastMessage[];
   setLanguage: (lang: Language) => void;
@@ -60,7 +61,11 @@ interface AppState {
   logout: () => Promise<void>;
   fetchBootstrap: () => Promise<void>;
   fetchMe: () => Promise<void>;
-  setPreviewTheme: (palette: ThemePalette | null, landingPalette?: ThemePalette | null) => void;
+  setPreviewTheme: (
+    theme: ThemeSettings | null,
+    scope?: ThemeScope | null,
+    mode?: ColorMode | null
+  ) => void;
   setSearchOpen: (open: boolean) => void;
   addToast: (type: ToastMessage['type'], text: string) => void;
   removeToast: (id: string) => void;
@@ -77,8 +82,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   user: null,
   token: savedToken,
   bootstrap: null,
-  previewPalette: null,
-  previewLandingPalette: null,
+  previewTheme: null,
+  previewScope: null,
+  previewMode: null,
   searchOpen: false,
   toasts: [],
 
@@ -144,8 +150,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  setPreviewTheme: (palette, landingPalette = null) =>
-    set({ previewPalette: palette, previewLandingPalette: landingPalette }),
+  setPreviewTheme: (
+    theme,
+    scope = null,
+    mode = null
+  ) =>
+    set({
+      previewTheme: theme,
+      previewScope: theme ? scope : null,
+      previewMode: theme ? mode : null,
+    }),
 
   setSearchOpen: (open) => set({ searchOpen: open }),
 

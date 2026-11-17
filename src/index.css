@@ -7,12 +7,8 @@
 @import "@fontsource/vazirmatn/600.css";
 @import "@fontsource/vazirmatn/700.css";
 @import "@fontsource/vazirmatn/800.css";
-@import "swiper/css";
-@import "swiper/css/effect-fade";
-@import "swiper/css/navigation";
-@import "swiper/css/pagination";
 @import "leaflet/dist/leaflet.css";
-@import "aos/dist/aos.css";
+@import "./components/effects/effects.css";
 
 :root {
   --theme-primary: #B91C1C;
@@ -31,6 +27,154 @@
   --theme-btn-bg: #B91C1C;
   --theme-btn-text: #FFFFFF;
   --theme-link: #B91C1C;
+  --theme-card-radius: 0.875rem;
+  --theme-card-shadow: 0 3px 10px rgb(15 23 42 / 7%);
+  --theme-card-surface: var(--theme-surface);
+  --theme-card-border: var(--theme-border);
+  --theme-card-blur: none;
+  --theme-page-glow: none;
+}
+
+:root[data-theme-style="industrial"] {
+  --theme-card-radius: 0.75rem;
+  --theme-card-shadow: 0 3px 10px rgb(15 23 42 / 7%);
+  --theme-card-border: color-mix(in srgb, var(--theme-secondary) 14%, var(--theme-border));
+}
+
+:root[data-theme-style="modern"] {
+  --theme-card-radius: 1.25rem;
+  --theme-card-shadow: 0 14px 34px color-mix(in srgb, var(--theme-primary) 9%, transparent);
+  --theme-card-border: color-mix(in srgb, var(--theme-primary) 16%, var(--theme-border));
+  --theme-page-glow:
+    radial-gradient(ellipse at 8% 0%, color-mix(in srgb, var(--theme-primary) 7%, transparent), transparent 42%),
+    radial-gradient(ellipse at 96% 28%, color-mix(in srgb, var(--theme-accent) 6%, transparent), transparent 35%);
+}
+
+:root[data-theme-style="glass"] {
+  --theme-card-radius: 1.375rem;
+  --theme-card-shadow: 0 18px 48px rgb(15 23 42 / 12%);
+  --theme-card-surface: color-mix(in srgb, var(--theme-surface) 88%, transparent);
+  --theme-card-border: color-mix(in srgb, var(--theme-primary) 22%, var(--theme-border));
+  --theme-card-blur: blur(14px);
+  --theme-page-glow:
+    radial-gradient(ellipse at 4% 2%, color-mix(in srgb, var(--theme-primary) 11%, transparent), transparent 40%),
+    radial-gradient(ellipse at 98% 20%, color-mix(in srgb, var(--theme-accent) 9%, transparent), transparent 38%);
+}
+
+:root[data-button-shape="rounded"] {
+  --theme-button-radius: 0.75rem;
+}
+
+:root[data-button-shape="pill"] {
+  --theme-button-radius: 9999px;
+}
+
+:root[data-button-shape="square"] {
+  --theme-button-radius: 0.2rem;
+}
+
+.theme-action {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--theme-button-radius, 0.75rem);
+  transition: box-shadow 220ms ease, transform 220ms ease, opacity 220ms ease;
+}
+
+.theme-action-auto::before,
+.theme-action-auto::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.theme-action-auto > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-button-effect="shimmer"] .theme-action-auto::after {
+  inset: -20% auto -20% -65%;
+  width: 45%;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 46%), transparent);
+  transition: left 550ms ease;
+}
+
+:root[data-button-effect="shimmer"] .theme-action-auto:hover::after,
+:root[data-button-effect="shimmer"] .theme-action-auto:focus-visible::after {
+  left: 125%;
+}
+
+:root[data-button-effect="liquid"] .theme-action-auto::before {
+  inset: 100% -30% -90%;
+  border-radius: 42%;
+  background: rgb(255 255 255 / 18%);
+  transition: inset 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root[data-button-effect="liquid"] .theme-action-auto:hover::before,
+:root[data-button-effect="liquid"] .theme-action-auto:focus-visible::before {
+  inset: 35% -30% -130%;
+}
+
+:root[data-button-effect="glow"] .theme-action-auto:hover,
+:root[data-button-effect="glow"] .theme-action-auto:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px color-mix(in srgb, var(--theme-primary) 38%, transparent);
+}
+
+:root[data-button-shape] button,
+:root[data-button-shape] .theme-action,
+:root[data-button-shape] a[class*="bg-(--theme-primary)"],
+:root[data-button-shape] a[class*="bg-(--theme-btn-bg)"] {
+  border-radius: var(--theme-button-radius);
+}
+
+.admin-shell {
+  color: var(--theme-text);
+}
+
+.admin-sidebar {
+  border-color: var(--theme-border);
+  background-color: var(--theme-surface);
+  color: var(--theme-text);
+}
+
+.admin-topbar {
+  border-color: var(--theme-border);
+  background-color: var(--theme-header-bg);
+  color: var(--theme-header-text);
+}
+
+:root[data-theme-style] main :is(div, section, article, a).rounded-lg.border,
+:root[data-theme-style] main :is(div, section, article, a).rounded-xl.border,
+:root[data-theme-style] main :is(div, section, article, a).rounded-2xl.border {
+  border-color: var(--theme-card-border);
+  border-radius: var(--theme-card-radius);
+  background-color: var(--theme-card-surface);
+  box-shadow: var(--theme-card-shadow);
+  backdrop-filter: var(--theme-card-blur);
+  transition:
+    border-radius 240ms ease,
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    background-color 240ms ease;
+}
+
+:root[data-theme-style="glass"] header {
+  background-color: color-mix(in srgb, var(--theme-header-bg) 82%, transparent) !important;
+  backdrop-filter: blur(18px);
+}
+
+:root[data-theme-style="modern"] header {
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--theme-primary) 8%, transparent);
+}
+
+:root[data-theme-style="modern"] main :is(div, section, article, a).rounded-xl.border:hover,
+:root[data-theme-style="modern"] main :is(div, section, article, a).rounded-2xl.border:hover {
+  transform: translateY(-2px);
 }
 
 .dark {
@@ -52,6 +196,7 @@ html {
 
 body {
   background-color: var(--theme-bg);
+  background-image: var(--theme-page-glow);
   color: var(--theme-text);
   font-family: "Vazirmatn", system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
@@ -59,38 +204,6 @@ body {
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
-}
-
-@keyframes kenburns {
-  0% {
-    transform: scale(1) translate3d(0, 0, 0);
-  }
-  100% {
-    transform: scale(1.12) translate3d(-1.5%, -1.5%, 0);
-  }
-}
-
-.animate-kenburns {
-  animation: kenburns 14s ease-out infinite alternate;
-}
-
-@keyframes marquee-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee-scroll 32s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
 }
 
 /* Leaflet RTL & Dark compatibility */
@@ -112,5 +225,36 @@ body {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary);
+}
+
+.admin-sidebar-scroll {
+  scrollbar-width: none;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar-track,
+.admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+}
+
+.admin-sidebar-scroll:hover {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--theme-primary) 45%, transparent) transparent;
+}
+
+.admin-sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+}
+
+.admin-sidebar-scroll:hover::-webkit-scrollbar-thumb:hover {
   background: var(--theme-primary);
 }

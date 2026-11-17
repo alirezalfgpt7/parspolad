@@ -26,7 +26,7 @@ export const CategoryBarChart: React.FC<{ data: CategoryChartItem[] }> = ({ data
             </div>
             <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
               <div
-                className="h-full rounded-full transition-all duration-500"
+                className="effect-chart-bar h-full rounded-full transition-all duration-500"
                 style={{ width: `${pct}%`, backgroundColor: item.color || 'var(--theme-primary)' }}
               />
             </div>
@@ -64,8 +64,8 @@ export const YearlyTrendChart: React.FC<{ data: YearChartItem[] }> = ({ data }) 
           </linearGradient>
         </defs>
         <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
-        <polygon points={area} fill="url(#trendGrad)" />
-        <polyline fill="none" stroke="var(--theme-primary)" strokeWidth="2.5" strokeLinejoin="round" points={polyline} />
+        <polygon className="effect-chart-area" points={area} fill="url(#trendGrad)" />
+        <polyline className="effect-chart-line" fill="none" stroke="var(--theme-primary)" strokeWidth="2.5" strokeLinejoin="round" points={polyline} />
         {points.map((p) => (
           <g key={p.year}>
             <circle cx={p.x} cy={p.y} r="4.5" fill="var(--theme-primary)" stroke="#FFFFFF" strokeWidth="2" />

@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAppStore } from './store/useAppStore.ts';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal.tsx';
+import { PagePreloader } from './components/common/PagePreloader.tsx';
 import { OfflineIndicator } from './components/common/OfflineIndicator.tsx';
 import { ThemeProvider } from './components/common/ThemeProvider.tsx';
 import { AdminLayout } from './components/layout/AdminLayout.tsx';
@@ -69,15 +70,12 @@ const PageViewTracker: React.FC = () => {
 };
 
 export default function App() {
-  const { fetchBootstrap, fetchMe, language, colorMode } = useAppStore();
+  const { fetchBootstrap, fetchMe, language, colorMode, loading } = useAppStore();
 
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
     if (colorMode === 'dark') document.documentElement.classList.add('dark');
-    void import('aos')
-      .then(({ default: AOS }) => AOS.init({ duration: 550, once: true }))
-      .catch((error: unknown) => console.error('Failed to initialize page animations.', error));
     fetchBootstrap();
     fetchMe();
   }, []);
@@ -86,7 +84,8 @@ export default function App() {
     <BrowserRouter>
       <PageViewTracker />
       <ThemeProvider>
-        <Suspense fallback={<div className="py-20 text-center text-sm">در حال بارگذاری...</div>}>
+        {loading && <PagePreloader fullScreen label="در حال آماده‌سازی پرتال..." />}
+        <Suspense fallback={<PagePreloader fullScreen label="در حال آماده‌سازی صفحه..." />}>
           <Routes>
             <Route element={<PublicLayout />}>
               <Route path="/" element={<HomePage />} />

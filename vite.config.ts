@@ -12,7 +12,13 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+        includeAssets: [
+          'icon.svg',
+          'apple-touch-icon.png',
+          'pwa-192x192.png',
+          'pwa-512x512.png',
+          'storage/logos/preloader.gif',
+        ],
         manifest: {
           id: '/',
           name: 'شرکت پارس پولاد آقایی | Pars Poolad Aghaee',

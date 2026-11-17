@@ -8,7 +8,7 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { NotificationItem, User } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
-import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { EffectProfileAvatar, EffectProfileCard } from '../../components/effects/index.ts';
 
 const profileSchema = z.object({
   name: z.string().trim().min(1, 'نام الزامی است.').max(120, 'نام نمی‌تواند بیش از ۱۲۰ نویسه باشد.'),
@@ -86,11 +86,11 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+    <EffectProfileCard className="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
       <h1 className="mb-5 text-lg font-extrabold">پروفایل کاربری، آواتار و احراز هویت دو مرحله‌ای (2FA)</h1>
       <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
         <div className="flex items-center gap-4">
-          <ZeroBrokenImage src={avatar} alt={name} className="h-16 w-16 rounded-full border border-slate-200 object-cover" />
+          <EffectProfileAvatar src={avatar} alt={name} className="h-16 w-16 rounded-full border border-slate-200 object-cover" />
           <div className="flex-1">
             <FileUploader folder="avatars" label="آپلود تصویر آواتار جدید" onUploaded={(url) => setValue('avatar', url, { shouldValidate: true, shouldDirty: true })} />
           </div>
@@ -125,7 +125,7 @@ export const ProfilePage: React.FC = () => {
           <span>ذخیره پروفایل</span>
         </button>
       </form>
-    </div>
+    </EffectProfileCard>
   );
 };
 

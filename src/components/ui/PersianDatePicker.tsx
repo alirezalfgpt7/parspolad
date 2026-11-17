@@ -5,6 +5,10 @@ import gregorian from 'react-date-object/calendars/gregorian';
 import persian_fa from 'react-date-object/locales/persian_fa';
 import gregorian_en from 'react-date-object/locales/gregorian_en';
 
+const DatePickerComponent = (
+  DatePicker as typeof DatePicker & { default?: typeof DatePicker }
+).default ?? DatePicker;
+
 interface PersianDatePickerProps {
   value: string;
   onChange: (value: string) => void;
@@ -65,7 +69,7 @@ export const PersianDatePicker: React.FC<PersianDatePickerProps> = ({
     : null;
 
   return (
-    <DatePicker
+    <DatePickerComponent
       value={selectedDate?.isValid ? selectedDate : ''}
       onChange={(date: DateObject | null) => onChange(date?.isValid ? normalizeDigits(date.format('YYYY/MM/DD')) : '')}
       calendar={persian}

@@ -5,6 +5,7 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article, License, Product, Project, Service } from '../../types/index.ts';
 import { Modal } from '../ui/Modal.tsx';
+import { InlineLoader } from './InlineLoader.tsx';
 
 interface SearchResult {
   projects: Project[];
@@ -66,7 +67,7 @@ export const GlobalSearchModal: React.FC = () => {
       </div>
 
       <div className="mt-4 max-h-96 space-y-4 overflow-y-auto">
-        {loading && <p className="py-6 text-center text-xs text-slate-500">در حال جستجو...</p>}
+        {loading && <div className="flex justify-center py-6 text-xs text-slate-500"><InlineLoader label="در حال جستجو..." /></div>}
 
         {!loading && results && (
           <>

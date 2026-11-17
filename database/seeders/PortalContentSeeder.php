@@ -104,6 +104,9 @@ class PortalContentSeeder extends Seeder
 
     private function seedMenuItem(Menu $menu, array $itemData, ?int $parentId): void
     {
+        $attributes = Arr::only($itemData, (new MenuItem)->getFillable());
+        unset($attributes['menu_id'], $attributes['parent_id']);
+
         $item = MenuItem::query()->updateOrCreate(
             [
                 'menu_id' => $menu->id,
@@ -111,12 +114,8 @@ class PortalContentSeeder extends Seeder
                 'title_fa' => $itemData['title_fa'],
                 'url' => $itemData['url'],
             ],
-            Arr::only($itemData, (new MenuItem)->getFillable()),
+            $attributes,
         );
-
-        $item->menu_id = $menu->id;
-        $item->parent_id = $parentId;
-        $item->save();
 
         foreach ($itemData['children'] ?? [] as $child) {
             $this->seedMenuItem($menu, $child, $item->id);

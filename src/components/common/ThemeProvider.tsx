@@ -1,12 +1,30 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { ThemePalette } from '../../types/index.ts';
+import type {
+  ButtonShape,
+  ThemeButtonEffect,
+  ThemeDesignStyle,
+  ThemePalette,
+  ThemeScope,
+  ThemeSettings,
+} from '../../types/index.ts';
 
-function applyPaletteToRoot(palette: ThemePalette, mode: 'light' | 'dark') {
+function applyPaletteToRoot(
+  palette: ThemePalette,
+  mode: 'light' | 'dark',
+  designStyle: ThemeDesignStyle,
+  buttonShape: ButtonShape,
+  buttonEffect: ThemeButtonEffect,
+  scope: ThemeScope
+) {
   const root = document.documentElement;
+  root.dataset.themeScope = scope;
+  root.dataset.themeStyle = designStyle;
+  root.dataset.buttonShape = buttonShape;
+  root.dataset.buttonEffect = buttonEffect;
   root.style.setProperty('--theme-primary', palette.primary);
-  root.style.setProperty('--theme-primary-hover', palette.primary);
+  root.style.setProperty('--theme-primary-hover', `color-mix(in srgb, ${palette.primary} 86%, black)`);
   root.style.setProperty('--theme-secondary', palette.secondary);
   root.style.setProperty('--theme-accent', palette.accent);
   root.style.setProperty('--theme-btn-bg', palette.buttonBg);
@@ -34,25 +52,72 @@ function applyPaletteToRoot(palette: ThemePalette, mode: 'light' | 'dark') {
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const { bootstrap, colorMode, previewPalette, previewLandingPalette } = useAppStore();
+  const {
+    bootstrap,
+    colorMode,
+    previewTheme,
+    previewScope,
+    previewMode,
+  } = useAppStore();
+  const hasSavedMode = localStorage.getItem('ppa_mode') !== null;
+  const effectiveMode = previewMode || (hasSavedMode
+    ? colorMode
+    : previewTheme?.default_mode || bootstrap?.theme?.default_mode || colorMode);
 
   useEffect(() => {
-    if (colorMode === 'dark') {
+    if (effectiveMode === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [colorMode]);
+  }, [effectiveMode]);
 
   useEffect(() => {
-    const theme = bootstrap?.theme;
+    const theme: ThemeSettings | undefined = previewTheme || bootstrap?.theme || undefined;
     if (!theme) return;
     const isLanding = location.pathname === '/';
-    const palette = isLanding
-      ? previewLandingPalette || (theme.landing_theme_enabled ? theme.landing_palette : theme.active_palette)
-      : previewPalette || theme.active_palette;
-    applyPaletteToRoot(palette, colorMode);
-  }, [bootstrap, location.pathname, colorMode, previewPalette, previewLandingPalette]);
+    const routeScope: ThemeScope = isLanding && theme.landing_theme_enabled
+      ? 'landing'
+      : location.pathname.startsWith('/admin')
+        ? 'admin'
+        : 'site';
+    const scope = previewScope || routeScope;
+    const palette = scope === 'landing'
+      ? theme.landing_palette
+      : scope === 'admin'
+        ? theme.admin_palette || theme.active_palette
+        : theme.active_palette;
+    const designStyle = scope === 'landing'
+      ? theme.landing_design_style || theme.design_style
+      : scope === 'admin'
+        ? theme.admin_design_style || theme.design_style
+        : theme.design_style;
+    const buttonShape = scope === 'landing'
+      ? theme.landing_button_shape || theme.button_shape
+      : scope === 'admin'
+        ? theme.admin_button_shape || theme.button_shape
+        : theme.button_shape;
+    const buttonEffect = scope === 'landing'
+      ? theme.landing_button_effect || theme.button_effect
+      : scope === 'admin'
+        ? theme.admin_button_effect || theme.button_effect
+        : theme.button_effect;
+    applyPaletteToRoot(
+      palette,
+      effectiveMode,
+      designStyle,
+      buttonShape,
+      buttonEffect,
+      scope
+    );
+  }, [
+    bootstrap,
+    location.pathname,
+    effectiveMode,
+    previewTheme,
+    previewScope,
+    previewMode,
+  ]);
 
   return <>{children}</>;
 };

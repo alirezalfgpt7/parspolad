@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AdminContentController;
 use App\Http\Controllers\Api\V1\AdminResourceController;
 use App\Http\Controllers\Api\V1\ArticleCommentController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CaptchaChallengeController;
 use App\Http\Controllers\Api\V1\ContractController;
 use App\Http\Controllers\Api\V1\LicenseController;
 use App\Http\Controllers\Api\V1\MediaDownloadController;
@@ -49,6 +50,7 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
     // Authentication
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
     Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::get('/captcha/challenge', CaptchaChallengeController::class)->middleware('throttle:60,1');
 
     // Protected API routes (Laravel Sanctum)
     Route::middleware('auth:sanctum')->group(function (): void {

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import type { UseFormRegisterReturn } from 'react-hook-form';
+import { InlineLoader } from '../common/InlineLoader.tsx';
+import { cn } from '../../utils/i18n.ts';
+import { apiRequest } from '../../services/api.ts';
 
 interface CaptchaChallenge {
   key: string;
@@ -13,6 +16,8 @@ interface SelfHostedCaptchaProps {
   onKeyChange: (key: string) => void;
   onRefresh: () => void;
   error?: string;
+  appearance?: 'default' | 'glass';
+  mode?: 'standard' | 'mixed';
 }
 
 function isCaptchaChallenge(value: unknown): value is CaptchaChallenge {
@@ -30,26 +35,34 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
   onKeyChange,
   onRefresh,
   error,
+  appearance = 'default',
+  mode = 'standard',
 }) => {
   const [challenge, setChallenge] = useState<CaptchaChallenge | null>(null);
   const [loadError, setLoadError] = useState('');
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     let active = true;
     setChallenge(null);
     setLoadError('');
+    setImageError(false);
     onKeyChange('');
 
-    fetch('/captcha/api/public', {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`CAPTCHA request failed with status ${response.status}`);
-        }
+    const challengeRequest = mode === 'mixed'
+      ? apiRequest<unknown>('/captcha/challenge', { cache: 'no-store' })
+      : fetch('/captcha/api/public', {
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        }).then(async (response) => {
+          if (!response.ok) {
+            throw new Error(`CAPTCHA request failed with status ${response.status}`);
+          }
+          return response.json();
+        });
 
-        const payload: unknown = await response.json();
+    challengeRequest
+      .then((payload: unknown) => {
         if (!isCaptchaChallenge(payload)) {
           throw new TypeError('CAPTCHA response did not contain an image and challenge key.');
         }
@@ -68,30 +81,52 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
     return () => {
       active = false;
     };
-  }, [refreshToken, onKeyChange]);
+  }, [refreshToken, onKeyChange, mode]);
 
   return (
-    <div className="space-y-2">
+    <div className={cn('space-y-2', appearance === 'glass' && 'auth-glass-captcha')}>
       <label htmlFor={registration.name} className="block text-xs font-medium">
-        کد امنیتی را از تصویر وارد کنید
+        {mode === 'mixed'
+          ? 'عبارت یا حروف داخل تصویر را وارد کنید'
+          : 'کد امنیتی را از تصویر وارد کنید'}
       </label>
       <div className="flex flex-wrap items-center gap-3">
-        {challenge ? (
+        {challenge && !imageError ? (
           <img
             src={challenge.img}
             alt="تصویر کد امنیتی"
-            className="h-19 w-75 max-w-full rounded-lg border border-slate-200 bg-slate-100 object-contain dark:border-slate-700"
+            onError={() => setImageError(true)}
+            className={cn(
+              'h-14 w-56 max-w-full rounded-lg border object-contain',
+              appearance === 'glass'
+                ? 'border-white/20 bg-white/10'
+                : 'border-slate-200 bg-slate-100 dark:border-slate-700'
+            )}
           />
         ) : (
-          <div className="flex h-19 w-75 max-w-full items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800">
-            {loadError ? 'تصویر امنیتی بارگذاری نشد' : 'در حال بارگذاری تصویر امنیتی...'}
+          <div
+            className={cn(
+              'flex h-14 w-56 max-w-full items-center justify-center rounded-lg border text-xs',
+              appearance === 'glass'
+                ? 'border-white/20 bg-white/5 text-slate-300'
+                : 'border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800'
+            )}
+          >
+            {loadError || imageError
+              ? 'تصویر امنیتی بارگذاری نشد'
+              : <InlineLoader label="در حال بارگذاری تصویر امنیتی..." />}
           </div>
         )}
         <button
           type="button"
           onClick={onRefresh}
           aria-label="تولید تصویر امنیتی جدید"
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-300 px-3 text-xs font-semibold hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+          className={cn(
+            'inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors',
+            appearance === 'glass'
+              ? 'border-white/20 bg-white/5 text-white hover:bg-white/10'
+              : 'border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800'
+          )}
         >
           <RefreshCw className="h-4 w-4" />
           تصویر جدید
@@ -101,12 +136,17 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
         {...registration}
         id={registration.name}
         type="text"
-        inputMode="numeric"
+        inputMode="text"
         autoComplete="off"
         dir="ltr"
-        maxLength={3}
+        maxLength={20}
         aria-invalid={Boolean(error)}
-        className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+        className={cn(
+          'w-full rounded-lg border px-3 py-2 text-sm',
+          appearance === 'glass'
+            ? 'auth-glass-input text-white'
+            : 'border-slate-200 dark:border-slate-700 dark:bg-slate-800'
+        )}
       />
       {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
       {loadError && (

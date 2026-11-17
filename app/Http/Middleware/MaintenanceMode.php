@@ -11,7 +11,7 @@ class MaintenanceMode
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->is('api/v1/bootstrap', 'api/v1/auth/login') || ! $this->isEnabled()) {
+        if ($request->is('api/v1/bootstrap', 'api/v1/auth/login', 'api/v1/captcha/challenge') || ! $this->isEnabled()) {
             return $next($request);
         }
 

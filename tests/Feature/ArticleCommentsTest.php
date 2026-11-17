@@ -38,10 +38,8 @@ it('keeps new comments private until an authorized editor approves them', functi
         ->assertOk()
         ->assertJsonCount(0, 'data');
 
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $this->withToken($token)->putJson("/api/v1/admin/comments/{$comment->id}", [
         'status' => 'approved',

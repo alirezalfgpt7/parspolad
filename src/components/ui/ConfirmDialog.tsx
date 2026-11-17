@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Modal } from './Modal.tsx';
+import { InlineLoader } from '../common/InlineLoader.tsx';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -45,7 +46,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           onClick={onConfirm}
           className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-800 disabled:opacity-60 whitespace-nowrap"
         >
-          {loading ? 'در حال اجرا...' : confirmLabel}
+          {loading ? <InlineLoader label="در حال اجرا..." /> : confirmLabel}
         </button>
       </div>
     </Modal>

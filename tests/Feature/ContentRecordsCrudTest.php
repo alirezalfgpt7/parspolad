@@ -7,10 +7,8 @@ use Illuminate\Support\Facades\DB;
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
 it('provides fillable-field metadata and CRUD for generic CMS resources', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $this->withToken($token)->getJson('/api/v1/admin/content-schema/services')
         ->assertOk()
@@ -35,10 +33,8 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
 });
 
 it('supports editable JSON metadata on public CMS pages', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $this->withToken($token)->getJson('/api/v1/admin/content-schema/pages')
         ->assertOk()

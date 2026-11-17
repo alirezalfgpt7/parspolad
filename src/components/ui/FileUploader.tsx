@@ -3,6 +3,7 @@ import { FileCheck2, Upload } from 'lucide-react';
 import { apiRequest, fileToBase64 } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
+import { InlineLoader } from '../common/InlineLoader.tsx';
 
 interface FileUploaderProps {
   folder?: string;
@@ -68,7 +69,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         <Upload className="h-6 w-6 text-slate-400" />
       )}
       <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
-        {uploading ? 'در حال آپلود و اعتبارسنجی فایل...' : uploadedName || label}
+        {uploading ? <InlineLoader label="در حال آپلود و اعتبارسنجی فایل..." /> : uploadedName || label}
       </p>
     </div>
   );

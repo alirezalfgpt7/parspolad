@@ -42,10 +42,9 @@ it('allows authorized admins to assign and track ticket changes and threaded rep
         'status' => 'new',
     ]);
     $admin = User::query()->where('email', env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'))->firstOrFail();
-    $token = $this->postJson('/api/v1/auth/login', [
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this, [
         'email' => $admin->email,
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    ]))->assertOk()->json('token');
 
     $this->withToken($token)->putJson('/api/v1/admin/tickets/'.$ticket->id, [
         'ticket_status' => 'in_progress',

@@ -25,9 +25,9 @@ export const PublicFooter: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <ZeroBrokenImage
-                src={company?.logo_small_url || '/storage/logos/logo-small.png'}
+                src={company?.logo_url || company?.logo_small_url || '/storage/logos/logo-small.png'}
                 alt={language === 'fa' ? company?.name_fa || '' : company?.name_en || ''}
-                className="h-9 w-9 rounded bg-white p-1 object-contain"
+                className="h-10 max-w-36 rounded bg-white p-1 object-contain"
               />
               <span className="text-base font-extrabold">
                 {language === 'fa' ? company?.name_fa : company?.name_en}

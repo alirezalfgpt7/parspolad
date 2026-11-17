@@ -2,7 +2,10 @@ import React, { lazy, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { PublicFooter } from './PublicFooter.tsx';
+import { PublicInfoBar } from './PublicInfoBar.tsx';
 import { PublicNavbar } from './PublicNavbar.tsx';
+import { PageTransition } from '../effects/PageTransition.tsx';
+import { ScrollToTopButton } from '../effects/ScrollToTopButton.tsx';
 
 const MaintenancePage = lazy(() => import('../../pages/public/MiscPages.tsx').then((module) => ({ default: module.MaintenancePage })));
 const HeroSlider = lazy(() => import('../slider/HeroSlider.tsx').then((module) => ({ default: module.HeroSlider })));
@@ -23,6 +26,7 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {pathname === '/' && <PublicInfoBar />}
       <PublicNavbar />
       {pageSlider && (
         <Suspense fallback={null}>
@@ -30,9 +34,12 @@ export const PublicLayout: React.FC = () => {
         </Suspense>
       )}
       <main className="flex-1">
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
       <PublicFooter />
+      <ScrollToTopButton />
     </div>
   );
 };

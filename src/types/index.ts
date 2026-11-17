@@ -46,6 +46,11 @@ export interface ThemePalette {
   link: string;
 }
 
+export type ThemeDesignStyle = 'industrial' | 'modern' | 'glass';
+export type ButtonShape = 'rounded' | 'pill' | 'square';
+export type ThemeButtonEffect = 'shimmer' | 'liquid' | 'glow' | 'plain';
+export type ThemeScope = 'site' | 'landing' | 'admin';
+
 export interface ThemePreset {
   id: number;
   slug: string;
@@ -53,14 +58,27 @@ export interface ThemePreset {
   name_en: string;
   is_default: boolean;
   palette: ThemePalette;
+  design_style: ThemeDesignStyle;
+  button_shape: ButtonShape;
+  button_effect: ThemeButtonEffect;
 }
 
 export interface ThemeSettings {
   active_preset_slug: string;
   default_mode: ColorMode;
   active_palette: ThemePalette;
+  design_style: ThemeDesignStyle;
+  button_shape: ButtonShape;
+  button_effect: ThemeButtonEffect;
   landing_theme_enabled: boolean;
   landing_palette: ThemePalette;
+  landing_design_style: ThemeDesignStyle;
+  landing_button_shape: ButtonShape;
+  landing_button_effect: ThemeButtonEffect;
+  admin_palette: ThemePalette;
+  admin_design_style: ThemeDesignStyle;
+  admin_button_shape: ButtonShape;
+  admin_button_effect: ThemeButtonEffect;
 }
 
 export interface Slide {
@@ -414,6 +432,8 @@ export interface SiteSettings {
     linkedin_url: string;
     instagram_url: string;
     aparat_url: string;
+    telegram_url?: string;
+    whatsapp_url?: string;
     footer_note_fa: string;
     footer_note_en: string;
     last_updated_fa: string;
@@ -432,6 +452,11 @@ export interface SiteSettings {
     site_title: string;
     meta_description: string;
     keywords: string;
+    site_title_en?: string;
+    meta_description_en?: string;
+    keywords_en?: string;
+    meta_image?: string;
+    robots?: 'index,follow' | 'noindex,follow' | 'noindex,nofollow';
   };
   email: {
     smtp_host: string;
@@ -454,5 +479,7 @@ export interface SiteSettings {
     header_cta_text_fa: string;
     header_cta_text_en: string;
     header_cta_url: string;
+    info_bar_enabled?: boolean;
+    info_bar_phone?: string;
   };
 }

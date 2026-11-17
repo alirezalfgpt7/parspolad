@@ -34,10 +34,8 @@ it('provides the legacy frontend bootstrap fields from Laravel data', function (
 });
 
 it('supports protected admin content endpoints and public account registration', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $this->withToken($token)
         ->getJson('/api/v1/admin/pages')

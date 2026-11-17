@@ -7,6 +7,7 @@ import type { Project } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 
 export const ProjectDetailPage: React.FC = () => {
   const { slug } = useParams();
@@ -25,11 +26,7 @@ export const ProjectDetailPage: React.FC = () => {
   }, [slug]);
 
   if (!project) {
-    return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-center text-sm text-slate-500">
-        در حال بارگذاری اطلاعات پروژه...
-      </div>
-    );
+    return <PagePreloader label="در حال دریافت اطلاعات پروژه..." />;
   }
 
   return (

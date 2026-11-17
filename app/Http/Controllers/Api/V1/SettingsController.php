@@ -11,6 +11,7 @@ use App\Services\SmsDispatcherService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
@@ -57,6 +58,16 @@ class SettingsController extends Controller
             'map' => ['sometimes', 'array'],
             'seo' => ['sometimes', 'array'],
             'site' => ['sometimes', 'array'],
+            'seo.site_title' => ['sometimes', 'string', 'max:255'],
+            'seo.site_title_en' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'seo.meta_description' => ['sometimes', 'string', 'max:500'],
+            'seo.meta_description_en' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'seo.keywords' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'seo.keywords_en' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'seo.meta_image' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'seo.robots' => ['sometimes', Rule::in(['index,follow', 'noindex,follow', 'noindex,nofollow'])],
+            'site.info_bar_enabled' => ['sometimes', 'boolean'],
+            'site.info_bar_phone' => ['sometimes', 'nullable', 'string', 'max:40'],
             'email' => ['sometimes', 'array'],
             'email.smtp_host' => ['sometimes', 'string', 'max:255'],
             'email.smtp_port' => ['sometimes', 'integer', 'between:1,65535'],
@@ -77,7 +88,9 @@ class SettingsController extends Controller
                     ['key' => $key],
                     [
                         'group' => $group,
-                        'value' => is_scalar($value) ? (string) $value : json_encode($value, JSON_THROW_ON_ERROR),
+                        'value' => is_bool($value)
+                            ? ($value ? 'true' : 'false')
+                            : (is_scalar($value) ? (string) $value : json_encode($value, JSON_THROW_ON_ERROR)),
                     ],
                 );
             }

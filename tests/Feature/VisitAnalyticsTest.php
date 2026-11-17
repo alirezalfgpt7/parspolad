@@ -9,10 +9,8 @@ it('aggregates public page views by day and month without tracking visitor ident
     $this->postJson('/api/v1/page-views', ['path' => '/contact'])->assertAccepted();
     $this->postJson('/api/v1/page-views', ['path' => '/news'])->assertAccepted();
 
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
     $date = today()->toDateString();
 
     $this->withToken($token)->getJson("/api/v1/admin/analytics?from={$date}&to={$date}")

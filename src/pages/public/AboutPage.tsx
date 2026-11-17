@@ -6,7 +6,9 @@ import type { PageContent } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { Breadcrumb } from '../../components/ui/Breadcrumb.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { DecorativeCube, EffectAction, EffectText } from '../../components/effects/index.ts';
 
 export const AboutPage: React.FC = () => {
   const language = useAppStore((s) => s.language);
@@ -42,13 +44,21 @@ export const AboutPage: React.FC = () => {
       <Breadcrumb items={[{ label: language === 'fa' ? 'درباره شرکت' : 'About Us' }]} />
 
       {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : !page ? (
-        <p className="text-sm text-slate-500">در حال بارگذاری محتوا...</p>
+        <PagePreloader label="در حال دریافت محتوا..." />
       ) : (
         <div className="grid items-start gap-8 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-7">
-            <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-              {language === 'fa' ? page.title_fa : page.title_en}
-            </h1>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="mb-1 text-xs font-semibold text-(--theme-primary)">
+                  {language === 'fa' ? 'درباره ما' : 'About us'}
+                </p>
+                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
+                  <EffectText>{language === 'fa' ? page.title_fa : page.title_en}</EffectText>
+                </h1>
+              </div>
+              <DecorativeCube size="lg" className="h-20 w-20 shrink-0 rounded-2xl border border-slate-200 bg-white/70 dark:border-slate-700 dark:bg-slate-900/70" />
+            </div>
             <p className="text-base font-medium text-(--theme-primary)">
               {language === 'fa' ? page.subtitle_fa : page.subtitle_en}
             </p>
@@ -59,10 +69,17 @@ export const AboutPage: React.FC = () => {
             {downloads.length > 0 && (
               <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-2">
                 {downloads.map((download) => (
-                  <a key={download.url} href={download.url} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900">
+                  <EffectAction
+                    as="a"
+                    key={download.url}
+                    href={download.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+                  >
                     <span>{download.label}</span>
                     <Download className="h-4 w-4 text-(--theme-primary)" />
-                  </a>
+                  </EffectAction>
                 ))}
               </div>
             )}

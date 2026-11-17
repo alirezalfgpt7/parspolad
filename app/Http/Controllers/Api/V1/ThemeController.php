@@ -35,6 +35,9 @@ class ThemeController extends Controller
             'name_fa' => ['required', 'string', 'max:120'],
             'name_en' => ['required', 'string', 'max:120'],
             'palette' => ['required', 'array'],
+            'design_style' => ['sometimes', 'required', 'in:industrial,modern,glass'],
+            'button_shape' => ['sometimes', 'required', 'in:rounded,pill,square'],
+            'button_effect' => ['sometimes', 'required', 'in:shimmer,liquid,glow,plain'],
         ]);
 
         $preset = ThemePreset::query()->create($validated + ['is_default' => false]);

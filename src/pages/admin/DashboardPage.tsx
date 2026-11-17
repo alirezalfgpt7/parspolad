@@ -5,6 +5,8 @@ import { apiRequest } from '../../services/api.ts';
 import type { ActivityLog, ContactMessage, NotificationItem } from '../../types/index.ts';
 import { CategoryBarChart, YearlyTrendChart } from '../../components/charts/IndustrialCharts.tsx';
 import { PersianDatePicker, gregorianToJalali, jalaliToGregorian } from '../../components/ui/PersianDatePicker.tsx';
+import { PagePreloader } from '../../components/common/PagePreloader.tsx';
+import { InlineLoader } from '../../components/common/InlineLoader.tsx';
 
 interface AnalyticsPoint {
   date: string;
@@ -77,7 +79,7 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   if (!data) {
-    return <div className="py-12 text-center text-sm text-slate-500">در حال بارگذاری داشبورد...</div>;
+    return <PagePreloader label="در حال آماده‌سازی داشبورد..." />;
   }
 
   const cards = [
@@ -131,7 +133,7 @@ export const DashboardPage: React.FC = () => {
               disabled={analyticsLoading}
               className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
             >
-              {analyticsLoading ? 'در حال دریافت...' : 'اعمال بازه'}
+              {analyticsLoading ? <InlineLoader label="در حال دریافت..." /> : 'اعمال بازه'}
             </button>
           </div>
         </div>
@@ -150,23 +152,11 @@ export const DashboardPage: React.FC = () => {
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
                 <h3 className="mb-3 text-xs font-semibold">بازدید روزانه · ۱۴ روز اخیر</h3>
-                <AnalyticsBars
-                  points={analytics.daily.slice(-14).map((point) => ({
-                    label: new Date(`${point.date}T00:00:00`).toLocaleDateString('fa-IR', { day: '2-digit' }),
-                    value: point.views,
-                    key: point.date,
-                  }))}
-                />
+                <AnalyticsBars points={buildDailySeries(analytics.daily, 14)} />
               </div>
               <div>
                 <h3 className="mb-3 text-xs font-semibold">بازدید ماهانه · ۱۲ ماه اخیر</h3>
-                <AnalyticsBars
-                  points={analytics.monthly.map((point) => ({
-                    label: new Date(`${point.month}-01T00:00:00`).toLocaleDateString('fa-IR', { month: 'short' }),
-                    value: point.views,
-                    key: point.month,
-                  }))}
-                />
+                <AnalyticsBars points={buildMonthlySeries(analytics.monthly, 12)} />
               </div>
             </div>
           </>
@@ -249,20 +239,66 @@ interface AnalyticsBarPoint {
   value: number;
 }
 
+const toDateKey = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const buildDailySeries = (points: AnalyticsPoint[], dayCount: number): AnalyticsBarPoint[] => {
+  const viewsByDate = new Map(points.map((point) => [point.date, point.views]));
+  const today = new Date();
+
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayCount + index + 1);
+    const key = toDateKey(date);
+
+    return {
+      key,
+      label: date.toLocaleDateString('fa-IR', { day: '2-digit' }),
+      value: viewsByDate.get(key) ?? 0,
+    };
+  });
+};
+
+const buildMonthlySeries = (
+  points: AnalyticsData['monthly'],
+  monthCount: number
+): AnalyticsBarPoint[] => {
+  const viewsByMonth = new Map(points.map((point) => [point.month, point.views]));
+  const currentMonth = new Date();
+
+  return Array.from({ length: monthCount }, (_, index) => {
+    const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - monthCount + index + 1, 1);
+    const key = toDateKey(date).slice(0, 7);
+
+    return {
+      key,
+      label: date.toLocaleDateString('fa-IR', { month: 'short' }),
+      value: viewsByMonth.get(key) ?? 0,
+    };
+  });
+};
+
 const AnalyticsBars: React.FC<{ points: AnalyticsBarPoint[] }> = ({ points }) => {
   const maxValue = Math.max(1, ...points.map((point) => point.value));
 
   return (
-    <div className="flex h-36 items-end gap-1 border-b border-slate-200 dark:border-slate-700">
+    <div
+      role="img"
+      aria-label="نمودار تعداد بازدید"
+      className="flex h-36 items-end gap-1 border-b border-slate-200 dark:border-slate-700"
+    >
       {points.map((point) => (
         <div key={point.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-          <span className="text-[9px] tabular-nums text-slate-500">{point.value.toLocaleString('fa-IR')}</span>
-          <div
-            title={`${point.label}: ${point.value}`}
-            className="w-full rounded-t bg-(--theme-primary) opacity-80"
-            style={{ height: `${point.value === 0 ? 2 : Math.max(6, (point.value / maxValue) * 100)}%` }}
-          />
-          <span className="text-[9px] text-slate-500">{point.label}</span>
+          <span className="h-3 text-[9px] tabular-nums leading-3 text-slate-500">
+            {point.value.toLocaleString('fa-IR')}
+          </span>
+          <div className="flex h-24 w-full items-end justify-center">
+            <div
+              title={`${point.label}: ${point.value}`}
+              className="effect-chart-column w-3 max-w-full rounded-t bg-(--theme-primary) opacity-80 transition-[height] duration-300"
+              style={{ height: `${point.value === 0 ? 3 : Math.max(6, (point.value / maxValue) * 100)}%` }}
+            />
+          </div>
+          <span className="h-3 text-[9px] leading-3 text-slate-500">{point.label}</span>
         </div>
       ))}
     </div>

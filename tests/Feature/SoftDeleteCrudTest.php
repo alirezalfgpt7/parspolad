@@ -9,10 +9,8 @@ use Database\Seeders\DatabaseSeeder;
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
 it('soft deletes public content and projects while hiding them from normal queries', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $article = Article::query()->firstOrFail();
     $this->withToken($token)->deleteJson("/api/v1/admin/articles/{$article->id}")
@@ -28,10 +26,8 @@ it('soft deletes public content and projects while hiding them from normal queri
 });
 
 it('protects categories that still have active projects', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
     $category = ProjectCategory::query()->whereHas('projects')->firstOrFail();
 
     $this->withToken($token)->deleteJson("/api/v1/admin/categories/{$category->id}")
@@ -50,10 +46,8 @@ it('keeps soft-deleted seeded content hidden and avoids duplicate unique slugs',
 });
 
 it('soft deletes contact messages from the administration API', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
     $message = ContactMessage::query()->create([
         'name' => 'آزمایش',
         'email' => 'message@example.com',

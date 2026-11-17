@@ -11,6 +11,7 @@ use App\Models\Page;
 use App\Models\Partner;
 use App\Models\Project;
 use App\Models\Product;
+use App\Models\ProjectCategory;
 use App\Models\Service;
 use App\Models\TeamMember;
 
@@ -69,10 +70,8 @@ it('creates model factories with their required aggregate relations', function (
 });
 
 it('paginates the administrative project list', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-    'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-    'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $this->withToken($token)->getJson('/api/v1/admin/projects?per_page=1')
     ->assertOk()
@@ -142,15 +141,13 @@ it('allows authenticated super admin to create projects and submit RFQ messages'
         'captcha' => 'a',
     ])->assertCreated();
 
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))->json('token');
+    $categoryId = ProjectCategory::query()->firstOrFail()->id;
 
     $this->withToken($token)->postJson('/api/v1/admin/projects', [
         'title_fa' => 'تأمین اسپول سرچاهی میدان منصوری',
         'title_en' => 'Mansouri Field Wellhead Spools',
-        'category_id' => 1,
+        'category_id' => $categoryId,
         'client_name_fa' => 'شرکت ملی مناطق نفت‌خیز جنوب',
         'client_name_en' => 'NISOC',
         'contract_number' => 'PPA-1404-99',

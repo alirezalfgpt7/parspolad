@@ -21,12 +21,12 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
     return (
       <div
         className={cn(
-          'flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 to-slate-200 p-4 text-center text-slate-500 dark:from-slate-800 dark:to-slate-900 dark:text-slate-400',
+          'zero-broken-image-fallback bg-gradient-to-br from-slate-100 to-slate-200 text-slate-500 dark:from-slate-800 dark:to-slate-900 dark:text-slate-400',
           className
         )}
       >
         <Factory className="h-8 w-8 opacity-50" />
-        <span className="line-clamp-2 text-xs font-medium">{alt}</span>
+        {alt && <span>{alt}</span>}
       </div>
     );
   }

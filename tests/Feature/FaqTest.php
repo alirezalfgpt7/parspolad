@@ -21,10 +21,8 @@ it('serves active seeded FAQs from editable database content', function (): void
 });
 
 it('allows authorized administrators to manage FAQs with soft deletion', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $created = $this->withToken($token)->postJson('/api/v1/admin/faqs', [
         'question_fa' => 'پرسش تازه',

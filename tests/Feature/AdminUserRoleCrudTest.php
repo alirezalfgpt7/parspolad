@@ -7,10 +7,8 @@ use Illuminate\Support\Facades\DB;
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
 it('supports user and custom role lifecycle without allowing deletion of roles in use', function (): void {
-    $token = $this->postJson('/api/v1/auth/login', [
-        'email' => env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir'),
-        'password' => env('SUPER_ADMIN_PASSWORD', 'ParsPolad@1404'),
-    ])->assertOk()->json('token');
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
 
     $usersResponse = $this->withToken($token)->getJson('/api/v1/admin/users?per_page=1')
         ->assertOk()

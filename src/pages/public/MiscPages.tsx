@@ -7,6 +7,7 @@ import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { useCmsPage } from '../../hooks/useCmsPage.ts';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { EffectErrorCode } from '../../components/effects/index.ts';
 
 interface FaqItem {
   id: number;
@@ -134,8 +135,8 @@ export const ErrorPage: React.FC<{ code: 403 | 404 | 500 }> = ({ code }) => {
   }[code];
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 py-16 text-center">
-      <div className="text-6xl font-extrabold text-(--theme-primary) tabular-nums">{code}</div>
+    <div className={`flex min-h-[60vh] flex-col items-center justify-center px-4 py-16 text-center ${code === 404 ? 'effect-error-page-404' : ''}`}>
+      <EffectErrorCode className={code === 404 ? 'effect-error-code-404' : ''}>{code}</EffectErrorCode>
       <h1 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{map.title}</h1>
       <p className="mt-2 text-sm text-slate-500">{map.desc}</p>
       <Link to="/" className="mt-6 rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white">

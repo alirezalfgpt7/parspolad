@@ -14,6 +14,7 @@ import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
 import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { InlineLoader } from '../../components/common/InlineLoader.tsx';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 
 interface ArticleComment {
@@ -188,7 +189,7 @@ export const NewsPage: React.FC = () => {
               <h2 className="text-lg font-bold">دیدگاه‌ها</h2>
               <p className="mt-1 text-xs text-slate-500">دیدگاه‌ها پس از بررسی مدیر نمایش داده می‌شوند.</p>
               {commentsLoading ? (
-                <p className="mt-5 text-sm text-slate-500">در حال بارگذاری دیدگاه‌ها...</p>
+                <div className="mt-5 text-sm text-slate-500"><InlineLoader label="در حال بارگذاری دیدگاه‌ها..." /></div>
               ) : commentsError ? (
                 <p role="alert" className="mt-5 text-sm text-red-600">{commentsError}</p>
               ) : comments.length === 0 ? (

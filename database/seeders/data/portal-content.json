@@ -6,6 +6,9 @@
       "name_fa": "قرمز صنعتی پارس پولاد (پیش‌فرض)",
       "name_en": "Pars Polad Industrial Crimson",
       "is_default": true,
+      "design_style": "modern",
+      "button_shape": "rounded",
+      "button_effect": "shimmer",
       "palette": {
         "primary": "#B91C1C",
         "secondary": "#1E293B",
@@ -28,6 +31,9 @@
       "name_fa": "سرمه‌ای فراساحل و مهندسی",
       "name_en": "Offshore Engineering Navy",
       "is_default": false,
+      "design_style": "modern",
+      "button_shape": "pill",
+      "button_effect": "liquid",
       "palette": {
         "primary": "#0F4C81",
         "secondary": "#1E293B",
@@ -50,6 +56,9 @@
       "name_fa": "سبز پتروشیمی و انرژی پایدار",
       "name_en": "Petrochemical Emerald",
       "is_default": false,
+      "design_style": "modern",
+      "button_shape": "rounded",
+      "button_effect": "glow",
       "palette": {
         "primary": "#047857",
         "secondary": "#1E293B",
@@ -72,6 +81,9 @@
       "name_fa": "فولادی تیره با تاکید کهربایی",
       "name_en": "Forged Steel & Amber",
       "is_default": false,
+      "design_style": "glass",
+      "button_shape": "square",
+      "button_effect": "liquid",
       "palette": {
         "primary": "#B45309",
         "secondary": "#0F172A",
@@ -92,6 +104,9 @@
   "theme_settings": {
     "active_preset_slug": "industrial-crimson",
     "default_mode": "light",
+    "design_style": "modern",
+    "button_shape": "rounded",
+    "button_effect": "shimmer",
     "active_palette": {
       "primary": "#B91C1C",
       "secondary": "#1E293B",
@@ -108,6 +123,9 @@
       "link": "#B91C1C"
     },
     "landing_theme_enabled": true,
+    "landing_design_style": "glass",
+    "landing_button_shape": "pill",
+    "landing_button_effect": "liquid",
     "landing_palette": {
       "primary": "#B91C1C",
       "secondary": "#0F172A",
@@ -122,7 +140,25 @@
       "buttonBg": "#B91C1C",
       "buttonText": "#FFFFFF",
       "link": "#B91C1C"
-    }
+    },
+    "admin_palette": {
+      "primary": "#B91C1C",
+      "secondary": "#1E293B",
+      "accent": "#D97706",
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "text": "#0F172A",
+      "headerBg": "#FFFFFF",
+      "headerText": "#0F172A",
+      "footerBg": "#0F172A",
+      "footerText": "#F8FAFC",
+      "buttonBg": "#B91C1C",
+      "buttonText": "#FFFFFF",
+      "link": "#B91C1C"
+    },
+    "admin_design_style": "industrial",
+    "admin_button_shape": "rounded",
+    "admin_button_effect": "glow"
   },
   "menus": [
     {
@@ -1870,6 +1906,8 @@
       "linkedin_url": "",
       "instagram_url": "",
       "aparat_url": "",
+      "telegram_url": "",
+      "whatsapp_url": "",
       "footer_note_fa": "کلیه حقوق مادی و معنوی این وب‌سایت متعلق به شرکت دانش‌بنیان پارس پولاد آقایی می‌باشد.",
       "footer_note_en": "All rights reserved © Pars Poolad Aghaee Knowledge-Based Industrial Co.",
       "last_updated_fa": "آبان ۱۴۰۴",
@@ -1887,7 +1925,12 @@
     "seo": {
       "site_title": "پارس پولاد آقایی | تجهیزات سرچاهی و درون‌چاهی صنعت نفت",
       "meta_description": "طراحی، ساخت، تأمین و اجرای لاینر هنگر، تجهیزات سرچاهی API 6A، پکرهای تولیدی و متعلقات سیمان‌کاری در صنعت نفت، گاز و پتروشیمی.",
-      "keywords": "پارس پولاد آقایی, تجهیزات سرچاهی, لاینر هنگر, ادوات درون چاهی, API 6A, پکر تولیدی, اهواز, نفت و گاز"
+      "keywords": "پارس پولاد آقایی, تجهیزات سرچاهی, لاینر هنگر, ادوات درون چاهی, API 6A, پکر تولیدی, اهواز, نفت و گاز",
+      "site_title_en": "Pars Poolad Aghaee | Wellhead and Downhole Equipment",
+      "meta_description_en": "Engineering, manufacturing, supply, and execution of liner hangers, API 6A wellhead equipment, production packers, and cementing accessories for the oil, gas, and petrochemical industries.",
+      "keywords_en": "Pars Poolad Aghaee, wellhead equipment, liner hanger, downhole tools, API 6A, production packer, oil and gas",
+      "meta_image": "/storage/logos/logo-main.png",
+      "robots": "index,follow"
     },
     "site": {
       "maintenance_mode": false,
@@ -1895,7 +1938,9 @@
       "allow_registration": true,
       "header_cta_text_fa": "درخواست همکاری",
       "header_cta_text_en": "Request Quote",
-      "header_cta_url": "/rfq"
+      "header_cta_url": "/rfq",
+      "info_bar_enabled": true,
+      "info_bar_phone": "09369520082"
     }
   }
 }

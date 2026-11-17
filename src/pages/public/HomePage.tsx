@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, PlayCircle } from 'lucide-react';
-import { motion } from 'motion/react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article, Project } from '../../types/index.ts';
@@ -10,9 +9,12 @@ import { StatCounter } from '../../components/ui/StatCounter.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 import { useCmsPage } from '../../hooks/useCmsPage.ts';
+import { EffectImage, EffectMarquee, Reveal } from '../../components/effects/index.ts';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
 
 export const HomePage: React.FC = () => {
   const { bootstrap, language } = useAppStore();
+  const shouldReduceMotion = usePrefersReducedMotion();
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const { page: spotlight } = useCmsPage('home-spotlight');
@@ -39,6 +41,7 @@ export const HomePage: React.FC = () => {
   const kpis = bootstrap?.kpis || [];
   const services = bootstrap?.services || [];
   const partners = bootstrap?.partners || [];
+  const marqueePartners = !shouldReduceMotion && partners.length > 1 ? [...partners, ...partners] : partners;
   const banner = bootstrap?.banners?.find((b) => b.placement === 'landing_mid');
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
   const homeText = (key: string): string => {
@@ -49,22 +52,24 @@ export const HomePage: React.FC = () => {
   return (
     <div>
       <SeoHead
-        title={bootstrap?.seo?.site_title ?? ''}
-        description={bootstrap?.seo?.meta_description}
+        title={(language === 'fa' ? bootstrap?.seo?.site_title : bootstrap?.seo?.site_title_en)
+          || bootstrap?.seo?.site_title
+          || ''}
         language={language}
       />
 
       {/* KPI Counter Strip */}
       <section className="border-b border-slate-200 bg-white py-10 dark:border-slate-800 dark:bg-slate-900">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 sm:px-6 md:grid-cols-4 lg:px-8">
-          {kpis.map((k) => (
-            <StatCounter
-              key={k.id}
-              target={k.value}
-              suffix={language === 'fa' ? k.suffix_fa : k.suffix_en}
-              label={language === 'fa' ? k.label_fa : k.label_en}
-              lang={language}
-            />
+          {kpis.map((k, index) => (
+            <Reveal key={k.id} delay={shouldReduceMotion ? 0 : index * 0.06}>
+              <StatCounter
+                target={k.value}
+                suffix={language === 'fa' ? k.suffix_fa : k.suffix_en}
+                label={language === 'fa' ? k.label_fa : k.label_en}
+                lang={language}
+              />
+            </Reveal>
           ))}
         </div>
       </section>
@@ -91,12 +96,9 @@ export const HomePage: React.FC = () => {
           {services.map((svc, idx) => {
             const isWide = idx === 0 || idx === 3;
             return (
-              <motion.div
+              <Reveal
                 key={svc.id}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.4, delay: idx * 0.06 }}
+                delay={idx * 0.06}
                 className={`group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 ${
                   isWide ? 'md:col-span-2' : 'md:col-span-1'
                 }`}
@@ -123,14 +125,14 @@ export const HomePage: React.FC = () => {
                     </Link>
                   </div>
                   <div className="h-52 overflow-hidden bg-slate-100 sm:h-full dark:bg-slate-800">
-                    <ZeroBrokenImage
+                    <EffectImage
                       src={svc.image_url}
                       alt={language === 'fa' ? svc.title_fa : svc.title_en}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover"
                     />
                   </div>
                 </div>
-              </motion.div>
+              </Reveal>
             );
           })}
         </div>
@@ -199,74 +201,82 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredProjects.slice(0, 6).map((p) => (
-            <Link
-              key={p.id}
-              to={`/projects/${p.slug}`}
-              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <ZeroBrokenImage
-                  src={p.cover_image}
-                  alt={language === 'fa' ? p.title_fa : p.title_en}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="flex flex-1 flex-col justify-between p-5">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
-                    <span>{p.category?.name_fa}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{p.year}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{p.status === 'completed' ? homeText('project_completed') : homeText('project_in_progress')}</span>
+          {featuredProjects.slice(0, 6).map((p, index) => (
+            <Reveal key={p.id} delay={shouldReduceMotion ? 0 : index * 0.045} className="h-full">
+              <Link
+                to={`/projects/${p.slug}`}
+                className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <EffectImage
+                    src={p.cover_image}
+                    alt={language === 'fa' ? p.title_fa : p.title_en}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col justify-between p-5">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
+                      <span>{p.category?.name_fa}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{p.year}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{p.status === 'completed' ? homeText('project_completed') : homeText('project_in_progress')}</span>
+                    </div>
+                    <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
+                      {language === 'fa' ? p.title_fa : p.title_en}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                      {language === 'fa' ? p.summary_fa : p.summary_en}
+                    </p>
                   </div>
-                  <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
-                    {language === 'fa' ? p.title_fa : p.title_en}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                    {language === 'fa' ? p.summary_fa : p.summary_en}
-                  </p>
+                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800">
+                    <span className="truncate">{language === 'fa' ? p.client_name_fa : p.client_name_en}</span>
+                    <span className="font-mono shrink-0">{p.contract_number}</span>
+                  </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800">
-                  <span className="truncate">{language === 'fa' ? p.client_name_fa : p.client_name_en}</span>
-                  <span className="font-mono shrink-0">{p.contract_number}</span>
-                </div>
-              </div>
-            </Link>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* Rotating Partners & Clients Strip */}
-      <section className="border-y border-slate-200 bg-white py-12 overflow-hidden dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-xs font-semibold text-(--theme-primary)">{homeText('partners_eyebrow')}</p>
-          <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
-            {homeText('partners_title')}
-          </h2>
-        </div>
+      {partners.length > 0 && (
+        <Reveal>
+          <section className="overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
+            <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
+              <p className="text-xs font-semibold text-(--theme-primary)">{homeText('partners_eyebrow')}</p>
+              <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
+                {homeText('partners_title')}
+              </h2>
+            </div>
 
-        <div className="relative overflow-hidden">
-          <div className="animate-marquee flex items-center gap-10">
-            {[...partners, ...partners].map((partner, idx) => (
-              <div
-                key={`${partner.id}-${idx}`}
-                className="flex h-24 w-48 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/40"
+            <div className="relative overflow-hidden">
+              <EffectMarquee
+                animated={!shouldReduceMotion && partners.length > 1}
+                className="items-center gap-10 px-4"
               >
-                <ZeroBrokenImage
-                  src={partner.logo_url}
-                  alt={partner.name_fa}
-                  className="h-11 max-w-35 object-contain"
-                />
-                <span className="truncate max-w-full text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                  {language === 'fa' ? partner.name_fa : partner.name_en}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                {marqueePartners.map((partner, idx) => (
+                  <div
+                    key={`${partner.id}-${idx}`}
+                    className="group flex h-24 w-48 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/40"
+                  >
+                    <EffectImage
+                      src={partner.logo_url}
+                      alt={partner.name_fa}
+                      className="h-11 max-w-35 object-contain"
+                    />
+                    <span className="max-w-full truncate text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                      {language === 'fa' ? partner.name_fa : partner.name_en}
+                    </span>
+                  </div>
+                ))}
+              </EffectMarquee>
+            </div>
+          </section>
+        </Reveal>
+      )}
 
       {/* Latest News & Technical Articles */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -282,33 +292,34 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {articles.map((art) => (
-            <Link
-              key={art.id}
-              to={`/news/${art.slug}`}
-              className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                <ZeroBrokenImage
-                  src={art.cover_image}
-                  alt={art.title_fa}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-xs text-slate-500 tabular-nums">
-                  <span>{language === 'fa' ? art.category_fa : art.category_en}</span>
-                  <span>·</span>
-                  <span>{art.published_at}</span>
+          {articles.map((art, index) => (
+            <Reveal key={art.id} delay={shouldReduceMotion ? 0 : index * 0.055} className="h-full">
+              <Link
+                to={`/news/${art.slug}`}
+                className="group h-full overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <EffectImage
+                    src={art.cover_image}
+                    alt={art.title_fa}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-                <h3 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
-                  {language === 'fa' ? art.title_fa : art.title_en}
-                </h3>
-                <p className="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
-                  {language === 'fa' ? art.excerpt_fa : art.excerpt_en}
-                </p>
-              </div>
-            </Link>
+                <div className="p-5">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 tabular-nums">
+                    <span>{language === 'fa' ? art.category_fa : art.category_en}</span>
+                    <span>·</span>
+                    <span>{art.published_at}</span>
+                  </div>
+                  <h3 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
+                    {language === 'fa' ? art.title_fa : art.title_en}
+                  </h3>
+                  <p className="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
+                    {language === 'fa' ? art.excerpt_fa : art.excerpt_en}
+                  </p>
+                </div>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
