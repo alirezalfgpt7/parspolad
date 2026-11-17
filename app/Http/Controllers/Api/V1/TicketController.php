@@ -38,7 +38,7 @@ class TicketController extends Controller
         $perPage = min(max($request->integer('per_page', 20), 1), 100);
         $tickets = ContactMessage::query()->where('type', 'ticket')->with('assignee')->latest()->paginate($perPage);
 
-        return response()->json($tickets);
+        return $this->paginatedResponse($tickets);
     }
 
     public function adminShow(Request $request, ContactMessage $ticket): JsonResponse

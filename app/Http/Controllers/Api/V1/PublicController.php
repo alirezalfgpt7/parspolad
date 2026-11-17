@@ -22,7 +22,6 @@ use App\Models\TeamMember;
 use App\Services\BootstrapService;
 use App\Services\SitemapService;
 use App\Services\TicketService;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -225,7 +224,7 @@ class PublicController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return response()->json($notifications);
+        return $this->paginatedResponse($notifications);
     }
 
     public function markNotificationRead(Request $request, Notification $notification): JsonResponse
@@ -257,18 +256,5 @@ class PublicController extends Controller
             'data' => $message,
             'tracking_number' => $message->tracking_number,
         ], 201);
-    }
-
-    private function paginatedResponse(LengthAwarePaginator $paginator): JsonResponse
-    {
-        return response()->json([
-            'data' => $paginator->items(),
-            'meta' => [
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
-        ]);
     }
 }

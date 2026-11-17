@@ -197,10 +197,13 @@ export const HomePage: React.FC = () => {
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? spotlight.content_fa : spotlight.content_en) }}
                 />
                 {/* Effect 079: Interactive Particle Text Wordmark */}
-                <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-1">
+                <div
+                  className="mt-4 overflow-hidden rounded-xl border border-amber-400/20 px-4 py-2"
+                  style={{ backgroundColor: '#020617', borderColor: 'rgb(251 191 36 / 0.2)' }}
+                >
                   <ParticleTextEffect
                     text={language === 'en' ? companyTitle : 'PARS POOLAD'}
-                    color="#fbbf24"
+                    color="#fde68a"
                     height={76}
                   />
                 </div>
@@ -226,7 +229,10 @@ export const HomePage: React.FC = () => {
 
             <div className="flex flex-col gap-4 lg:col-span-6">
               {spotlightImages.length > 0 && (
-                <div className="relative min-h-64 flex-1 overflow-hidden rounded-2xl border border-white/10">
+                <div
+                  className="relative min-h-64 flex-1 overflow-hidden rounded-2xl border border-white/10"
+                  style={{ backgroundColor: '#020617' }}
+                >
                   <CssSlideshowEffect images={spotlightImages} intervalPerSlideSeconds={5} />
                 </div>
               )}
@@ -346,27 +352,34 @@ export const HomePage: React.FC = () => {
             <Reveal key={art.id} delay={shouldReduceMotion ? 0 : index * 0.055} className="h-full">
               <Link
                 to={`/news/${art.slug}`}
-                className="group h-full overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+                className="group relative block aspect-[4/3] h-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-(--theme-primary) hover:shadow-xl hover:shadow-slate-900/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-black/30"
               >
-                <div className="h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                  <EffectImage
-                    src={art.cover_image}
-                    alt={art.title_fa}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-2 text-xs text-slate-500 tabular-nums">
+                <ZeroBrokenImage
+                  src={art.cover_image}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
+                />
+                <div className="absolute inset-0 flex translate-y-0 flex-col justify-end bg-slate-950/60 p-5 text-white backdrop-blur-sm transition-transform duration-500 ease-out md:translate-y-full md:group-hover:translate-y-0 md:group-focus-visible:translate-y-0 motion-reduce:transition-none">
+                  <div className="mb-auto flex items-center gap-2 text-xs text-white/80 tabular-nums">
                     <span>{language === 'fa' ? art.category_fa : art.category_en}</span>
-                    <span>·</span>
+                    <span aria-hidden="true">·</span>
                     <span>{art.published_at}</span>
                   </div>
-                  <h3 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
-                    {language === 'fa' ? art.title_fa : art.title_en}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
-                    {language === 'fa' ? art.excerpt_fa : art.excerpt_en}
-                  </p>
+                  <div>
+                    <h3 className="line-clamp-2 text-lg font-bold leading-7">
+                      {language === 'fa' ? art.title_fa : art.title_en}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/80">
+                      {language === 'fa' ? art.excerpt_fa : art.excerpt_en}
+                    </p>
+                    <span
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-lg"
+                      style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
+                    >
+                      {language === 'fa' ? 'خواندن مقاله' : 'Read article'}
+                      <ArrowIcon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                  </div>
                 </div>
               </Link>
             </Reveal>

@@ -238,7 +238,7 @@ class AdminResourceController extends Controller
 
         $perPage = min(max($request->integer('per_page', 8), 1), 100);
 
-        return response()->json(ContactMessage::query()->latest()->paginate($perPage)->withQueryString());
+        return $this->paginatedResponse(ContactMessage::query()->latest()->paginate($perPage)->withQueryString());
     }
 
     public function updateMessageStatus(Request $request, ContactMessage $message): JsonResponse
@@ -267,7 +267,7 @@ class AdminResourceController extends Controller
 
         $perPage = min(max($request->integer('per_page', 20), 1), 100);
 
-        return response()->json(Notification::query()->latest()->paginate($perPage)->withQueryString());
+        return $this->paginatedResponse(Notification::query()->latest()->paginate($perPage)->withQueryString());
     }
 
     public function media(Request $request, PrivateDownloadUrl $downloadUrls): JsonResponse
@@ -281,7 +281,7 @@ class AdminResourceController extends Controller
             $file->url = $downloadUrls->resolve($file->url, (bool) $file->requires_auth, $request);
         });
 
-        return response()->json($media);
+        return $this->paginatedResponse($media);
     }
 
     public function updateMedia(Request $request, MediaFile $media, PrivateMediaStorageService $storage): JsonResponse

@@ -8,6 +8,8 @@ import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
 import { EffectAction, ParticleHoverNetwork, WaveHeroEffect } from '../effects/index.ts';
 
+const isVideoMedia = (src: string): boolean => /\.(mp4|webm|ogv|ogg)(?:$|[?#])/i.test(src);
+
 const AnimatedHeadline: React.FC<{
   text: string;
   mode: SlideTextAnimation;
@@ -74,6 +76,8 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
   );
   const selectedSlide = activeSlides[activeIndex];
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
+  const PreviousSlideIcon = language === 'fa' ? ChevronRight : ChevronLeft;
+  const NextSlideIcon = language === 'fa' ? ChevronLeft : ChevronRight;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -118,7 +122,14 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
     >
       {activeSlides.map((slide, index) => {
         const active = activeIndex === index;
-        const mediaSrc = isMobile && slide.mobile_media ? slide.mobile_media : slide.desktop_media;
+        const hasMobileMedia = isMobile && Boolean(slide.mobile_media);
+        const mobileVideoFallback = hasMobileMedia
+          && slide.media_type === 'video'
+          && !isVideoMedia(slide.mobile_media);
+        const mediaSrc = mobileVideoFallback
+          ? slide.desktop_media
+          : hasMobileMedia ? slide.mobile_media : slide.desktop_media;
+        const showVideo = slide.media_type === 'video' || isVideoMedia(mediaSrc);
         const title = language === 'fa' ? slide.title_fa : slide.title_en;
         const subtitle = language === 'fa' ? slide.subtitle_fa : slide.subtitle_en;
         const cta = language === 'fa' ? slide.cta_text_fa : slide.cta_text_en;
@@ -136,9 +147,10 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
             data-transition={slide.effect}
             aria-hidden={!active}
           >
-            {slide.media_type === 'video' && !isMobile ? (
+            {showVideo ? (
               <video
                 src={mediaSrc}
+                poster={mobileVideoFallback ? slide.mobile_media : undefined}
                 autoPlay={active && !shouldReduceMotion}
                 muted
                 loop
@@ -178,9 +190,12 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
                   <EffectAction
                     as={Link}
                     to={slide.cta_link || '/projects'}
-                    style={{ backgroundColor: slide.button_color || 'var(--theme-btn-bg)' }}
-                    effects={['shimmer', 'glow', 'liquid']}
-                    className="inline-flex items-center gap-2.5 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 whitespace-nowrap"
+                    style={{
+                      backgroundColor: slide.button_color || 'var(--theme-btn-bg)',
+                      color: 'var(--theme-btn-text)',
+                    }}
+                    effects={['shimmer']}
+                    className="inline-flex items-center gap-2.5 rounded-lg px-6 py-3 text-sm font-semibold shadow-md transition-transform hover:-translate-y-0.5 whitespace-nowrap"
                   >
                     <span>{cta}</span>
                     <ArrowIcon className="h-4 w-4" />
@@ -205,7 +220,7 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
               className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xs transition-colors hover:bg-black/60"
               aria-label={language === 'fa' ? 'اسلاید قبل' : 'Previous slide'}
             >
-              <ChevronRight className="h-5 w-5" />
+              <PreviousSlideIcon className="h-5 w-5" />
             </button>
             <button
               type="button"
@@ -213,7 +228,7 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
               className="pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-xs transition-colors hover:bg-black/60"
               aria-label={language === 'fa' ? 'اسلاید بعد' : 'Next slide'}
             >
-              <ChevronLeft className="h-5 w-5" />
+              <NextSlideIcon className="h-5 w-5" />
             </button>
           </div>
           <div className="absolute inset-x-0 bottom-5 z-30 flex justify-center gap-2" role="group" aria-label={language === 'fa' ? 'انتخاب اسلاید' : 'Choose slide'}>

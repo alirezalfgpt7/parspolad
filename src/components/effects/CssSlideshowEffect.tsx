@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { cn } from '../../utils/i18n.ts';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import './CssSlideshowEffect.css';
 
@@ -19,8 +20,20 @@ export const CssSlideshowEffect: React.FC<CssSlideshowEffectProps> = ({
   intervalPerSlideSeconds = 5,
 }) => {
   const validImages = images.filter(Boolean);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    if (reducedMotion || validImages.length < 2) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveIndex((index) => (index + 1) % validImages.length);
+    }, intervalPerSlideSeconds * 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [intervalPerSlideSeconds, reducedMotion, validImages.length]);
+
   if (validImages.length === 0) return null;
-  const totalDuration = Math.max(validImages.length, 1) * intervalPerSlideSeconds;
 
   return (
     <div className={cn('effect-css-slideshow', className)} aria-hidden="true">
@@ -28,16 +41,9 @@ export const CssSlideshowEffect: React.FC<CssSlideshowEffectProps> = ({
         <div
           key={`${src}-${index}`}
           className="effect-css-slide"
-          style={
-            validImages.length > 1
-              ? {
-                  animationDuration: `${totalDuration}s`,
-                  animationDelay: `${index * intervalPerSlideSeconds}s`,
-                }
-              : { opacity: 1, animation: 'none' }
-          }
+          data-active={index === activeIndex}
         >
-          <ZeroBrokenImage src={src} alt="" className="h-full w-full object-cover" />
+          <ZeroBrokenImage src={src} alt="" loading={index === activeIndex ? 'eager' : 'lazy'} className="h-full w-full object-cover" />
         </div>
       ))}
     </div>

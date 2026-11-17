@@ -21,7 +21,6 @@ import {
   EffectText,
   FlipAuthCardEffect,
   GlassPanelEffect,
-  RotatingText,
 } from '../../components/effects/index.ts';
 
 const registerSchema = z.object({
@@ -207,14 +206,13 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
     >
       <div className="mb-6 flex items-center justify-between gap-4">
         <Link to="/" aria-label={companyName} className="flex min-w-0 items-center gap-3">
-          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-white/15 bg-white/90 p-1 shadow-sm">
-            <BrandLogo placement="login" alt={companyName} className="h-full w-full" />
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl">
+            <BrandLogo placement="about" alt={companyName} className="h-full w-full" />
           </div>
-          <RotatingText
-            items={[companyName, companySlogan].filter((item, idx, list) => item.trim() && list.indexOf(item) === idx)}
-            showController
-            className="max-w-56 text-sm font-extrabold"
-          />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-extrabold">{companyName}</p>
+            <p className="truncate text-[10px] opacity-75">{companySlogan}</p>
+          </div>
         </Link>
         {loginCfg.show_decorative_cube && (
           <DecorativeCube size="sm" className="h-10 w-10 shrink-0 rounded-xl border border-white/10 bg-white/5" />

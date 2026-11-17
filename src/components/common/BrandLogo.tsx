@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { LogoPlacement } from '../../types/index.ts';
 import { DEFAULT_BRAND_LOGOS, isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
@@ -30,6 +30,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const logos = useAppStore((s) => s.bootstrap?.logos);
   const company = useAppStore((s) => s.bootstrap?.company);
   const [videoFailed, setVideoFailed] = useState(false);
+  const whiteBackgroundFilterId = useId().replace(/:/g, '');
 
   const legacyFallback =
     placement === 'footer' || placement === 'seo_share'
@@ -46,7 +47,19 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const isVideo = isVideoMediaUrl(resolvedUrl) && !videoFailed;
 
   return (
-    <span className={cn('inline-flex items-center justify-center overflow-hidden', className)}>
+    <span className={cn('relative inline-flex items-center justify-center overflow-hidden', className)}>
+      {placement === 'about' && (
+        <svg aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
+          <defs>
+            <filter id={whiteBackgroundFilterId} colorInterpolationFilters="sRGB">
+              <feColorMatrix
+                type="matrix"
+                values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 -0.5 -0.5 1 0"
+              />
+            </filter>
+          </defs>
+        </svg>
+      )}
       {isVideo ? (
         <video
           key={resolvedUrl}
@@ -58,8 +71,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           aria-label={alt || undefined}
           aria-hidden={!alt}
           onError={() => setVideoFailed(true)}
+          style={placement === 'about' ? { filter: `url(#${whiteBackgroundFilterId})` } : undefined}
           className={cn(
             'h-full w-full object-contain',
+            placement === 'about' && 'scale-200',
             hueHover && 'effect-hue-circle',
             imgClassName
           )}
@@ -70,6 +85,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           alt={alt}
           className={cn(
             'h-full w-full object-contain',
+            placement === 'about' && 'scale-200',
             hueHover && 'effect-hue-circle',
             imgClassName
           )}

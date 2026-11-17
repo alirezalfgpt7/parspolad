@@ -108,6 +108,33 @@ it('paginates public catalog, services, FAQs and news and returns complete produ
     ->assertJsonFragment(['category_en' => $product->category_en]);
 });
 
+it('returns pagination metadata consistently for endpoints backed by raw Laravel paginators', function (): void {
+    $article = Article::query()->firstOrFail();
+
+    $this->getJson('/api/v1/articles/' . $article->slug . '/comments?per_page=1')
+        ->assertOk()
+        ->assertJsonStructure(['data', 'meta' => ['current_page', 'last_page', 'per_page', 'total']])
+        ->assertJsonMissingPath('last_page');
+
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
+
+    $this->withToken($token)->getJson('/api/v1/notifications?per_page=1')
+        ->assertOk()
+        ->assertJsonStructure(['data', 'meta' => ['current_page', 'last_page', 'per_page', 'total']]);
+
+    foreach ([
+        '/api/v1/admin/comments?per_page=1',
+        '/api/v1/admin/messages?per_page=1',
+        '/api/v1/admin/notifications?per_page=1',
+        '/api/v1/admin/media?per_page=1',
+    ] as $path) {
+        $this->withToken($token)->getJson($path)
+            ->assertOk()
+            ->assertJsonStructure(['data', 'meta' => ['current_page', 'last_page', 'per_page', 'total']]);
+    }
+});
+
 it('allows authenticated super admin to create projects and submit RFQ messages', function (): void {
     config([
         'captcha.public.math' => false,

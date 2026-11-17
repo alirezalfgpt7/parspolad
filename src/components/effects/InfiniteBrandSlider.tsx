@@ -21,19 +21,23 @@ interface InfiniteBrandSliderProps {
  */
 export const InfiniteBrandSlider: React.FC<InfiniteBrandSliderProps> = ({ items, className }) => {
   if (items.length === 0) return null;
-  const trackItems = items.length >= 2 ? [...items, ...items] : items;
+  const shouldLoop = items.length >= 2;
 
   return (
     <div dir="ltr" className={cn('effect-brand-strip', className)}>
-      <div className="effect-brand-track">
-        {trackItems.map((item, idx) => (
-          <div key={`${item.id}-${idx}`} className="effect-brand-slide">
-            <ZeroBrokenImage
-              src={item.logoUrl}
-              alt={item.name}
-              className="rounded-md bg-white/90 p-1"
-            />
-            <span className="effect-brand-slide-name">{item.name}</span>
+      <div className="effect-brand-track" data-loop={shouldLoop}>
+        {[0, ...(shouldLoop ? [1] : [])].map((copy) => (
+          <div key={copy} className="effect-brand-group">
+            {items.map((item) => (
+              <div key={item.id} className="effect-brand-slide">
+                <ZeroBrokenImage
+                  src={item.logoUrl}
+                  alt={item.name}
+                  className="rounded-md bg-white/90 p-1"
+                />
+                <span className="effect-brand-slide-name">{item.name}</span>
+              </div>
+            ))}
           </div>
         ))}
       </div>

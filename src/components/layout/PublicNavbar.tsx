@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Search, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
@@ -9,7 +10,6 @@ import {
   EffectAction,
   EffectNavLink,
   ExpandingSearchEffect,
-  FloatingHamburgerButton,
   ThemeModeToggle,
 } from '../effects/index.ts';
 import type { MenuItem } from '../../types/index.ts';
@@ -19,6 +19,7 @@ export const PublicNavbar: React.FC = () => {
   const { pathname } = useLocation();
   const [activeMegaId, setActiveMegaId] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [expandedMobileMenuId, setExpandedMobileMenuId] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -32,9 +33,26 @@ export const PublicNavbar: React.FC = () => {
     return () => window.removeEventListener('scroll', updateScrolledState);
   }, []);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileOpen(false);
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [mobileOpen]);
+
   const headerMenu = bootstrap?.menus?.find((m) => m.key === 'header');
   const navItems: MenuItem[] = (headerMenu?.items || []).filter((i) => i.is_active);
   const companyName = language === 'fa' ? bootstrap?.company?.name_fa : bootstrap?.company?.name_en;
+  const menuBrandName = companyName || (language === 'fa' ? 'شرکت پارس پولاد آقایی' : 'PARS POOLAD AGHAEE');
   const configuredCtaUrl = bootstrap?.site?.header_cta_url || '/rfq';
   const ctaUrl = configuredCtaUrl.startsWith('/') && !configuredCtaUrl.startsWith('//')
     ? configuredCtaUrl
@@ -49,10 +67,15 @@ export const PublicNavbar: React.FC = () => {
   const renderCta = () => ctaUrl.startsWith('/')
     ? <EffectAction as={Link} to={user ? '/admin' : ctaUrl} style={ctaStyle} className={ctaClassName}>{ctaLabel}</EffectAction>
     : <EffectAction as="a" href={user ? '/admin' : ctaUrl} rel="noreferrer" style={ctaStyle} className={ctaClassName}>{ctaLabel}</EffectAction>;
+  const closeMobileMenu = () => {
+    setMobileOpen(false);
+    setExpandedMobileMenuId(null);
+  };
 
   const activeMegaItem = navItems.find((i) => i.id === activeMegaId && i.children?.length);
 
   return (
+    <>
     <header
       onMouseLeave={() => setActiveMegaId(null)}
       style={{
@@ -64,19 +87,36 @@ export const PublicNavbar: React.FC = () => {
         scrolled ? 'shadow-lg shadow-slate-950/5' : 'shadow-none'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
-        {/* Zone 1: Brand Wordmark (single line, editable static or animated emblem) */}
-        <Link
-          to="/"
-          className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight whitespace-nowrap shrink-0"
-        >
-          <BrandLogo
-            placement="navbar"
-            alt={companyName ?? ''}
-            className="h-9 w-9 shrink-0 rounded-lg"
-          />
-          <span>{companyName}</span>
-        </Link>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 xl:gap-8 lg:px-8">
+        {/* Zone 1: Menu control and brand */}
+        <div className="flex shrink-0 items-center gap-2.5" dir={language === 'fa' ? 'rtl' : 'ltr'}>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileOpen((open) => !open);
+              setExpandedMobileMenuId(null);
+            }}
+            className="flex h-10 w-10 items-center justify-center text-(--theme-primary) transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--theme-primary)"
+            style={{ color: 'var(--theme-primary)' }}
+            aria-label={language === 'fa' ? 'منو' : 'Menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="public-mobile-menu"
+          >
+            <AnimatedHamburger open={mobileOpen} />
+          </button>
+          <Link
+            to="/"
+            dir={language === 'fa' ? 'rtl' : 'ltr'}
+            className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight whitespace-nowrap"
+          >
+            <BrandLogo
+              placement="about"
+              alt={companyName ?? ''}
+              className="h-9 w-9 shrink-0 rounded-lg"
+            />
+            <span className="hidden lg:inline">{companyName}</span>
+          </Link>
+        </div>
 
         {/* Zone 2: 4–5 Clean Single-Line Nav Links with Dynamic Mega Menu */}
         <nav className="hidden items-center gap-7 lg:flex">
@@ -103,20 +143,48 @@ export const PublicNavbar: React.FC = () => {
 
         {/* Zone 3: Search, Theme Toggle, Login & Primary CTA */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="hidden lg:block">
-            <ExpandingSearchEffect
-              placeholder={language === 'fa' ? 'جستجو در سایت...' : 'Search site...'}
-              onTriggerSearch={() => setSearchOpen(true)}
-            />
-          </div>
-          <div className="hidden sm:block">
-            <ThemeModeToggle
-              dark={colorMode === 'dark'}
-              onToggle={toggleColorMode}
-              compact
-              label={language === 'fa' ? 'تغییر حالت روشن/تاریک' : 'Toggle light/dark mode'}
-            />
-          </div>
+          {pathname !== '/' && (
+            <>
+              <div className="hidden lg:block">
+                <ExpandingSearchEffect
+                  placeholder={language === 'fa' ? 'جستجو در سایت...' : 'Search site...'}
+                  onTriggerSearch={() => setSearchOpen(true)}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="effect-navbar-control inline-flex h-9 min-w-9 items-center justify-center lg:hidden"
+                aria-label={language === 'fa' ? 'جستجو' : 'Search'}
+              >
+                <Search className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <ThemeModeToggle
+                dark={colorMode === 'dark'}
+                onToggle={toggleColorMode}
+                compact
+                label={language === 'fa' ? 'تغییر حالت روشن/تاریک' : 'Toggle light/dark mode'}
+              />
+              <button
+                type="button"
+                onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
+                className="effect-navbar-control inline-flex h-9 min-w-9 items-center justify-center gap-1 px-2 text-[10px] font-bold"
+                aria-label={language === 'fa' ? 'Switch to English' : 'Change language to Persian'}
+              >
+                {language === 'fa' ? (
+                  <>
+                    <span aria-hidden="true">🇬🇧</span>
+                    <span>EN</span>
+                  </>
+                ) : (
+                  <>
+                    <span aria-hidden="true">🇮🇷</span>
+                    <span>FA</span>
+                  </>
+                )}
+              </button>
+            </>
+          )}
           {!user && (
             <Link
               to="/login"
@@ -126,16 +194,6 @@ export const PublicNavbar: React.FC = () => {
             </Link>
           )}
           <div className="hidden sm:inline-flex">{renderCta()}</div>
-          <button
-            type="button"
-            onClick={() => setMobileOpen((o) => !o)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 lg:hidden dark:border-slate-700"
-            aria-label="منو"
-            aria-expanded={mobileOpen}
-            aria-controls="public-mobile-menu"
-          >
-            <AnimatedHamburger open={mobileOpen} />
-          </button>
         </div>
       </div>
 
@@ -181,88 +239,117 @@ export const PublicNavbar: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Drawer */}
-      <div
-        id="public-mobile-menu"
-        className="effect-mobile-menu border-t border-slate-200 bg-white px-4 lg:hidden dark:border-slate-800 dark:bg-slate-900"
-        data-open={mobileOpen}
-        aria-hidden={!mobileOpen}
-        inert={!mobileOpen}
-      >
-        <div
-          className="overflow-hidden py-0 transition-[padding] duration-200"
+    </header>
+    {typeof document !== 'undefined' && createPortal(
+      <>
+        <button
+          type="button"
+          className="effect-mobile-menu-backdrop"
           data-open={mobileOpen}
+          aria-label={language === 'fa' ? 'بستن منو' : 'Close menu'}
+          aria-hidden={!mobileOpen}
+          disabled={!mobileOpen}
+          onClick={closeMobileMenu}
+        />
+        <aside
+          id="public-mobile-menu"
+          className="effect-mobile-menu"
+          style={{
+            backgroundColor: 'color-mix(in srgb, var(--theme-header-bg) 96%, transparent)',
+            color: 'var(--theme-header-text)',
+          }}
+          data-open={mobileOpen}
+          aria-hidden={!mobileOpen}
+          inert={!mobileOpen}
         >
-          <div className="space-y-2">
-            {navItems.map((item) => (
-              <div key={item.id} className="border-b border-slate-100 pb-2 dark:border-slate-800">
-                <Link
-                  to={item.url}
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-1.5 text-sm font-semibold"
-                >
-                  {language === 'fa' ? item.title_fa : item.title_en}
-                </Link>
-                {item.children && (
-                  <div className="mt-1 space-y-1 ps-3">
-                    {item.children.map((ch) => (
-                      <Link
-                        key={ch.id}
-                        to={ch.url}
-                        onClick={() => setMobileOpen(false)}
-                        className="block py-1 text-xs text-slate-500 dark:text-slate-400"
-                      >
-                        {language === 'fa' ? ch.title_fa : ch.title_en}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="effect-mobile-menu-header">
+            <div className="effect-mobile-menu-brand">
+              <BrandLogo
+                placement="about"
+                alt={menuBrandName}
+                className="h-9 w-9 shrink-0 rounded-lg"
+              />
+              <span>{menuBrandName}</span>
+            </div>
+            <button
+              type="button"
+              onClick={closeMobileMenu}
+              className="effect-mobile-menu-close"
+              aria-label={language === 'fa' ? 'بستن منو' : 'Close menu'}
+            >
+              <X aria-hidden="true" />
+            </button>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                setSearchOpen(true);
-              }}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs dark:border-slate-700"
-            >
-              {language === 'fa' ? 'جستجو' : 'Search'}
-            </button>
-            <ThemeModeToggle
-              dark={colorMode === 'dark'}
-              onToggle={toggleColorMode}
-              label={language === 'fa' ? 'تغییر تم تیره/روشن' : 'Dark / Light'}
-              className="rounded-lg border border-slate-200 px-3 py-1 text-xs dark:border-slate-700"
-            />
-            <button
-              type="button"
-              onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs dark:border-slate-700"
-            >
-              {language === 'fa' ? 'English' : 'فارسی'}
-            </button>
+          <nav className="effect-mobile-menu-nav" aria-label={language === 'fa' ? 'فهرست اصلی' : 'Main menu'}>
+            {navItems.map((item) => {
+              const label = language === 'fa' ? item.title_fa : item.title_en;
+              const hasChildren = Boolean(item.children?.length);
+              const expanded = expandedMobileMenuId === item.id;
+
+              return (
+                <div key={item.id} className="effect-mobile-menu-item">
+                  {hasChildren ? (
+                    <>
+                      <button
+                        type="button"
+                        className="effect-mobile-menu-link effect-mobile-menu-group"
+                        onClick={() => setExpandedMobileMenuId(expanded ? null : item.id)}
+                        aria-expanded={expanded}
+                        aria-controls={`public-mobile-group-${item.id}`}
+                      >
+                        <span>{label}</span>
+                        <ChevronDown className="effect-mobile-menu-chevron" aria-hidden="true" />
+                      </button>
+                      <div
+                        id={`public-mobile-group-${item.id}`}
+                        className="effect-mobile-submenu"
+                        data-open={expanded}
+                        aria-hidden={!expanded}
+                        inert={!expanded}
+                      >
+                        <div className="effect-mobile-submenu-inner">
+                          {item.children?.map((child) => (
+                            <Link
+                              key={child.id}
+                              to={child.url}
+                              onClick={closeMobileMenu}
+                              aria-current={pathname === child.url ? 'page' : undefined}
+                              className="effect-mobile-menu-link effect-mobile-menu-child"
+                            >
+                              {language === 'fa' ? child.title_fa : child.title_en}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      to={item.url}
+                      onClick={closeMobileMenu}
+                      aria-current={pathname === item.url ? 'page' : undefined}
+                      className="effect-mobile-menu-link"
+                    >
+                      {label}
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+          <div className="effect-mobile-menu-footer">
             <Link
               to={user ? '/admin' : '/login'}
-              onClick={() => setMobileOpen(false)}
-              className="rounded-lg bg-(--theme-primary) px-3 py-1.5 text-xs font-semibold text-white"
+              onClick={closeMobileMenu}
+              className="effect-mobile-menu-action effect-mobile-menu-action-primary"
             >
               {user ? (language === 'fa' ? 'پنل مدیریت' : 'Admin') : (language === 'fa' ? 'ورود' : 'Login')}
             </Link>
             {!user && renderCta()}
           </div>
-        </div>
-      </div>
-
-      {/* Effect 023 Floating Corner Hamburger for Mobile Quick Navigation */}
-      <FloatingHamburgerButton
-        open={mobileOpen}
-        onClick={() => setMobileOpen((o) => !o)}
-        position={language === 'fa' ? 'bottom-right' : 'bottom-right'}
-        ariaLabel={language === 'fa' ? 'منوی سریع موبایل' : 'Quick Mobile Menu'}
-      />
-    </header>
+        </aside>
+      </>,
+      document.body,
+    )}
+    </>
   );
 };

@@ -17,7 +17,21 @@
   display: flex;
   width: max-content;
   align-items: center;
+}
+
+.effect-brand-group {
+  display: flex;
+  flex: 0 0 auto;
+  width: max-content;
+}
+
+.effect-brand-track[data-loop="true"] {
   animation: effect-brand-infinite-scroll 26s linear infinite;
+}
+
+.effect-brand-track[data-loop="false"] {
+  justify-content: center;
+  width: 100%;
 }
 
 .effect-brand-strip:hover .effect-brand-track {
@@ -26,8 +40,8 @@
 
 .effect-brand-slide {
   display: flex;
-  min-width: 170px;
-  flex: 0 0 auto;
+  width: 170px;
+  flex: 0 0 170px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -54,9 +68,12 @@
 }
 
 .effect-brand-slide-name {
+  max-width: 100%;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--theme-text-muted);
+  overflow-wrap: anywhere;
+  text-align: center;
   transition: color 220ms ease;
 }
 
@@ -74,10 +91,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .effect-brand-track {
-    animation: none;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
+  .effect-brand-track[data-loop="true"] {
+    animation: effect-brand-infinite-scroll 26s linear infinite !important;
   }
 }

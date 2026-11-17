@@ -1,10 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { BrandLogo } from '../common/BrandLogo.tsx';
 import {
   AnimatedTabsEffect,
   CardRevealStack,
+  CssSlideshowEffect,
   DecorativeCube,
   EffectAction,
   EffectTabButton,
@@ -27,6 +28,42 @@ describe('effect primitives & standalone effects', () => {
     expect(button.classList.contains('theme-action-auto')).toBe(true);
     expect(button.classList.contains('effect-shimmer')).toBe(false);
     expect(button.getAttribute('data-effect-override')).toBeNull();
+  });
+
+  it('keeps one slideshow image active while cycling', () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(
+        <CssSlideshowEffect images={['first.jpg', 'second.jpg']} intervalPerSlideSeconds={1} />,
+      );
+      const slides = container.querySelectorAll('.effect-css-slide');
+
+      expect(slides[0].getAttribute('data-active')).toBe('true');
+      expect(slides[1].getAttribute('data-active')).toBe('false');
+
+      act(() => vi.advanceTimersByTime(1000));
+
+      expect(slides[0].getAttribute('data-active')).toBe('false');
+      expect(slides[1].getAttribute('data-active')).toBe('true');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('duplicates partner logos only when the strip can loop', () => {
+    const { container } = render(
+      <InfiniteBrandSlider
+        items={[
+          { id: 1, name: 'شرکت اول', logoUrl: '/first.png' },
+          { id: 2, name: 'شرکت دوم', logoUrl: '/second.png' },
+        ]}
+      />,
+    );
+
+    const track = container.querySelector('.effect-brand-track[data-loop="true"]');
+    expect(track).not.toBeNull();
+    expect(track?.querySelectorAll('.effect-brand-group')).toHaveLength(2);
+    expect(track?.querySelectorAll('.effect-brand-slide')).toHaveLength(4);
   });
 
   it('preserves the chosen action element and renders liquid/shimmer/glow layers', () => {
@@ -109,6 +146,7 @@ describe('effect primitives & standalone effects', () => {
         <Win11BootSpinnerEffect />
         <InfiniteBrandSlider items={[{ id: 1, name: 'شرکت نفت', logoUrl: '/storage/logos/logo-main.png' }]} />
         <BrandLogo overrideUrl="/storage/videos/logo-3d.mp4" alt="لوگوی متحرک" />
+        <BrandLogo placement="about" alt="لوگوی صفحه درباره ما" />
       </div>
     );
 
@@ -120,6 +158,11 @@ describe('effect primitives & standalone effects', () => {
     expect(container.querySelector('.effect-spinner-quartet')).not.toBeNull();
     expect(container.querySelector('.effect-win11-spinner')).not.toBeNull();
     expect(container.querySelector('video[src="/storage/videos/logo-3d.mp4"]')).not.toBeNull();
+    const aboutLogo = container.querySelector<HTMLVideoElement>(
+      'video[src="/storage/videos/logo-3d.mp4"].scale-200',
+    );
+    expect(aboutLogo).not.toBeNull();
+    expect(aboutLogo?.style.filter).toMatch(/^url\("#.+\"\)$/);
 
     fireEvent.click(screen.getByRole('switch', { name: 'حالت' }));
     expect(onToggle).toHaveBeenCalledTimes(1);

@@ -37,22 +37,6 @@
   animation: effect-fade-up 220ms ease both;
 }
 
-.effect-mobile-menu {
-  border-top-color: transparent;
-}
-
-.effect-mobile-menu[data-open="true"] {
-  border-top-color: var(--theme-border);
-}
-
-.effect-mobile-menu > div {
-  padding-block: 0;
-}
-
-.effect-mobile-menu[data-open="true"] > div {
-  padding-block: 1rem;
-}
-
 .effect-theme-toggle svg {
   transform-origin: center;
   transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -277,18 +261,272 @@
   animation: effect-dropdown-enter 180ms ease-out both;
 }
 
+.effect-navbar-control {
+  border: 1px solid color-mix(in srgb, var(--theme-primary) 24%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--theme-primary) 5%, transparent);
+  color: var(--theme-header-text);
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.effect-navbar-control:hover,
+.effect-navbar-control:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+  background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  color: var(--theme-primary);
+}
+
+.effect-mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: 0;
+  background: rgb(2 6 23 / 24%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 220ms ease, visibility 0s linear 220ms;
+}
+
+:root[data-button-shape] .effect-mobile-menu-backdrop {
+  border-radius: 0;
+}
+
+.effect-mobile-menu-backdrop[data-open="true"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 220ms ease, visibility 0s;
+}
+
 .effect-mobile-menu {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 220ms ease;
+  position: fixed;
+  inset-block: 0;
+  right: 0;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  width: min(24rem, calc(100vw - 2rem));
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent);
+  border-radius: 1.25rem 0 0 1.25rem;
+  backdrop-filter: blur(26px) saturate(165%);
+  box-shadow: -8px 0 24px rgb(2 6 23 / 14%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(100%);
+  transition:
+    transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    visibility 0s linear 320ms;
 }
 
 .effect-mobile-menu[data-open="true"] {
-  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+  transition:
+    transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    visibility 0s;
 }
 
-.effect-mobile-menu > div {
+:dir(ltr) .effect-mobile-menu {
+  right: auto;
+  left: 0;
+  border-radius: 0 1.25rem 1.25rem 0;
+  box-shadow: 8px 0 24px rgb(2 6 23 / 14%);
+  transform: translateX(-100%);
+}
+
+:dir(ltr) .effect-mobile-menu[data-open="true"] {
+  transform: translateX(0);
+}
+
+.effect-mobile-menu-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4.5rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-primary) 16%, transparent);
+  color: var(--theme-primary);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.effect-mobile-menu-brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.effect-mobile-menu-brand span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.effect-mobile-menu-close {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.effect-mobile-menu-close svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.effect-mobile-menu-nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.75rem;
+}
+
+.effect-mobile-menu-item + .effect-mobile-menu-item {
+  margin-top: 0.25rem;
+}
+
+.effect-mobile-menu-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 650;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.effect-mobile-menu-link:hover,
+.effect-mobile-menu-link:focus-visible,
+.effect-mobile-menu-link[aria-current="page"] {
+  outline: none;
+  background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  color: var(--theme-primary);
+}
+
+.effect-mobile-menu-chevron {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  transition: transform 220ms ease;
+}
+
+.effect-mobile-menu-group[aria-expanded="true"] .effect-mobile-menu-chevron {
+  transform: rotate(180deg);
+}
+
+.effect-mobile-menu-group[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  color: var(--theme-primary);
+}
+
+.effect-mobile-submenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms ease, opacity 180ms ease;
+}
+
+.effect-mobile-submenu[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.effect-mobile-submenu-inner {
   min-height: 0;
+  overflow: hidden;
+  padding-inline-start: 0.75rem;
+}
+
+.effect-mobile-menu-child {
+  margin-top: 0.125rem;
+  padding-inline-start: 1rem;
+  color: color-mix(in srgb, var(--theme-header-text) 78%, transparent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.effect-mobile-menu-footer {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--theme-primary) 16%, transparent);
+}
+
+.effect-mobile-menu-action {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--theme-primary) 5%, transparent);
+  color: var(--theme-header-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.effect-mobile-menu-action:hover,
+.effect-mobile-menu-action:focus-visible,
+.effect-mobile-menu-close:hover,
+.effect-mobile-menu-close:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  color: var(--theme-primary);
+}
+
+.effect-mobile-menu-action-primary {
+  border-color: var(--theme-primary);
+  background: var(--theme-primary);
+  color: var(--theme-btn-text);
+}
+
+.effect-mobile-menu-action-primary:hover,
+.effect-mobile-menu-action-primary:focus-visible {
+  background: var(--theme-primary-hover);
+  color: var(--theme-btn-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-mobile-menu-backdrop,
+  .effect-mobile-menu-backdrop[data-open="true"] {
+    transition-duration: 220ms, 0s !important;
+  }
+
+  .effect-mobile-menu,
+  .effect-mobile-menu[data-open="true"] {
+    transition-duration: 320ms, 0s !important;
+  }
 }
 
 .effect-sidebar-items {

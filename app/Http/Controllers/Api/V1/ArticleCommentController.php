@@ -21,7 +21,7 @@ class ArticleCommentController extends Controller
             ->paginate($perPage, ['id', 'author_name', 'body', 'created_at'])
             ->withQueryString();
 
-        return response()->json($comments);
+        return $this->paginatedResponse($comments);
     }
 
     public function store(StoreArticleCommentRequest $request, string $slug): JsonResponse
@@ -49,7 +49,7 @@ class ArticleCommentController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return response()->json($comments);
+        return $this->paginatedResponse($comments);
     }
 
     public function updateStatus(Request $request, ArticleComment $comment): JsonResponse

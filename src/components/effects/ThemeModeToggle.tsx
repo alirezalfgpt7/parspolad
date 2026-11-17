@@ -1,4 +1,5 @@
 import React from 'react';
+import { Moon, Sun } from 'lucide-react';
 import { cn } from '../../utils/i18n.ts';
 import './ThemeModeToggle.css';
 
@@ -32,11 +33,9 @@ export const ThemeModeToggle: React.FC<ThemeModeToggleProps> = ({
   >
     <span className="effect-theme-pill" aria-hidden="true">
       <span className="effect-theme-knob">
-        <span className="effect-theme-icon">
-          {Array.from({ length: 9 }).map((_, index) => (
-            <span key={index} className="effect-theme-icon-part" />
-          ))}
-        </span>
+        {dark
+          ? <Moon className="effect-theme-icon effect-theme-icon-moon" />
+          : <Sun className="effect-theme-icon effect-theme-icon-sun" />}
       </span>
     </span>
     {!compact && label && (
