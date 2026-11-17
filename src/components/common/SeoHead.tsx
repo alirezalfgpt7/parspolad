@@ -39,6 +39,8 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
 }) => {
   const company = useAppStore((state) => state.bootstrap?.company);
   const seo = useAppStore((state) => state.bootstrap?.seo);
+  const previewLogos = useAppStore((state) => state.previewLogos);
+  const logos = useAppStore((state) => state.bootstrap?.logos);
   const brand = (language === 'fa' ? company?.name_fa : company?.name_en)
     || (language === 'fa' ? 'پارس پولاد آقایی' : 'Pars Poolad Aghaee');
   const siteTitle = (language === 'fa' ? seo?.site_title : seo?.site_title_en)
@@ -51,8 +53,15 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
   const robots = ['index,follow', 'noindex,follow', 'noindex,nofollow'].includes(seo?.robots || '')
     ? seo?.robots || 'index,follow'
     : 'index,follow';
-  const configuredImage = seo?.meta_image || company?.logo_url || company?.logo_small_url;
-  const favicon = absoluteWebUrl(company?.logo_small_url) || '/favicon.ico';
+  const rawSeoShare = seo?.meta_image || previewLogos?.seo_share || logos?.seo_share || company?.logo_url || company?.logo_small_url;
+  const configuredImage = rawSeoShare && !/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(rawSeoShare)
+    ? rawSeoShare
+    : company?.logo_url || '/storage/logos/logo-main.png';
+  const rawFavicon = previewLogos?.favicon || logos?.favicon || company?.logo_small_url;
+  const safeFavicon = rawFavicon && !/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(rawFavicon)
+    ? rawFavicon
+    : company?.logo_small_url || '/storage/logos/logo-small.png';
+  const favicon = absoluteWebUrl(safeFavicon) || '/favicon.ico';
 
   useEffect(() => {
     const pageTitle = title.trim() || siteTitle;

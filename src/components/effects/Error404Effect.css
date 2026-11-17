@@ -1,0 +1,80 @@
+/* 021 - Simple 404 Error Page (local vector animated scene, zero CDN) */
+.effect-404-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem 3.5rem;
+}
+
+.effect-404-bg-scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 480px;
+}
+
+.effect-404-code-heading {
+  font-size: clamp(4.5rem, 15vw, 6.25rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--theme-primary);
+  text-shadow: 0 12px 28px color-mix(in srgb, var(--theme-primary) 22%, transparent);
+  margin-bottom: -0.5rem;
+  z-index: 2;
+}
+
+.effect-404-svg-scene {
+  width: 100%;
+  max-width: 380px;
+  height: 240px;
+}
+
+.effect-404-float {
+  animation: effect-404-caveman-bob 3.6s ease-in-out infinite;
+}
+
+.effect-404-radar {
+  transform-origin: 190px 104px;
+  animation: effect-404-radar-spin 8s linear infinite;
+}
+
+.effect-404-content-box {
+  position: relative;
+  z-index: 3;
+  margin-top: -1.75rem;
+  max-width: 32rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-surface);
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 18px 42px rgb(15 23 42 / 10%);
+}
+
+@keyframes effect-404-caveman-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes effect-404-radar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-404-float,
+  .effect-404-radar {
+    animation: none;
+  }
+}

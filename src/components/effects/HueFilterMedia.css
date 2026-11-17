@@ -1,0 +1,37 @@
+/* 052 - Animating CSS Filter (Hue Rotate & Grayscale-to-Color) */
+.effect-hue-circle {
+  border-radius: 9999px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.effect-hue-circle:hover,
+.group:hover .effect-hue-circle {
+  animation: effect-rotate-hue 2s alternate infinite;
+  transform: scale(1.04);
+}
+
+.effect-filter-image {
+  filter: grayscale(28%);
+  transition: filter 280ms ease, transform 280ms ease;
+}
+
+.group:hover .effect-filter-image,
+.group:focus-within .effect-filter-image {
+  filter: grayscale(0%);
+  transform: scale(1.04);
+}
+
+@keyframes effect-rotate-hue {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-hue-circle:hover,
+  .group:hover .effect-hue-circle {
+    animation: none;
+  }
+}

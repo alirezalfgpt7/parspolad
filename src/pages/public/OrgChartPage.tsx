@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Users } from 'lucide-react';
+import { Mail, Phone, Users } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Department, TeamMember } from '../../types/index.ts';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
+import { ProfileCardEffect, SlidingProfileCardEffect } from '../../components/effects/index.ts';
 
 export const OrgChartPage: React.FC = () => {
   const language = useAppStore((s) => s.language);
@@ -87,13 +88,47 @@ export const OrgChartPage: React.FC = () => {
         )}
       </div>
 
-      {/* Selected Department & Key Team */}
-      <div className="mt-10">
+      {/* Effect 046: Department Heads Showcase */}
+      {departments.length > 0 && (
+        <div className="mt-10">
+          <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
+            {language === 'fa' ? 'مدیران واحدهای تخصصی' : 'Department Heads'}
+          </h2>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {departments.slice(0, 3).map((dept) => {
+              const leadMember = team.find((m) => m.department_id === dept.id && m.avatar_url);
+              return (
+                <ProfileCardEffect
+                  key={dept.id}
+                  name={language === 'fa' ? dept.head_name_fa : dept.head_name_en}
+                  role={language === 'fa' ? dept.name_fa : dept.name_en}
+                  subtitle={`${dept.head_title_fa} · ${dept.member_count} ${language === 'fa' ? 'نفر' : 'members'}`}
+                  imageUrl={leadMember?.avatar_url}
+                  accentColor={dept.color}
+                  actions={
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDeptId(dept.id)}
+                      className="rounded-lg bg-white/15 p-1.5 text-white hover:bg-white/30"
+                      title={language === 'fa' ? 'فیلتر واحد' : 'Filter department'}
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                    </button>
+                  }
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Selected Department & Key Team (Effect 066: Sliding Profile Cards) */}
+      <div className="mt-12">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">
             {selectedDeptId && activeDept
-              ? `اعضای کلیدی واحد: ${activeDept.name_fa}`
-              : 'مدیران و کارشناسان کلیدی شرکت'}
+              ? `${language === 'fa' ? 'اعضای کلیدی واحد' : 'Team Members'}: ${language === 'fa' ? activeDept.name_fa : activeDept.name_en}`
+              : (language === 'fa' ? 'مدیران و کارشناسان کلیدی شرکت' : 'Key Specialists & Engineers')}
           </h2>
           {selectedDeptId && (
             <button
@@ -101,29 +136,37 @@ export const OrgChartPage: React.FC = () => {
               onClick={() => setSelectedDeptId(null)}
               className="text-xs font-semibold text-(--theme-primary) hover:underline"
             >
-              نمایش همه واحدها
+              {language === 'fa' ? 'نمایش همه واحدها' : 'Show All'}
             </button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {deptMembers.map((m) => (
-            <div
+            <SlidingProfileCardEffect
               key={m.id}
-              className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
-            >
-              <div className="text-base font-bold text-slate-900 dark:text-white">
-                {language === 'fa' ? m.name_fa : m.name_en}
-              </div>
-              <div className="mt-0.5 text-xs font-semibold text-(--theme-primary)">
-                {language === 'fa' ? m.role_fa : m.role_en}
-              </div>
-              <div className="mt-3 text-xs text-slate-500 tabular-nums">
-                سابقه تخصصی: {m.experience_years} سال
-              </div>
-              {m.phone && <div className="mt-1 text-xs text-slate-500 tabular-nums">تلفن: {m.phone}</div>}
-              {m.email && <div className="mt-1 text-xs text-slate-500">{m.email}</div>}
-            </div>
+              name={language === 'fa' ? m.name_fa : m.name_en}
+              role={language === 'fa' ? m.role_fa : m.role_en}
+              bio={language === 'fa' ? `سابقه تخصصی: ${m.experience_years} سال در پروژه‌های سرچاهی و درون‌چاهی` : `${m.experience_years} years of oil & gas field engineering`}
+              imageUrl={m.avatar_url}
+              viewLabel={language === 'fa' ? 'مشاهده اطلاعات' : 'View Profile'}
+              meta={
+                <div className="flex flex-col gap-1">
+                  {m.phone && (
+                    <span className="inline-flex items-center gap-1.5 tabular-nums">
+                      <Phone className="h-3 w-3" />
+                      <span dir="ltr">{m.phone}</span>
+                    </span>
+                  )}
+                  {m.email && (
+                    <span className="inline-flex items-center gap-1.5 truncate">
+                      <Mail className="h-3 w-3" />
+                      <span>{m.email}</span>
+                    </span>
+                  )}
+                </div>
+              }
+            />
           ))}
         </div>
       </div>

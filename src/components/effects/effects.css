@@ -235,58 +235,7 @@
 .effect-inline-spinner i:nth-child(3) { transform: rotate(180deg); transform-origin: 2px 8px; opacity: 0.5; }
 .effect-inline-spinner i:nth-child(4) { transform: rotate(270deg); transform-origin: 2px 8px; opacity: 0.3; }
 
-.effect-shimmer,
-.effect-liquid-button {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-
-.effect-shimmer::after {
-  position: absolute;
-  z-index: 0;
-  inset: -20% auto -20% -65%;
-  width: 45%;
-  content: "";
-  transform: skewX(-18deg);
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 42%), transparent);
-  transition: left 550ms ease;
-}
-
-.effect-shimmer:hover::after,
-.effect-shimmer:focus-visible::after {
-  left: 125%;
-}
-
-.effect-glow {
-  transition: box-shadow 240ms ease, transform 240ms ease;
-}
-
-.effect-glow:hover,
-.effect-glow:focus-visible {
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--theme-primary) 32%, transparent);
-}
-
-.effect-liquid-button::before {
-  position: absolute;
-  z-index: 0;
-  inset: 100% -30% -90%;
-  content: "";
-  border-radius: 42%;
-  background: rgb(255 255 255 / 16%);
-  transition: inset 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-
-.effect-shimmer > *,
-.effect-liquid-button > * {
-  position: relative;
-  z-index: 1;
-}
-
-.effect-liquid-button:hover::before,
-.effect-liquid-button:focus-visible::before {
-  inset: 35% -30% -130%;
-}
+/* Button effects (003/029/076) moved to ButtonEffects.css */
 
 .effect-glass {
   border: 1px solid rgb(255 255 255 / 14%);
@@ -322,29 +271,7 @@
   animation: effect-fade-up 220ms ease both;
 }
 
-.effect-hamburger {
-  position: relative;
-  display: block;
-  width: 20px;
-  height: 16px;
-}
-
-.effect-hamburger span {
-  position: absolute;
-  right: 0;
-  width: 20px;
-  height: 2px;
-  border-radius: 9999px;
-  background: currentColor;
-  transition: top 180ms ease, width 180ms ease, transform 180ms ease, opacity 120ms ease;
-}
-
-.effect-hamburger span:nth-child(1) { top: 2px; }
-.effect-hamburger span:nth-child(2) { top: 7px; }
-.effect-hamburger span:nth-child(3) { top: 12px; }
-.effect-hamburger[data-open="true"] span:nth-child(1) { top: 7px; transform: rotate(45deg); }
-.effect-hamburger[data-open="true"] span:nth-child(2) { width: 0; opacity: 0; }
-.effect-hamburger[data-open="true"] span:nth-child(3) { top: 7px; transform: rotate(-45deg); }
+/* Hamburger effect (023) moved to AnimatedHamburger.css */
 
 .effect-dropdown-enter {
   animation: effect-dropdown-enter 180ms ease-out both;
@@ -412,13 +339,7 @@
   opacity: 1;
 }
 
-.effect-modal-backdrop {
-  animation: effect-backdrop-in 180ms ease both;
-}
-
-.effect-modal-panel {
-  animation: effect-modal-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1.15) both;
-}
+/* Explosion modal effect (075) moved to ExplosionModal.css */
 
 .effect-profile-card {
   transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
@@ -1037,40 +958,7 @@
   background-image: radial-gradient(circle at center, transparent 0%, #020617 85%);
 }
 
-.effect-spinner-quartet {
-  position: relative;
-  width: 104px;
-  height: 104px;
-}
-
-.effect-spinner-quartet span {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  width: 36%;
-  height: 36%;
-  border-radius: 50%;
-  animation: effect-spinner-orbit 2s ease-in-out infinite;
-}
-
-.effect-spinner-quartet span:nth-child(1) {
-  background: #19a68c;
-  animation-delay: -1.5s;
-}
-
-.effect-spinner-quartet span:nth-child(2) {
-  background: #f63d3a;
-  animation-delay: -1s;
-}
-
-.effect-spinner-quartet span:nth-child(3) {
-  background: #fda543;
-  animation-delay: -0.5s;
-}
-
-.effect-spinner-quartet span:nth-child(4) {
-  background: #193b48;
-}
+/* Quartet spinner (025) moved to Spinners.css */
 
 .login-glass-panel {
   isolation: isolate;
@@ -1155,7 +1043,7 @@
   align-self: flex-start;
   margin-block: 1rem;
   margin-inline-start: 1rem;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--theme-border);
   border-radius: 1.375rem;
   box-shadow:

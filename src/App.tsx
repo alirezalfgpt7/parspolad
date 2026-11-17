@@ -8,6 +8,7 @@ import { ThemeProvider } from './components/common/ThemeProvider.tsx';
 import { AdminLayout } from './components/layout/AdminLayout.tsx';
 import { PublicLayout } from './components/layout/PublicLayout.tsx';
 import { ToastContainer } from './components/ui/ToastContainer.tsx';
+import { ScrollingTitleEffect } from './components/effects/index.ts';
 import { apiRequest } from './services/api.ts';
 
 const AboutPage = lazy(() => import('./pages/public/AboutPage.tsx').then((module) => ({ default: module.AboutPage })));
@@ -44,6 +45,7 @@ const ReportsLogsAdminPage = lazy(() => import('./pages/admin/ReportsLogsAdminPa
 const SettingsAdminPage = lazy(() => import('./pages/admin/SettingsAdminPage.tsx').then((module) => ({ default: module.SettingsAdminPage })));
 const SliderAdminPage = lazy(() => import('./pages/admin/SliderAdminPage.tsx').then((module) => ({ default: module.SliderAdminPage })));
 const ThemeAdminPage = lazy(() => import('./pages/admin/ThemeAdminPage.tsx').then((module) => ({ default: module.ThemeAdminPage })));
+const LoginAppearanceAdminPage = lazy(() => import('./pages/admin/LoginAppearanceAdminPage.tsx').then((module) => ({ default: module.LoginAppearanceAdminPage })));
 const UsersRolesAdminPage = lazy(() => import('./pages/admin/UsersRolesAdminPage.tsx').then((module) => ({ default: module.UsersRolesAdminPage })));
 
 const ProtectedAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -82,6 +84,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <ScrollingTitleEffect />
       <PageViewTracker />
       <ThemeProvider>
         {loading && <PagePreloader fullScreen label="در حال آماده‌سازی پرتال..." />}
@@ -124,6 +127,7 @@ export default function App() {
               <Route path="contracts-licenses" element={<ContractsLicensesAdminPage />} />
               <Route path="slider" element={<SliderAdminPage />} />
               <Route path="themes" element={<ThemeAdminPage />} />
+              <Route path="login-appearance" element={<LoginAppearanceAdminPage />} />
               <Route path="menus" element={<MegaMenuAdminPage />} />
               <Route path="content" element={<ContentCmsAdminPage />} />
               <Route path="faqs" element={<FaqAdminPage />} />

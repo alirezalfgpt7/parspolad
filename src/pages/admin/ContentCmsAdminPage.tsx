@@ -6,6 +6,8 @@ import type { Article, Banner, KPI, PageContent, Product, Service } from '../../
 import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
 import { PersianDatePicker, gregorianToJalali } from '../../components/ui/PersianDatePicker.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 type Tab = 'pages' | 'services' | 'products' | 'articles' | 'banners' | 'kpis';
 
@@ -119,6 +121,14 @@ export const ContentCmsAdminPage: React.FC = () => {
             <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 lg:col-span-9 dark:border-slate-800 dark:bg-slate-900">
               <input value={editPage.title_fa} onChange={(e) => setEditPage({ ...editPage, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold dark:border-slate-700 dark:bg-slate-800" />
               <input value={editPage.subtitle_fa} onChange={(e) => setEditPage({ ...editPage, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+              <MediaUrlField
+                label="تصویر کاور / پیش‌نمایش صفحه (Meta Image)"
+                value={editPage.meta_image || ''}
+                onChange={(url) => setEditPage({ ...editPage, meta_image: url })}
+                folder="pages"
+                accept=".jpg,.jpeg,.png,.webp,.gif"
+                placeholder="/storage/hero/hero-banner.jpg"
+              />
               <RichTextEditor label="محتوای صفحه" value={editPage.content_fa} onChange={(html) => setEditPage({ ...editPage, content_fa: html })} />
               <button
                 type="button"
@@ -185,12 +195,19 @@ export const ContentCmsAdminPage: React.FC = () => {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((a) => (
-              <div key={a.id} className="flex items-start justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                <div>
-                  <div className="text-sm font-bold">{a.title_fa}</div>
-                  <div className="mt-1 text-xs text-slate-500">{a.published_at}</div>
+              <div key={a.id} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-start gap-3 min-w-0">
+                  {a.cover_image && (
+                    <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                      <ZeroBrokenImage src={a.cover_image} alt={a.title_fa} className="h-full w-full object-cover" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-bold">{a.title_fa}</div>
+                    <div className="mt-1 text-xs text-slate-500">{a.published_at}</div>
+                  </div>
                 </div>
-                <button type="button" onClick={() => setDeleteArticle(a)} className="text-red-600" aria-label="حذف مقاله"><Trash2 className="h-4 w-4" /></button>
+                <button type="button" onClick={() => setDeleteArticle(a)} className="shrink-0 text-red-600" aria-label="حذف مقاله"><Trash2 className="h-4 w-4" /></button>
               </div>
             ))}
           </div>
@@ -199,12 +216,23 @@ export const ContentCmsAdminPage: React.FC = () => {
 
       {(tab === 'services' || tab === 'products' || tab === 'banners' || tab === 'kpis') && (
         <div className="grid gap-4 sm:grid-cols-2">
-          {((tab === 'services' ? services : tab === 'products' ? products : tab === 'banners' ? banners : kpis) as unknown as Array<Record<string, unknown>>).map((item) => (
-            <div key={Number(item.id)} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-              <div className="text-sm font-bold">{String(item.title_fa || item.name_fa || item.label_fa)}</div>
-              <div className="mt-1 text-xs text-slate-500">
-                {String(item.summary_fa || item.model_code || item.subtitle_fa || `مقدار فعلی: ${item.value} ${item.suffix_fa}`)}
-              </div>
+          {((tab === 'services' ? services : tab === 'products' ? products : tab === 'banners' ? banners : kpis) as unknown as Array<Record<string, unknown>>).map((item) => {
+            const thumb = typeof item.image_url === 'string' ? item.image_url : '';
+            return (
+              <div key={Number(item.id)} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-start gap-3">
+                  {thumb && (
+                    <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
+                      <ZeroBrokenImage src={thumb} alt={String(item.title_fa || item.name_fa || '')} className="h-full w-full object-cover" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-bold">{String(item.title_fa || item.name_fa || item.label_fa)}</div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {String(item.summary_fa || item.model_code || item.subtitle_fa || `مقدار فعلی: ${item.value} ${item.suffix_fa}`)}
+                    </div>
+                  </div>
+                </div>
               {tab === 'kpis' && (
                 <div className="mt-3 flex items-center gap-2">
                   <input
@@ -232,7 +260,8 @@ export const ContentCmsAdminPage: React.FC = () => {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
       <ConfirmDialog

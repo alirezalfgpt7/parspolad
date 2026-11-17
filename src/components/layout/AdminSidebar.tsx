@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Activity,
+  ArrowLeftRight,
   Award,
   Bell,
   Building2,
@@ -19,20 +20,22 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
-  Moon,
   Palette,
   Search,
   Settings,
   Shield,
   Sliders,
-  Sun,
+  Sparkles,
   UserCircle,
   type LucideIcon,
 } from 'lucide-react';
 import type { ColorMode, Language, User } from '../../types/index.ts';
 import { cn } from '../../utils/i18n.ts';
+import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { ThemeModeToggle } from '../effects/index.ts';
+import '../effects/ProResponsiveSidebar.css';
 
 export interface AdminNavItem {
   to: string;
@@ -69,6 +72,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: '/admin/contracts-licenses', label_fa: 'قراردادها و گواهینامه‌ها', label_en: 'Contracts & Licenses', icon: Award },
       { to: '/admin/slider', label_fa: 'اسلایدر صفحه اول', label_en: 'Hero Slider', icon: Sliders },
       { to: '/admin/themes', label_fa: 'مدیریت تم و رنگ‌ها', label_en: 'Theme Engine', icon: Palette },
+      { to: '/admin/login-appearance', label_fa: 'تنظیمات لاگین و تنظیمات ظاهری', label_en: 'Login & Appearance', icon: Sparkles },
       { to: '/admin/menus', label_fa: 'مدیریت مگا منو', label_en: 'Mega Menus', icon: Layers },
       { to: '/admin/content', label_fa: 'صفحات، خدمات و اخبار', label_en: 'CMS & Services', icon: FileText },
       { to: '/admin/content-records', label_fa: 'CRUD همه بخش‌های محتوا', label_en: 'Content CRUD', icon: Files },
@@ -110,7 +114,9 @@ interface AdminSidebarProps {
   colorMode: ColorMode;
   mini: boolean;
   mobileOpen: boolean;
+  dockOpposite?: boolean;
   onToggleMini: () => void;
+  onToggleDock?: () => void;
   onToggleColorMode: () => void;
   onCloseMobile: () => void;
   onLogout: () => void;
@@ -122,7 +128,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   colorMode,
   mini,
   mobileOpen,
+  dockOpposite = false,
   onToggleMini,
+  onToggleDock,
   onToggleColorMode,
   onCloseMobile,
   onLogout,
@@ -136,6 +144,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     group.items.some((item) => item.to === location.pathname)
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(adminNavGroups.map((group) => [group.id, true]))
   );
@@ -148,6 +157,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((groups) => ({ ...groups, [groupId]: !groups[groupId] }));
+  };
+
+  const handleMiniSearchExpand = () => {
+    onToggleMini();
+    window.setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 80);
   };
 
   const query = searchQuery.trim().toLocaleLowerCase();
@@ -178,8 +194,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           title={mini ? label : undefined}
           aria-label={mini ? label : undefined}
           aria-current={active ? 'page' : undefined}
-          className={cn('admin-sidebar-link', active && 'is-active')}
+          className={cn('admin-sidebar-link admin-sidebar-dot-link', active && 'is-active')}
         >
+          {!mini && <span className="admin-sidebar-dot" aria-hidden="true" />}
           <span className="admin-sidebar-icon">
             <Icon className="h-4 w-4" strokeWidth={1.8} />
           </span>
@@ -196,32 +213,31 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       className={cn('admin-sidebar', mini ? 'admin-sidebar--mini' : 'admin-sidebar--wide')}
       style={{ backgroundColor: 'var(--theme-surface)', borderColor: 'var(--theme-border)' }}
     >
+      <button
+        type="button"
+        onClick={onToggleMini}
+        className="admin-sidebar-collapse-straddle hidden lg:inline-grid"
+        title={mini ? (language === 'fa' ? 'باز کردن منو' : 'Expand') : (language === 'fa' ? 'حالت مینی' : 'Collapse')}
+        aria-label={mini ? (language === 'fa' ? 'باز کردن منو' : 'Expand sidebar') : (language === 'fa' ? 'حالت مینی' : 'Collapse sidebar')}
+      >
+        {mini ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+      </button>
+
       <div className="admin-sidebar-header">
         <div className="admin-sidebar-brand">
           <Link to="/" className="admin-sidebar-brand-link" aria-label={companyName}>
             <span className="admin-sidebar-logo">
-              <ZeroBrokenImage
-                src={company?.logo_small_url || '/storage/logos/logo-small.png'}
-                alt=""
-                className="h-7 w-7 object-contain"
-              />
+              <BrandLogo placement="admin_sidebar" alt="" className="h-7 w-7" />
             </span>
             {!mini && (
               <span className="admin-sidebar-brand-copy">
                 <span className="admin-sidebar-brand-name">{companyName}</span>
-                <span className="admin-sidebar-brand-caption">پنل مدیریت</span>
+                <span className="admin-sidebar-brand-caption">
+                  {language === 'fa' ? 'پنل مدیریت' : 'Admin Panel'}
+                </span>
               </span>
             )}
           </Link>
-          <button
-            type="button"
-            onClick={onToggleMini}
-            className="admin-sidebar-collapse"
-            title={mini ? 'باز کردن منو' : 'حالت مینی'}
-            aria-label={mini ? 'باز کردن منو' : 'حالت مینی'}
-          >
-            {mini ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
         </div>
 
         <div className="admin-sidebar-profile">
@@ -243,7 +259,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         {mini ? (
           <button
             type="button"
-            onClick={onToggleMini}
+            onClick={handleMiniSearchExpand}
             className="admin-sidebar-search-button"
             title={language === 'fa' ? 'جستجوی منو' : 'Search menu'}
             aria-label={language === 'fa' ? 'جستجوی منو' : 'Search menu'}
@@ -254,6 +270,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <>
             <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
             <input
+              ref={searchInputRef}
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
@@ -300,7 +317,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 </button>
               )}
               <div className="effect-sidebar-items" data-open={isOpen}>
-                <ul className="admin-sidebar-list">
+                <ul className={cn('admin-sidebar-list', !mini && 'admin-sidebar-sublist')}>
                   {group.items.map(renderNavItem)}
                 </ul>
               </div>
@@ -322,24 +339,34 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           className="admin-sidebar-footer-action"
         >
           <Home className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-          {!mini && <span className="admin-sidebar-copy">بازگشت به وبسایت</span>}
+          {!mini && <span className="admin-sidebar-copy">{language === 'fa' ? 'بازگشت به وبسایت' : 'Back to Site'}</span>}
         </Link>
-        <button
-          type="button"
-          onClick={onToggleColorMode}
-          title={mini ? 'تغییر تم' : undefined}
-          aria-label="تغییر تم روشن و تیره"
-          className="admin-sidebar-footer-action"
-        >
-          {colorMode === 'dark'
-            ? <Sun className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            : <Moon className="h-4 w-4 shrink-0" strokeWidth={1.8} />}
-          {!mini && (
-            <span className="admin-sidebar-copy">
-              {colorMode === 'dark' ? 'حالت روشن' : 'حالت تیره'}
-            </span>
-          )}
-        </button>
+        {onToggleDock && (
+          <button
+            type="button"
+            onClick={onToggleDock}
+            title={mini ? (language === 'fa' ? 'جابه‌جایی چپ/راست سایدبار' : 'Move Sidebar') : undefined}
+            aria-label={language === 'fa' ? 'جابه‌جایی چپ/راست سایدبار' : 'Move Sidebar'}
+            className="admin-sidebar-footer-action hidden lg:flex"
+          >
+            <ArrowLeftRight className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+            {!mini && (
+              <span className="admin-sidebar-copy">
+                {dockOpposite
+                  ? (language === 'fa' ? 'بازگشت سایدبار' : 'Default Dock')
+                  : (language === 'fa' ? 'انتقال چپ/راست' : 'Move Left/Right')}
+              </span>
+            )}
+          </button>
+        )}
+        <div className="admin-sidebar-footer-action !justify-between !py-1.5">
+          <ThemeModeToggle
+            dark={colorMode === 'dark'}
+            onToggle={onToggleColorMode}
+            compact={mini}
+            label={mini ? undefined : (colorMode === 'dark' ? (language === 'fa' ? 'حالت روشن' : 'Light Mode') : (language === 'fa' ? 'حالت تیره' : 'Dark Mode'))}
+          />
+        </div>
         <button
           type="button"
           onClick={onLogout}
@@ -348,12 +375,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           className="admin-sidebar-footer-action admin-sidebar-logout"
         >
           <LogOut className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-          {!mini && <span className="admin-sidebar-copy">خروج از حساب</span>}
+          {!mini && <span className="admin-sidebar-copy">{language === 'fa' ? 'خروج از حساب' : 'Sign Out'}</span>}
         </button>
         {!mini && (
           <div className="admin-sidebar-status">
             <Activity className="h-3 w-3" />
-            <span>سامانه فعال است</span>
+            <span>{language === 'fa' ? 'سامانه فعال است' : 'System Active'}</span>
           </div>
         )}
       </div>

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Wrench } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { BrandLogo } from '../../components/common/BrandLogo.tsx';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { useCmsPage } from '../../hooks/useCmsPage.ts';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
-import { EffectErrorCode } from '../../components/effects/index.ts';
+import { DEFAULT_PAGES_CONFIG } from '../../utils/brandingDefaults.ts';
+import { Error404Effect, Win11BootSpinnerEffect } from '../../components/effects/index.ts';
 
 interface FaqItem {
   id: number;
@@ -114,34 +116,59 @@ export const SitemapPage: React.FC = () => {
 };
 
 export const MaintenancePage: React.FC = () => {
-  const msg = useAppStore((s) => s.bootstrap?.site?.maintenance_message_fa);
+  const { bootstrap, previewPagesConfig, language } = useAppStore();
+  const cfg = {
+    ...DEFAULT_PAGES_CONFIG.maintenance,
+    ...(bootstrap?.pages_config?.maintenance || {}),
+    ...(previewPagesConfig?.maintenance || {}),
+  };
+  const title = (language === 'fa' ? cfg.title_fa : cfg.title_en) || 'حالت بروزرسانی فنی سامانه';
+  const subtitle =
+    bootstrap?.site?.maintenance_message_fa ||
+    (language === 'fa' ? cfg.subtitle_fa : cfg.subtitle_en) ||
+    '';
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 p-6 text-center text-white">
-      <Wrench className="h-12 w-12 text-amber-400" />
-      <h1 className="mt-4 text-2xl font-extrabold">حالت بروزرسانی فنی سامانه</h1>
-      <p className="mt-2 max-w-md text-sm text-slate-300">{msg}</p>
+      <div className="mb-4 h-20 w-20 overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-2 shadow-lg">
+        <BrandLogo placement="preloader" overrideUrl={cfg.logo_url} alt={title} className="h-full w-full" />
+      </div>
+      <Win11BootSpinnerEffect className="my-2 text-amber-400" />
+      <h1 className="mt-4 text-2xl font-extrabold">{title}</h1>
+      <p className="mt-2 max-w-md text-sm text-slate-300">{subtitle}</p>
       <Link to="/login" className="mt-6 rounded-lg bg-(--theme-primary) px-5 py-2 text-xs font-semibold text-white">
-        ورود مدیران سیستم
+        {language === 'fa' ? 'ورود مدیران سیستم' : 'Admin Sign In'}
       </Link>
     </div>
   );
 };
 
 export const ErrorPage: React.FC<{ code: 403 | 404 | 500 }> = ({ code }) => {
-  const map = {
-    403: { title: 'عدم دسترسی مجاز (403)', desc: 'شما مجوز لازم برای مشاهده این بخش را ندارید.' },
-    404: { title: 'صفحه مورد نظر یافت نشد (404)', desc: 'نشانی واردشده وجود ندارد یا منتقل شده است.' },
-    500: { title: 'خطای داخلی سرور (500)', desc: 'در پردازش درخواست خطایی رخ داد. لطفاً مجدداً تلاش کنید.' },
-  }[code];
+  const { bootstrap, previewPagesConfig, language } = useAppStore();
+  const key = `error_${code}`;
+  const cfg = {
+    ...(DEFAULT_PAGES_CONFIG[key] || DEFAULT_PAGES_CONFIG.error_404),
+    ...(bootstrap?.pages_config?.[key] || {}),
+    ...(previewPagesConfig?.[key] || {}),
+  };
+
+  const title = (language === 'fa' ? cfg.title_fa : cfg.title_en) || `Error ${code}`;
+  const subtitle = (language === 'fa' ? cfg.subtitle_fa : cfg.subtitle_en) || '';
+  const ctaLabel = (language === 'fa' ? cfg.cta_fa : cfg.cta_en) || (language === 'fa' ? 'بازگشت به صفحه اصلی' : 'Return Home');
 
   return (
-    <div className={`flex min-h-[60vh] flex-col items-center justify-center px-4 py-16 text-center ${code === 404 ? 'effect-error-page-404' : ''}`}>
-      <EffectErrorCode className={code === 404 ? 'effect-error-code-404' : ''}>{code}</EffectErrorCode>
-      <h1 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{map.title}</h1>
-      <p className="mt-2 text-sm text-slate-500">{map.desc}</p>
-      <Link to="/" className="mt-6 rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white">
-        بازگشت به صفحه اصلی
-      </Link>
-    </div>
+    <Error404Effect
+      code={code}
+      title={title}
+      subtitle={subtitle}
+      ctaLabel={ctaLabel}
+      logoElement={
+        cfg.logo_url ? (
+          <div className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <BrandLogo overrideUrl={cfg.logo_url} alt={title} className="h-full w-full" />
+          </div>
+        ) : undefined
+      }
+    />
   );
 };

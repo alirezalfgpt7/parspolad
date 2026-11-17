@@ -3,7 +3,7 @@ import { Database, Download, Save } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { NotificationTemplate, SiteSettings, SmsProvider } from '../../types/index.ts';
-import { FileUploader } from '../../components/ui/FileUploader.tsx';
+import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
@@ -166,17 +166,20 @@ export const SettingsAdminPage: React.FC = () => {
           </div>
           <div className="sm:col-span-2">
             <div className="grid gap-4 sm:grid-cols-2">
-              <FileUploader
+              <MediaUrlField
+                label="لوگوی اصلی سایت (تصویر یا فایل متحرک)"
+                value={settings.company.logo_url || ''}
+                onChange={(url) => setSettings({ ...settings, company: { ...settings.company, logo_url: url } })}
                 folder="logos"
-                accept=".jpg,.jpeg,.png,.webp"
-                label="تغییر لوگوی اصلی سایت"
-                onUploaded={(url) => setSettings({ ...settings, company: { ...settings.company, logo_url: url } })}
+                showAnimatedPresets
               />
-              <FileUploader
+              <MediaUrlField
+                label="نشان کوچک و لوگوی سربرگ / سایدبار"
+                value={settings.company.logo_small_url || ''}
+                onChange={(url) => setSettings({ ...settings, company: { ...settings.company, logo_small_url: url } })}
                 folder="logos"
-                accept=".jpg,.jpeg,.png,.webp"
-                label="تغییر نشان کوچک و لوگوی سربرگ"
-                onUploaded={(url) => setSettings({ ...settings, company: { ...settings.company, logo_small_url: url } })}
+                placeholder="/storage/logos/logo-small.png"
+                showAnimatedPresets
               />
             </div>
           </div>
@@ -321,11 +324,13 @@ export const SettingsAdminPage: React.FC = () => {
             </select>
           </label>
           <div className="sm:col-span-2">
-            <FileUploader
+            <MediaUrlField
+              label="تصویر پیش‌نمایش اشتراک‌گذاری و شبکه‌های اجتماعی (OG Image)"
+              value={settings.seo.meta_image || ''}
+              onChange={(url) => setSettings({ ...settings, seo: { ...settings.seo, meta_image: url } })}
               folder="seo"
               accept=".jpg,.jpeg,.png,.webp"
-              label="تصویر پیش‌نمایش اشتراک‌گذاری و شبکه‌های اجتماعی"
-              onUploaded={(url) => setSettings({ ...settings, seo: { ...settings.seo, meta_image: url } })}
+              placeholder="/storage/logos/logo-main.png"
             />
           </div>
           <input type="number" step="0.0001" dir="ltr" value={settings.map.factory_lat} onChange={(e) => setSettings({ ...settings, map: { ...settings.map, factory_lat: Number(e.target.value) } })} placeholder="Lat" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />

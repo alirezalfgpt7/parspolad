@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Mail, MapPin, Moon, Phone, Search, Sun, UserCheck } from 'lucide-react';
+import { Globe, Mail, MapPin, Phone, Search, UserCheck } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
-import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
+import { BrandLogo } from '../common/BrandLogo.tsx';
 import { PWAInstallButton } from '../common/PWAInstallButton.tsx';
+import { ThemeModeToggle, WaveHeroEffect } from '../effects/index.ts';
 
 export const PublicFooter: React.FC = () => {
   const { bootstrap, language, colorMode, toggleColorMode, setLanguage, setSearchOpen, user } =
@@ -18,16 +19,24 @@ export const PublicFooter: React.FC = () => {
         backgroundColor: 'var(--theme-footer-bg)',
         color: 'var(--theme-footer-text)',
       }}
-      className="border-t border-slate-800 pt-12 pb-8"
+      className="relative overflow-hidden border-t border-slate-800 pt-14 pb-8"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-x-0 top-0 opacity-25">
+        <WaveHeroEffect
+          flipVertical
+          bottomFill="var(--theme-footer-bg)"
+          tintRgb="148 163 184"
+          heightClassName="!h-9 sm:!h-12"
+        />
+      </div>
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <ZeroBrokenImage
-                src={company?.logo_url || company?.logo_small_url || '/storage/logos/logo-small.png'}
+              <BrandLogo
+                placement="footer"
                 alt={language === 'fa' ? company?.name_fa || '' : company?.name_en || ''}
-                className="h-10 max-w-36 rounded bg-white p-1 object-contain"
+                className="h-11 max-w-36 rounded bg-white p-1"
               />
               <span className="text-base font-extrabold">
                 {language === 'fa' ? company?.name_fa : company?.name_en}
@@ -45,14 +54,12 @@ export const PublicFooter: React.FC = () => {
                 <Search className="h-3.5 w-3.5" />
                 <span>{language === 'fa' ? 'جستجو' : 'Search'}</span>
               </button>
-              <button
-                type="button"
-                onClick={toggleColorMode}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-1.5 text-xs hover:bg-white/10"
-              >
-                {colorMode === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                <span>{colorMode === 'dark' ? (language === 'fa' ? 'حالت روشن' : 'Light') : (language === 'fa' ? 'حالت تاریک' : 'Dark')}</span>
-              </button>
+              <ThemeModeToggle
+                dark={colorMode === 'dark'}
+                onToggle={toggleColorMode}
+                label={colorMode === 'dark' ? (language === 'fa' ? 'حالت روشن' : 'Light') : (language === 'fa' ? 'حالت تاریک' : 'Dark')}
+                className="rounded-lg border border-white/15 px-2.5 py-1 text-xs hover:bg-white/10"
+              />
               <button
                 type="button"
                 onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}

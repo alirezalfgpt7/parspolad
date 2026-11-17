@@ -1,0 +1,78 @@
+/* 046 - Profile Card (Hover zoom + inset border + floating vertical action links) */
+.effect-hero-profile-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  height: 290px;
+  background-color: #1e293b;
+  box-shadow: 0 18px 40px rgb(15 23 42 / 0.22);
+  isolation: isolate;
+}
+
+.effect-hero-profile-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 500ms ease;
+}
+
+.effect-hero-profile-card:hover .effect-hero-profile-bg,
+.effect-hero-profile-card:focus-within .effect-hero-profile-bg {
+  transform: scale(1.16);
+  filter: brightness(0.75);
+}
+
+.effect-hero-profile-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(2 6 23 / 0.12) 0%, rgb(2 6 23 / 0.78) 100%);
+}
+
+.effect-hero-profile-border {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  padding: 1.25rem;
+  color: #ffffff;
+  transition: border-color 550ms ease;
+}
+
+.effect-hero-profile-card:hover .effect-hero-profile-border,
+.effect-hero-profile-card:focus-within .effect-hero-profile-border {
+  border-color: rgb(255 255 255 / 0.85);
+}
+
+.effect-hero-profile-icons {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 450ms ease, transform 450ms ease;
+}
+
+.effect-hero-profile-card:hover .effect-hero-profile-icons,
+.effect-hero-profile-card:focus-within .effect-hero-profile-icons {
+  opacity: 1;
+}
+
+.effect-hero-profile-meta {
+  opacity: 0.92;
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.effect-hero-profile-card:hover .effect-hero-profile-meta {
+  transform: translateY(-4px);
+}

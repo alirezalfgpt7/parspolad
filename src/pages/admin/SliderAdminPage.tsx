@@ -5,7 +5,7 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Slide, SlideEffect, Slider, SlideTextAnimation } from '../../types/index.ts';
 import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
-import { FileUploader } from '../../components/ui/FileUploader.tsx';
+import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
@@ -335,16 +335,22 @@ export const SliderAdminPage: React.FC = () => {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-xs font-medium">آدرس رسانه دسکتاپ</label>
-                <input dir="ltr" value={editing.desktop_media} onChange={(e) => setEditing({ ...editing, desktop_media: e.target.value })} className="mb-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
-                <FileUploader folder="hero" label="آپلود تصویر یا ویدیو دسکتاپ" onUploaded={(url) => setEditing({ ...editing, desktop_media: url })} />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium">آدرس تصویر موبایل</label>
-                <input dir="ltr" value={editing.mobile_media} onChange={(e) => setEditing({ ...editing, mobile_media: e.target.value })} className="mb-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
-                <FileUploader folder="hero" label="آپلود تصویر موبایل" onUploaded={(url) => setEditing({ ...editing, mobile_media: url })} />
-              </div>
+              <MediaUrlField
+                label="رسانه دسکتاپ (تصویر، GIF یا ویدیو)"
+                value={editing.desktop_media}
+                onChange={(url) => setEditing({ ...editing, desktop_media: url })}
+                folder="hero"
+                accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm"
+                placeholder="/storage/hero/hero-banner.jpg"
+              />
+              <MediaUrlField
+                label="رسانه موبایل"
+                value={editing.mobile_media}
+                onChange={(url) => setEditing({ ...editing, mobile_media: url })}
+                folder="hero"
+                accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm"
+                placeholder="/storage/hero/hero-banner.jpg"
+              />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

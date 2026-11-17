@@ -1,0 +1,209 @@
+/* Effects 003 (Button Shimmer), 029 (Liquid Button), 076 (Glowing Shadows Button) */
+
+@property --hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --rotate {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.theme-action {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--theme-button-radius, 0.75rem);
+  transition: box-shadow 240ms ease, transform 220ms ease, opacity 220ms ease;
+}
+
+.theme-action-auto::before,
+.theme-action-auto::after {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  content: "";
+}
+
+.theme-action-auto > *,
+.effect-shimmer > *,
+.effect-liquid-button > *,
+.effect-glow > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* 003: Diagonal Shimmer sweep (#ffffff44, -60deg gradient background-size: 200% 100%) */
+.effect-shimmer,
+:root[data-button-effect="shimmer"] .theme-action-auto {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.effect-shimmer::after,
+:root[data-button-effect="shimmer"] .theme-action-auto::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(
+    -60deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.34) 50%,
+    transparent 65%
+  );
+  background-repeat: no-repeat;
+  background-size: 220% 100%;
+  background-position: 160% 0;
+  transition: background-position 600ms ease;
+}
+
+.effect-shimmer:hover::after,
+.effect-shimmer:focus-visible::after,
+:root[data-button-effect="shimmer"] .theme-action-auto:hover::after,
+:root[data-button-effect="shimmer"] .theme-action-auto:focus-visible::after {
+  background-position: -160% 0;
+}
+
+/* 029: Liquid Button double wave blob rising on hover */
+.effect-liquid-button,
+:root[data-button-effect="liquid"] .theme-action-auto {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.effect-liquid-button .effect-liquid-layer {
+  position: absolute;
+  inset-inline: 0;
+  top: -70%;
+  z-index: 1;
+  width: 100%;
+  height: 220%;
+  pointer-events: none;
+  transition: top 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.effect-liquid-button .effect-liquid-layer::before,
+.effect-liquid-button .effect-liquid-layer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 210%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -74%);
+}
+
+.effect-liquid-button .effect-liquid-layer::before {
+  border-radius: 45%;
+  background: rgb(255 255 255 / 0.16);
+  animation: effect-liquid-spin 5s linear infinite;
+}
+
+.effect-liquid-button .effect-liquid-layer::after {
+  border-radius: 40%;
+  background: rgb(0 0 0 / 0.18);
+  animation: effect-liquid-spin 10s linear infinite;
+}
+
+.effect-liquid-button:hover .effect-liquid-layer,
+.effect-liquid-button:focus-visible .effect-liquid-layer {
+  top: -115%;
+}
+
+/* Theme auto CSS-only liquid fallback for plain <button>/<a> */
+:root[data-button-effect="liquid"] .theme-action-auto::before {
+  position: absolute;
+  inset: 100% -30% -90%;
+  z-index: 1;
+  border-radius: 42%;
+  background: rgb(255 255 255 / 0.2);
+  content: "";
+  transition: inset 450ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root[data-button-effect="liquid"] .theme-action-auto:hover::before,
+:root[data-button-effect="liquid"] .theme-action-auto:focus-visible::before {
+  inset: 30% -30% -130%;
+}
+
+/* 076: Glowing Shadows Button (Rotating Conic Gradient Halo) */
+.effect-glow,
+:root[data-button-effect="glow"] .theme-action-auto {
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+.effect-glow-halo {
+  position: absolute;
+  inset: -3px;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.45;
+  background: conic-gradient(
+    from calc(var(--rotate) * 1deg),
+    transparent 0deg,
+    transparent 85deg,
+    hsl(calc(var(--hue) * 1deg), 92%, 58%) 175deg,
+    var(--theme-primary) 235deg,
+    transparent 295deg
+  );
+  filter: blur(14px);
+  pointer-events: none;
+  transition: opacity 280ms ease, filter 280ms ease;
+  animation: effect-glow-rotate 4.5s linear infinite, effect-glow-hue 5.5s linear infinite;
+}
+
+.effect-glow:hover .effect-glow-halo,
+.effect-glow:focus-visible .effect-glow-halo {
+  opacity: 0.88;
+  filter: blur(18px);
+}
+
+:root[data-button-effect="glow"] .theme-action-auto:hover,
+:root[data-button-effect="glow"] .theme-action-auto:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px color-mix(in srgb, var(--theme-primary) 42%, transparent);
+}
+
+@keyframes effect-liquid-spin {
+  0% {
+    transform: translate(-50%, -74%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -74%) rotate(360deg);
+  }
+}
+
+@keyframes effect-glow-rotate {
+  from {
+    --rotate: 0;
+  }
+  to {
+    --rotate: 360;
+  }
+}
+
+@keyframes effect-glow-hue {
+  from {
+    --hue: 0;
+  }
+  to {
+    --hue: 360;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-liquid-button .effect-liquid-layer::before,
+  .effect-liquid-button .effect-liquid-layer::after,
+  .effect-glow-halo {
+    animation: none;
+  }
+}

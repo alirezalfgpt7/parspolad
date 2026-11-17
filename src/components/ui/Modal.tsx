@@ -1,6 +1,7 @@
 import React, { useEffect, useId } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/i18n.ts';
+import '../effects/ExplosionModal.css';
 
 interface ModalProps {
   open: boolean;

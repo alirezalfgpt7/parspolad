@@ -18,7 +18,16 @@ class SettingsController extends Controller
     public function show(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'settings.manage');
-        $settings = Setting::query()->whereIn('group', ['company', 'map', 'seo', 'site'])->get();
+        $settings = Setting::query()->whereIn('group', [
+            'company',
+            'map',
+            'seo',
+            'site',
+            'login',
+            'appearance',
+            'logos',
+            'pages_config',
+        ])->get();
         $groups = [];
         foreach ($settings as $setting) {
             $decoded = json_decode((string) $setting->value, true);
@@ -58,6 +67,10 @@ class SettingsController extends Controller
             'map' => ['sometimes', 'array'],
             'seo' => ['sometimes', 'array'],
             'site' => ['sometimes', 'array'],
+            'login' => ['sometimes', 'array'],
+            'appearance' => ['sometimes', 'array'],
+            'logos' => ['sometimes', 'array'],
+            'pages_config' => ['sometimes', 'array'],
             'seo.site_title' => ['sometimes', 'string', 'max:255'],
             'seo.site_title_en' => ['sometimes', 'nullable', 'string', 'max:255'],
             'seo.meta_description' => ['sometimes', 'string', 'max:500'],
@@ -82,7 +95,7 @@ class SettingsController extends Controller
             'sms.api_key_plain' => ['sometimes', 'nullable', 'string'],
         ]);
 
-        foreach (Arr::only($payload, ['company', 'map', 'seo', 'site']) as $group => $entries) {
+        foreach (Arr::only($payload, ['company', 'map', 'seo', 'site', 'login', 'appearance', 'logos', 'pages_config']) as $group => $entries) {
             foreach ($entries as $key => $value) {
                 Setting::query()->updateOrCreate(
                     ['key' => $key],

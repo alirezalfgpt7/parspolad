@@ -26,6 +26,8 @@ class MediaContentValidator
             'webm' => str_starts_with($content, "\x1A\x45\xDF\xA3"),
             'jpg', 'jpeg' => str_starts_with($content, "\xFF\xD8\xFF") && $mimeType === 'image/jpeg',
             'png' => str_starts_with($content, "\x89PNG\r\n\x1A\n") && $mimeType === 'image/png',
+            'gif' => (str_starts_with($content, 'GIF87a') || str_starts_with($content, 'GIF89a'))
+                && $mimeType === 'image/gif',
             'webp' => substr($content, 0, 4) === 'RIFF'
                 && substr($content, 8, 4) === 'WEBP'
                 && $mimeType === 'image/webp',

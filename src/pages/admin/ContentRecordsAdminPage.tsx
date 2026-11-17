@@ -6,8 +6,11 @@ import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
 
 type FieldType = 'boolean' | 'json' | 'number' | 'string' | 'textarea';
 
@@ -87,6 +90,8 @@ export const ContentRecordsAdminPage: React.FC = () => {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Record<string, unknown>>({
     resolver: zodResolver(formSchema),
@@ -200,21 +205,55 @@ export const ContentRecordsAdminPage: React.FC = () => {
       {fields.length > 0 && (
         <form onSubmit={handleSubmit(save)} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-2">
           <h2 className="text-sm font-bold sm:col-span-2">{editingId ? 'ویرایش رکورد' : 'رکورد جدید'}</h2>
-          {fields.map((field) => (
-            <label key={field.name} className={`space-y-1 text-xs font-medium ${field.type === 'textarea' || field.type === 'json' ? 'sm:col-span-2' : ''}`}>
-              <span>{field.name}{field.required ? ' *' : ''}</span>
-              {field.type === 'boolean' ? (
-                <input type="checkbox" {...register(field.name)} />
-              ) : field.type === 'textarea' || field.type === 'json' ? (
-                <textarea rows={field.type === 'json' ? 4 : 2} {...register(field.name)} className="w-full rounded-lg border border-slate-200 px-3 py-2 font-normal dark:border-slate-700 dark:bg-slate-800" />
-              ) : (
-                <input type={field.type === 'number' ? 'number' : 'text'} {...register(field.name)} className="w-full rounded-lg border border-slate-200 px-3 py-2 font-normal dark:border-slate-700 dark:bg-slate-800" />
-              )}
-              {errors[field.name]?.message && (
-                <span role="alert" className="block text-red-600">{String(errors[field.name]?.message)}</span>
-              )}
-            </label>
-          ))}
+          {fields.map((field) => {
+            const isMediaField = field.type === 'string' && /(image|logo|avatar|media|cover)/i.test(field.name);
+            const currentMediaValue = isMediaField ? String(watch(field.name) ?? '') : '';
+
+            return (
+              <div key={field.name} className={`space-y-1.5 text-xs font-medium ${field.type === 'textarea' || field.type === 'json' || isMediaField ? 'sm:col-span-2' : ''}`}>
+                <label className="block space-y-1">
+                  <span>{field.name}{field.required ? ' *' : ''}</span>
+                  {field.type === 'boolean' ? (
+                    <input type="checkbox" {...register(field.name)} className="ms-2" />
+                  ) : field.type === 'textarea' || field.type === 'json' ? (
+                    <textarea rows={field.type === 'json' ? 4 : 2} {...register(field.name)} className="w-full rounded-lg border border-slate-200 px-3 py-2 font-normal dark:border-slate-700 dark:bg-slate-800" />
+                  ) : (
+                    <input
+                      type={field.type === 'number' ? 'number' : 'text'}
+                      dir={isMediaField ? 'ltr' : undefined}
+                      {...register(field.name)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 font-normal dark:border-slate-700 dark:bg-slate-800"
+                    />
+                  )}
+                </label>
+                {isMediaField && (
+                  <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-800/40">
+                    {currentMediaValue && (
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+                          {isVideoMediaUrl(currentMediaValue) ? (
+                            <video src={currentMediaValue} muted loop autoPlay playsInline className="h-full w-full object-contain" />
+                          ) : (
+                            <ZeroBrokenImage src={currentMediaValue} alt={field.name} className="h-full w-full object-cover" />
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-500">پیش‌نمایش فایل فعلی</span>
+                      </div>
+                    )}
+                    <FileUploader
+                      folder={resource}
+                      currentUrl={currentMediaValue || undefined}
+                      label={`آپلود فایل برای ${field.name}`}
+                      onUploaded={(url) => setValue(field.name, url, { shouldDirty: true, shouldValidate: true })}
+                    />
+                  </div>
+                )}
+                {errors[field.name]?.message && (
+                  <span role="alert" className="block text-red-600">{String(errors[field.name]?.message)}</span>
+                )}
+              </div>
+            );
+          })}
           <div className="flex gap-2 sm:col-span-2">
             <button disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />ذخیره</button>
             <button type="button" onClick={() => { setEditingId(null); reset({}); }} className="rounded-lg border px-4 py-2 text-xs">پاک‌کردن فرم</button>

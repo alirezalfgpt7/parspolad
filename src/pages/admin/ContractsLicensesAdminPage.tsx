@@ -11,6 +11,7 @@ import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { PersianDatePicker } from '../../components/ui/PersianDatePicker.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 type DeleteTarget = { type: 'contract'; id: number } | { type: 'license'; id: number };
 
@@ -193,6 +194,11 @@ export const ContractsLicensesAdminPage: React.FC = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {licenses.map((lic) => (
             <div key={lic.id} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              {lic.image_url && (
+                <div className="mb-3 h-28 w-full overflow-hidden rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
+                  <ZeroBrokenImage src={lic.image_url} alt={lic.title_fa} className="h-full w-full object-cover" />
+                </div>
+              )}
               <div className="font-mono text-xs font-bold text-(--theme-primary)">{lic.code}</div>
               <div className="mt-1 text-sm font-bold">{lic.title_fa}</div>
               <div className="mt-1 text-xs text-slate-500">{lic.issuer_fa}</div>
@@ -219,7 +225,12 @@ export const ContractsLicensesAdminPage: React.FC = () => {
             <select value={contractModal.status || 'active'} onChange={(e) => setContractModal({ ...contractModal, status: e.target.value as Contract['status'] })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
               <option value="active">فعال</option><option value="completed">تکمیل‌شده</option><option value="pending">در انتظار</option><option value="archived">بایگانی</option>
             </select>
-            <FileUploader folder="documents" label="پیوست PDF قرارداد" onUploaded={(url) => setContractModal({ ...contractModal, document_url: url })} />
+            <FileUploader
+              folder="documents"
+              currentUrl={contractModal.document_url || undefined}
+              label="پیوست PDF قرارداد"
+              onUploaded={(url) => setContractModal({ ...contractModal, document_url: url })}
+            />
             <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">ذخیره قرارداد</button>
           </form>
         )}
@@ -247,7 +258,12 @@ export const ContractsLicensesAdminPage: React.FC = () => {
               value={licenseModal.category || 'iso'}
               onChange={(v) => setLicenseModal({ ...licenseModal, category: v as License['category'] })}
             />
-            <FileUploader folder="certificates" label="تصویر یا PDF گواهینامه" onUploaded={(url) => setLicenseModal({ ...licenseModal, document_url: url, image_url: url.endsWith('.pdf') ? '/storage/certificates/iso-9001.jpg' : url })} />
+            <FileUploader
+              folder="certificates"
+              currentUrl={licenseModal.image_url || licenseModal.document_url || undefined}
+              label="تصویر یا PDF گواهینامه"
+              onUploaded={(url) => setLicenseModal({ ...licenseModal, document_url: url, image_url: url.endsWith('.pdf') ? '/storage/certificates/iso-9001.jpg' : url })}
+            />
             <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">ثبت گواهینامه</button>
           </form>
         )}

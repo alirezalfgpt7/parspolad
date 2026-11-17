@@ -1,14 +1,19 @@
 import React from 'react';
 import { cn } from '../../utils/i18n.ts';
-import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
+import { BrandLogo } from '../common/BrandLogo.tsx';
 import { AnimatedBackground } from './AnimatedBackground.tsx';
 import { EffectText } from './EffectText.tsx';
+import { QuartetSpinnerEffect } from './Spinners.tsx';
 
 interface EffectPreloaderProps {
   label: string;
   fullScreen?: boolean;
 }
 
+/**
+ * Combines Effect 025 (Quartet Spinner), Effect 007 (Gradient Text),
+ * and customizable BrandLogo (preloader placement — GIF/MP4/PNG).
+ */
 export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
   label,
   fullScreen = false,
@@ -26,21 +31,18 @@ export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
   >
     {fullScreen && (
       <>
-        <AnimatedBackground />
+        <AnimatedBackground particles />
         <div className="effect-preloader-vignette pointer-events-none absolute inset-0" />
       </>
     )}
 
     <div className="effect-loader-scene relative z-10 grid h-28 w-28 place-items-center" aria-hidden="true">
-      <div className="effect-spinner-quartet">
-        {[0, 1, 2, 3].map((dot) => <span key={dot} />)}
-      </div>
+      <QuartetSpinnerEffect />
       <div className="effect-preloader-logo-frame">
-        <ZeroBrokenImage
-          src="/storage/logos/preloader.gif"
-          alt=""
-          className="effect-preloader-logo"
-          loading="eager"
+        <BrandLogo
+          placement="preloader"
+          className="h-full w-full"
+          imgClassName="effect-preloader-logo object-cover"
         />
       </div>
     </div>

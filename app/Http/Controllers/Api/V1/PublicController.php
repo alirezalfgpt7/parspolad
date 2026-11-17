@@ -40,6 +40,10 @@ class PublicController extends Controller
             'map' => $data['settings']['map'] ?? [],
             'seo' => $data['settings']['seo'] ?? [],
             'site' => $data['settings']['site'] ?? [],
+            'login' => $data['settings']['login'] ?? [],
+            'appearance' => $data['settings']['appearance'] ?? [],
+            'logos' => $data['settings']['logos'] ?? [],
+            'pages_config' => $data['settings']['pages_config'] ?? [],
             'is_authenticated' => $request->user('sanctum') !== null,
         ]);
     }

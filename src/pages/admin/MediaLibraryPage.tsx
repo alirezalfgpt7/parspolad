@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, Lock, Trash2, Unlock } from 'lucide-react';
+import { Copy, FileText, Lock, Trash2, Unlock } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
+import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
 export const MediaLibraryPage: React.FC = () => {
   const { addToast } = useAppStore();
@@ -59,16 +61,32 @@ export const MediaLibraryPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {files.map((f) => (
-          <div key={f.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div>
-              <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
-                <span className="font-mono uppercase">{f.extension}</span>
-                <span className="tabular-nums">{Math.round(f.size_bytes / 1024)} KB</span>
+        {files.map((f) => {
+          const isImage = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(f.extension.toLowerCase());
+          const isVideo = isVideoMediaUrl(f.url) || ['mp4', 'webm'].includes(f.extension.toLowerCase());
+
+          return (
+            <div key={f.id} className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+              <div>
+                <div className="mb-3 flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                  {isVideo ? (
+                    <video src={f.url} muted loop autoPlay playsInline className="h-full w-full object-contain" />
+                  ) : isImage ? (
+                    <ZeroBrokenImage src={f.url} alt={f.name} className="h-full w-full object-contain" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-slate-400">
+                      <FileText className="h-8 w-8" />
+                      <span className="font-mono text-[11px] uppercase">{f.extension}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                  <span className="font-mono uppercase">{f.extension}</span>
+                  <span className="tabular-nums">{Math.round(f.size_bytes / 1024)} KB</span>
+                </div>
+                <div className="mt-2 truncate text-sm font-bold">{f.name}</div>
+                <div className="mt-1 truncate font-mono text-[11px] text-slate-400" dir="ltr">{f.url}</div>
               </div>
-              <div className="mt-2 truncate text-sm font-bold">{f.name}</div>
-              <div className="mt-1 truncate font-mono text-[11px] text-slate-400" dir="ltr">{f.url}</div>
-            </div>
 
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
               <button
@@ -117,7 +135,8 @@ export const MediaLibraryPage: React.FC = () => {
               />
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
     </div>

@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
-import { AnimatedHamburger, EffectAction, EffectNavLink } from '../effects/index.ts';
+import {
+  AnimatedHamburger,
+  EffectAction,
+  EffectNavLink,
+  ExpandingSearchEffect,
+  FloatingHamburgerButton,
+  ThemeModeToggle,
+} from '../effects/index.ts';
 import type { MenuItem } from '../../types/index.ts';
 
 export const PublicNavbar: React.FC = () => {
-  const { bootstrap, language, user, toggleColorMode, setLanguage, setSearchOpen } = useAppStore();
+  const { bootstrap, language, user, colorMode, toggleColorMode, setLanguage, setSearchOpen } = useAppStore();
   const { pathname } = useLocation();
   const [activeMegaId, setActiveMegaId] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -57,15 +65,15 @@ export const PublicNavbar: React.FC = () => {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
-        {/* Zone 1: Brand Wordmark (single line, clean) */}
+        {/* Zone 1: Brand Wordmark (single line, editable static or animated emblem) */}
         <Link
           to="/"
           className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight whitespace-nowrap shrink-0"
         >
-          <ZeroBrokenImage
-            src={bootstrap?.company?.logo_small_url || '/storage/logos/logo-small.png'}
+          <BrandLogo
+            placement="navbar"
             alt={companyName ?? ''}
-            className="h-8 w-8 object-contain"
+            className="h-9 w-9 shrink-0 rounded-lg"
           />
           <span>{companyName}</span>
         </Link>
@@ -93,17 +101,22 @@ export const PublicNavbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Zone 3: 1 Primary Action CTA */}
-        <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className="effect-search-toggle hidden rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 lg:inline-flex dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-              aria-label={language === 'fa' ? 'جستجو در سایت' : 'Search the site'}
-            >
-              <Search className="h-4 w-4 shrink-0" />
-              <span>{language === 'fa' ? 'جستجو' : 'Search'}</span>
-            </button>
+        {/* Zone 3: Search, Theme Toggle, Login & Primary CTA */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="hidden lg:block">
+            <ExpandingSearchEffect
+              placeholder={language === 'fa' ? 'جستجو در سایت...' : 'Search site...'}
+              onTriggerSearch={() => setSearchOpen(true)}
+            />
+          </div>
+          <div className="hidden sm:block">
+            <ThemeModeToggle
+              dark={colorMode === 'dark'}
+              onToggle={toggleColorMode}
+              compact
+              label={language === 'fa' ? 'تغییر حالت روشن/تاریک' : 'Toggle light/dark mode'}
+            />
+          </div>
           {!user && (
             <Link
               to="/login"
@@ -218,13 +231,12 @@ export const PublicNavbar: React.FC = () => {
             >
               {language === 'fa' ? 'جستجو' : 'Search'}
             </button>
-            <button
-              type="button"
-              onClick={toggleColorMode}
-              className="effect-theme-toggle rounded-lg border border-slate-200 px-3 py-1.5 text-xs dark:border-slate-700"
-            >
-              {language === 'fa' ? 'تغییر تم تیره/روشن' : 'Dark / Light'}
-            </button>
+            <ThemeModeToggle
+              dark={colorMode === 'dark'}
+              onToggle={toggleColorMode}
+              label={language === 'fa' ? 'تغییر تم تیره/روشن' : 'Dark / Light'}
+              className="rounded-lg border border-slate-200 px-3 py-1 text-xs dark:border-slate-700"
+            />
             <button
               type="button"
               onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
@@ -243,6 +255,14 @@ export const PublicNavbar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Effect 023 Floating Corner Hamburger for Mobile Quick Navigation */}
+      <FloatingHamburgerButton
+        open={mobileOpen}
+        onClick={() => setMobileOpen((o) => !o)}
+        position={language === 'fa' ? 'bottom-right' : 'bottom-right'}
+        ariaLabel={language === 'fa' ? 'منوی سریع موبایل' : 'Quick Mobile Menu'}
+      />
     </header>
   );
 };

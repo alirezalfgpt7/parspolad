@@ -1,0 +1,82 @@
+/* 028 - 3D Morphing Cube */
+.effect-morph-cube-scene {
+  display: grid;
+  place-items: center;
+  perspective: 600px;
+}
+
+.effect-morph-cube {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  transform-style: preserve-3d;
+  animation: effect-rotate-morph-cube 6s infinite linear;
+}
+
+.effect-morph-cube-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 20%;
+  border: 1.5px solid rgb(255 255 255 / 0.28);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--theme-primary) 90%, #8b5cf6),
+    color-mix(in srgb, var(--theme-accent) 68%, #6d28d9)
+  );
+  box-shadow:
+    inset 0 0 14px rgb(255 255 255 / 0.18),
+    0 0 18px color-mix(in srgb, var(--theme-primary) 34%, transparent);
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.effect-cube-sm .effect-morph-cube {
+  width: 28px;
+  height: 28px;
+}
+.effect-cube-sm .effect-cube-front { transform: translateZ(14px); font-size: 11px; }
+.effect-cube-sm .effect-cube-back { transform: rotateY(180deg) translateZ(14px); }
+.effect-cube-sm .effect-cube-right { transform: rotateY(90deg) translateZ(14px); }
+.effect-cube-sm .effect-cube-left { transform: rotateY(-90deg) translateZ(14px); }
+.effect-cube-sm .effect-cube-top { transform: rotateX(90deg) translateZ(14px); }
+.effect-cube-sm .effect-cube-bottom { transform: rotateX(-90deg) translateZ(14px); }
+
+.effect-cube-md .effect-morph-cube {
+  width: 36px;
+  height: 36px;
+}
+.effect-cube-md .effect-cube-front { transform: translateZ(18px); font-size: 14px; }
+.effect-cube-md .effect-cube-back { transform: rotateY(180deg) translateZ(18px); }
+.effect-cube-md .effect-cube-right { transform: rotateY(90deg) translateZ(18px); }
+.effect-cube-md .effect-cube-left { transform: rotateY(-90deg) translateZ(18px); }
+.effect-cube-md .effect-cube-top { transform: rotateX(90deg) translateZ(18px); }
+.effect-cube-md .effect-cube-bottom { transform: rotateX(-90deg) translateZ(18px); }
+
+.effect-cube-lg .effect-morph-cube {
+  width: 52px;
+  height: 52px;
+}
+.effect-cube-lg .effect-cube-front { transform: translateZ(26px); font-size: 18px; }
+.effect-cube-lg .effect-cube-back { transform: rotateY(180deg) translateZ(26px); }
+.effect-cube-lg .effect-cube-right { transform: rotateY(90deg) translateZ(26px); }
+.effect-cube-lg .effect-cube-left { transform: rotateY(-90deg) translateZ(26px); }
+.effect-cube-lg .effect-cube-top { transform: rotateX(90deg) translateZ(26px); }
+.effect-cube-lg .effect-cube-bottom { transform: rotateX(-90deg) translateZ(26px); }
+
+@keyframes effect-rotate-morph-cube {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-morph-cube {
+    animation: none;
+    transform: rotateX(-22deg) rotateY(28deg);
+  }
+}

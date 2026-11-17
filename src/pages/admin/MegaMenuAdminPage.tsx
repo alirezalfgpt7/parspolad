@@ -187,6 +187,7 @@ export const MegaMenuAdminPage: React.FC = () => {
                       />
                       <FileUploader
                         folder="menus"
+                        currentUrl={ch.image}
                         label={ch.image ? 'تغییر تصویر آیتم مگامنو' : 'آپلود تصویر مگامنو'}
                         onUploaded={(url) => {
                           const nextChildren = item.children!.map((c, j) => (j === cIdx ? { ...c, image: url } : c));

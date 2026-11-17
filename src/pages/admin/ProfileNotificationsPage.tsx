@@ -92,7 +92,13 @@ export const ProfilePage: React.FC = () => {
         <div className="flex items-center gap-4">
           <EffectProfileAvatar src={avatar} alt={name} className="h-16 w-16 rounded-full border border-slate-200 object-cover" />
           <div className="flex-1">
-            <FileUploader folder="avatars" label="آپلود تصویر آواتار جدید" onUploaded={(url) => setValue('avatar', url, { shouldValidate: true, shouldDirty: true })} />
+            <FileUploader
+              folder="avatars"
+              accept=".jpg,.jpeg,.png,.webp,.gif"
+              currentUrl={avatar}
+              label="آپلود تصویر آواتار جدید"
+              onUploaded={(url) => setValue('avatar', url, { shouldValidate: true, shouldDirty: true })}
+            />
           </div>
         </div>
         <div>

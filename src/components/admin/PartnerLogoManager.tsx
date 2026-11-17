@@ -130,6 +130,8 @@ export const PartnerLogoManager: React.FC = () => {
           </label>
           <FileUploader
             folder="partners"
+            accept=".png,.jpg,.jpeg,.webp,.gif"
+            currentUrl={draft.logo_url}
             label="بارگذاری لوگو"
             onUploaded={(logo_url) => setDraft((current) => ({ ...current, logo_url }))}
           />

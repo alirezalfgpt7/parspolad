@@ -1,0 +1,58 @@
+/* 041 - Image Slideshow In CSS */
+.effect-css-slideshow {
+  position: relative;
+  overflow: hidden;
+  background: #020617;
+}
+
+.effect-css-slideshow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgb(2 6 23 / 0.36);
+  pointer-events: none;
+}
+
+.effect-css-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: effect-css-slideshow-cycle 15s infinite;
+}
+
+.effect-css-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes effect-css-slideshow-cycle {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  8% {
+    opacity: 1;
+  }
+  34% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  42% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-css-slide {
+    animation: none;
+  }
+  .effect-css-slide:first-child {
+    opacity: 1;
+  }
+}

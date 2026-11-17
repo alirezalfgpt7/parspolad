@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { DEFAULT_APPEARANCE_SETTINGS, FONT_CSS_MAP } from '../../utils/brandingDefaults.ts';
 import type {
   ButtonShape,
   ThemeButtonEffect,
@@ -58,6 +59,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     previewTheme,
     previewScope,
     previewMode,
+    previewAppearance,
   } = useAppStore();
   const hasSavedMode = localStorage.getItem('ppa_mode') !== null;
   const effectiveMode = previewMode || (hasSavedMode
@@ -74,42 +76,76 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     const theme: ThemeSettings | undefined = previewTheme || bootstrap?.theme || undefined;
-    if (!theme) return;
     const isLanding = location.pathname === '/';
-    const routeScope: ThemeScope = isLanding && theme.landing_theme_enabled
+    const routeScope: ThemeScope = isLanding && (theme?.landing_theme_enabled ?? true)
       ? 'landing'
       : location.pathname.startsWith('/admin')
         ? 'admin'
         : 'site';
     const scope = previewScope || routeScope;
-    const palette = scope === 'landing'
-      ? theme.landing_palette
-      : scope === 'admin'
-        ? theme.admin_palette || theme.active_palette
-        : theme.active_palette;
-    const designStyle = scope === 'landing'
-      ? theme.landing_design_style || theme.design_style
-      : scope === 'admin'
-        ? theme.admin_design_style || theme.design_style
-        : theme.design_style;
-    const buttonShape = scope === 'landing'
-      ? theme.landing_button_shape || theme.button_shape
-      : scope === 'admin'
-        ? theme.admin_button_shape || theme.button_shape
-        : theme.button_shape;
-    const buttonEffect = scope === 'landing'
-      ? theme.landing_button_effect || theme.button_effect
-      : scope === 'admin'
-        ? theme.admin_button_effect || theme.button_effect
-        : theme.button_effect;
-    applyPaletteToRoot(
-      palette,
-      effectiveMode,
-      designStyle,
-      buttonShape,
-      buttonEffect,
-      scope
-    );
+
+    if (theme) {
+      const palette = scope === 'landing'
+        ? theme.landing_palette
+        : scope === 'admin'
+          ? theme.admin_palette || theme.active_palette
+          : theme.active_palette;
+      const designStyle = scope === 'landing'
+        ? theme.landing_design_style || theme.design_style
+        : scope === 'admin'
+          ? theme.admin_design_style || theme.design_style
+          : theme.design_style;
+      const buttonShape = scope === 'landing'
+        ? theme.landing_button_shape || theme.button_shape
+        : scope === 'admin'
+          ? theme.admin_button_shape || theme.button_shape
+          : theme.button_shape;
+      const buttonEffect = scope === 'landing'
+        ? theme.landing_button_effect || theme.button_effect
+        : scope === 'admin'
+          ? theme.admin_button_effect || theme.button_effect
+          : theme.button_effect;
+      applyPaletteToRoot(
+        palette,
+        effectiveMode,
+        designStyle,
+        buttonShape,
+        buttonEffect,
+        scope
+      );
+    }
+
+    const appearance = {
+      ...DEFAULT_APPEARANCE_SETTINGS,
+      ...(bootstrap?.appearance || {}),
+      ...(previewAppearance || {}),
+    };
+    const root = document.documentElement;
+    const activeBodyKey = isLanding
+      ? appearance.font_landing
+      : location.pathname.startsWith('/admin')
+        ? appearance.font_admin
+        : location.pathname === '/login' || location.pathname === '/register'
+          ? appearance.font_login
+          : appearance.font_site;
+    const activeHeadingKey = isLanding
+      ? appearance.font_landing_heading
+      : location.pathname.startsWith('/admin')
+        ? appearance.font_admin_heading
+        : location.pathname === '/login' || location.pathname === '/register'
+          ? appearance.font_login_heading
+          : appearance.font_site_heading;
+
+    root.style.setProperty('--font-active', FONT_CSS_MAP[activeBodyKey] || FONT_CSS_MAP.vazirmatn);
+    root.style.setProperty('--font-heading', FONT_CSS_MAP[activeHeadingKey] || FONT_CSS_MAP.vazirmatn);
+    root.style.setProperty('--font-navbar', FONT_CSS_MAP[appearance.font_navbar] || FONT_CSS_MAP.vazirmatn);
+    root.style.setProperty('--font-footer', FONT_CSS_MAP[appearance.font_footer] || FONT_CSS_MAP.vazirmatn);
+    root.style.setProperty('--font-login', FONT_CSS_MAP[appearance.font_login] || FONT_CSS_MAP['ibm-plex-arabic']);
+    root.style.setProperty('--font-login-heading', FONT_CSS_MAP[appearance.font_login_heading] || FONT_CSS_MAP.vazirmatn);
+    root.style.setProperty('--font-admin', FONT_CSS_MAP[appearance.font_admin] || FONT_CSS_MAP.vazirmatn);
+    root.style.setProperty('--font-admin-heading', FONT_CSS_MAP[appearance.font_admin_heading] || FONT_CSS_MAP.vazirmatn);
+    const clampedSize = Math.min(20, Math.max(13, Number(appearance.base_font_size) || 16));
+    root.style.setProperty('--font-size-base', `${clampedSize}px`);
   }, [
     bootstrap,
     location.pathname,
@@ -117,6 +153,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     previewTheme,
     previewScope,
     previewMode,
+    previewAppearance,
   ]);
 
   return <>{children}</>;

@@ -4,19 +4,11 @@ import type { LinkProps } from 'react-router-dom';
 import { cn } from '../../utils/i18n.ts';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { EffectText } from './EffectText.tsx';
+import { AnimatedHamburger } from './AnimatedHamburger.tsx';
+import { GlassPanelEffect } from './GlassPanelEffect.tsx';
+import { HueFilterMedia } from './HueFilterMedia.tsx';
 
-interface AnimatedHamburgerProps {
-  open: boolean;
-  className?: string;
-}
-
-export const AnimatedHamburger: React.FC<AnimatedHamburgerProps> = ({ open, className }) => (
-  <span className={cn('effect-hamburger', className)} data-open={open} aria-hidden="true">
-    <span />
-    <span />
-    <span />
-  </span>
-);
+export { AnimatedHamburger };
 
 export const EffectNavLink: React.FC<LinkProps> = ({ className, children, ...props }) => (
   <Link
@@ -33,7 +25,7 @@ export const EffectNavLink: React.FC<LinkProps> = ({ className, children, ...pro
 export const EffectGlassPanel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
   ...props
-}) => <div {...props} className={cn('effect-auth-card effect-glass', className)} />;
+}) => <GlassPanelEffect {...props} className={className} />;
 
 export const EffectProfileCard: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
@@ -99,5 +91,5 @@ export const EffectMarquee: React.FC<EffectMarqueeProps> = ({
 type EffectImageProps = React.ComponentProps<typeof ZeroBrokenImage>;
 
 export const EffectImage: React.FC<EffectImageProps> = ({ className, ...props }) => (
-  <ZeroBrokenImage {...props} className={cn('effect-filter-image', className)} />
+  <HueFilterMedia {...props} mode="grayscale-reveal" className={className} />
 );

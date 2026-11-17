@@ -1,0 +1,100 @@
+/* Effects 025 (Quartet Square-Orbit Spinner) & 057 (Windows 11 Boot Spinner) */
+
+/* 025: 4-dot square-orbit animation with classic palette (#19A68C, #F63D3A, #FDA543, #193B48) */
+.effect-spinner-quartet {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.effect-spinner-quartet span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  animation: effect-quartet-orbit 2s ease infinite;
+}
+
+.effect-spinner-quartet span:nth-child(1) {
+  background: #19a68c;
+  animation-delay: -1.5s;
+}
+
+.effect-spinner-quartet span:nth-child(2) {
+  background: #f63d3a;
+  animation-delay: -1s;
+}
+
+.effect-spinner-quartet span:nth-child(3) {
+  background: #fda543;
+  animation-delay: -0.5s;
+}
+
+.effect-spinner-quartet span:nth-child(4) {
+  background: #193b48;
+}
+
+@keyframes effect-quartet-orbit {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(160%, 0);
+  }
+  50% {
+    transform: translate(160%, 160%);
+  }
+  75% {
+    transform: translate(0, 160%);
+  }
+}
+
+/* 057: Windows 11 Boot Spinner (5 orbiting staggered cubic-bezier dots) */
+.effect-win11-spinner {
+  position: relative;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+
+.effect-win11-dot {
+  position: absolute;
+  inset: 0;
+  animation: effect-win11-orbit 2.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+.effect-win11-dot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0.22em;
+  height: 0.22em;
+  margin-left: -0.11em;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.effect-win11-dot:nth-child(2) { animation-delay: 0.1s; }
+.effect-win11-dot:nth-child(3) { animation-delay: 0.2s; }
+.effect-win11-dot:nth-child(4) { animation-delay: 0.3s; }
+.effect-win11-dot:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes effect-win11-orbit {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(720deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-spinner-quartet span,
+  .effect-win11-dot {
+    animation: none;
+  }
+}

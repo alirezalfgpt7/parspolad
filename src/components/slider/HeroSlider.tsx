@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -6,98 +6,7 @@ import type { Slide, SlideTextAnimation } from '../../types/index.ts';
 import { cn } from '../../utils/i18n.ts';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
-import { EffectAction } from '../effects/index.ts';
-
-const ParticleCanvas: React.FC<{ enabled: boolean }> = ({ enabled }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx || !enabled) return;
-
-    let raf = 0;
-    const pointer = { x: -1, y: -1 };
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    const onPointerMove = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.x = event.clientX - rect.left;
-      pointer.y = event.clientY - rect.top;
-    };
-    const clearPointer = () => {
-      pointer.x = -1;
-      pointer.y = -1;
-    };
-
-    resize();
-    window.addEventListener('resize', resize);
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerleave', clearPointer);
-
-    const dots = Array.from({ length: 28 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      r: Math.random() * 1.4 + 0.7,
-    }));
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < dots.length; i += 1) {
-        const dot = dots[i];
-        dot.x = (dot.x + dot.vx + canvas.width) % canvas.width;
-        dot.y = (dot.y + dot.vy + canvas.height) % canvas.height;
-
-        for (let j = i + 1; j < dots.length; j += 1) {
-          const other = dots[j];
-          const dx = dot.x - other.x;
-          const dy = dot.y - other.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance < 105) {
-            ctx.strokeStyle = `rgba(255,255,255,${(1 - distance / 105) * 0.2})`;
-            ctx.beginPath();
-            ctx.moveTo(dot.x, dot.y);
-            ctx.lineTo(other.x, other.y);
-            ctx.stroke();
-          }
-        }
-
-        if (pointer.x >= 0) {
-          const dx = dot.x - pointer.x;
-          const dy = dot.y - pointer.y;
-          const distance = Math.hypot(dx, dy);
-          if (distance < 125) {
-            ctx.strokeStyle = `rgba(255,255,255,${(1 - distance / 125) * 0.42})`;
-            ctx.beginPath();
-            ctx.moveTo(dot.x, dot.y);
-            ctx.lineTo(pointer.x, pointer.y);
-            ctx.stroke();
-          }
-        }
-
-        ctx.fillStyle = 'rgba(255,255,255,0.42)';
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      raf = requestAnimationFrame(draw);
-    };
-
-    raf = requestAnimationFrame(draw);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
-      canvas.removeEventListener('pointermove', onPointerMove);
-      canvas.removeEventListener('pointerleave', clearPointer);
-    };
-  }, [enabled]);
-
-  return enabled ? <canvas ref={canvasRef} className="effect-hero-particles" aria-hidden="true" /> : null;
-};
+import { EffectAction, ParticleHoverNetwork, WaveHeroEffect } from '../effects/index.ts';
 
 const AnimatedHeadline: React.FC<{
   text: string;
@@ -248,7 +157,7 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
             )}
 
             <div className="absolute inset-0 z-10" style={{ background: slide.overlay_gradient }} />
-            <ParticleCanvas enabled={active && slide.particles_enabled && !shouldReduceMotion} />
+            <ParticleHoverNetwork enabled={active && slide.particles_enabled && !shouldReduceMotion} className="z-10" />
 
             <div className="relative z-20 mx-auto flex h-full max-w-7xl items-center px-6 sm:px-10">
               <div className={cn('effect-hero-copy flex max-w-3xl flex-col gap-5', alignClass)}>
@@ -283,17 +192,9 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
         );
       })}
 
-      <svg className="effect-hero-waves" viewBox="0 24 150 28" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <path
-            id="hero-wave"
-            d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v44h-352z"
-          />
-        </defs>
-        <use href="#hero-wave" x="48" y="0" fill="rgb(255 255 255 / 0.12)" />
-        <use href="#hero-wave" x="48" y="3" fill="rgb(255 255 255 / 0.18)" />
-        <use href="#hero-wave" x="48" y="6" fill="var(--theme-bg)" />
-      </svg>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
+        <WaveHeroEffect bottomFill="var(--theme-bg)" tintRgb="255 255 255" />
+      </div>
 
       {activeSlides.length > 1 && (
         <>

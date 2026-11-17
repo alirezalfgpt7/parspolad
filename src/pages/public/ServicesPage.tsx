@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { CheckCircle2, Compass, Settings, Wrench } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Service } from '../../types/index.ts';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { CardRevealStack } from '../../components/effects/index.ts';
 
 export const ServicesPage: React.FC = () => {
   const { language, addToast } = useAppStore();
@@ -22,9 +24,44 @@ export const ServicesPage: React.FC = () => {
       .catch((error: unknown) => addToast('error', error instanceof Error ? error.message : 'بارگذاری خدمات ناموفق بود.'));
   }, [page]);
 
+  const workflowCards = [
+    {
+      id: '01',
+      badge: language === 'fa' ? 'گام ۱' : 'Step 1',
+      title: language === 'fa' ? 'نیازسنجی و مهندسی معکوس' : 'Field Survey & R&D',
+      description: language === 'fa' ? 'بازدید میدانی، اسکن سه‌بعدی قطعات و تدوین نقشه‌های ساخت.' : 'Dimensional scanning, material assay & detailed manufacturing drawings.',
+      icon: <Compass className="h-5 w-5" />,
+    },
+    {
+      id: '02',
+      badge: language === 'fa' ? 'گام ۲' : 'Step 2',
+      title: language === 'fa' ? 'ساخت و ماشین‌کاری CNC' : 'Heavy CNC Fabrication',
+      description: language === 'fa' ? 'تولید با تلرانس میکرونی و عملیات حرارتی کنترل‌شده.' : 'Tight-tolerance multi-axis machining and certified heat treatment.',
+      icon: <Settings className="h-5 w-5" />,
+    },
+    {
+      id: '03',
+      badge: language === 'fa' ? 'گام ۳' : 'Step 3',
+      title: language === 'fa' ? 'تست فشار و بازرسی فنی' : 'Witness Hydro Testing',
+      description: language === 'fa' ? 'آزمون هیدرواستاتیک و NDT با صدور گواهی‌نامه معتبر.' : 'Full pressure & NDT validation with third-party witness.',
+      icon: <CheckCircle2 className="h-5 w-5" />,
+    },
+    {
+      id: '04',
+      badge: language === 'fa' ? 'گام ۴' : 'Step 4',
+      title: language === 'fa' ? 'نصب و خدمات پس از تحویل' : 'Commissioning & Support',
+      description: language === 'fa' ? 'پشتیبانی کامل بهره‌برداری در میادین نفت و گاز.' : 'On-site commissioning, maintenance & rapid spare dispatch.',
+      icon: <Wrench className="h-5 w-5" />,
+    },
+  ];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <CmsPageIntro slug="services" />
+
+      <div className="mb-10">
+        <CardRevealStack items={workflowCards} />
+      </div>
 
       <div className="space-y-8">
         {services.map((svc, idx) => (

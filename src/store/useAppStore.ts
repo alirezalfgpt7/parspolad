@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 import { apiRequest } from '../services/api.ts';
 import type {
+  AppearanceSettings,
   Banner,
+  BrandLogosSettings,
   ColorMode,
   KPI,
   Language,
+  LoginPageSettings,
   Menu,
   PageContent,
+  PagesConfigSettings,
   Partner,
   ProjectCategory,
   Service,
@@ -24,7 +28,7 @@ export interface ToastMessage {
   text: string;
 }
 
-interface BootstrapPayload {
+export interface BootstrapPayload {
   theme: ThemeSettings | null;
   presets: ThemePreset[];
   menus: Menu[];
@@ -39,6 +43,10 @@ interface BootstrapPayload {
   map: SiteSettings['map'];
   seo: SiteSettings['seo'];
   site: SiteSettings['site'];
+  login?: Partial<LoginPageSettings>;
+  appearance?: Partial<AppearanceSettings>;
+  logos?: Partial<BrandLogosSettings>;
+  pages_config?: PagesConfigSettings;
   is_authenticated: boolean;
 }
 
@@ -52,6 +60,10 @@ interface AppState {
   previewTheme: ThemeSettings | null;
   previewScope: ThemeScope | null;
   previewMode: ColorMode | null;
+  previewLogin: Partial<LoginPageSettings> | null;
+  previewLogos: Partial<BrandLogosSettings> | null;
+  previewAppearance: Partial<AppearanceSettings> | null;
+  previewPagesConfig: PagesConfigSettings | null;
   searchOpen: boolean;
   toasts: ToastMessage[];
   setLanguage: (lang: Language) => void;
@@ -66,6 +78,12 @@ interface AppState {
     scope?: ThemeScope | null,
     mode?: ColorMode | null
   ) => void;
+  setPreviewBranding: (patch: {
+    login?: Partial<LoginPageSettings> | null;
+    logos?: Partial<BrandLogosSettings> | null;
+    appearance?: Partial<AppearanceSettings> | null;
+    pages_config?: PagesConfigSettings | null;
+  } | null) => void;
   setSearchOpen: (open: boolean) => void;
   addToast: (type: ToastMessage['type'], text: string) => void;
   removeToast: (id: string) => void;
@@ -85,6 +103,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   previewTheme: null,
   previewScope: null,
   previewMode: null,
+  previewLogin: null,
+  previewLogos: null,
+  previewAppearance: null,
+  previewPagesConfig: null,
   searchOpen: false,
   toasts: [],
 
@@ -160,6 +182,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       previewScope: theme ? scope : null,
       previewMode: theme ? mode : null,
     }),
+
+  setPreviewBranding: (patch) =>
+    set((state) => (patch === null
+      ? {
+          previewLogin: null,
+          previewLogos: null,
+          previewAppearance: null,
+          previewPagesConfig: null,
+        }
+      : {
+          previewLogin: patch.login !== undefined ? patch.login : state.previewLogin,
+          previewLogos: patch.logos !== undefined ? patch.logos : state.previewLogos,
+          previewAppearance: patch.appearance !== undefined ? patch.appearance : state.previewAppearance,
+          previewPagesConfig: patch.pages_config !== undefined ? patch.pages_config : state.previewPagesConfig,
+        })),
 
   setSearchOpen: (open) => set({ searchOpen: open }),
 

@@ -66,7 +66,16 @@ class BootstrapService
 
     private function groupedPublicSettings(): array
     {
-        $rows = Setting::query()->whereIn('group', ['company', 'map', 'seo', 'site'])->get();
+        $rows = Setting::query()->whereIn('group', [
+            'company',
+            'map',
+            'seo',
+            'site',
+            'login',
+            'appearance',
+            'logos',
+            'pages_config',
+        ])->get();
         $result = [];
         foreach ($rows as $row) {
             $decoded = json_decode((string) $row->value, true);

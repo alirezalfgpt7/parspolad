@@ -1,4 +1,5 @@
 import React from 'react';
+import { Win11BootSpinnerEffect } from '../effects/Spinners.tsx';
 
 export const InlineLoader: React.FC<{ label: string; className?: string }> = ({ label, className = '' }) => (
   <span
@@ -6,12 +7,7 @@ export const InlineLoader: React.FC<{ label: string; className?: string }> = ({ 
     aria-live="polite"
     className={`inline-flex items-center gap-2 ${className}`}
   >
-    <span className="effect-inline-spinner shrink-0" aria-hidden="true">
-      <i />
-      <i />
-      <i />
-      <i />
-    </span>
+    <Win11BootSpinnerEffect size="sm" className="shrink-0" />
     <span>{label}</span>
   </span>
 );

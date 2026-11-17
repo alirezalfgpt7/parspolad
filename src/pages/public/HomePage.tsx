@@ -4,16 +4,25 @@ import { ArrowLeft, ArrowRight, PlayCircle } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article, Project } from '../../types/index.ts';
+import { BrandLogo } from '../../components/common/BrandLogo.tsx';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { StatCounter } from '../../components/ui/StatCounter.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { DEFAULT_PAGES_CONFIG } from '../../utils/brandingDefaults.ts';
 import { useCmsPage } from '../../hooks/useCmsPage.ts';
-import { EffectImage, EffectMarquee, Reveal } from '../../components/effects/index.ts';
+import {
+  CssSlideshowEffect,
+  EffectAction,
+  EffectImage,
+  InfiniteBrandSlider,
+  ParticleTextEffect,
+  Reveal,
+} from '../../components/effects/index.ts';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
 
 export const HomePage: React.FC = () => {
-  const { bootstrap, language } = useAppStore();
+  const { bootstrap, previewPagesConfig, language } = useAppStore();
   const shouldReduceMotion = usePrefersReducedMotion();
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
@@ -41,13 +50,34 @@ export const HomePage: React.FC = () => {
   const kpis = bootstrap?.kpis || [];
   const services = bootstrap?.services || [];
   const partners = bootstrap?.partners || [];
-  const marqueePartners = !shouldReduceMotion && partners.length > 1 ? [...partners, ...partners] : partners;
   const banner = bootstrap?.banners?.find((b) => b.placement === 'landing_mid');
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
   const homeText = (key: string): string => {
     const value = spotlight?.metadata?.[`${key}_${language}`];
     return typeof value === 'string' ? value : '';
   };
+
+  const spotlightOverride = {
+    ...DEFAULT_PAGES_CONFIG.home_spotlight,
+    ...(bootstrap?.pages_config?.home_spotlight || {}),
+    ...(previewPagesConfig?.home_spotlight || {}),
+  };
+  const spotlightBadge =
+    (language === 'fa' ? spotlightOverride.badge_fa : spotlightOverride.badge_en) ||
+    (spotlight ? (language === 'fa' ? spotlight.subtitle_fa : spotlight.subtitle_en) : '');
+  const spotlightTitle =
+    (language === 'fa' ? spotlightOverride.title_fa : spotlightOverride.title_en) ||
+    (spotlight ? (language === 'fa' ? spotlight.title_fa : spotlight.title_en) : '');
+  const spotlightSubtitle =
+    language === 'fa' ? spotlightOverride.subtitle_fa : spotlightOverride.subtitle_en;
+  const spotlightImages = spotlight
+    ? [spotlight.metadata?.image_url, spotlight.metadata?.secondary_image_url].filter(
+        (image): image is string => typeof image === 'string' && image.length > 0,
+      )
+    : [];
+  const companyTitle =
+    (language === 'fa' ? bootstrap?.company?.name_fa : bootstrap?.company?.name_en) ||
+    (language === 'fa' ? 'پارس پولاد آقایی' : 'PARS POOLAD AGHAEE');
 
   return (
     <div>
@@ -143,22 +173,47 @@ export const HomePage: React.FC = () => {
           <div className="mx-auto grid max-w-7xl items-stretch gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
             <div className="flex flex-col justify-between gap-6 lg:col-span-6">
               <div>
-                <p className="text-xs font-semibold text-amber-400">
-                  {language === 'fa' ? spotlight.subtitle_fa : spotlight.subtitle_en}
-                </p>
-                <h2 className="mt-2 text-2xl font-extrabold leading-snug sm:text-3xl" style={{ textWrap: 'balance' }}>
-                  {language === 'fa' ? spotlight.title_fa : spotlight.title_en}
-                </h2>
+                <div className="flex items-center gap-3.5">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/70 p-1">
+                    <BrandLogo
+                      placement="about"
+                      overrideUrl={spotlightOverride.logo_url}
+                      alt={companyTitle}
+                      className="h-full w-full"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-amber-400">{spotlightBadge}</p>
+                    <h2 className="mt-1 text-2xl font-extrabold leading-snug sm:text-3xl" style={{ textWrap: 'balance' }}>
+                      {spotlightTitle}
+                    </h2>
+                  </div>
+                </div>
+                {spotlightSubtitle && (
+                  <p className="mt-3 text-xs leading-relaxed text-amber-200/90">{spotlightSubtitle}</p>
+                )}
                 <div
                   className="prose prose-invert mt-4 max-w-none text-sm leading-relaxed text-slate-300"
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? spotlight.content_fa : spotlight.content_en) }}
                 />
+                {/* Effect 079: Interactive Particle Text Wordmark */}
+                <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/60 px-3 py-1">
+                  <ParticleTextEffect
+                    text={language === 'en' ? companyTitle : 'PARS POOLAD'}
+                    color="#fbbf24"
+                    height={76}
+                  />
+                </div>
               </div>
               <div className="flex flex-wrap gap-3">
                 {typeof spotlight.metadata?.primary_link === 'string' && (
-                  <Link to={spotlight.metadata.primary_link} className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap">
+                  <EffectAction
+                    as={Link}
+                    to={spotlight.metadata.primary_link}
+                    className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
+                  >
                     {String(spotlight.metadata[language === 'fa' ? 'primary_label_fa' : 'primary_label_en'] || '')}
-                  </Link>
+                  </EffectAction>
                 )}
                 {typeof spotlight.metadata?.secondary_link === 'string' && (
                   <Link to={spotlight.metadata.secondary_link} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10 whitespace-nowrap">
@@ -169,14 +224,21 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 lg:col-span-6">
-              {[spotlight.metadata?.image_url, spotlight.metadata?.secondary_image_url]
-                .filter((image): image is string => typeof image === 'string' && image.length > 0)
-                .map((image) => (
-                  <div key={image} className="overflow-hidden rounded-xl border border-white/10">
-                    <ZeroBrokenImage src={image} alt={spotlight.title_fa} className="h-full min-h-55 w-full object-cover" />
-                  </div>
-                ))}
+            <div className="flex flex-col gap-4 lg:col-span-6">
+              {spotlightImages.length > 0 && (
+                <div className="relative min-h-64 flex-1 overflow-hidden rounded-2xl border border-white/10">
+                  <CssSlideshowEffect images={spotlightImages} intervalPerSlideSeconds={5} />
+                </div>
+              )}
+              {spotlightImages.length > 1 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {spotlightImages.map((image) => (
+                    <div key={image} className="h-24 overflow-hidden rounded-xl border border-white/10">
+                      <EffectImage src={image} alt={spotlightTitle} className="h-full w-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -241,7 +303,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Rotating Partners & Clients Strip */}
+      {/* Effect 067: Infinite Brand Partners Strip */}
       {partners.length > 0 && (
         <Reveal>
           <section className="overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
@@ -252,27 +314,15 @@ export const HomePage: React.FC = () => {
               </h2>
             </div>
 
-            <div className="relative overflow-hidden">
-              <EffectMarquee
-                animated={!shouldReduceMotion && partners.length > 1}
-                className="items-center gap-10 px-4"
-              >
-                {marqueePartners.map((partner, idx) => (
-                  <div
-                    key={`${partner.id}-${idx}`}
-                    className="group flex h-24 w-48 shrink-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/40"
-                  >
-                    <EffectImage
-                      src={partner.logo_url}
-                      alt={partner.name_fa}
-                      className="h-11 max-w-35 object-contain"
-                    />
-                    <span className="max-w-full truncate text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                      {language === 'fa' ? partner.name_fa : partner.name_en}
-                    </span>
-                  </div>
-                ))}
-              </EffectMarquee>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <InfiniteBrandSlider
+                items={partners.map((partner) => ({
+                  id: partner.id,
+                  name: language === 'fa' ? partner.name_fa : partner.name_en,
+                  logoUrl: partner.logo_url,
+                  sector: partner.sector_fa,
+                }))}
+              />
             </div>
           </section>
         </Reveal>

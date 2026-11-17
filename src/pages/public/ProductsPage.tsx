@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Layers } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Product } from '../../types/index.ts';
@@ -7,6 +7,7 @@ import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { AnimatedTabsEffect } from '../../components/effects/index.ts';
 
 export const ProductsPage: React.FC = () => {
   const { language, addToast } = useAppStore();
@@ -35,7 +36,7 @@ export const ProductsPage: React.FC = () => {
 
   const categories = useMemo(() => {
     return [
-      { value: '', label: 'همه دسته‌های تجهیزاتی' },
+      { value: '', label: language === 'fa' ? 'همه دسته‌های تجهیزاتی' : 'All Categories' },
       ...categoryFilters.map((category) => ({
         value: language === 'fa' ? category.category_fa : category.category_en,
         label: language === 'fa' ? category.category_fa : category.category_en,
@@ -47,8 +48,22 @@ export const ProductsPage: React.FC = () => {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <CmsPageIntro slug="products" />
 
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div className="w-full sm:w-72">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="overflow-x-auto pb-1">
+          <AnimatedTabsEffect
+            items={categories.map((cat) => ({
+              id: cat.value,
+              label: cat.label,
+              icon: <Layers className="h-3.5 w-3.5" />,
+            }))}
+            activeId={catFilter}
+            onChange={(next) => {
+              setCatFilter(next);
+              setPage(1);
+            }}
+          />
+        </div>
+        <div className="w-full shrink-0 sm:w-64">
           <SearchableSelect
             options={categories}
             value={catFilter}
@@ -56,7 +71,7 @@ export const ProductsPage: React.FC = () => {
               setCatFilter(value);
               setPage(1);
             }}
-            placeholder="فیلتر بر اساس دسته فنی..."
+            placeholder={language === 'fa' ? 'فیلتر بر اساس دسته فنی...' : 'Filter by category...'}
             allowClear
           />
         </div>

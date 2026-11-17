@@ -410,6 +410,116 @@ export interface ActivityLog {
   created_at: string;
 }
 
+export type FontFamilyKey =
+  | 'vazirmatn'
+  | 'ibm-plex-arabic'
+  | 'noto-naskh'
+  | 'lalezar'
+  | 'plus-jakarta'
+  | 'jetbrains-mono';
+
+export interface LoginPageSettings {
+  badge_text_fa: string;
+  badge_text_en: string;
+  title_fa: string;
+  title_en: string;
+  subtitle_fa: string;
+  subtitle_en: string;
+  two_factor_title_fa: string;
+  two_factor_title_en: string;
+  two_factor_hint_fa: string;
+  two_factor_hint_en: string;
+  email_label_fa: string;
+  email_label_en: string;
+  email_placeholder_fa: string;
+  email_placeholder_en: string;
+  password_label_fa: string;
+  password_label_en: string;
+  password_placeholder_fa: string;
+  password_placeholder_en: string;
+  captcha_label_fa: string;
+  captcha_label_en: string;
+  submit_text_fa: string;
+  submit_text_en: string;
+  two_factor_submit_fa: string;
+  two_factor_submit_en: string;
+  register_cta_fa: string;
+  register_cta_en: string;
+  back_home_fa: string;
+  back_home_en: string;
+  register_title_fa: string;
+  register_title_en: string;
+  register_subtitle_fa: string;
+  register_subtitle_en: string;
+  register_name_label_fa: string;
+  register_name_label_en: string;
+  register_phone_label_fa: string;
+  register_phone_label_en: string;
+  register_submit_fa: string;
+  register_submit_en: string;
+  login_cta_fa: string;
+  login_cta_en: string;
+  badge_icon: string;
+  email_icon: string;
+  password_icon: string;
+  captcha_icon: string;
+  submit_icon: string;
+  register_icon: string;
+  two_factor_icon: string;
+  back_icon: string;
+  card_bg_color: string;
+  backdrop_color: string;
+  accent_color: string;
+  text_color: string;
+  input_bg_color: string;
+  enable_3d_flip: boolean;
+  show_decorative_cube: boolean;
+  enable_particles: boolean;
+  enable_bg_slideshow: boolean;
+}
+
+export interface BrandLogosSettings {
+  navbar: string;
+  footer: string;
+  admin_sidebar: string;
+  login: string;
+  register: string;
+  preloader: string;
+  about: string;
+  favicon: string;
+  seo_share: string;
+}
+
+export type LogoPlacement = keyof BrandLogosSettings;
+
+export interface AppearanceSettings {
+  font_site: FontFamilyKey;
+  font_site_heading: FontFamilyKey;
+  font_landing: FontFamilyKey;
+  font_landing_heading: FontFamilyKey;
+  font_login: FontFamilyKey;
+  font_login_heading: FontFamilyKey;
+  font_admin: FontFamilyKey;
+  font_admin_heading: FontFamilyKey;
+  font_navbar: FontFamilyKey;
+  font_footer: FontFamilyKey;
+  base_font_size: number;
+}
+
+export interface PageOverrideEntry {
+  badge_fa?: string;
+  badge_en?: string;
+  title_fa?: string;
+  title_en?: string;
+  subtitle_fa?: string;
+  subtitle_en?: string;
+  cta_fa?: string;
+  cta_en?: string;
+  logo_url?: string;
+}
+
+export type PagesConfigSettings = Record<string, PageOverrideEntry>;
+
 export interface SiteSettings {
   company: {
     name_fa: string;
@@ -482,4 +592,8 @@ export interface SiteSettings {
     info_bar_enabled?: boolean;
     info_bar_phone?: string;
   };
+  login?: Partial<LoginPageSettings>;
+  logos?: Partial<BrandLogosSettings>;
+  appearance?: Partial<AppearanceSettings>;
+  pages_config?: PagesConfigSettings;
 }

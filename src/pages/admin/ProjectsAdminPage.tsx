@@ -6,10 +6,11 @@ import type { Project, ProjectCategory, ProjectStatus } from '../../types/index.
 import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
-import { FileUploader } from '../../components/ui/FileUploader.tsx';
+import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
+import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { z } from 'zod';
 
 const projectFormSchema = z.object({
@@ -140,7 +141,19 @@ export const ProjectsAdminPage: React.FC = () => {
   };
 
   const cols: Column<Project>[] = [
-    { key: 'title', header: 'عنوان پروژه', sortValue: (p) => p.title_fa, render: (p) => <span className="font-semibold">{p.title_fa}</span> },
+    {
+      key: 'title',
+      header: 'عنوان پروژه',
+      sortValue: (p) => p.title_fa,
+      render: (p) => (
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-12 shrink-0 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800">
+            <ZeroBrokenImage src={p.cover_image} alt={p.title_fa} className="h-full w-full object-cover" />
+          </div>
+          <span className="font-semibold">{p.title_fa}</span>
+        </div>
+      ),
+    },
     { key: 'client', header: 'کارفرما', render: (p) => <span>{p.client_name_fa}</span> },
     { key: 'contract', header: 'شماره قرارداد', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
     { key: 'year', header: 'سال', sortValue: (p) => p.year, render: (p) => <span>{p.year}</span> },
@@ -249,7 +262,13 @@ export const ProjectsAdminPage: React.FC = () => {
               <label className="mb-1 block text-xs font-medium">خلاصه و شرح فنی</label>
               <textarea rows={3} value={editing.summary_fa || ''} onChange={(e) => setEditing({ ...editing, summary_fa: e.target.value, description_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
             </div>
-            <FileUploader folder="projects" label="آپلود تصویر کاور یا مدرک فنی پروژه" onUploaded={(url) => setEditing({ ...editing, cover_image: url })} />
+            <MediaUrlField
+              label="تصویر کاور یا مدرک فنی پروژه"
+              value={editing.cover_image || ''}
+              onChange={(url) => setEditing({ ...editing, cover_image: url })}
+              folder="projects"
+              placeholder="/storage/hero/hero-rig.jpg"
+            />
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold dark:border-slate-700">انصراف</button>
               <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="rounded-lg px-5 py-2 text-xs font-semibold text-white">ذخیره پروژه</button>

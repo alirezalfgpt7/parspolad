@@ -1,0 +1,141 @@
+/* 063 - 3D Rotating Text Controller */
+.effect-3d-text-stage {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.effect-3d-text-scene {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  perspective: 1000px;
+  vertical-align: middle;
+}
+
+.effect-rotating-text-3d {
+  display: inline-block;
+  transform-style: preserve-3d;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-shadow:
+    1px 1px 0 rgb(15 23 42 / 0.25),
+    2px 2px 0 rgb(15 23 42 / 0.22),
+    3px 3px 0 rgb(15 23 42 / 0.18),
+    4px 4px 10px rgb(0 0 0 / 0.24);
+  animation-duration: 580ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+}
+
+.effect-rotating-text-3d[data-mode="combined"] {
+  animation-name: effect-rotate3d-combined;
+}
+
+.effect-rotating-text-3d[data-mode="rotate-x"] {
+  animation-name: effect-rotate3d-x;
+}
+
+.effect-rotating-text-3d[data-mode="rotate-y"] {
+  animation-name: effect-rotate3d-y;
+}
+
+.effect-rotating-text-3d[data-mode="rotate-z"] {
+  animation-name: effect-rotate3d-z;
+}
+
+.effect-rotating-text-3d[data-mode="wobble"] {
+  animation-name: effect-rotate3d-wobble;
+}
+
+.effect-3d-controller-bar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(15 23 42 / 0.45);
+  padding: 0.25rem;
+  backdrop-filter: blur(10px);
+}
+
+.effect-3d-controller-btn {
+  border-radius: 0.45rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgb(226 232 240 / 0.85);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.effect-3d-controller-btn[data-active="true"] {
+  background: var(--theme-primary);
+  color: #ffffff;
+}
+
+@keyframes effect-rotate3d-combined {
+  from {
+    opacity: 0;
+    transform: rotateX(-52deg) rotateY(-24deg) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0) rotateY(0) translateY(0);
+  }
+}
+
+@keyframes effect-rotate3d-x {
+  from {
+    opacity: 0;
+    transform: rotateX(-90deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0);
+  }
+}
+
+@keyframes effect-rotate3d-y {
+  from {
+    opacity: 0;
+    transform: rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotateY(0);
+  }
+}
+
+@keyframes effect-rotate3d-z {
+  from {
+    opacity: 0;
+    transform: rotateZ(-14deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: rotateZ(0) scale(1);
+  }
+}
+
+@keyframes effect-rotate3d-wobble {
+  0% {
+    opacity: 0;
+    transform: rotateX(24deg) rotateY(-18deg);
+  }
+  45% {
+    opacity: 1;
+    transform: rotateX(-12deg) rotateY(14deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0) rotateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .effect-rotating-text-3d {
+    animation: none;
+  }
+}

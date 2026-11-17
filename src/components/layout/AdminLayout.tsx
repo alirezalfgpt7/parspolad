@@ -9,10 +9,29 @@ export const AdminLayout: React.FC = () => {
   const { user, logout, language, setLanguage, colorMode, toggleColorMode } = useAppStore();
   const [mini, setMini] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [dockOpposite, setDockOpposite] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('ppa_admin_dock') === 'opposite';
+    } catch {
+      return false;
+    }
+  });
   const location = useLocation();
   const navigate = useNavigate();
 
   const currentItem = adminNavItems.find((item) => item.to === location.pathname) || adminNavItems[0];
+
+  const handleToggleDock = () => {
+    setDockOpposite((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('ppa_admin_dock', next ? 'opposite' : 'default');
+      } catch {
+        // ignore storage errors
+      }
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -22,6 +41,7 @@ export const AdminLayout: React.FC = () => {
   return (
     <div
       className="admin-shell flex h-dvh min-h-0 overflow-hidden"
+      data-sidebar-dock={dockOpposite ? 'opposite' : 'default'}
       style={{ backgroundColor: 'var(--theme-bg)', color: 'var(--theme-text)' }}
     >
       {mobileOpen && (
@@ -38,7 +58,9 @@ export const AdminLayout: React.FC = () => {
         colorMode={colorMode}
         mini={mini}
         mobileOpen={mobileOpen}
+        dockOpposite={dockOpposite}
         onToggleMini={() => setMini((current) => !current)}
+        onToggleDock={handleToggleDock}
         onToggleColorMode={toggleColorMode}
         onCloseMobile={() => setMobileOpen(false)}
         onLogout={handleLogout}
