@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Professional Sidebar</title>
+
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <aside class="sidebar" id="sidebar">
+
+        <!-- ================= HEADER ================= -->
+        <div class="sidebar-header">
+
+            <div class="profile">
+                <div class="profile-image">
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </div>
+
+                <div class="profile-info sidebar-text">
+                    <span class="profile-name">John Who</span>
+                    <span class="profile-role">Web Developer</span>
+                </div>
+            </div>
+
+            <button
+                class="collapse-btn"
+                id="collapseBtn"
+                type="button"
+                aria-label="Collapse sidebar"
+            >
+                <i class="bx bx-chevron-left"></i>
+            </button>
+
+        </div>
+
+
+        <!-- ================= BODY ================= -->
+        <div class="sidebar-body">
+
+            <!-- Search -->
+            <div class="search-box">
+                <i class="bx bx-search"></i>
+
+                <input
+                    type="search"
+                    placeholder="Search..."
+                    aria-label="Search"
+                >
+            </div>
+
+
+            <!-- Navigation -->
+            <nav class="navigation">
+
+                <ul class="menu-list">
+
+                    <!-- Dashboard -->
+                    <li class="menu-item active">
+                        <a href="#" class="menu-link">
+                            <span class="menu-icon">
+                                <i class="bx bx-grid-alt"></i>
+                            </span>
+
+                            <span class="menu-title sidebar-text">
+                                Dashboard
+                            </span>
+                        </a>
+                    </li>
+
+
+                    <!-- Analytics -->
+                    <li class="menu-item has-submenu">
+
+                        <button
+                            class="menu-link submenu-trigger"
+                            type="button"
+                        >
+                            <span class="menu-icon">
+                                <i class="bx bx-pie-chart-alt-2"></i>
+                            </span>
+
+                            <span class="menu-title sidebar-text">
+                                Analytics
+                            </span>
+
+                            <span class="submenu-arrow sidebar-text">
+                                <i class="bx bx-chevron-down"></i>
+                            </span>
+                        </button>
+
+                        <div class="submenu-wrapper">
+                            <ul class="submenu">
+
+                                <li>
+                                    <a href="#">
+                                        <span class="submenu-dot"></span>
+                                        Overview
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#">
+                                        <span class="submenu-dot"></span>
+                                        Reports
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#">
+                                        <span class="submenu-dot"></span>
+                                        Statistics
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+
+                    </li>
+
+
+                    <!-- Notifications -->
+                    <li class="menu-item">
+
+                        <a href="#" class="menu-link">
+
+                            <span class="menu-icon">
+                                <i class="bx bx-bell"></i>
+                            </span>
+
+                            <span class="menu-title sidebar-text">
+                                Notifications
+                            </span>
+
+                            <span class="menu-badge sidebar-text">
+                                8
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- Likes -->
+                    <li class="menu-item">
+
+                        <a href="#" class="menu-link">
+
+                            <span class="menu-icon">
+                                <i class="bx bx-heart"></i>
+                            </span>
+
+                            <span class="menu-title sidebar-text">
+                                Likes
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- Messages -->
+                    <li class="menu-item">
+
+                        <a href="#" class="menu-link">
+
+                            <span class="menu-icon">
+                                <i class="bx bx-message-rounded-dots"></i>
+                            </span>
+
+                            <span class="menu-title sidebar-text">
+                                Messages
+                            </span>
+
+                        </a>
+
+                    </li>
+
+
+                    <!-- Settings -->
+                    <li class="menu-item has-submenu">
+
+                        <button
+                            class="menu-link submenu-trigger"
+                            type="button"
+                        >
+
+                            <span class="menu-icon">
+                                <i class="bx bx-cog"></i>
+                            </span>
+
+                            <span class="menu-title sidebar-text">
+                                Settings
+                            </span>
+
+                            <span class="submenu-arrow sidebar-text">
+                                <i class="bx bx-chevron-down"></i>
+                            </span>
+
+                        </button>
+
+                        <div class="submenu-wrapper">
+
+                            <ul class="submenu">
+
+                                <li>
+                                    <a href="#">
+                                        <span class="submenu-dot"></span>
+                                        Account
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#">
+                                        <span class="submenu-dot"></span>
+                                        Security
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#">
+                                        <span class="submenu-dot"></span>
+                                        Preferences
+                                    </a>
+                                </li>
+
+                            </ul>
+
+                        </div>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+
+        <!-- ================= FOOTER ================= -->
+        <div class="sidebar-footer">
+
+            <!-- Sidebar Position -->
+            <button
+                class="footer-item"
+                id="positionBtn"
+                type="button"
+            >
+
+                <span class="menu-icon">
+                    <i class="bx bx-horizontal-left"></i>
+                </span>
+
+                <span class="sidebar-text">
+                    Move to Right
+                </span>
+
+            </button>
+
+
+            <!-- Dark Mode -->
+            <button
+                class="footer-item theme-item"
+                id="themeBtn"
+                type="button"
+            >
+
+                <span class="menu-icon theme-icon">
+                    <i class="bx bx-moon"></i>
+                </span>
+
+                <span class="sidebar-text theme-label">
+                    Dark Mode
+                </span>
+
+                <span class="theme-switch sidebar-text">
+                    <span class="theme-switch-circle"></span>
+                </span>
+
+            </button>
+
+
+            <!-- Logout -->
+            <a href="#" class="footer-item logout">
+
+                <span class="menu-icon">
+                    <i class="bx bx-log-out"></i>
+                </span>
+
+                <span class="sidebar-text">
+                    Logout
+                </span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="main-content">
+
+        <div class="content-card">
+
+            <span class="content-label">
+                Dashboard
+            </span>
+
+            <h1>
+                Welcome back, John.
+            </h1>
+
+            <p>
+                Your workspace is ready. Use the navigation sidebar
+                to access analytics, notifications, messages and settings.
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>

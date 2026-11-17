@@ -1,0 +1,106 @@
+/* تنظیمات کلی صفحه */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#openBtn {
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+#openBtn:hover {
+    background-color: #0056b3;
+}
+
+/* =========================================
+   استایل مودال (کد اصلی با اصلاحات)
+   ========================================= */
+#modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    
+    /* 
+       حالت اولیه (بسته و کوچک):
+       به جای display: none از visibility: hidden استفاده می‌کنیم
+       تا بتوانیم انیمیشن را روی آن اجرا کنیم.
+    */
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+    
+    z-index: 1000;
+    width: 350px;
+    
+    padding: 20px 30px;
+    color: #444;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 5px;
+    
+    /* 
+       انیمیشن فنری (انفجار):
+       از منحنی cubic-bezier استفاده می‌کنیم که باعث می‌شود مودال
+       در حین باز شدن کمی از اندازه طبیعی خود بزرگ‌تر شود.
+    */
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* کلاسی که با جاوااسکریپت برای نمایش مودال اضافه می‌شود */
+#modal.show {
+    visibility: visible;
+    opacity: 1;
+    /* رسیدن به مقیاس کامل (باز شدن با انفجار) */
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* استایل دکمه بستن (X) */
+#closeBtn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+#closeBtn:hover {
+    color: #ff4757;
+}
+
+/* استایل دکمه Okay */
+#okayBtn {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background-color: #8ab4f8;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#okayBtn:hover {
+    background-color: #6a9bdf;
+}
+
+/* =========================================
+   ریسپانسیو (کد داخل تصویر)
+   ========================================= */
+@media screen and (max-width: 480px) {
+    #modal {
+        padding: 10px 15px;
+        width: 90%;
+    }
+}

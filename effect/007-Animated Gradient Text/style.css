@@ -1,0 +1,44 @@
+/* استایل‌های اضافی برای وسط چین کردن در صفحه و زیبایی */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #121212; /* پس‌زمینه تیره برای نمایش بهتر رنگ‌ها */
+    font-family: Arial, sans-serif;
+}
+
+/* --- کدهای اصلی تصویر از اینجا شروع می‌شود --- */
+
+h1 {
+    font-size: 5rem;
+    
+    /* ایجاد گرادیانت رنگی از چپ به راست با ۴ رنگ متفاوت */
+    background: linear-gradient(to right, #fff 20%, #65C7F7 40%, #0052D4 60%, #fff 80%);
+    
+    /* اندازه پس‌زمینه را ۲ برابر می‌کنیم تا فضای کافی برای حرکت داشته باشد */
+    background-size: 200% auto;
+    
+    /* رنگ متن را مشکی می‌کنیم (البته در مراحل بعد نامرئی می‌شود) */
+    color: #000;
+    
+    /* این دستور جادویی باعث می‌شود پس‌زمینه فقط داخل حروف متن دیده شود */
+    background-clip: text;
+    -webkit-background-clip: text;
+    
+    /* متن اصلی را شفاف می‌کنیم تا فقط پس‌زمینه (گرادیانت) دیده شود */
+    text-fill-color: transparent;
+    -webkit-text-fill-color: transparent;
+    
+    /* فراخوانی انیمیشن: نام انیمیشن animate، مدت زمان 2 ثانیه، حرکت خطی و بی‌نهایت */
+    animation: animate 2s linear infinite;
+}
+
+/* تعریف کی‌فریم‌های انیمیشن */
+@keyframes animate {
+    to {
+        /* پس‌زمینه را از موقعیت اول به موقعیت ۲۰۰ درصد می‌برد تا حرکت ایجاد شود */
+        background-position: 200% center;
+    }
+}

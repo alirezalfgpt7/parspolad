@@ -1,0 +1,17 @@
+/* استایل‌دهی به کانتینر نمودار */
+#chart {
+    max-width: 650px;
+    margin: 35px auto; /* وسط‌چین کردن نمودار در صفحه */
+    
+    /* استایل‌های اضافی برای زیبایی */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* پس‌زمینه صفحه */
+body {
+    background-color: #f4f4f9;
+    font-family: sans-serif;
+}

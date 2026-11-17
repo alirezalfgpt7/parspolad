@@ -1,0 +1,104 @@
+/* =========================================
+   تعریف متغیرهای انیمیت‌پذیر (کد اصلی تصویر)
+   ========================================= */
+@property --hue {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+}
+
+@property --rotate {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+}
+
+/* =========================================
+   استایل‌های صفحه
+   ========================================= */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #050505; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+/* =========================================
+   استایل دکمه
+   ========================================= */
+.glow-button {
+    position: relative;
+    padding: 30px 50px;
+    border-radius: 20px;
+    background: #111; /* پس‌زمینه دکمه */
+    color: #fff;
+    font-size: 22px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* 
+       نکته مهم: overflow: hidden را حذف کردیم تا هاله بیرون بزند و دیده شود.
+       به جای آن از z-index استفاده می‌کنیم.
+    */
+    z-index: 1;
+}
+
+/* لایه نورانی پشت دکمه */
+.glow {
+    position: absolute;
+    /* لایه نورانی را کمی بزرگتر از دکمه می‌کنیم تا دور آن را بگیرد */
+    inset: -4px; 
+    border-radius: 24px;
+    
+    /* گرادیانت مخروطی برای ایجاد نور */
+    background: conic-gradient(
+        from calc(var(--rotate) * 1deg),
+        transparent 0deg,
+        transparent 90deg,
+        hsl(calc(var(--hue) * 1deg), 100%, 50%) 180deg,
+        transparent 270deg
+    );
+    
+    /* لایه نورانی پشت دکمه قرار می‌گیرد */
+    z-index: -1; 
+    
+    /* ایجاد افکت درخشش با محو کردن لبه‌ها */
+    filter: blur(20px); 
+    
+    /* انیمیشن‌ها */
+    animation: rotate-glow 4s linear infinite, change-hue 4s linear infinite;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+}
+
+.rc {
+    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-right: 8px;
+}
+
+/* =========================================
+   تعریف انیمیشن‌ها
+   ========================================= */
+
+@keyframes rotate-glow {
+    from { --rotate: 0; }
+    to { --rotate: 360; }
+}
+
+@keyframes change-hue {
+    from { --hue: 0; }
+    to { --hue: 360; }
+}

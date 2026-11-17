@@ -1,0 +1,40 @@
+/* استایل‌های اضافی برای قرار دادن دکمه در وسط صفحه (خارج از کد اصلی تصویر) */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f9; /* یک رنگ پس‌زمینه ملایم */
+}
+
+/* --- کدهای اصلی تصویر از اینجا شروع می‌شود --- */
+
+.shimmer-btn {
+    /* استایل‌های ظاهری دکمه */
+    background-color: hotpink;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4); /* سایه صورتی برای زیبایی */
+    
+    /* استایل‌های افکت درخشش */
+    background-image: linear-gradient(
+        -60deg,
+        transparent, transparent 40%,
+        #ffffff44 40%, #ffffff44 60%,
+        transparent 60%, transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    background-position-x: 150%;
+}
+
+.shimmer-btn:hover {
+    background-position-x: -150%;
+    transition: background-position-x 600ms;
+}

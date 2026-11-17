@@ -1,0 +1,43 @@
+/* استایل‌های کلی برای وسط‌چین کردن در صفحه */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e8f4f8; /* رنگ پس‌زمینه آبی روشن مشابه تصویر */
+    font-family: sans-serif;
+}
+
+/* کانتینر برای نگه داشتن کارت‌ها کنار هم */
+.container {
+    display: flex;
+    padding-left: 10em; /* فضای خالی در سمت چپ برای حرکت کارت‌ها */
+}
+
+/* --- کدهای اصلی تصویر از اینجا شروع می‌شود --- */
+
+.card {
+    /* استایل‌های ظاهری کارت */
+    background-color: white;
+    width: 150px;
+    height: 200px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    color: #555;
+    box-sizing: border-box;
+
+    /* استایل‌های افکت (طبق تصویر) */
+    margin-left: -10em; /* کارت‌ها را روی هم می‌اندازد */
+    transition: margin-left 200ms; /* باعث نرمی حرکت می‌شود */
+}
+
+/* وقتی روی هر کارت هاور می‌کنیم، کارتِ بعدیِ بلافاصله بعد از آن حرکت می‌کند */
+.card:hover + .card {
+    margin-left: -1em; /* فاصله را کم می‌کند تا کارت باز شود */
+}
+
+/* (اختیاری) اگر روی آخرین کارت هاور کنیم، کارت اول حرکت نمی‌کند 
+   چون در CSS انتخابگر "قبلی" وجود ندارد. اما این کدها دقیقا طبق تصویر نوشته شده‌اند. */

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light / Dark Mode Toggle</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- فراخوانی فونت Fredoka برای زیبایی متن‌ها -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- لیبل اصلی که با کلیک روی آن، وضعیت تغییر می‌کند -->
+    <label for="theme" class="theme">
+        <span>Light</span>
+        
+        <span class="theme__toggle-wrap">
+            <!-- چک باکس مخفی برای مدیریت وضعیت -->
+            <input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" value="dark">
+            
+            <!-- پس‌زمینه رنگی که در حالت تاریک حرکت می‌کند -->
+            <span class="theme__fill"></span>
+            
+            <!-- آیکون خورشید/ماه -->
+            <span class="theme__icon">
+                <!-- ۹ دایره کوچک که با چرخش، شکل ماه یا خورشید را می‌سازند -->
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+                <span class="theme__icon-part"></span>
+            </span>
+        </span>
+
+        <span>Dark</span>
+    </label>
+
+</body>
+</html>

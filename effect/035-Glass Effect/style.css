@@ -1,0 +1,51 @@
+/* =========================================
+   استایل‌های صفحه (پس‌زمینه رنگی برای دیده شدن شیشه)
+   ========================================= */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* استفاده از گرادیانت زیبا به جای عکس برای اطمینان از نمایش */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* اگر می‌خواهید از عکس استفاده کنید، می‌توانید خط بالا را پاک کرده 
+       و از کد زیر استفاده کنید (به شرطی که عکس لود شود):
+       background: url('آدرس-عکس-شما.jpg') no-repeat center center/cover; */
+}
+
+/* =========================================
+   کد اصلی افکت شیشه‌ای
+   ========================================= */
+.glass-box {
+    /* 1. رنگ پس‌زمینه سفید با شفافیت 30% */
+    background-color: rgba(255, 255, 255, 0.3);
+    
+    /* 2. محو کردن پس‌زمینه (این همان جادوی شیشه‌ای است) */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* برای پشتیبانی از مرورگر سافاری */
+
+    /* --- استایل‌های ظاهری جعبه --- */
+    padding: 50px 80px;
+    border-radius: 15px;
+    
+    /* لبه نازک سفید برای شبیه شدن به لبه شیشه */
+    border: 1px solid rgba(255, 255, 255, 0.5); 
+    
+    color: white;
+    text-align: center;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-box h2 {
+    margin: 0 0 10px 0;
+    font-family: sans-serif;
+    font-size: 28px;
+}
+
+.glass-box p {
+    margin: 0;
+    font-family: sans-serif;
+    opacity: 0.9;
+}

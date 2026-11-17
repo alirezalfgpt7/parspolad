@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Rotating Text Controller</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- فراخوانی فونت Unbounded -->
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- منوی کنترلی -->
+    <div class="controls">
+        <h3>Rotate Mode</h3>
+        <button class="active" data-anim="rotate-combined">Combined</button>
+        <button data-anim="rotate-x">Horizontal (X)</button>
+        <button data-anim="rotate-y">Vertical (Y)</button>
+        <button data-anim="rotate-z">Flat (Z)</button>
+        <button data-anim="rotate-wobble">Wobble</button>
+    </div>
+
+    <!-- صحنه سه‌بعدی -->
+    <div class="scene">
+        <div class="text-3d" id="3dText">
+            Hello World
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

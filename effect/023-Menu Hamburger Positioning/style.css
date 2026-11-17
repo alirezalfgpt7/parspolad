@@ -1,0 +1,115 @@
+/* --- استایل‌های پایه صفحه --- */
+body {
+    margin: 0;
+    height: 100vh;
+    background-color: #1a1a2e; /* رنگ پس‌زمینه */
+}
+
+/* =========================================
+   تنظیمات کانتینر و موقعیت‌دهی
+   ========================================= */
+.menu-container {
+    position: fixed; /* دکمه همیشه روی صفحه ثابت می‌ماند */
+    z-index: 1000;   /* برای اینکه روی سایر عناصر صفحه شناور باشد */
+}
+
+/* 
+   ==========================================================
+   کلاس‌های موقعیت‌دهی دکمه
+   نکته: عدد 20px فاصله دکمه از لبه‌های صفحه است. 
+   اگر می‌خواهید به لبه بچسبد، این اعداد را به 0 تغییر دهید.
+   ==========================================================
+*/
+
+/* بالا سمت راست */
+.pos-top-right {
+    top: 20px;
+    right: 20px;
+}
+
+/* بالا سمت چپ */
+.pos-top-left {
+    top: 20px;
+    left: 20px;
+}
+
+/* پایین سمت راست */
+.pos-bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+/* پایین سمت چپ */
+.pos-bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+/* دقیقاً وسط صفحه */
+.pos-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* =========================================
+   استایل‌های ظاهری دکمه (بدون نیاز به تغییر)
+   ========================================= */
+.input-checkbox {
+    display: none;
+}
+
+.nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background-color: #8b52cf;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative; 
+    box-shadow: 0 0 15px rgba(139, 82, 207, 0.5); 
+}
+
+.nav-button span::before,
+.nav-button span::after,
+.nav-button span {
+    background-color: #ffffff;
+    width: 32px;
+    height: 3px;
+    border-radius: 2px;
+    transition: 0.3s ease;
+    display: block;
+}
+
+.nav-button span::before,
+.nav-button span::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+}
+
+/* تنظیمات فاصله خطوط در حالت عادی */
+.nav-button span::before {
+    transform: translateY(-8px);
+}
+
+.nav-button span::after {
+    transform: translateY(8px);
+}
+
+/* تنظیمات حالت باز (تبدیل به ضربدر) */
+.input-checkbox:checked + .nav-button span {
+    background-color: transparent;
+}
+
+.input-checkbox:checked + .nav-button span::before {
+    transform: translateY(0) rotate(135deg);
+}
+
+.input-checkbox:checked + .nav-button span::after {
+    transform: translateY(0) rotate(-135deg);
+}

@@ -1,0 +1,71 @@
+/* =========================================
+   تنظیمات کلی صفحه
+   ========================================= */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #0d0d12; /* پس‌زمینه تیره مثل تصویر */
+    overflow: hidden;
+}
+
+/* =========================================
+   صحنه سه بعدی (Scene)
+   ========================================= */
+.scene {
+    width: 200px;
+    height: 200px;
+    /* عمق دید: هرچه کمتر باشد، افکت سه بعدی قوی‌تر است */
+    perspective: 600px; 
+}
+
+/* =========================================
+   مکعب اصلی
+   ========================================= */
+.cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    /* برای اینکه وجه‌ها روی هم تا نخورند */
+    transform-style: preserve-3d; 
+    /* انیمیشن چرخش */
+    animation: rotateCube 5s infinite linear;
+}
+
+/* =========================================
+   وجه‌های مکعب
+   ========================================= */
+.face {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    /* رنگ بنفش با افکت شیشه‌ای/براق */
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    /* گوشه‌های گرد برای شبیه شدن به تصویر */
+    border-radius: 20px; 
+    /* حاشیه داخلی روشن برای ایجاد افکت نور */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1), 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* چیدمان وجه‌ها در فضا با استفاده از transform */
+.front  { transform: translateZ(100px); }
+.back   { transform: rotateY(180deg) translateZ(100px); }
+.right  { transform: rotateY(90deg) translateZ(100px); }
+.left   { transform: rotateY(-90deg) translateZ(100px); }
+.top    { transform: rotateX(90deg) translateZ(100px); }
+.bottom { transform: rotateX(-90deg) translateZ(100px); }
+
+/* =========================================
+   انیمیشن چرخش مکعب
+   ========================================= */
+@keyframes rotateCube {
+    0% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+    }
+    100% {
+        transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
+    }
+}

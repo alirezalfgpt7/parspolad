@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Slideshow In CSS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="slides">
+        <!-- اسلاید اول -->
+        <div class="slide">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="slide-image">
+                <defs>
+                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#ff512f"/>
+                        <stop offset="100%" stop-color="#dd2476"/>
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" fill="url(#g1)"/>
+            </svg>
+        </div>
+
+        <!-- اسلاید دوم -->
+        <div class="slide slide-2">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="slide-image">
+                <defs>
+                    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#11998e"/>
+                        <stop offset="100%" stop-color="#38ef7d"/>
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" fill="url(#g2)"/>
+            </svg>
+        </div>
+
+        <!-- اسلاید سوم -->
+        <div class="slide slide-3">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="slide-image">
+                <defs>
+                    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#00c6ff"/>
+                        <stop offset="100%" stop-color="#0072ff"/>
+                    </linearGradient>
+                </defs>
+                <rect width="100" height="100" fill="url(#g3)"/>
+            </svg>
+        </div>
+    </div>
+
+</body>
+</html>

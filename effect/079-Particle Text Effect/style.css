@@ -1,0 +1,53 @@
+/* =========================================
+   تنظیمات کلی صفحه (طبق تصویر)
+   ========================================= */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #FFF;
+    position: relative;
+    overflow: hidden;
+    font-size: 100%;
+    text-align: center;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* کانتینر اصلی */
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* =========================================
+   استایل متن (که ذرات از روی آن الگو می‌گیرند)
+   ========================================= */
+.text {
+    font-size: 6rem;
+    font-weight: 700;
+    letter-spacing: 10px;
+    color: #000;
+    margin: 0;
+    position: absolute;
+    z-index: 1; /* زیر ذرات قرار می‌گیرد */
+    
+    /* 
+       نکته مهم: متن را نامرئی نمی‌کنیم، 
+       بلکه از آن به عنوان ماسک برای کانواس استفاده می‌کنیم.
+    */
+    opacity: 0; 
+}
+
+/* کانواس ذرات */
+#particle-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2; /* روی متن قرار می‌گیرد */
+}

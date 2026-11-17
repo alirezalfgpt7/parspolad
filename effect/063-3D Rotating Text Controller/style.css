@@ -1,0 +1,136 @@
+/* =========================================
+   تنظیمات کلی صفحه
+   ========================================= */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #2a2a40 0%, #0d0d12 100%);
+    font-family: 'Unbounded', sans-serif;
+    overflow: hidden;
+}
+
+/* =========================================
+   استایل منوی کنترلی (شیشه‌ای)
+   ========================================= */
+.controls {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.controls h3 {
+    color: #fff;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-family: sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.controls button {
+    padding: 10px 20px;
+    background: transparent;
+    color: #ccc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.controls button.active {
+    background: #8b5cf6; /* رنگ بنفش برای دکمه فعال */
+    color: #fff;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+/* =========================================
+   صحنه و متن سه‌بعدی
+   ========================================= */
+.scene {
+    perspective: 1000px; 
+}
+
+.text-3d {
+    font-size: 6rem;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    white-space: nowrap;
+    transform-style: preserve-3d;
+    
+    /* افکت حجم (سایه‌های زنجیره‌ای) */
+    text-shadow: 
+        1px 1px 0 #919191, 2px 2px 0 #919191,
+        3px 3px 0 #8a8a8a, 4px 4px 0 #8a8a8a,
+        5px 5px 0 #828282, 6px 6px 0 #828282,
+        7px 7px 0 #7b7b7b, 8px 8px 0 #7b7b7b,
+        9px 9px 0 #737373, 10px 10px 0 #737373,
+        11px 11px 0 #6c6c6c, 12px 12px 0 #6c6c6c,
+        13px 13px 0 #646464, 14px 14px 0 #646464,
+        15px 15px 20px rgba(0, 0, 0, 0.5);
+        
+    /* انیمیشن پیش‌فرض */
+    animation: rotate-combined 6s linear infinite;
+}
+
+/* =========================================
+   تعریف انیمیشن‌های مختلف
+   ========================================= */
+
+/* 1. ترکیبی (دور همه محورها) */
+@keyframes rotate-combined {
+    0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+    100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+}
+
+/* 2. افقی (دور محور X) */
+@keyframes rotate-x {
+    0% { transform: rotateX(0); }
+    100% { transform: rotateX(360deg); }
+}
+
+/* 3. عمودی (دور محور Y) */
+@keyframes rotate-y {
+    0% { transform: rotateY(0); }
+    100% { transform: rotateY(360deg); }
+}
+
+/* 4. مسطح (دور محور Z) */
+@keyframes rotate-z {
+    0% { transform: rotateZ(0); }
+    100% { transform: rotateZ(360deg); }
+}
+
+/* 5. لرزشی (ترکیبی با زاویه محدود) */
+@keyframes rotate-wobble {
+    0% { transform: rotateX(0) rotateY(0); }
+    25% { transform: rotateX(30deg) rotateY(20deg); }
+    50% { transform: rotateX(-20deg) rotateY(30deg); }
+    75% { transform: rotateX(20deg) rotateY(-20deg); }
+    100% { transform: rotateX(0) rotateY(0); }
+}

@@ -1,0 +1,63 @@
+/* --- تنظیمات کلی صفحه برای وسط‌چین کردن --- */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a; /* پس‌زمینه تیره */
+    font-family: sans-serif;
+}
+
+/* =========================================
+   کدهای اصلی تصویر از اینجا شروع می‌شود
+   ========================================= */
+
+.search {
+    padding: 10px;
+    color: #eee;
+    /* رنگ گرادیانت طبق تصویر */
+    background: linear-gradient(to bottom right, #81227A, #429AEE);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    /* برای اینکه تغییر اندازه به نرمی انجام شود */
+    transition: all 0.5s ease; 
+}
+
+.search :is(input, button) {
+    color: inherit;
+    border: none;
+    background: transparent;
+    outline: none;
+}
+
+.search__input {
+    width: 0; /* در حالت عادی عرض صفر است (مخفی) */
+    transition: width .5s; /* انیمیشن باز شدن */
+    font-size: 16px;
+}
+
+.search__btn {
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 20px; /* برای بزرگتر شدن آیکون */
+}
+
+/* =========================================
+   حالت فوکوس (وقتی روی کادر کلیک می‌شود)
+   ========================================= */
+
+/* وقتی داخل فرم فوکوس شد، عرض اینپوت به ۲۰۰ پیکسل افزایش می‌یابد */
+.search:focus-within input {
+    width: 200px; 
+    padding-right: 10px; /* کمی فاصله از آیکون */
+}
+
+::placeholder {
+    color: inherit;
+    opacity: 0.8; /* کمی شفاف برای زیبایی */
+}
