@@ -89,3 +89,28 @@ it('denies administrator endpoints to users without the required permissions', f
     $this->withToken($token)->getJson('/api/v1/admin/users')->assertForbidden();
     $this->withToken($token)->getJson('/api/v1/admin/settings')->assertForbidden();
 });
+
+it('persists company branding and prevents registration when disabled', function (): void {
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()
+        ->json('token');
+
+    $this->withToken($token)
+        ->putJson('/api/v1/admin/settings', [
+            'company' => [
+                'name_fa' => 'شرکت آزمایشی',
+                'logo_url' => '/storage/logos/test-logo.png',
+            ],
+            'site' => ['allow_registration' => false],
+        ])
+        ->assertOk();
+
+    $this->withToken($token)
+        ->getJson('/api/v1/admin/settings')
+        ->assertOk()
+        ->assertJsonPath('data.company.name_fa', 'شرکت آزمایشی')
+        ->assertJsonPath('data.company.logo_url', '/storage/logos/test-logo.png')
+        ->assertJsonPath('data.site.allow_registration', false);
+
+    $this->postJson('/api/v1/auth/register', [])->assertForbidden();
+});

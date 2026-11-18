@@ -363,6 +363,20 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
               <h2 className="mb-4 text-sm font-extrabold">متون صفحه ورود و احراز هویت دوعاملی (FA / EN)</h2>
               <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-xs font-medium dark:border-slate-700 sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={siteSettings?.site.allow_registration ?? true}
+                    onChange={(event) => {
+                      if (!siteSettings) return;
+                      setSiteSettings({
+                        ...siteSettings,
+                        site: { ...siteSettings.site, allow_registration: event.target.checked },
+                      });
+                    }}
+                  />
+                  <span>فعال‌بودن ثبت‌نام عمومی (در صورت غیرفعال‌سازی، لینک ورود و مسیر مستقیم ثبت‌نام بسته می‌شود)</span>
+                </label>
                 <TextField label="برچسب امنیتی (فارسی)" value={loginCfg.badge_text_fa} onChange={(v) => setLoginCfg({ ...loginCfg, badge_text_fa: v })} />
                 <TextField label="Badge Text (EN)" dir="ltr" value={loginCfg.badge_text_en} onChange={(v) => setLoginCfg({ ...loginCfg, badge_text_en: v })} />
                 <TextField label="تیتر ورود (فارسی)" value={loginCfg.title_fa} onChange={(v) => setLoginCfg({ ...loginCfg, title_fa: v })} />

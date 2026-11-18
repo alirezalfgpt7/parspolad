@@ -146,6 +146,7 @@ describe('effect primitives & standalone effects', () => {
         <Win11BootSpinnerEffect />
         <InfiniteBrandSlider items={[{ id: 1, name: 'شرکت نفت', logoUrl: '/storage/logos/logo-main.png' }]} />
         <BrandLogo overrideUrl="/storage/videos/logo-3d.mp4" alt="لوگوی متحرک" />
+        <BrandLogo placement="admin_sidebar" overrideUrl="/storage/videos/logo-3d.mp4" alt="لوگوی سایدبار" />
         <BrandLogo placement="about" alt="لوگوی صفحه درباره ما" />
       </div>
     );
@@ -163,6 +164,11 @@ describe('effect primitives & standalone effects', () => {
     );
     expect(aboutLogo).not.toBeNull();
     expect(aboutLogo?.style.filter).toMatch(/^url\("#.+\"\)$/);
+
+    const sidebarLogo = screen.getByLabelText('لوگوی سایدبار');
+    expect(sidebarLogo.classList.contains('scale-200')).toBe(true);
+    expect(sidebarLogo?.style.filter).toMatch(/^url\("#.+\"\)$/);
+    expect(sidebarLogo.parentElement?.classList.contains('bg-slate-950/70')).toBe(true);
 
     fireEvent.click(screen.getByRole('switch', { name: 'حالت' }));
     expect(onToggle).toHaveBeenCalledTimes(1);

@@ -30,6 +30,9 @@ it('persists public logo, social, contact bar, and SEO settings', function (): v
                 'info_bar_enabled' => false,
                 'info_bar_phone' => '09360000000',
             ],
+            'email' => [
+                'smtp_host' => '',
+            ],
         ])
         ->assertOk();
 

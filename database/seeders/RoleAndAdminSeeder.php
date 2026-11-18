@@ -70,7 +70,7 @@ class RoleAndAdminSeeder extends Seeder
         $superAdmin = User::query()->firstOrCreate(
             ['email' => $adminEmail],
             [
-                'name' => 'پرویز آقایی (مدیر ارشد سامانه)',
+                'name' => 'علیرضا لباف (مدیر ارشد سامانه)',
                 'phone' => '09161110001',
                 'password' => Hash::make($adminPass),
                 'is_active' => true,

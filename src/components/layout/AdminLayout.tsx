@@ -55,19 +55,14 @@ export const AdminLayout: React.FC = () => {
       <AdminSidebar
         user={user}
         language={language}
-        colorMode={colorMode}
         mini={mini}
         mobileOpen={mobileOpen}
-        dockOpposite={dockOpposite}
         onToggleMini={() => setMini((current) => !current)}
-        onToggleDock={handleToggleDock}
-        onToggleColorMode={toggleColorMode}
         onCloseMobile={() => setMobileOpen(false)}
-        onLogout={handleLogout}
       />
 
       {/* Main Content Area */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <AdminTopbar
           user={user}
           language={language}
@@ -77,9 +72,12 @@ export const AdminLayout: React.FC = () => {
           currentItem={currentItem}
           mobileSidebarOpen={mobileOpen}
           onToggleMobileSidebar={() => setMobileOpen((open) => !open)}
+          dockOpposite={dockOpposite}
+          onToggleDock={handleToggleDock}
+          onLogout={handleLogout}
         />
 
-        <main className="min-h-0 flex-1 p-4 sm:p-6">
+        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
           <PageTransition>
             <Outlet />
           </PageTransition>

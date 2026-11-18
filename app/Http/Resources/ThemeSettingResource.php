@@ -7,24 +7,57 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ThemeSettingResource extends JsonResource
 {
+    private const DEFAULT_PALETTE = [
+        'primary' => '#B91C1C',
+        'secondary' => '#1E293B',
+        'accent' => '#D97706',
+        'background' => '#F8FAFC',
+        'surface' => '#FFFFFF',
+        'text' => '#0F172A',
+        'headerBg' => '#FFFFFF',
+        'headerText' => '#0F172A',
+        'footerBg' => '#0F172A',
+        'footerText' => '#F8FAFC',
+        'buttonBg' => '#B91C1C',
+        'buttonText' => '#FFFFFF',
+        'link' => '#B91C1C',
+    ];
+
     public function toArray(Request $request): array
     {
+        $landingPalette = $this->normalizePalette($this->landing_palette);
+        $activePalette = $this->normalizePalette($this->active_palette, $landingPalette);
+        $adminPalette = $this->normalizePalette($this->admin_palette, $activePalette);
+
         return [
             'active_preset_slug' => $this->active_preset_slug,
             'default_mode' => $this->default_mode,
-            'active_palette' => $this->active_palette,
+            'active_palette' => $activePalette,
             'design_style' => $this->design_style,
             'button_shape' => $this->button_shape,
             'button_effect' => $this->button_effect ?? 'shimmer',
             'landing_theme_enabled' => (bool) $this->landing_theme_enabled,
-            'landing_palette' => $this->landing_palette,
+            'landing_palette' => $landingPalette,
             'landing_design_style' => $this->landing_design_style ?? $this->design_style,
             'landing_button_shape' => $this->landing_button_shape ?? $this->button_shape,
             'landing_button_effect' => $this->landing_button_effect ?? $this->button_effect ?? 'shimmer',
-            'admin_palette' => $this->admin_palette ?? $this->active_palette,
+            'admin_palette' => $adminPalette,
             'admin_design_style' => $this->admin_design_style ?? $this->design_style,
             'admin_button_shape' => $this->admin_button_shape ?? $this->button_shape,
             'admin_button_effect' => $this->admin_button_effect ?? $this->button_effect ?? 'shimmer',
         ];
+    }
+
+    private function normalizePalette(?array $palette, ?array $fallback = null): array
+    {
+        $palette = array_intersect_key($palette ?? [], self::DEFAULT_PALETTE);
+        $palette = array_filter(
+            $palette,
+            static fn ($value): bool => is_string($value)
+                && trim($value) !== ''
+                && strtolower(trim($value)) !== 'undefined',
+        );
+
+        return array_replace(self::DEFAULT_PALETTE, $fallback ?? [], $palette);
     }
 }

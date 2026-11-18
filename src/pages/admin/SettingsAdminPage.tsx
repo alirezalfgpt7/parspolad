@@ -13,6 +13,7 @@ import { EffectAction, EffectTabButton, EffectTabPanel } from '../../components/
 export const SettingsAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap, token } = useAppStore();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
+  const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
   const [smtpPassPlain, setSmtpPassPlain] = useState('');
   const [emailTestAddress, setEmailTestAddress] = useState('');
@@ -27,17 +28,76 @@ export const SettingsAdminPage: React.FC = () => {
 
   if (!settings) return <PagePreloader label="در حال دریافت تنظیمات..." />;
 
-  const saveAll = async () => {
-    await apiRequest('/admin/settings', {
-      method: 'PUT',
-      body: JSON.stringify({
-        ...settings,
-        email: { ...settings.email, smtp_password_plain: smtpPassPlain || undefined },
-        sms: { ...settings.sms, api_key_plain: smsKeyPlain || undefined },
-      }),
-    });
-    await fetchBootstrap();
-    addToast('success', 'تنظیمات متمرکز سامانه ذخیره و رمزنگاری شد.');
+  const saveCurrentTab = async () => {
+    if (tab === 'backup' || tab === 'partners') return;
+
+    const payload = (() => {
+      switch (tab) {
+        case 'company':
+          return { company: settings.company };
+        case 'social':
+          return {
+            company: {
+              instagram_url: settings.company.instagram_url,
+              linkedin_url: settings.company.linkedin_url,
+              aparat_url: settings.company.aparat_url,
+              telegram_url: settings.company.telegram_url,
+              whatsapp_url: settings.company.whatsapp_url,
+            },
+            site: {
+              info_bar_enabled: settings.site.info_bar_enabled,
+              info_bar_phone: settings.site.info_bar_phone,
+            },
+          };
+        case 'email':
+          return {
+            email: {
+              smtp_host: settings.email.smtp_host,
+              smtp_port: settings.email.smtp_port,
+              smtp_user: settings.email.smtp_user,
+              smtp_password_plain: smtpPassPlain || undefined,
+              from_address: settings.email.from_address,
+              from_name: settings.email.from_name,
+            },
+          };
+        case 'sms':
+          return {
+            sms: {
+              provider: settings.sms.provider,
+              sender_line: settings.sms.sender_line,
+              enabled: settings.sms.enabled,
+              api_key_plain: smsKeyPlain || undefined,
+            },
+          };
+        case 'map_seo':
+          return {
+            map: settings.map,
+            seo: settings.seo,
+            site: {
+              maintenance_mode: settings.site.maintenance_mode,
+              maintenance_message_fa: settings.site.maintenance_message_fa,
+              allow_registration: settings.site.allow_registration,
+              header_cta_text_fa: settings.site.header_cta_text_fa,
+              header_cta_text_en: settings.site.header_cta_text_en,
+              header_cta_url: settings.site.header_cta_url,
+            },
+        };
+      }
+    })();
+
+    setSaving(true);
+    try {
+      await apiRequest('/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      await fetchBootstrap();
+      addToast('success', 'تنظیمات این بخش با موفقیت ذخیره شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره تنظیمات ناموفق بود.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const testEmail = async () => {
@@ -95,15 +155,18 @@ export const SettingsAdminPage: React.FC = () => {
             </EffectTabButton>
           ))}
         </div>
-        <EffectAction
-          type="button"
-          onClick={saveAll}
-          style={{ backgroundColor: 'var(--theme-primary)' }}
-          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
-        >
-          <Save className="h-4 w-4" />
-          <span>ذخیره تنظیمات</span>
-        </EffectAction>
+        {tab !== 'backup' && tab !== 'partners' && (
+          <EffectAction
+            type="button"
+            onClick={saveCurrentTab}
+            disabled={saving}
+            style={{ backgroundColor: 'var(--theme-primary)' }}
+            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Save className="h-4 w-4" />
+            <span>{saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات همین تب'}</span>
+          </EffectAction>
+        )}
       </div>
 
       {tab === 'company' && (

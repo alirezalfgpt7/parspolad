@@ -1,7 +1,7 @@
 import React from 'react';
-import { Clapperboard, Instagram, Linkedin, MessageCircle, Phone, Search, Send } from 'lucide-react';
+import { Clapperboard, Instagram, Linkedin, MessageCircle, Moon, Phone, Search, Send, Sun } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
-import { ExpandingSearchEffect, ThemeModeToggle } from '../effects/index.ts';
+import { ExpandingSearchEffect } from '../effects/index.ts';
 
 const socialNetworks = [
   { key: 'instagram_url', label: 'Instagram', Icon: Instagram },
@@ -77,12 +77,15 @@ export const PublicInfoBar: React.FC = () => {
             >
               <Search className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
-            <ThemeModeToggle
-              dark={colorMode === 'dark'}
-              onToggle={toggleColorMode}
-              compact
-              label={language === 'fa' ? 'تغییر حالت روشن/تاریک' : 'Toggle light/dark mode'}
-            />
+            <button
+              type="button"
+              onClick={toggleColorMode}
+              className="effect-theme-toggle rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              title="تغییر تم"
+              aria-label="تغییر تم روشن و تیره"
+            >
+              {colorMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
             <button
               type="button"
               onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}

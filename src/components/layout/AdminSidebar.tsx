@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Activity,
-  ArrowLeftRight,
   Award,
   Bell,
   Building2,
@@ -14,11 +12,9 @@ import {
   Files,
   FolderKanban,
   HelpCircle,
-  Home,
   Image as ImageIcon,
   Layers,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
   Palette,
   Search,
@@ -29,12 +25,11 @@ import {
   UserCircle,
   type LucideIcon,
 } from 'lucide-react';
-import type { ColorMode, Language, User } from '../../types/index.ts';
+import type { Language, User } from '../../types/index.ts';
 import { cn } from '../../utils/i18n.ts';
 import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { useAppStore } from '../../store/useAppStore.ts';
-import { ThemeModeToggle } from '../effects/index.ts';
 import '../effects/ProResponsiveSidebar.css';
 
 export interface AdminNavItem {
@@ -111,29 +106,19 @@ export const adminNavItems = adminNavGroups.flatMap((group) => group.items);
 interface AdminSidebarProps {
   user: User | null;
   language: Language;
-  colorMode: ColorMode;
   mini: boolean;
   mobileOpen: boolean;
-  dockOpposite?: boolean;
   onToggleMini: () => void;
-  onToggleDock?: () => void;
-  onToggleColorMode: () => void;
   onCloseMobile: () => void;
-  onLogout: () => void;
 }
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   user,
   language,
-  colorMode,
   mini,
   mobileOpen,
-  dockOpposite = false,
   onToggleMini,
-  onToggleDock,
-  onToggleColorMode,
   onCloseMobile,
-  onLogout,
 }) => {
   const location = useLocation();
   const company = useAppStore((state) => state.bootstrap?.company);
@@ -227,7 +212,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <div className="admin-sidebar-brand">
           <Link to="/" className="admin-sidebar-brand-link" aria-label={companyName}>
             <span className="admin-sidebar-logo">
-              <BrandLogo placement="admin_sidebar" alt="" className="h-7 w-7" />
+              <BrandLogo placement="admin_sidebar" alt="" className="h-full w-full" />
             </span>
             {!mini && (
               <span className="admin-sidebar-brand-copy">
@@ -330,60 +315,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
       </nav>
 
-      <div className="admin-sidebar-footer">
-        <Link
-          to="/"
-          onClick={onCloseMobile}
-          title={mini ? 'بازگشت به وبسایت' : undefined}
-          aria-label={mini ? 'بازگشت به وبسایت' : undefined}
-          className="admin-sidebar-footer-action"
-        >
-          <Home className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-          {!mini && <span className="admin-sidebar-copy">{language === 'fa' ? 'بازگشت به وبسایت' : 'Back to Site'}</span>}
-        </Link>
-        {onToggleDock && (
-          <button
-            type="button"
-            onClick={onToggleDock}
-            title={mini ? (language === 'fa' ? 'جابه‌جایی چپ/راست سایدبار' : 'Move Sidebar') : undefined}
-            aria-label={language === 'fa' ? 'جابه‌جایی چپ/راست سایدبار' : 'Move Sidebar'}
-            className="admin-sidebar-footer-action hidden lg:flex"
-          >
-            <ArrowLeftRight className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            {!mini && (
-              <span className="admin-sidebar-copy">
-                {dockOpposite
-                  ? (language === 'fa' ? 'بازگشت سایدبار' : 'Default Dock')
-                  : (language === 'fa' ? 'انتقال چپ/راست' : 'Move Left/Right')}
-              </span>
-            )}
-          </button>
-        )}
-        <div className="admin-sidebar-footer-action !justify-between !py-1.5">
-          <ThemeModeToggle
-            dark={colorMode === 'dark'}
-            onToggle={onToggleColorMode}
-            compact={mini}
-            label={mini ? undefined : (colorMode === 'dark' ? (language === 'fa' ? 'حالت روشن' : 'Light Mode') : (language === 'fa' ? 'حالت تیره' : 'Dark Mode'))}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={onLogout}
-          title={mini ? 'خروج از حساب' : undefined}
-          aria-label={mini ? 'خروج از حساب' : undefined}
-          className="admin-sidebar-footer-action admin-sidebar-logout"
-        >
-          <LogOut className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-          {!mini && <span className="admin-sidebar-copy">{language === 'fa' ? 'خروج از حساب' : 'Sign Out'}</span>}
-        </button>
-        {!mini && (
-          <div className="admin-sidebar-status">
-            <Activity className="h-3 w-3" />
-            <span>{language === 'fa' ? 'سامانه فعال است' : 'System Active'}</span>
-          </div>
-        )}
-      </div>
     </aside>
   );
 };

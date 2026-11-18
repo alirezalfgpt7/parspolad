@@ -1891,7 +1891,7 @@
       "slogan_fa": "پیشگام مهندسی، ساخت و اجرای تجهیزات استراتژیک سرچاهی و درون‌چاهی صنعت نفت و گاز",
       "slogan_en": "Pioneer in Engineering & Manufacturing of Strategic Wellhead and Downhole Oilfield Equipment",
       "logo_url": "/storage/logos/logo-main.png",
-      "logo_small_url": "/storage/logos/logo-small.png",
+      "logo_small_url": "/storage/logos/logo-main.png",
       "factory_address_fa": "اهواز، شهرک صنعتی شماره ۳، خیابان ابتکار ۶",
       "factory_address_en": "Ebtekar 6 St., Industrial Zone No. 3, Ahvaz, Iran",
       "factory_phone": "061-32907005-9",
@@ -2002,14 +2002,14 @@
       "enable_bg_slideshow": true
     },
     "logos": {
-      "navbar": "/storage/logos/logo-small.png",
+      "navbar": "/storage/logos/logo-main.png",
       "footer": "/storage/logos/logo-main.png",
-      "admin_sidebar": "/storage/logos/logo-small.png",
-      "login": "/storage/logos/logo-small.png",
-      "register": "/storage/logos/logo-small.png",
+      "admin_sidebar": "/storage/logos/logo-main.png",
+      "login": "/storage/logos/logo-main.png",
+      "register": "/storage/logos/logo-main.png",
       "preloader": "/storage/logos/preloader.gif",
       "about": "/storage/videos/logo-3d.mp4",
-      "favicon": "/storage/logos/logo-small.png",
+      "favicon": "/storage/logos/logo-main.png",
       "seo_share": "/storage/logos/logo-main.png"
     },
     "appearance": {
@@ -2033,7 +2033,7 @@
         "subtitle_en": "The requested URL could not be located on this portal.",
         "cta_fa": "بازگشت به صفحه اصلی",
         "cta_en": "Return Home",
-        "logo_url": "/storage/logos/logo-small.png"
+        "logo_url": "/storage/logos/logo-main.png"
       },
       "error_403": {
         "title_fa": "عدم دسترسی مجاز",
@@ -2042,7 +2042,7 @@
         "subtitle_en": "You do not have permission to access this section.",
         "cta_fa": "بازگشت به صفحه اصلی",
         "cta_en": "Return Home",
-        "logo_url": "/storage/logos/logo-small.png"
+        "logo_url": "/storage/logos/logo-main.png"
       },
       "error_500": {
         "title_fa": "خطای داخلی سرور",
@@ -2051,7 +2051,7 @@
         "subtitle_en": "An unexpected internal server error occurred.",
         "cta_fa": "بازگشت به صفحه اصلی",
         "cta_en": "Return Home",
-        "logo_url": "/storage/logos/logo-small.png"
+        "logo_url": "/storage/logos/logo-main.png"
       },
       "maintenance": {
         "title_fa": "در حال بروزرسانی فنی سامانه",

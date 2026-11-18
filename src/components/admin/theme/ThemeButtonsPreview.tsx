@@ -3,8 +3,8 @@ import { EffectAction } from '../../effects/EffectAction.tsx';
 import type { ThemeButtonEffect, ThemePalette } from '../../../types/index.ts';
 
 const effectClasses: Record<ThemeButtonEffect, Array<'shimmer' | 'liquid' | 'glow'>> = {
-  shimmer: ['shimmer', 'glow'],
-  liquid: ['liquid', 'glow'],
+  shimmer: ['shimmer'],
+  liquid: ['liquid'],
   glow: ['glow'],
   plain: [],
 };
@@ -41,7 +41,7 @@ export const ThemeButtonsPreview: React.FC<ThemeButtonsPreviewProps> = ({
       </EffectAction>
       <EffectAction
         type="button"
-        effects={['liquid', 'glow']}
+        effects={['liquid']}
         style={{ backgroundColor: palette.primary, color: '#fff' }}
         className="theme-action-preview px-5 py-2.5 text-xs font-bold shadow-lg"
       >

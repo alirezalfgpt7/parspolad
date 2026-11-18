@@ -114,7 +114,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div
+          className="theme-popover absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+          style={{ backgroundColor: 'var(--theme-surface)' }}
+        >
           {/* Mandatory Search Box on the First Row */}
           <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-800/60">
             <Search className="h-4 w-4 shrink-0 text-slate-400" />

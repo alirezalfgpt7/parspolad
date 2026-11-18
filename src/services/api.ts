@@ -14,6 +14,7 @@ export async function apiRequest<T>(
 ): Promise<T> {
   const token = localStorage.getItem('ppa_token');
   const headers: Record<string, string> = {
+    Accept: 'application/json',
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
   };
@@ -21,20 +22,27 @@ export async function apiRequest<T>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'خطای شبکه نامشخص';
+    throw new Error(`اتصال به API برقرار نشد؛ سرور Laravel و پراکسی Vite را بررسی کنید. (${reason})`);
+  }
 
   if (!res.ok) {
-    let msg = 'خطا در برقراری ارتباط با سرور';
+    const endpoint = `${API_BASE}${path}`;
+    let msg = `سرور درخواست را با خطای HTTP ${res.status} رد کرد.`;
     try {
       const data = await res.json();
       if (data?.message) msg = data.message;
     } catch {
       // ignore non-json error
     }
-    throw new ApiError(res.status, msg);
+    throw new ApiError(res.status, `${msg} (${endpoint})`);
   }
 
   return res.json() as Promise<T>;

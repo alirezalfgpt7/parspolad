@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore.ts';
-import { DEFAULT_APPEARANCE_SETTINGS, FONT_CSS_MAP } from '../../utils/brandingDefaults.ts';
+import {
+  DEFAULT_APPEARANCE_SETTINGS,
+  DEFAULT_THEME_PALETTE,
+  FONT_CSS_MAP,
+} from '../../utils/brandingDefaults.ts';
 import type {
   ButtonShape,
   ThemeButtonEffect,
@@ -11,8 +15,14 @@ import type {
   ThemeSettings,
 } from '../../types/index.ts';
 
+function paletteColor(value: string | undefined, fallback: string): string {
+  return value && value.trim() !== '' && value.trim().toLowerCase() !== 'undefined'
+    ? value
+    : fallback;
+}
+
 function applyPaletteToRoot(
-  palette: ThemePalette,
+  palette: Partial<ThemePalette>,
   mode: 'light' | 'dark',
   designStyle: ThemeDesignStyle,
   buttonShape: ButtonShape,
@@ -20,26 +30,41 @@ function applyPaletteToRoot(
   scope: ThemeScope
 ) {
   const root = document.documentElement;
+  const colors: ThemePalette = {
+    primary: paletteColor(palette.primary, DEFAULT_THEME_PALETTE.primary),
+    secondary: paletteColor(palette.secondary, DEFAULT_THEME_PALETTE.secondary),
+    accent: paletteColor(palette.accent, DEFAULT_THEME_PALETTE.accent),
+    background: paletteColor(palette.background, DEFAULT_THEME_PALETTE.background),
+    surface: paletteColor(palette.surface, DEFAULT_THEME_PALETTE.surface),
+    text: paletteColor(palette.text, DEFAULT_THEME_PALETTE.text),
+    headerBg: paletteColor(palette.headerBg, DEFAULT_THEME_PALETTE.headerBg),
+    headerText: paletteColor(palette.headerText, DEFAULT_THEME_PALETTE.headerText),
+    footerBg: paletteColor(palette.footerBg, DEFAULT_THEME_PALETTE.footerBg),
+    footerText: paletteColor(palette.footerText, DEFAULT_THEME_PALETTE.footerText),
+    buttonBg: paletteColor(palette.buttonBg, DEFAULT_THEME_PALETTE.buttonBg),
+    buttonText: paletteColor(palette.buttonText, DEFAULT_THEME_PALETTE.buttonText),
+    link: paletteColor(palette.link, DEFAULT_THEME_PALETTE.link),
+  };
   root.dataset.themeScope = scope;
   root.dataset.themeStyle = designStyle;
   root.dataset.buttonShape = buttonShape;
   root.dataset.buttonEffect = buttonEffect;
-  root.style.setProperty('--theme-primary', palette.primary);
-  root.style.setProperty('--theme-primary-hover', `color-mix(in srgb, ${palette.primary} 86%, black)`);
-  root.style.setProperty('--theme-secondary', palette.secondary);
-  root.style.setProperty('--theme-accent', palette.accent);
-  root.style.setProperty('--theme-btn-bg', palette.buttonBg);
-  root.style.setProperty('--theme-btn-text', palette.buttonText);
-  root.style.setProperty('--theme-link', palette.link);
+  root.style.setProperty('--theme-primary', colors.primary);
+  root.style.setProperty('--theme-primary-hover', `color-mix(in srgb, ${colors.primary} 86%, black)`);
+  root.style.setProperty('--theme-secondary', colors.secondary);
+  root.style.setProperty('--theme-accent', colors.accent);
+  root.style.setProperty('--theme-btn-bg', colors.buttonBg);
+  root.style.setProperty('--theme-btn-text', colors.buttonText);
+  root.style.setProperty('--theme-link', colors.link);
 
   if (mode === 'light') {
-    root.style.setProperty('--theme-bg', palette.background);
-    root.style.setProperty('--theme-surface', palette.surface);
-    root.style.setProperty('--theme-text', palette.text);
-    root.style.setProperty('--theme-header-bg', palette.headerBg);
-    root.style.setProperty('--theme-header-text', palette.headerText);
-    root.style.setProperty('--theme-footer-bg', palette.footerBg);
-    root.style.setProperty('--theme-footer-text', palette.footerText);
+    root.style.setProperty('--theme-bg', colors.background);
+    root.style.setProperty('--theme-surface', colors.surface);
+    root.style.setProperty('--theme-text', colors.text);
+    root.style.setProperty('--theme-header-bg', colors.headerBg);
+    root.style.setProperty('--theme-header-text', colors.headerText);
+    root.style.setProperty('--theme-footer-bg', colors.footerBg);
+    root.style.setProperty('--theme-footer-text', colors.footerText);
   } else {
     root.style.setProperty('--theme-bg', '#0B1120');
     root.style.setProperty('--theme-surface', '#111827');

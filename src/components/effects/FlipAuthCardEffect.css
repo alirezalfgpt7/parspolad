@@ -21,18 +21,38 @@
   width: 100%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transition: visibility 0s linear 390ms;
+}
+
+.effect-flip-face > * {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .effect-flip-face--back {
   transform: rotateY(180deg);
+  visibility: hidden;
 }
 
-/* Toggle interactive pointer-events cleanly so hidden face stays inert */
 .effect-flip-container[data-flipped="true"] .effect-flip-face--front {
+  visibility: hidden;
+  transition-delay: 390ms;
   pointer-events: none;
 }
 
+.effect-flip-container[data-flipped="true"] .effect-flip-face--back {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.effect-flip-container[data-flipped="false"] .effect-flip-face--front {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
 .effect-flip-container[data-flipped="false"] .effect-flip-face--back {
+  visibility: hidden;
+  transition-delay: 390ms;
   pointer-events: none;
 }
 

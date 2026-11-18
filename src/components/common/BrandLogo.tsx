@@ -36,19 +36,30 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     placement === 'footer' || placement === 'seo_share'
       ? company?.logo_url || company?.logo_small_url
       : company?.logo_small_url || company?.logo_url;
+  const configuredLogo = logos?.[placement];
+  const smallLogoPlacement = placement === 'navbar' || placement === 'admin_sidebar';
+  const configuredLogoOverride =
+    smallLogoPlacement && configuredLogo === DEFAULT_BRAND_LOGOS[placement]
+      ? undefined
+      : configuredLogo;
 
   const resolvedUrl =
     (overrideUrl && overrideUrl.trim()) ||
     previewLogos?.[placement] ||
-    logos?.[placement] ||
+    configuredLogoOverride ||
     legacyFallback ||
     DEFAULT_BRAND_LOGOS[placement];
 
   const isVideo = isVideoMediaUrl(resolvedUrl) && !videoFailed;
+  const removeWhiteBackground = placement === 'about' || placement === 'admin_sidebar';
 
   return (
-    <span className={cn('relative inline-flex items-center justify-center overflow-hidden', className)}>
-      {placement === 'about' && (
+    <span className={cn(
+      'relative inline-flex items-center justify-center overflow-hidden',
+      placement === 'admin_sidebar' && isVideo && 'bg-slate-950/70',
+      className
+    )}>
+      {removeWhiteBackground && (
         <svg aria-hidden="true" className="absolute h-0 w-0 overflow-hidden">
           <defs>
             <filter id={whiteBackgroundFilterId} colorInterpolationFilters="sRGB">
@@ -71,10 +82,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           aria-label={alt || undefined}
           aria-hidden={!alt}
           onError={() => setVideoFailed(true)}
-          style={placement === 'about' ? { filter: `url(#${whiteBackgroundFilterId})` } : undefined}
+          style={removeWhiteBackground ? { filter: `url(#${whiteBackgroundFilterId})` } : undefined}
           className={cn(
             'h-full w-full object-contain',
             placement === 'about' && 'scale-200',
+            placement === 'admin_sidebar' && 'scale-200',
             hueHover && 'effect-hue-circle',
             imgClassName
           )}

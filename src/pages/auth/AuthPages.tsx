@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -70,6 +70,7 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
     ...(bootstrap?.login || {}),
     ...(previewLogin || {}),
   };
+  const registrationEnabled = bootstrap?.site?.allow_registration !== false;
 
   const t = (faVal?: string, enVal?: string) => (language === 'fa' ? faVal : enVal) || faVal || '';
   const companyName =
@@ -181,6 +182,7 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
   };
 
   const switchMode = (target: 'login' | 'register') => {
+    if (target === 'register' && !registrationEnabled) return;
     setMode(target);
     if (!loginCfg.enable_3d_flip) {
       navigate(target === 'login' ? '/login' : '/register');
@@ -331,14 +333,16 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
       </form>
 
       <div className="mt-5 flex items-center justify-between border-t border-white/15 pt-4 text-xs opacity-80">
-        <button
-          type="button"
-          onClick={() => switchMode('register')}
-          className="inline-flex items-center gap-1.5 hover:opacity-100 hover:underline"
-        >
-          <DynamicLucideIcon name={loginCfg.register_icon} fallback="UserPlus" className="h-3.5 w-3.5" />
-          <span>{t(loginCfg.register_cta_fa, loginCfg.register_cta_en)}</span>
-        </button>
+        {registrationEnabled ? (
+          <button
+            type="button"
+            onClick={() => switchMode('register')}
+            className="inline-flex items-center gap-1.5 hover:opacity-100 hover:underline"
+          >
+            <DynamicLucideIcon name={loginCfg.register_icon} fallback="UserPlus" className="h-3.5 w-3.5" />
+            <span>{t(loginCfg.register_cta_fa, loginCfg.register_cta_en)}</span>
+          </button>
+        ) : <span />}
         <Link to="/" className="inline-flex items-center gap-1 hover:opacity-100 hover:underline">
           <DynamicLucideIcon name={loginCfg.back_icon} fallback="ArrowRight" className="h-3.5 w-3.5" />
           <span>{t(loginCfg.back_home_fa, loginCfg.back_home_en)}</span>
@@ -488,13 +492,13 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
       <AnimatedBackground particles={loginCfg.enable_particles} />
 
       <div className="relative z-10 w-full max-w-lg">
-        {loginCfg.enable_3d_flip ? (
+        {registrationEnabled && loginCfg.enable_3d_flip ? (
           <FlipAuthCardEffect
             flipped={mode === 'register'}
             front={loginFace}
             back={registerFace}
           />
-        ) : mode === 'login' ? (
+        ) : mode === 'login' || !registrationEnabled ? (
           loginFace
         ) : (
           registerFace
@@ -505,4 +509,9 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
 };
 
 export const LoginPage: React.FC = () => <AuthShellPage initialMode="login" />;
-export const RegisterPage: React.FC = () => <AuthShellPage initialMode="register" />;
+export const RegisterPage: React.FC = () => {
+  const registrationEnabled = useAppStore((state) => state.bootstrap?.site?.allow_registration !== false);
+  return registrationEnabled
+    ? <AuthShellPage initialMode="register" />
+    : <Navigate to="/login" replace />;
+};

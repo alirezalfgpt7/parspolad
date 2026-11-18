@@ -6,8 +6,8 @@
 .admin-sidebar-collapse-straddle {
   position: absolute;
   inset-inline-end: -14px;
-  top: 22px;
-  z-index: 30;
+  top: 3.5rem;
+  z-index: 40;
   display: inline-grid;
   width: 28px;
   height: 28px;

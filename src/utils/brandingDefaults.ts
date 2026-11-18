@@ -4,7 +4,24 @@ import type {
   FontFamilyKey,
   LoginPageSettings,
   PagesConfigSettings,
+  ThemePalette,
 } from '../types/index.ts';
+
+export const DEFAULT_THEME_PALETTE: ThemePalette = {
+  primary: '#B91C1C',
+  secondary: '#1E293B',
+  accent: '#D97706',
+  background: '#F8FAFC',
+  surface: '#FFFFFF',
+  text: '#0F172A',
+  headerBg: '#FFFFFF',
+  headerText: '#0F172A',
+  footerBg: '#0F172A',
+  footerText: '#F8FAFC',
+  buttonBg: '#B91C1C',
+  buttonText: '#FFFFFF',
+  link: '#B91C1C',
+};
 
 export interface FontOption {
   key: FontFamilyKey;

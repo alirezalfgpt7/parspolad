@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Http\Resources\ThemeSettingResource;
 use App\Models\Article;
 use App\Models\Banner;
 use App\Models\Contract;
@@ -26,9 +27,13 @@ class BootstrapService
 {
     public function getPublicBootstrap(Request $request): array
     {
+        $themeSettings = ThemeSetting::query()->first();
+
         return [
             'theme_presets' => ThemePreset::query()->orderBy('id')->get(),
-            'theme_settings' => ThemeSetting::query()->first(),
+            'theme_settings' => $themeSettings
+                ? (new ThemeSettingResource($themeSettings))->toArray($request)
+                : null,
             'sliders' => Slider::query()->with(['slides' => fn ($q) => $q->where('is_active', true)])->where('is_active', true)->get(),
             'menus' => Menu::query()->with('items')->get(),
             'kpis' => Kpi::query()->orderBy('sort_order')->get(),

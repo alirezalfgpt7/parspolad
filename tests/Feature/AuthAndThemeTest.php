@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ThemeSetting;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use PragmaRX\Google2FA\Google2FA;
@@ -7,6 +8,19 @@ use PragmaRX\Google2FA\Google2FA;
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
 it('returns public bootstrap payload with active industrial crimson theme', function (): void {
+    ThemeSetting::query()->firstOrFail()->update([
+        'active_palette' => [
+            'primary' => '#B91C1C',
+            'secondary' => '#1E293B',
+            'accent' => '#D97706',
+        ],
+        'admin_palette' => [
+            'primary' => '#B91C1C',
+            'secondary' => '#1E293B',
+            'accent' => '#D97706',
+        ],
+    ]);
+
     $response = $this->getJson('/api/v1/bootstrap');
 
     $response->assertOk()
@@ -15,6 +29,8 @@ it('returns public bootstrap payload with active industrial crimson theme', func
         ->assertJsonPath('theme_settings.button_shape', 'rounded')
         ->assertJsonPath('theme_settings.landing_design_style', 'glass')
         ->assertJsonPath('theme_settings.admin_design_style', 'industrial')
+        ->assertJsonPath('theme_settings.admin_palette.surface', '#FFFFFF')
+        ->assertJsonPath('theme.admin_palette.headerBg', '#FFFFFF')
         ->assertJsonStructure([
             'theme_presets',
             'theme_settings',
@@ -32,7 +48,7 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
     $login->assertOk()->assertJsonStructure(['token', 'user' => ['id', 'email', 'role']]);
     $token = $login->json('token');
 
-    $updateTheme = $this->withToken($token)->putJson('/api/v1/admin/theme', [
+    $updateTheme = $this->withToken($token)->putJson('/api/v1/admin/themes', [
         'active_preset_slug' => 'petro-navy',
         'default_mode' => 'dark',
         'design_style' => 'glass',
@@ -70,7 +86,9 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
         ->assertJsonPath('landing_design_style', 'industrial')
         ->assertJsonPath('landing_button_shape', 'square')
         ->assertJsonPath('admin_design_style', 'modern')
-        ->assertJsonPath('admin_palette.primary', '#0F4C81');
+        ->assertJsonPath('admin_palette.primary', '#0F4C81')
+        ->assertJsonPath('admin_palette.surface', '#FFFFFF')
+        ->assertJsonPath('active_palette.headerBg', '#FFFFFF');
 });
 
 it('requires a valid server-side captcha for login', function (): void {

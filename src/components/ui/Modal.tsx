@@ -41,9 +41,10 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="effect-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
         className={cn(
-          'effect-modal-panel flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900',
+          'theme-solid-surface effect-modal-panel flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900',
           sizeMap[size]
         )}
+        style={{ backgroundColor: 'var(--theme-surface)', backdropFilter: 'none' }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
