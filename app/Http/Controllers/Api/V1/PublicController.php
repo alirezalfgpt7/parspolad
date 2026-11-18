@@ -44,7 +44,7 @@ class PublicController extends Controller
             'logos' => $data['settings']['logos'] ?? [],
             'pages_config' => $data['settings']['pages_config'] ?? [],
             'is_authenticated' => $request->user('sanctum') !== null,
-        ]);
+        ])->header('Cache-Control', 'no-store, private, max-age=0');
     }
 
     public function sitemap(SitemapService $sitemap): JsonResponse
@@ -176,8 +176,8 @@ class PublicController extends Controller
     {
         return response()->json([
             'data' => [
-                'departments' => Department::query()->with('children')->orderBy('id')->get(),
-                'team' => TeamMember::query()->with('department')->orderBy('id')->get(),
+                'departments' => Department::query()->with('children')->orderBy('sort_order')->orderBy('id')->get(),
+                'team' => TeamMember::query()->with('department')->orderBy('sort_order')->orderBy('id')->get(),
             ],
         ]);
     }

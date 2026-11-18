@@ -5,6 +5,7 @@ import { ChevronDown, Search, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
+import { DynamicLucideIcon } from '../ui/LucideIconMap.tsx';
 import {
   AnimatedHamburger,
   EffectAction,
@@ -87,9 +88,9 @@ export const PublicNavbar: React.FC = () => {
         scrolled ? 'shadow-lg shadow-slate-950/5' : 'shadow-none'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 xl:gap-8 lg:px-8">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 xl:gap-8 lg:px-8">
         {/* Zone 1: Menu control and brand */}
-        <div className="flex shrink-0 items-center gap-2.5" dir={language === 'fa' ? 'rtl' : 'ltr'}>
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 lg:flex-none" dir={language === 'fa' ? 'rtl' : 'ltr'}>
           <button
             type="button"
             onClick={() => {
@@ -107,19 +108,21 @@ export const PublicNavbar: React.FC = () => {
           <Link
             to="/"
             dir={language === 'fa' ? 'rtl' : 'ltr'}
-            className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight whitespace-nowrap"
+            className="flex min-w-0 items-center gap-2.5 text-lg font-extrabold tracking-tight"
           >
             <BrandLogo
               placement="about"
               alt={companyName ?? ''}
               className="h-9 w-9 shrink-0 rounded-lg"
             />
-            <span className="hidden lg:inline">{companyName}</span>
+            <span className="max-w-[34vw] truncate text-xs sm:max-w-[42vw] sm:text-sm lg:max-w-none lg:text-lg">
+              {companyName}
+            </span>
           </Link>
         </div>
 
         {/* Zone 2: 4–5 Clean Single-Line Nav Links with Dynamic Mega Menu */}
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden items-center gap-4 lg:flex">
           {navItems.map((item) => {
             const hasChildren = Boolean(item.children && item.children.length > 0);
             const label = language === 'fa' ? item.title_fa : item.title_en;
@@ -132,7 +135,9 @@ export const PublicNavbar: React.FC = () => {
                 <EffectNavLink
                   to={item.url}
                   aria-current={pathname === item.url ? 'page' : undefined}
+                  className="!gap-1.5 !py-1 !text-[13px]"
                 >
+                  {item.icon && <DynamicLucideIcon name={item.icon} className="h-4 w-4 opacity-75" />}
                   <span>{label}</span>
                   {hasChildren && <ChevronDown className="h-3.5 w-3.5 opacity-60" />}
                 </EffectNavLink>
@@ -297,7 +302,10 @@ export const PublicNavbar: React.FC = () => {
                         aria-expanded={expanded}
                         aria-controls={`public-mobile-group-${item.id}`}
                       >
-                        <span>{label}</span>
+                        <span className="flex items-center gap-2">
+                          {item.icon && <DynamicLucideIcon name={item.icon} className="h-4 w-4" />}
+                          <span>{label}</span>
+                        </span>
                         <ChevronDown className="effect-mobile-menu-chevron" aria-hidden="true" />
                       </button>
                       <div
@@ -329,7 +337,10 @@ export const PublicNavbar: React.FC = () => {
                       aria-current={pathname === item.url ? 'page' : undefined}
                       className="effect-mobile-menu-link"
                     >
-                      {label}
+                      <span className="flex items-center gap-2">
+                        {item.icon && <DynamicLucideIcon name={item.icon} className="h-4 w-4" />}
+                        <span>{label}</span>
+                      </span>
                     </Link>
                   )}
                 </div>

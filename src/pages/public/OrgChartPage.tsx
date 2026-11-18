@@ -22,9 +22,52 @@ export const OrgChartPage: React.FC = () => {
   }, []);
 
   const root = departments.find((d) => d.parent_id === null);
-  const children = departments.filter((d) => d.parent_id !== null);
+  const children = departments.filter((d) => d.parent_id === root?.id);
   const activeDept = departments.find((d) => d.id === selectedDeptId) || root;
   const deptMembers = selectedDeptId ? team.filter((m) => m.department_id === selectedDeptId) : team;
+  const renderDepartment = (
+    department: Department,
+    ancestors: ReadonlySet<number> = new Set(),
+  ): React.ReactNode => {
+    if (ancestors.has(department.id)) return null;
+    const nestedDepartments = departments.filter((item) => item.parent_id === department.id);
+    const isSelected = selectedDeptId === department.id;
+    const nextAncestors = new Set(ancestors).add(department.id);
+
+    return (
+      <div key={department.id} className="min-w-0">
+        <button
+          type="button"
+          onClick={() => setSelectedDeptId(department.id)}
+          className={`flex min-h-full w-full flex-col justify-between rounded-xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
+            isSelected
+              ? 'border-(--theme-primary) bg-red-50/40 dark:bg-red-950/20'
+              : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'
+          }`}
+        >
+          <div>
+            <span className="inline-block h-1.5 w-8 rounded-full" style={{ backgroundColor: department.color }} />
+            <h3 className="mt-2 text-xs font-bold text-slate-900 dark:text-white">
+              {language === 'fa' ? department.name_fa : department.name_en}
+            </h3>
+            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+              {language === 'fa' ? department.head_name_fa : department.head_name_en}
+            </p>
+            <p className="text-[11px] text-slate-400">{department.head_title_fa}</p>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-500 tabular-nums">
+            <Users className="h-3.5 w-3.5" />
+            <span>{department.member_count} نفر</span>
+          </div>
+        </button>
+        {nestedDepartments.length > 0 && (
+          <div className="mt-3 space-y-3 border-s-2 border-slate-200 ps-3 dark:border-slate-700">
+            {nestedDepartments.map((nested) => renderDepartment(nested, nextAncestors))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -53,36 +96,7 @@ export const OrgChartPage: React.FC = () => {
             <div className="h-px w-full max-w-5xl bg-slate-300 dark:bg-slate-700" />
 
             <div className="mt-6 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {children.map((dept) => {
-                const isSelected = selectedDeptId === dept.id;
-                return (
-                  <button
-                    key={dept.id}
-                    type="button"
-                    onClick={() => setSelectedDeptId(dept.id)}
-                    className={`flex flex-col justify-between rounded-xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
-                      isSelected
-                        ? 'border-(--theme-primary) bg-red-50/40 dark:bg-red-950/20'
-                        : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'
-                    }`}
-                  >
-                    <div>
-                      <span className="inline-block h-1.5 w-8 rounded-full" style={{ backgroundColor: dept.color }} />
-                      <h3 className="mt-2 text-xs font-bold text-slate-900 dark:text-white">
-                        {language === 'fa' ? dept.name_fa : dept.name_en}
-                      </h3>
-                      <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                        {language === 'fa' ? dept.head_name_fa : dept.head_name_en}
-                      </p>
-                      <p className="text-[11px] text-slate-400">{dept.head_title_fa}</p>
-                    </div>
-                    <div className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-500 tabular-nums">
-                      <Users className="h-3.5 w-3.5" />
-                      <span>{dept.member_count} نفر</span>
-                    </div>
-                  </button>
-                );
-              })}
+              {children.map((department) => renderDepartment(department))}
             </div>
           </div>
         )}

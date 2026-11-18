@@ -14,6 +14,7 @@ class MenuItem extends Model
         'title_fa',
         'title_en',
         'url',
+        'icon',
         'image',
         'description_fa',
         'description_en',

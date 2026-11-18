@@ -1,0 +1,75 @@
+.service-flip-container {
+  perspective: 1300px;
+  min-width: 0;
+}
+
+.service-flipper {
+  position: relative;
+  display: grid;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.85s cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.service-flip-face {
+  grid-area: 1 / 1;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: visibility 0s linear 425ms;
+}
+
+.service-flip-face--back {
+  transform: rotateY(180deg);
+  visibility: hidden;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .service-flip-container:hover .service-flipper {
+    transform: rotateY(180deg);
+  }
+
+  .service-flip-container:hover .service-flip-face--front {
+    visibility: hidden;
+    transition-delay: 425ms;
+    pointer-events: none;
+  }
+
+  .service-flip-container:hover .service-flip-face--back {
+    visibility: visible;
+    transition-delay: 0s;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  .service-flip-container:hover .service-flipper {
+    transform: rotateY(180deg);
+  }
+
+  .service-flip-face {
+    transition: none;
+  }
+
+  .service-flip-container:hover .service-flip-face--front {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .service-flip-container:hover .service-flip-face--back {
+    visibility: visible;
+  }
+}
+
+.service-touch-description {
+  display: none;
+}
+
+@media (hover: none) {
+  .service-touch-description {
+    display: block;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { LogoPlacement } from '../../types/index.ts';
 import { DEFAULT_BRAND_LOGOS, isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
@@ -49,6 +49,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     configuredLogoOverride ||
     legacyFallback ||
     DEFAULT_BRAND_LOGOS[placement];
+
+  useEffect(() => {
+    setVideoFailed(false);
+  }, [resolvedUrl]);
 
   const isVideo = isVideoMediaUrl(resolvedUrl) && !videoFailed;
   const removeWhiteBackground = placement === 'about' || placement === 'admin_sidebar';

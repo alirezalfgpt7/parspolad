@@ -173,6 +173,7 @@
           "title_fa": "صفحه اصلی",
           "title_en": "Home",
           "url": "/",
+          "icon": "Home",
           "sort_order": 1,
           "is_active": true
         },
@@ -183,6 +184,7 @@
           "title_fa": "توانمندی‌ها",
           "title_en": "Capabilities",
           "url": "/services",
+          "icon": "Wrench",
           "sort_order": 2,
           "is_active": true,
           "children": [
@@ -247,6 +249,7 @@
           "title_fa": "پروژه‌ها",
           "title_en": "Projects",
           "url": "/projects",
+          "icon": "Layers",
           "sort_order": 3,
           "is_active": true,
           "children": [
@@ -298,6 +301,7 @@
           "title_fa": "درباره ما",
           "title_en": "About Us",
           "url": "/about",
+          "icon": "Building2",
           "sort_order": 4,
           "is_active": true,
           "children": [
@@ -349,6 +353,7 @@
           "title_fa": "تماس با ما",
           "title_en": "Contact",
           "url": "/contact",
+          "icon": "Phone",
           "sort_order": 5,
           "is_active": true
         }
@@ -366,6 +371,7 @@
           "title_fa": "پروژه‌های اجرایی",
           "title_en": "Projects",
           "url": "/projects",
+          "icon": "Layers",
           "sort_order": 1,
           "is_active": true
         },
@@ -376,6 +382,7 @@
           "title_fa": "گواهینامه‌ها و افتخارات",
           "title_en": "Certificates",
           "url": "/contracts-licenses",
+          "icon": "Award",
           "sort_order": 2,
           "is_active": true
         },
@@ -386,6 +393,7 @@
           "title_fa": "درخواست همکاری (RFQ)",
           "title_en": "Request Quote",
           "url": "/rfq",
+          "icon": "MessageCircle",
           "sort_order": 3,
           "is_active": true
         },
@@ -396,6 +404,7 @@
           "title_fa": "سوالات متداول",
           "title_en": "FAQ",
           "url": "/faq",
+          "icon": "HelpCircle",
           "sort_order": 4,
           "is_active": true
         },
@@ -406,6 +415,7 @@
           "title_fa": "حریم خصوصی و قوانین",
           "title_en": "Legal",
           "url": "/legal",
+          "icon": "ShieldCheck",
           "sort_order": 5,
           "is_active": true
         },
@@ -416,6 +426,7 @@
           "title_fa": "نقشه سایت",
           "title_en": "Sitemap",
           "url": "/sitemap",
+          "icon": "Globe",
           "sort_order": 6,
           "is_active": true
         }
@@ -2007,7 +2018,7 @@
       "admin_sidebar": "/storage/logos/logo-main.png",
       "login": "/storage/logos/logo-main.png",
       "register": "/storage/logos/logo-main.png",
-      "preloader": "/storage/logos/preloader.gif",
+      "preloader": "/storage/videos/logo-3d.mp4",
       "about": "/storage/videos/logo-3d.mp4",
       "favicon": "/storage/logos/logo-main.png",
       "seo_share": "/storage/logos/logo-main.png"
@@ -2058,7 +2069,7 @@
         "title_en": "Scheduled Technical Maintenance",
         "subtitle_fa": "سامانه در حال ارتقای سرویس‌های مهندسی است. لطفاً دقایقی دیگر مراجعه نمایید.",
         "subtitle_en": "Portal services are temporarily undergoing scheduled upgrades.",
-        "logo_url": "/storage/logos/preloader.gif"
+        "logo_url": "/storage/videos/logo-3d.mp4"
       },
       "home_spotlight": {
         "badge_fa": "مهندسی و تولید بومی",

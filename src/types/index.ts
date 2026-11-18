@@ -123,6 +123,7 @@ export interface MenuItem {
   title_fa: string;
   title_en: string;
   url: string;
+  icon?: string | null;
   image?: string;
   description_fa?: string;
   description_en?: string;
@@ -145,7 +146,7 @@ export interface ProjectCategory {
   name_en: string;
   icon: string;
   color: string;
-  description_fa?: string;
+  description_fa?: string | null;
 }
 
 export interface ProjectDocument {
@@ -259,6 +260,7 @@ export interface Department {
   head_title_en: string;
   color: string;
   member_count: number;
+  sort_order: number;
 }
 
 export interface TeamMember {
@@ -272,6 +274,7 @@ export interface TeamMember {
   email?: string;
   phone?: string;
   avatar_url?: string;
+  sort_order: number;
 }
 
 export interface Partner {
@@ -396,6 +399,8 @@ export interface MediaFile {
   size_bytes: number;
   folder: string;
   requires_auth: boolean;
+  alt_text?: string | null;
+  description?: string | null;
   created_at: string;
 }
 
@@ -520,6 +525,14 @@ export interface PageOverrideEntry {
 
 export type PagesConfigSettings = Record<string, PageOverrideEntry>;
 
+export interface SocialLinkSetting {
+  id: number;
+  name: string;
+  url: string;
+  icon: string;
+  is_active: boolean;
+}
+
 export interface SiteSettings {
   company: {
     name_fa: string;
@@ -591,6 +604,9 @@ export interface SiteSettings {
     header_cta_url: string;
     info_bar_enabled?: boolean;
     info_bar_phone?: string;
+    info_bar_phone_enabled?: boolean;
+    info_bar_phone_icon?: string;
+    social_links?: SocialLinkSetting[];
   };
   login?: Partial<LoginPageSettings>;
   logos?: Partial<BrandLogosSettings>;

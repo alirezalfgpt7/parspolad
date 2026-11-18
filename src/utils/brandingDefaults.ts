@@ -146,7 +146,7 @@ export const DEFAULT_BRAND_LOGOS: BrandLogosSettings = {
   admin_sidebar: '/storage/logos/logo-small.png',
   login: '/storage/logos/logo-small.png',
   register: '/storage/logos/logo-small.png',
-  preloader: '/storage/logos/preloader.gif',
+  preloader: '/storage/videos/logo-3d.mp4',
   about: '/storage/videos/logo-3d.mp4',
   favicon: '/storage/logos/logo-small.png',
   seo_share: '/storage/logos/logo-main.png',
@@ -199,7 +199,7 @@ export const DEFAULT_PAGES_CONFIG: PagesConfigSettings = {
     title_en: 'Scheduled Technical Maintenance',
     subtitle_fa: 'سامانه در حال ارتقای سرویس‌های مهندسی است. لطفاً دقایقی دیگر مراجعه نمایید.',
     subtitle_en: 'Portal services are temporarily undergoing scheduled upgrades.',
-    logo_url: '/storage/logos/preloader.gif',
+    logo_url: '/storage/videos/logo-3d.mp4',
   },
   home_spotlight: {
     badge_fa: 'مهندسی و تولید بومی',
@@ -214,7 +214,7 @@ export const DEFAULT_PAGES_CONFIG: PagesConfigSettings = {
 
 export const BUILTIN_BRAND_MEDIA_PRESETS = [
   { label: 'لوگوی متحرک سه‌بعدی (MP4)', url: '/storage/videos/logo-3d.mp4', type: 'video' },
-  { label: 'آرم متحرک پیش‌بارگذاری (GIF)', url: '/storage/logos/preloader.gif', type: 'gif' },
+  { label: 'آرم متحرک پیش‌بارگذاری (MP4)', url: '/storage/videos/logo-3d.mp4', type: 'video' },
   { label: 'لوگوی اصلی شرکت (PNG)', url: '/storage/logos/logo-main.png', type: 'image' },
   { label: 'لوگوی مربعی کوچک (PNG)', url: '/storage/logos/logo-small.png', type: 'image' },
   { label: 'ویدیو معرفی کارخانه (WEBM)', url: '/storage/videos/company-intro.webm', type: 'video' },

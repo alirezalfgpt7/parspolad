@@ -22,11 +22,12 @@ class Department extends Model
         'head_title_en',
         'color',
         'member_count',
+        'sort_order',
     ];
 
     protected function casts(): array
     {
-        return ['member_count' => 'integer'];
+        return ['member_count' => 'integer', 'sort_order' => 'integer'];
     }
 
     public function parent(): BelongsTo

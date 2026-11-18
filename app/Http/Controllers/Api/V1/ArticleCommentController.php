@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ArticleCommentController extends Controller
 {
@@ -17,8 +18,12 @@ class ArticleCommentController extends Controller
         $perPage = min(max($request->integer('per_page', 20), 1), 100);
         $comments = $article->comments()
             ->where('status', 'approved')
+            ->whereNull('parent_id')
+            ->with(['replies' => fn ($query) => $query
+                ->where('status', 'approved')
+                ->select(['id', 'parent_id', 'author_name', 'body', 'created_at'])])
             ->oldest()
-            ->paginate($perPage, ['id', 'author_name', 'body', 'created_at'])
+            ->paginate($perPage, ['id', 'article_id', 'parent_id', 'author_name', 'body', 'created_at'])
             ->withQueryString();
 
         return $this->paginatedResponse($comments);
@@ -27,9 +32,21 @@ class ArticleCommentController extends Controller
     public function store(StoreArticleCommentRequest $request, string $slug): JsonResponse
     {
         $article = Article::query()->where('slug', $slug)->firstOrFail();
-        $article->comments()->create(
-            $request->safe()->except(['captcha', 'captcha_key', 'website']) + ['status' => 'pending'],
-        );
+        $data = $request->safe()->except(['captcha', 'captcha_key', 'website']);
+        if (!empty($data['parent_id'])) {
+            $validParent = $article->comments()
+                ->whereKey($data['parent_id'])
+                ->whereNull('parent_id')
+                ->where('status', 'approved')
+                ->exists();
+            if (!$validParent) {
+                throw ValidationException::withMessages([
+                    'parent_id' => 'پاسخ فقط برای دیدگاه منتشرشده همین مقاله امکان‌پذیر است.',
+                ]);
+            }
+        }
+
+        $article->comments()->create($data + ['status' => 'pending']);
 
         return response()->json([
             'message' => 'نظر شما پس از بررسی مدیر منتشر خواهد شد.',

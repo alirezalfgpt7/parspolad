@@ -182,6 +182,9 @@ export const MessagesRfqAdminPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-extrabold">مدیریت پیام‌های تماس، استعلام‌های RFQ و تیکت‌ها</h1>
+      <p className="text-xs leading-6 text-slate-500">
+        درخواست‌های همکاری و استعلام قیمت (RFQ)، پیام‌های فرم تماس و گفتگوهای پیگیری تیکت از این بخش بررسی و پاسخ داده می‌شوند.
+      </p>
       <DataTable data={messages} columns={cols} pageSize={8} searchKeys={[(m) => m.name, (m) => m.subject, (m) => m.company || '']} />
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
       {ticket && (

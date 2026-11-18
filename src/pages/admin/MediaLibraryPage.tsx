@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, FileText, Lock, Trash2, Unlock } from 'lucide-react';
+import { Copy, FileText, Lock, Pencil, Save, Trash2, Unlock } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
@@ -8,6 +8,7 @@ import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { Modal } from '../../components/ui/Modal.tsx';
 
 export const MediaLibraryPage: React.FC = () => {
   const { addToast } = useAppStore();
@@ -16,6 +17,9 @@ export const MediaLibraryPage: React.FC = () => {
   const [lastPage, setLastPage] = useState(1);
   const [deleteFile, setDeleteFile] = useState<MediaFile | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', alt_text: '', description: '' });
+  const [savingMetadata, setSavingMetadata] = useState(false);
 
   const load = async (targetPage = page) => {
     try {
@@ -53,6 +57,34 @@ export const MediaLibraryPage: React.FC = () => {
     }
   };
 
+  const openEdit = (file: MediaFile) => {
+    setEditingFile(file);
+    setEditForm({
+      name: file.name,
+      alt_text: file.alt_text || '',
+      description: file.description || '',
+    });
+  };
+
+  const saveMetadata = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingFile) return;
+    setSavingMetadata(true);
+    try {
+      await apiRequest(`/admin/media/${editingFile.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(editForm),
+      });
+      setEditingFile(null);
+      await load();
+      addToast('success', 'مشخصات و اطلاعات سئوی فایل ذخیره شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره مشخصات فایل ناموفق بود.');
+    } finally {
+      setSavingMetadata(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -86,6 +118,12 @@ export const MediaLibraryPage: React.FC = () => {
                 </div>
                 <div className="mt-2 truncate text-sm font-bold">{f.name}</div>
                 <div className="mt-1 truncate font-mono text-[11px] text-slate-400" dir="ltr">{f.url}</div>
+                {(f.alt_text || f.description) && (
+                  <div className="mt-2 space-y-1 text-[11px] text-slate-500">
+                    {f.alt_text && <p className="truncate">Alt: {f.alt_text}</p>}
+                    {f.description && <p className="line-clamp-2">{f.description}</p>}
+                  </div>
+                )}
               </div>
 
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
@@ -106,6 +144,14 @@ export const MediaLibraryPage: React.FC = () => {
               </button>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openEdit(f)}
+                  className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-(--theme-primary) dark:hover:bg-slate-800"
+                  aria-label={`ویرایش مشخصات ${f.name}`}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -139,6 +185,54 @@ export const MediaLibraryPage: React.FC = () => {
         })}
       </div>
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      <Modal
+        open={Boolean(editingFile)}
+        onClose={() => setEditingFile(null)}
+        title="ویرایش مشخصات رسانه و سئو"
+        size="md"
+      >
+        <form onSubmit={saveMetadata} className="space-y-4">
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold">نام فایل در کتابخانه</span>
+            <input
+              required
+              maxLength={255}
+              value={editForm.name}
+              onChange={(event) => setEditForm({ ...editForm, name: event.target.value })}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold">متن جایگزین تصویر (Alt)</span>
+            <input
+              maxLength={255}
+              value={editForm.alt_text}
+              onChange={(event) => setEditForm({ ...editForm, alt_text: event.target.value })}
+              placeholder="توصیف کوتاه و دقیق تصویر برای دسترس‌پذیری و موتورهای جستجو"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs font-semibold">توضیحات تصویر</span>
+            <textarea
+              maxLength={5000}
+              rows={4}
+              value={editForm.description}
+              onChange={(event) => setEditForm({ ...editForm, description: event.target.value })}
+              placeholder="شرح تصویر یا اطلاعات تکمیلی برای استفاده در محتوای سایت"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={savingMetadata}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-(--theme-primary) px-4 py-2.5 text-xs font-semibold text-white disabled:opacity-60"
+          >
+            <Save className="h-4 w-4" />
+            {savingMetadata ? 'در حال ذخیره...' : 'ذخیره مشخصات'}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 };

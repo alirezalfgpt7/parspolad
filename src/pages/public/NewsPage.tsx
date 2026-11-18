@@ -19,9 +19,11 @@ import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 
 interface ArticleComment {
   id: number;
+  parent_id?: number | null;
   author_name: string;
   body: string;
   created_at: string;
+  replies?: ArticleComment[];
 }
 
 const commentSchema = z.object({
@@ -42,6 +44,7 @@ export const NewsPage: React.FC = () => {
   const [articleLastPage, setArticleLastPage] = useState(1);
   const [single, setSingle] = useState<Article | null>(null);
   const [comments, setComments] = useState<ArticleComment[]>([]);
+  const [replyTo, setReplyTo] = useState<ArticleComment | null>(null);
   const [commentsPage, setCommentsPage] = useState(1);
   const [commentsLastPage, setCommentsLastPage] = useState(1);
   const [commentsLoading, setCommentsLoading] = useState(false);
@@ -72,6 +75,7 @@ export const NewsPage: React.FC = () => {
     if (slug) {
       setSingle(null);
       setComments([]);
+      setReplyTo(null);
       setCommentsError('');
       setCommentsPage(1);
       reset();
@@ -143,11 +147,14 @@ export const NewsPage: React.FC = () => {
     try {
       await apiRequest(`/articles/${slug}/comments`, {
         method: 'POST',
-        body: JSON.stringify({ ...data, captcha_key: captchaKey }),
+        body: JSON.stringify({ ...data, parent_id: replyTo?.id ?? null, captcha_key: captchaKey }),
       });
       reset();
+      setReplyTo(null);
       refreshCaptcha();
-      addToast('success', 'دیدگاه شما پس از بررسی مدیر منتشر خواهد شد.');
+      addToast('success', replyTo
+        ? 'پاسخ شما پس از بررسی مدیر منتشر خواهد شد.'
+        : 'دیدگاه شما پس از بررسی مدیر منتشر خواهد شد.');
     } catch (error) {
       refreshCaptcha();
       addToast('error', error instanceof Error ? error.message : 'ارسال دیدگاه ناموفق بود.');
@@ -195,19 +202,45 @@ export const NewsPage: React.FC = () => {
               ) : comments.length === 0 ? (
                 <p className="mt-5 text-sm text-slate-500">هنوز دیدگاهی برای این مقاله ثبت نشده است.</p>
               ) : (
-                <div className="mt-5 space-y-3">
+                <div className="relative mt-6 space-y-5 before:absolute before:inset-y-4 before:right-3 before:w-px before:bg-slate-200 dark:before:bg-slate-700">
                   {comments.map((comment) => (
-                    <article key={comment.id} className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h3 className="text-sm font-semibold">{comment.author_name}</h3>
-                        <time className="text-xs text-slate-500">
-                          {new Date(comment.created_at).toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US')}
-                        </time>
-                      </div>
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
-                        {comment.body}
-                      </p>
-                    </article>
+                    <div key={comment.id} className="relative pe-10">
+                      <span aria-hidden="true" className="absolute right-0 top-5 z-10 h-6 w-6 rounded-full border-4 border-white bg-(--theme-primary) shadow-sm dark:border-slate-900" />
+                      <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h3 className="text-sm font-bold">{comment.author_name}</h3>
+                          <time className="text-[11px] text-slate-500">
+                            {new Date(comment.created_at).toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US')}
+                          </time>
+                        </div>
+                        <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
+                          {comment.body}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyTo(comment);
+                            document.getElementById('comment-body')?.focus();
+                          }}
+                          className="mt-3 text-xs font-bold text-(--theme-primary) hover:underline"
+                        >
+                          پاسخ به این دیدگاه
+                        </button>
+                      </article>
+                      {comment.replies?.map((reply) => (
+                        <article key={reply.id} className="ms-5 mt-3 rounded-2xl border border-(--theme-primary)/15 bg-(--theme-primary)/5 p-4 sm:ms-8">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4 className="text-xs font-bold">{reply.author_name}</h4>
+                            <time className="text-[11px] text-slate-500">
+                              {new Date(reply.created_at).toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US')}
+                            </time>
+                          </div>
+                          <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
+                            {reply.body}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
                   ))}
                 </div>
               )}
@@ -217,7 +250,17 @@ export const NewsPage: React.FC = () => {
 
               <form onSubmit={handleSubmit(submitComment)} className="relative mt-8 space-y-4 rounded-xl border border-slate-200 p-4 dark:border-slate-800 sm:p-5">
                 <PublicHoneypotField registration={register('website')} />
-                <h3 className="text-sm font-bold">ثبت دیدگاه</h3>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold">{replyTo ? `پاسخ به ${replyTo.author_name}` : 'ثبت دیدگاه'}</h3>
+                    <p className="mt-1 text-[11px] text-slate-500">دیدگاه یا پاسخ شما پس از تأیید مدیر نمایش داده می‌شود.</p>
+                  </div>
+                  {replyTo && (
+                    <button type="button" onClick={() => setReplyTo(null)} className="text-xs font-semibold text-slate-500 hover:text-(--theme-primary)">
+                      لغو پاسخ
+                    </button>
+                  )}
+                </div>
                 <div>
                   <label htmlFor="comment-author" className="mb-1 block text-xs font-medium">نام شما</label>
                   <input
@@ -251,7 +294,7 @@ export const NewsPage: React.FC = () => {
                   disabled={isSubmitting || !captchaKey}
                   className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
                 >
-                  {isSubmitting ? 'در حال ارسال...' : 'ارسال دیدگاه'}
+                  {isSubmitting ? 'در حال ارسال...' : replyTo ? 'ارسال پاسخ' : 'ارسال دیدگاه'}
                 </button>
               </form>
             </section>
@@ -283,6 +326,12 @@ export const NewsPage: React.FC = () => {
                 <span>{art.category_fa}</span>
                 <span>·</span>
                 <span>{art.published_at}</span>
+                {art.author_fa && (
+                  <>
+                    <span>·</span>
+                    <span>نویسنده: {art.author_fa}</span>
+                  </>
+                )}
               </div>
               <h2 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
                 {language === 'fa' ? art.title_fa : art.title_en}

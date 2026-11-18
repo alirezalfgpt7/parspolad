@@ -290,6 +290,8 @@ class AdminResourceController extends Controller
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'requires_auth' => ['sometimes', 'boolean'],
+            'alt_text' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'description' => ['sometimes', 'nullable', 'string', 'max:5000'],
         ]);
         if (array_key_exists('requires_auth', $data)) {
             $storage->setVisibility($media, (bool) $data['requires_auth']);

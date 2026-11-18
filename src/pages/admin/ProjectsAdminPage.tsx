@@ -38,9 +38,9 @@ const categoryFormSchema = z.object({
   slug: z.string().trim().min(1).max(120),
   name_fa: z.string().trim().min(1, 'نام فارسی دسته الزامی است.').max(255),
   name_en: z.string().trim().min(1, 'نام انگلیسی دسته الزامی است.').max(255),
-  icon: z.string().max(80).optional(),
+  icon: z.string().max(80).nullish(),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'رنگ دسته باید کد HEX معتبر باشد.'),
-  description_fa: z.string().optional(),
+  description_fa: z.string().nullish(),
 });
 
 export const ProjectsAdminPage: React.FC = () => {
@@ -221,6 +221,11 @@ export const ProjectsAdminPage: React.FC = () => {
                 <label className="mb-1 block text-xs font-medium">عنوان انگلیسی</label>
                 <input required dir="ltr" value={editing.title_en || ''} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
               </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium">شناسهٔ لینک پروژه (slug)</label>
+                <input dir="ltr" value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <p dir="ltr" className="mt-1 text-xs text-slate-500">/projects/{editing.slug || ':slug'}</p>
+              </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <SearchableSelect
@@ -287,6 +292,11 @@ export const ProjectsAdminPage: React.FC = () => {
             <div>
               <label className="mb-1 block text-xs font-medium">نام انگلیسی</label>
               <input dir="ltr" value={catModal.name_en || ''} onChange={(e) => setCatModal({ ...catModal, name_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium">شناسهٔ لینک دسته (slug)</label>
+              <input dir="ltr" required value={catModal.slug || ''} onChange={(e) => setCatModal({ ...catModal, slug: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <p dir="ltr" className="mt-1 text-xs text-slate-500">/projects?category={catModal.slug || '<slug>'}</p>
             </div>
             <ColorPicker label="رنگ دسته فنی" value={catModal.color || '#B91C1C'} onChange={(c) => setCatModal({ ...catModal, color: c })} />
             <div className="flex justify-end gap-2">

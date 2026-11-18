@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Exports\ActivityLogsExport;
 use App\Exports\ContractsExport;
 use App\Exports\ProjectsExport;
+use App\Enums\SlideEffectEnum;
+use App\Enums\SlideTextAnimationEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminContent\StoreAdminContentRecordRequest;
 use App\Http\Requests\AdminContent\UpdateAdminContentRecordRequest;
@@ -36,6 +38,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Activitylog\Models\Activity;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -50,8 +53,11 @@ class AdminContentController extends Controller
 
         if ($resource === 'articles') {
             $query->orderByDesc('published_at');
-        } elseif ($resource === 'kpis' || $resource === 'faqs') {
+        } elseif (in_array($resource, ['kpis', 'faqs', 'departments', 'team'], true)) {
             $query->orderBy('sort_order');
+            if ($resource === 'departments' || $resource === 'team') {
+                $query->orderBy('id');
+            }
         } else {
             $query->orderBy('id');
         }
@@ -185,7 +191,44 @@ class AdminContentController extends Controller
     public function updateSlides(Request $request, Slider $slider): JsonResponse
     {
         $this->ensurePermission($request, 'slider.manage');
-        $data = $request->validate(['slides' => ['required', 'array']]);
+        $data = $request->validate([
+            'slides' => ['required', 'array'],
+            'slides.*' => ['required', 'array'],
+            'slides.*.id' => [
+                'sometimes',
+                'integer',
+                Rule::exists('slides', 'id')->where('slider_id', $slider->id),
+            ],
+            'slides.*.title_fa' => ['required', 'string', 'max:255'],
+            'slides.*.title_en' => ['required', 'string', 'max:255'],
+            'slides.*.subtitle_fa' => ['nullable', 'string', 'max:500'],
+            'slides.*.subtitle_en' => ['nullable', 'string', 'max:500'],
+            'slides.*.cta_text_fa' => ['nullable', 'string', 'max:120'],
+            'slides.*.cta_text_en' => ['nullable', 'string', 'max:120'],
+            'slides.*.cta_link' => [
+                'nullable',
+                'string',
+                'max:255',
+                static function ($attribute, $value, $fail): void {
+                    if (!str_starts_with($value, '/') || str_starts_with($value, '//')) {
+                        $fail('پیوند اسلاید باید یک مسیر داخلی معتبر باشد.');
+                    }
+                },
+            ],
+            'slides.*.media_type' => ['required', 'in:image,video'],
+            'slides.*.desktop_media' => ['required', 'string', 'max:255'],
+            'slides.*.mobile_media' => ['nullable', 'string', 'max:255'],
+            'slides.*.text_position' => ['required', 'in:right,center,left'],
+            'slides.*.text_color' => ['required', 'string', 'max:20'],
+            'slides.*.button_color' => ['required', 'string', 'max:20'],
+            'slides.*.overlay_gradient' => ['nullable', 'string', 'max:255'],
+            'slides.*.duration_ms' => ['required', 'integer', 'min:3000', 'max:30000'],
+            'slides.*.effect' => ['required', new \Illuminate\Validation\Rules\Enum(SlideEffectEnum::class)],
+            'slides.*.text_animation' => ['required', new \Illuminate\Validation\Rules\Enum(SlideTextAnimationEnum::class)],
+            'slides.*.particles_enabled' => ['required', 'boolean'],
+            'slides.*.sort_order' => ['required', 'integer', 'min:0'],
+            'slides.*.is_active' => ['required', 'boolean'],
+        ]);
         $fillable = (new Slide)->getFillable();
 
         DB::transaction(function () use ($data, $fillable, $slider): void {
@@ -225,9 +268,16 @@ class AdminContentController extends Controller
     public function updateMenu(Request $request, Menu $menu): JsonResponse
     {
         $this->ensurePermission($request, 'menus.manage');
-        $data = $request->validate(['items' => ['required', 'array']]);
+        $data = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.icon' => ['nullable', 'string', 'max:60'],
+            'items.*.children' => ['sometimes', 'array'],
+            'items.*.children.*' => ['array'],
+            'items.*.children.*.icon' => ['nullable', 'string', 'max:60'],
+        ]);
+        $items = $request->input('items');
 
-        DB::transaction(function () use ($data, $menu): void {
+        DB::transaction(function () use ($items, $menu): void {
             $retainedIds = [];
             $sync = function (array $items, ?int $parentId = null) use (&$sync, &$retainedIds, $menu): void {
                 foreach ($items as $itemData) {
@@ -250,7 +300,7 @@ class AdminContentController extends Controller
                 }
             };
 
-            $sync($data['items']);
+            $sync($items);
             $query = MenuItem::query()->where('menu_id', $menu->id);
             if ($retainedIds === []) {
                 $query->delete();

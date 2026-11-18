@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CaptchaChallengeController;
 use App\Http\Controllers\Api\V1\ContractController;
 use App\Http\Controllers\Api\V1\LicenseController;
+use App\Http\Controllers\Api\V1\LiveChatController;
 use App\Http\Controllers\Api\V1\MediaDownloadController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PublicController;
@@ -27,6 +28,13 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
     Route::get('/tickets/{trackingNumber}', [TicketController::class, 'show'])->middleware('throttle:10,1');
     Route::post('/tickets/{trackingNumber}/messages', [TicketController::class, 'reply'])->middleware('throttle:5,1');
     Route::post('/page-views', [VisitAnalyticsController::class, 'record'])->middleware('throttle:120,1');
+    Route::post('/live-chat/conversations', [LiveChatController::class, 'start'])->middleware('throttle:5,1');
+    Route::get('/live-chat/conversations/{conversation}/messages', [LiveChatController::class, 'visitorMessages'])
+        ->middleware('throttle:120,1')
+        ->whereNumber('conversation');
+    Route::post('/live-chat/conversations/{conversation}/messages', [LiveChatController::class, 'visitorReply'])
+        ->middleware('throttle:20,1')
+        ->whereNumber('conversation');
     Route::get('/projects', [ProjectController::class, 'index']);
     Route::get('/projects/filters', [ProjectController::class, 'filters']);
     Route::get('/projects/{slug}', [ProjectController::class, 'show']);
@@ -123,6 +131,16 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::put('/roles/{role}', [AdminResourceController::class, 'updateRole']);
             Route::delete('/roles/{role}', [AdminResourceController::class, 'destroyRole']);
             Route::get('/messages', [AdminResourceController::class, 'messages'])->middleware('permission:messages.view');
+            Route::get('/live-chat/conversations', [LiveChatController::class, 'adminIndex'])->middleware('permission:messages.view');
+            Route::get('/live-chat/conversations/{conversation}/messages', [LiveChatController::class, 'adminMessages'])
+                ->middleware('permission:messages.view')
+                ->whereNumber('conversation');
+            Route::post('/live-chat/conversations/{conversation}/messages', [LiveChatController::class, 'adminReply'])
+                ->middleware('permission:messages.manage')
+                ->whereNumber('conversation');
+            Route::put('/live-chat/conversations/{conversation}', [LiveChatController::class, 'updateStatus'])
+                ->middleware('permission:messages.manage')
+                ->whereNumber('conversation');
             Route::get('/tickets', [TicketController::class, 'adminIndex'])->middleware('permission:messages.view');
             Route::get('/tickets/{ticket}', [TicketController::class, 'adminShow'])->middleware('permission:messages.view');
             Route::put('/tickets/{ticket}', [TicketController::class, 'update'])->middleware('permission:messages.manage');

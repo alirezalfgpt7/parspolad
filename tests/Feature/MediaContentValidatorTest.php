@@ -58,3 +58,25 @@ it('stores a valid PDF upload with its detected MIME type', function (): void {
 
     Storage::disk('public')->assertExists($response->json('data.storage_path'));
 });
+
+it('allows authorized administrators to edit media alt text and description', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    $media = MediaFile::query()->create([
+        'name' => 'sample.jpg',
+        'url' => '/storage/uploads/sample.jpg',
+        'mime_type' => 'image/jpeg',
+        'extension' => 'jpg',
+        'size_bytes' => 128,
+        'folder' => 'uploads',
+    ]);
+
+    $this->actingAs($admin, 'sanctum')
+        ->putJson("/api/v1/admin/media/{$media->id}", [
+            'alt_text' => 'نمای عکس نمونه',
+            'description' => 'توضیحات تصویر نمونه برای کتابخانه رسانه.',
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.alt_text', 'نمای عکس نمونه')
+        ->assertJsonPath('data.description', 'توضیحات تصویر نمونه برای کتابخانه رسانه.');
+});

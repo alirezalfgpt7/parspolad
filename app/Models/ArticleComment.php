@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ArticleCommentStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ArticleComment extends Model
@@ -13,6 +14,7 @@ class ArticleComment extends Model
 
     protected $fillable = [
         'article_id',
+        'parent_id',
         'reviewed_by',
         'author_name',
         'body',
@@ -36,5 +38,15 @@ class ArticleComment extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id')->oldest();
     }
 }

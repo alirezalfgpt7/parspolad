@@ -12,6 +12,7 @@ import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
 import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
+import { LiveChatWidget } from '../../components/common/LiveChatWidget.tsx';
 import { DynamicLucideIcon } from '../../components/ui/LucideIconMap.tsx';
 import {
   AnimatedBackground,
@@ -504,6 +505,7 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
           registerFace
         )}
       </div>
+      {mode === 'login' && <LiveChatWidget />}
     </div>
   );
 };

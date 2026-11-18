@@ -55,10 +55,10 @@ const SYSTEM_PAGE_CARDS: Array<{ key: string; label: string; hasBadge?: boolean;
 const LOGO_FIELDS: Array<{ key: LogoPlacement; label: string; hint: string }> = [
   { key: 'navbar', label: 'لوگوی نوبار بالایی (Navbar)', hint: 'نمایش در هدر تمام صفحات عمومی (پشتیبانی از PNG/GIF/MP4)' },
   { key: 'footer', label: 'لوگوی فوتر سایت (Footer)', hint: 'نمایش در ستون معرفی فوتر پایین سایت' },
-  { key: 'admin_sidebar', label: 'لوگوی سایدبار پنل مدیریت', hint: 'آرم بالای سایدبار پنل مدیریت' },
+  { key: 'admin_sidebar', label: 'لوگوی سایدبار پنل مدیریت', hint: 'فقط آرم بالای سایدبار را تغییر می‌دهد؛ تنظیم پیش‌بارگذاری مستقل است.' },
   { key: 'login', label: 'لوگوی صفحه ورود (Login)', hint: 'روی کارت ورود نمایش داده می‌شود' },
   { key: 'register', label: 'لوگوی صفحه ثبت‌نام (Register)', hint: 'روی کارت پشتی (چرخشی سه‌بعدی) یا صفحه ثبت‌نام' },
-  { key: 'preloader', label: 'آرم / انیمیشن پیش‌بارگذاری (Preloader)', hint: 'پیشنهاد: فایل متحرک /storage/logos/preloader.gif یا /storage/videos/logo-3d.mp4' },
+  { key: 'preloader', label: 'آرم / انیمیشن پیش‌بارگذاری (Preloader)', hint: 'فقط برای صفحه پیش‌بارگذاری است و لوگوی سایدبار را تغییر نمی‌دهد.' },
   { key: 'about', label: 'آرم متحرک صفحه «درباره ما»', hint: 'نمایش در هدر صفحه درباره ما (مثلاً logo-3d.mp4)' },
   { key: 'favicon', label: 'آیکون تب مرورگر (Favicon)', hint: 'PNG یا GIF کوچک برای تب مرورگر' },
   { key: 'seo_share', label: 'تصویر اشتراک‌گذاری (SEO / OpenGraph)', hint: 'تصویر پیش‌فرض در تلگرام، لینکدین و موتورهای جستجو (PNG/JPG)' },
@@ -125,7 +125,13 @@ export const LoginAppearanceAdminPage: React.FC = () => {
         const s = settingsRes.data;
         setSiteSettings(s);
         setLoginCfg({ ...DEFAULT_LOGIN_SETTINGS, ...(s.login || {}) });
-        setLogosCfg({ ...DEFAULT_BRAND_LOGOS, ...(s.logos || {}) });
+        const savedLogos = { ...DEFAULT_BRAND_LOGOS, ...(s.logos || {}) };
+        for (const key of Object.keys(savedLogos) as LogoPlacement[]) {
+          if (savedLogos[key] === '/storage/logos/preloader.gif') {
+            savedLogos[key] = '/storage/videos/logo-3d.mp4';
+          }
+        }
+        setLogosCfg(savedLogos);
         setAppearanceCfg({ ...DEFAULT_APPEARANCE_SETTINGS, ...(s.appearance || {}) });
         setPagesConfig({ ...DEFAULT_PAGES_CONFIG, ...(s.pages_config || {}) });
         setThemeSettings(themeRes.settings);
@@ -286,6 +292,37 @@ export const LoginAppearanceAdminPage: React.FC = () => {
       addToast('success', 'تمام تنظیمات لاگین، فونت‌ها، رنگ‌ها، لوگوها و متون صفحات با موفقیت ذخیره شد.');
     } catch (error: unknown) {
       addToast('error', error instanceof Error ? error.message : 'ذخیره تنظیمات با خطا مواجه شد.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveLogos = async () => {
+    if (!siteSettings) return;
+    setSaving(true);
+    try {
+      await apiRequest('/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          company: {
+            ...siteSettings.company,
+            logo_url: logosCfg.footer || siteSettings.company.logo_url,
+            logo_small_url: logosCfg.navbar || siteSettings.company.logo_small_url,
+          },
+          map: siteSettings.map,
+          seo: {
+            ...siteSettings.seo,
+            meta_image: logosCfg.seo_share || siteSettings.seo.meta_image,
+          },
+          site: siteSettings.site,
+          logos: logosCfg,
+        }),
+      });
+      setPreviewBranding(null);
+      await fetchBootstrap();
+      addToast('success', 'تنظیمات لوگوها ذخیره و منتشر شد.');
+    } catch (error: unknown) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره لوگوها ناموفق بود.');
     } finally {
       setSaving(false);
     }
@@ -705,21 +742,51 @@ export const LoginAppearanceAdminPage: React.FC = () => {
       {tab === 'logos' && (
         <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
-            <strong>پشتیبانی کامل از آرم و فایل‌های متحرک:</strong> برای هر بخش از سایت (نوبار، فوتر، سایدبار پنل، لاگین، ثبت‌نام، پیش‌بارگذاری، صفحه درباره ما و فاوآیکون) می‌توانید تصویر ثابت (PNG/JPG/WEBP) یا فایل متحرک (<strong>GIF</strong>، <strong>MP4</strong>، <strong>WEBM</strong> مانند <code dir="ltr">/storage/videos/logo-3d.mp4</code> و <code dir="ltr">/storage/logos/preloader.gif</code>) را انتخاب و با پیش‌نمایش زنده تعریف کنید.
+            <strong>پشتیبانی کامل از آرم و فایل‌های متحرک:</strong> برای هر بخش از سایت (نوبار، فوتر، سایدبار پنل، لاگین، ثبت‌نام، پیش‌بارگذاری، صفحه درباره ما و فاوآیکون) می‌توانید تصویر ثابت (PNG/JPG/WEBP) یا فایل متحرک (GIF، MP4، WEBM) را انتخاب کنید. لوگوی پیش‌بارگذاری و سایدبار تنظیم‌های جداگانه دارند؛ برای استفاده از یک لوگو در هر دو بخش، از دکمهٔ «استفاده از این لوگو در سایدبار هم» استفاده کنید.
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             {LOGO_FIELDS.map((field) => (
-              <MediaUrlField
-                key={field.key}
-                label={field.label}
-                value={logosCfg[field.key]}
-                onChange={(url) => setLogosCfg({ ...logosCfg, [field.key]: url })}
-                folder="logos"
-                showAnimatedPresets
-                hint={field.hint}
-              />
+              <div key={field.key} className="space-y-2">
+                <MediaUrlField
+                  label={field.label}
+                  value={logosCfg[field.key]}
+                  onChange={(url) => setLogosCfg({ ...logosCfg, [field.key]: url })}
+                  folder="logos"
+                  showAnimatedPresets
+                  hint={field.hint}
+                />
+                {field.key === 'preloader' && logosCfg.preloader && logosCfg.preloader !== logosCfg.admin_sidebar && (
+                  <button
+                    type="button"
+                    onClick={() => setLogosCfg({ ...logosCfg, admin_sidebar: logosCfg.preloader })}
+                    className="rounded-lg border border-(--theme-primary)/25 px-3 py-2 text-[11px] font-semibold text-(--theme-primary) hover:bg-(--theme-primary)/5"
+                  >
+                    استفاده از این لوگو در سایدبار هم
+                  </button>
+                )}
+              </div>
             ))}
+          </div>
+          <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-950 p-1 dark:border-slate-700">
+                <BrandLogo placement="admin_sidebar" overrideUrl={logosCfg.admin_sidebar} alt="پیش‌نمایش لوگوی سایدبار" className="h-full w-full" />
+              </div>
+              <div>
+                <p className="text-xs font-bold">پیش‌نمایش لوگوی سایدبار</p>
+                <p className="mt-1 text-[11px] text-slate-500">فایل GIF یا ویدئو باید در این کادر به‌صورت متحرک دیده شود.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveLogos}
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-primary) px-4 py-2.5 text-xs font-bold text-white disabled:opacity-60"
+            >
+              <Save className="h-4 w-4" />
+              {saving ? 'در حال ذخیره...' : 'ذخیره و انتشار لوگوها'}
+            </button>
           </div>
         </section>
       )}

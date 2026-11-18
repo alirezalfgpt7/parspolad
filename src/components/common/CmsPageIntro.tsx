@@ -4,6 +4,7 @@ import { BrandLogo } from './BrandLogo.tsx';
 import { SeoHead } from './SeoHead.tsx';
 import { useCmsPage } from '../../hooks/useCmsPage.ts';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { DecorativeCube, EffectText, WaveHeroEffect } from '../effects/index.ts';
 
 interface CmsPageIntroProps {
   slug: string;
@@ -32,25 +33,41 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
       />
       <Breadcrumb items={[{ label: title }]} />
       <header className={className}>
-        <div className="flex flex-wrap items-center gap-4">
-          {logoUrl && (
-            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-              <BrandLogo overrideUrl={logoUrl} alt={title} className="h-full w-full" />
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 text-white dark:border-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-6 px-6 pt-8 pb-16 sm:px-10">
+            <div className="flex min-w-0 items-center gap-5">
+              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-slate-950 p-1 shadow-xl">
+                <BrandLogo
+                  placement="about"
+                  overrideUrl={logoUrl || undefined}
+                  alt={title}
+                  className="h-full w-full"
+                />
+              </div>
+              <div className="min-w-0">
+                <p className="mb-1 text-xs font-semibold text-amber-400">
+                  {badge || (language === 'fa' ? 'درباره ما' : 'About Us')}
+                </p>
+                <h1 className={titleClassName}>
+                  <EffectText inverse>{title}</EffectText>
+                </h1>
+                {subtitle && (
+                  <p className="mt-1.5 text-sm leading-7 text-slate-300">{subtitle}</p>
+                )}
+              </div>
             </div>
-          )}
-          <div className="min-w-0 flex-1">
-            {badge && (
-              <span className="mb-1.5 inline-block rounded-md bg-(--theme-primary)/10 px-2.5 py-0.5 text-xs font-bold text-(--theme-primary)">
-                {badge}
-              </span>
-            )}
-            <h1 className={titleClassName}>{title}</h1>
+            <DecorativeCube
+              size="lg"
+              className="hidden h-20 w-20 shrink-0 rounded-2xl border border-white/15 bg-white/5 sm:block"
+            />
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0">
+            <WaveHeroEffect bottomFill="var(--theme-bg)" tintRgb="255 255 255" heightClassName="!h-12" />
           </div>
         </div>
-        {subtitle && <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{subtitle}</p>}
         {showContent && content && (
           <div
-            className="prose mt-3 max-w-none text-sm leading-relaxed text-slate-600 dark:prose-invert dark:text-slate-300"
+            className="prose mt-5 max-w-none text-sm leading-relaxed text-slate-700 dark:prose-invert dark:text-slate-300"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
           />
         )}

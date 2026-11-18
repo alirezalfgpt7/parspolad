@@ -4,7 +4,10 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use Database\Seeders\DatabaseSeeder;
 
-beforeEach(fn () => $this->seed(DatabaseSeeder::class));
+beforeEach(function (): void {
+    $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+    $this->seed(DatabaseSeeder::class);
+});
 
 it('keeps new comments private until an authorized editor approves them', function (): void {
     config([
@@ -46,10 +49,31 @@ it('keeps new comments private until an authorized editor approves them', functi
     ])->assertOk()
         ->assertJsonPath('data.status', 'approved');
 
+    $replyCaptcha = $this->getJson('/captcha/api/public')->assertOk()->json();
+    $this->postJson("/api/v1/articles/{$article->slug}/comments", [
+        'author_name' => 'علی احمدی',
+        'body' => 'از توضیحتان ممنونم، این نکته تکمیلی را هم اضافه می‌کنم.',
+        'parent_id' => $comment->id,
+        'website' => '',
+        'captcha_key' => $replyCaptcha['key'],
+        'captcha' => 'a',
+    ])->assertCreated();
+
+    $reply = ArticleComment::query()->where('parent_id', $comment->id)->firstOrFail();
+    $this->getJson("/api/v1/articles/{$article->slug}/comments")
+        ->assertOk()
+        ->assertJsonCount(0, 'data.0.replies');
+
+    $this->withToken($token)->putJson("/api/v1/admin/comments/{$reply->id}", [
+        'status' => 'approved',
+    ])->assertOk();
+
     $this->getJson("/api/v1/articles/{$article->slug}/comments")
         ->assertOk()
         ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.body', $commentData['body']);
+        ->assertJsonPath('data.0.body', $commentData['body'])
+        ->assertJsonPath('data.0.replies.0.id', $reply->id)
+        ->assertJsonPath('data.0.replies.0.parent_id', $comment->id);
 });
 
 it('rejects article comments that fill the honeypot field', function (): void {

@@ -1,14 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { Database, Download, Save } from 'lucide-react';
+import { Database, Download, Plus, Save, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { NotificationTemplate, SiteSettings, SmsProvider } from '../../types/index.ts';
+import type { NotificationTemplate, SiteSettings, SocialLinkSetting, SmsProvider } from '../../types/index.ts';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { PartnerLogoManager } from '../../components/admin/PartnerLogoManager.tsx';
 import { EffectAction, EffectTabButton, EffectTabPanel } from '../../components/effects/index.ts';
+import { DynamicLucideIcon, LUCIDE_ICON_REGISTRY } from '../../components/ui/LucideIconMap.tsx';
+
+const legacySocialNetworks: Array<{
+  key: 'instagram_url' | 'linkedin_url' | 'aparat_url' | 'telegram_url' | 'whatsapp_url';
+  name: string;
+  icon: string;
+}> = [
+  { key: 'instagram_url', name: 'Instagram', icon: 'Instagram' },
+  { key: 'linkedin_url', name: 'LinkedIn', icon: 'Linkedin' },
+  { key: 'aparat_url', name: 'Aparat', icon: 'Clapperboard' },
+  { key: 'telegram_url', name: 'Telegram', icon: 'Send' },
+  { key: 'whatsapp_url', name: 'WhatsApp', icon: 'WhatsApp' },
+];
+
+function getLegacySocialLinks(settings: SiteSettings): SocialLinkSetting[] {
+  return legacySocialNetworks.flatMap((network, index) => {
+    const url = settings.company[network.key];
+    return url ? [{ id: index + 1, name: network.name, url, icon: network.icon, is_active: true }] : [];
+  });
+}
 
 export const SettingsAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap, token } = useAppStore();
@@ -22,9 +42,17 @@ export const SettingsAdminPage: React.FC = () => {
   const [tab, setTab] = useState<'company' | 'social' | 'email' | 'sms' | 'map_seo' | 'backup' | 'partners'>('company');
 
   useEffect(() => {
-    apiRequest<{ data: SiteSettings }>('/admin/settings').then((r) => setSettings(r.data)).catch(() => {});
+    apiRequest<{ data: SiteSettings }>('/admin/settings').then((r) => setSettings({
+      ...r.data,
+      site: {
+        ...r.data.site,
+        social_links: r.data.site.social_links ?? getLegacySocialLinks(r.data),
+      },
+    })).catch((error: unknown) => {
+      addToast('error', error instanceof Error ? error.message : 'دریافت تنظیمات ناموفق بود.');
+    });
     apiRequest<{ data: NotificationTemplate[] }>('/admin/notification-templates').then((r) => setTemplates(r.data)).catch(() => {});
-  }, []);
+  }, [addToast]);
 
   if (!settings) return <PagePreloader label="در حال دریافت تنظیمات..." />;
 
@@ -34,19 +62,18 @@ export const SettingsAdminPage: React.FC = () => {
     const payload = (() => {
       switch (tab) {
         case 'company':
-          return { company: settings.company };
+          return {
+            company: settings.company,
+            ...(settings.logos ? { logos: settings.logos } : {}),
+          };
         case 'social':
           return {
-            company: {
-              instagram_url: settings.company.instagram_url,
-              linkedin_url: settings.company.linkedin_url,
-              aparat_url: settings.company.aparat_url,
-              telegram_url: settings.company.telegram_url,
-              whatsapp_url: settings.company.whatsapp_url,
-            },
             site: {
               info_bar_enabled: settings.site.info_bar_enabled,
               info_bar_phone: settings.site.info_bar_phone,
+              info_bar_phone_enabled: settings.site.info_bar_phone_enabled,
+              info_bar_phone_icon: settings.site.info_bar_phone_icon || 'Phone',
+              social_links: settings.site.social_links ?? [],
             },
           };
         case 'email':
@@ -239,7 +266,15 @@ export const SettingsAdminPage: React.FC = () => {
               <MediaUrlField
                 label="نشان کوچک و لوگوی سربرگ / سایدبار"
                 value={settings.company.logo_small_url || ''}
-                onChange={(url) => setSettings({ ...settings, company: { ...settings.company, logo_small_url: url } })}
+                onChange={(url) => setSettings({
+                  ...settings,
+                  company: { ...settings.company, logo_small_url: url },
+                  logos: {
+                    ...(settings.logos || {}),
+                    navbar: url,
+                    admin_sidebar: url,
+                  },
+                })}
                 folder="logos"
                 placeholder="/storage/logos/logo-small.png"
                 showAnimatedPresets
@@ -250,46 +285,177 @@ export const SettingsAdminPage: React.FC = () => {
       )}
 
       {tab === 'social' && (
-        <EffectTabPanel className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
-          <label className="flex items-center gap-2 text-xs font-semibold sm:col-span-2">
-            <input
-              type="checkbox"
-              checked={settings.site.info_bar_enabled ?? true}
-              onChange={(e) => setSettings({ ...settings, site: { ...settings.site, info_bar_enabled: e.target.checked } })}
-            />
-            <span>نمایش نوار باریک تماس و شبکه‌های اجتماعی در صفحه اصلی</span>
-          </label>
+        <EffectTabPanel className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <div>
-            <label className="mb-1 block text-xs font-medium">شماره تماس نوار بالای صفحه</label>
-            <input
-              dir="ltr"
-              value={settings.site.info_bar_phone || settings.company.commercial_phone || ''}
-              onChange={(e) => setSettings({ ...settings, site: { ...settings.site, info_bar_phone: e.target.value } })}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-            />
-          </div>
-          <p className="self-end text-xs leading-6 text-slate-500">
-            لینک‌هایی که خالی بمانند در نوار سایت نمایش داده نمی‌شوند.
-          </p>
-          {([
-            ['instagram_url', 'Instagram'],
-            ['linkedin_url', 'LinkedIn'],
-            ['aparat_url', 'Aparat'],
-            ['telegram_url', 'Telegram'],
-            ['whatsapp_url', 'WhatsApp'],
-          ] as const).map(([key, label]) => (
-            <div key={key}>
-              <label className="mb-1 block text-xs font-medium">پیوند {label}</label>
+            <label className="flex items-center gap-2 text-xs font-semibold sm:col-span-2">
               <input
-                dir="ltr"
-                type="url"
-                value={settings.company[key] || ''}
-                onChange={(e) => setSettings({ ...settings, company: { ...settings.company, [key]: e.target.value } })}
-                placeholder={`https://${label.toLowerCase()}.com/...`}
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                type="checkbox"
+                checked={settings.site.info_bar_enabled ?? true}
+                onChange={(e) => setSettings({ ...settings, site: { ...settings.site, info_bar_enabled: e.target.checked } })}
               />
+              <span>نمایش نوار باریک تماس و شبکه‌های اجتماعی در سربرگ سایت</span>
+            </label>
+            <p className="mt-2 text-xs leading-6 text-slate-500">
+              برای هر شبکه می‌توانید نام، لینک، آیکن و وضعیت نمایش را جداگانه تنظیم کنید.
+              گزینهٔ واتساپ در فهرست آیکن‌ها موجود است.
+            </p>
+          </div>
+
+          <div className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+            <div className="grid items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-800/40 sm:grid-cols-[minmax(8rem,1fr)_minmax(12rem,2fr)_minmax(9rem,1fr)_auto_auto]">
+              <span className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+                تلفن
+              </span>
+              <input
+                aria-label="شماره تلفن نوار بالای صفحه"
+                dir="ltr"
+                type="tel"
+                value={settings.site.info_bar_phone || settings.company.commercial_phone || ''}
+                onChange={(event) => setSettings({
+                  ...settings,
+                  site: { ...settings.site, info_bar_phone: event.target.value },
+                })}
+                className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+              />
+              <label className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 dark:border-slate-700 dark:bg-slate-900">
+                <DynamicLucideIcon name={settings.site.info_bar_phone_icon || 'Phone'} className="h-4 w-4 shrink-0 text-(--theme-primary)" />
+                <select
+                  aria-label="آیکن شماره تلفن"
+                  value={settings.site.info_bar_phone_icon || 'Phone'}
+                  onChange={(event) => setSettings({
+                    ...settings,
+                    site: { ...settings.site, info_bar_phone_icon: event.target.value },
+                  })}
+                  className="min-w-0 flex-1 bg-transparent py-2 text-xs outline-none dark:bg-slate-900"
+                >
+                  {Object.entries(LUCIDE_ICON_REGISTRY).map(([name, entry]) => (
+                    <option key={name} value={name}>{entry.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center gap-2 whitespace-nowrap text-xs">
+                <input
+                  type="checkbox"
+                  checked={settings.site.info_bar_phone_enabled !== false}
+                  onChange={(event) => setSettings({
+                    ...settings,
+                    site: { ...settings.site, info_bar_phone_enabled: event.target.checked },
+                  })}
+                />
+                <span>نمایش</span>
+              </label>
+              <span aria-hidden="true" className="h-9 w-9" />
             </div>
-          ))}
+            {(settings.site.social_links ?? []).map((link) => (
+              <div key={link.id} className="grid items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-800/40 sm:grid-cols-[minmax(8rem,1fr)_minmax(12rem,2fr)_minmax(9rem,1fr)_auto_auto]">
+                <input
+                  aria-label="نام شبکه اجتماعی"
+                  value={link.name}
+                  onChange={(event) => setSettings({
+                    ...settings,
+                    site: {
+                      ...settings.site,
+                      social_links: settings.site.social_links?.map((item) => item.id === link.id
+                        ? { ...item, name: event.target.value }
+                        : item),
+                    },
+                  })}
+                  placeholder="نام شبکه"
+                  className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                />
+                <input
+                  aria-label={`پیوند ${link.name}`}
+                  dir="ltr"
+                  type="url"
+                  value={link.url}
+                  onChange={(event) => setSettings({
+                    ...settings,
+                    site: {
+                      ...settings.site,
+                      social_links: settings.site.social_links?.map((item) => item.id === link.id
+                        ? { ...item, url: event.target.value }
+                        : item),
+                    },
+                  })}
+                  placeholder="https://..."
+                  className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                />
+                <label className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 dark:border-slate-700 dark:bg-slate-900">
+                  <DynamicLucideIcon name={link.icon} fallback="Globe" className="h-4 w-4 shrink-0 text-(--theme-primary)" />
+                  <select
+                    aria-label={`آیکن ${link.name}`}
+                    value={link.icon}
+                    onChange={(event) => setSettings({
+                      ...settings,
+                      site: {
+                        ...settings.site,
+                        social_links: settings.site.social_links?.map((item) => item.id === link.id
+                          ? { ...item, icon: event.target.value }
+                          : item),
+                      },
+                    })}
+                    className="min-w-0 flex-1 bg-transparent py-2 text-xs outline-none dark:bg-slate-900"
+                  >
+                    {Object.entries(LUCIDE_ICON_REGISTRY).map(([name, entry]) => (
+                      <option key={name} value={name}>{entry.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex items-center gap-2 whitespace-nowrap text-xs">
+                  <input
+                    type="checkbox"
+                    checked={link.is_active}
+                    onChange={(event) => setSettings({
+                      ...settings,
+                      site: {
+                        ...settings.site,
+                        social_links: settings.site.social_links?.map((item) => item.id === link.id
+                          ? { ...item, is_active: event.target.checked }
+                          : item),
+                      },
+                    })}
+                  />
+                  <span>نمایش</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setSettings({
+                    ...settings,
+                    site: {
+                      ...settings.site,
+                      social_links: settings.site.social_links?.filter((item) => item.id !== link.id),
+                    },
+                  })}
+                  aria-label={`حذف ${link.name}`}
+                  className="grid h-9 w-9 place-items-center rounded-lg text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const links = settings.site.social_links ?? [];
+                const id = Math.max(Date.now(), ...links.map((link) => link.id)) + 1;
+                setSettings({
+                  ...settings,
+                  site: {
+                    ...settings.site,
+                    social_links: [
+                      ...links,
+                      { id, name: 'شبکه اجتماعی جدید', url: '', icon: 'Globe', is_active: true },
+                    ],
+                  },
+                });
+              }}
+              disabled={(settings.site.social_links?.length ?? 0) >= 12}
+              className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-(--theme-primary) hover:text-(--theme-primary) disabled:opacity-50 dark:border-slate-700 dark:text-slate-300"
+            >
+              <Plus className="h-4 w-4" />
+              افزودن شبکه اجتماعی
+            </button>
+          </div>
         </EffectTabPanel>
       )}
 

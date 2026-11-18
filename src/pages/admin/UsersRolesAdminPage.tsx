@@ -42,7 +42,7 @@ const roleFormSchema = z.object({
 });
 
 export const UsersRolesAdminPage: React.FC = () => {
-  const { addToast } = useAppStore();
+  const { addToast, language } = useAppStore();
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -54,6 +54,66 @@ export const UsersRolesAdminPage: React.FC = () => {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [userForm, setUserForm] = useState<UserForm>(emptyUser);
   const [roleForm, setRoleForm] = useState<RoleForm>(emptyRole);
+  const permissionNamesFa: Record<string, string> = {
+    'dashboard.view': 'مشاهدهٔ داشبورد',
+    'analytics.view': 'مشاهدهٔ آمار و تحلیل‌ها',
+    'theme.manage': 'مدیریت تم',
+    'themes.manage': 'مدیریت تم‌ها',
+    'slider.manage': 'مدیریت اسلایدر',
+    'sliders.manage': 'مدیریت اسلایدرها',
+    'projects.manage': 'مدیریت پروژه‌ها',
+    'projects.view': 'مشاهدهٔ پروژه‌ها',
+    'contracts.manage': 'مدیریت قراردادها',
+    'contracts.view': 'مشاهدهٔ قراردادها',
+    'licenses.manage': 'مدیریت گواهینامه‌ها',
+    'licenses.view': 'مشاهدهٔ گواهینامه‌ها',
+    'menus.manage': 'مدیریت منوها',
+    'cms.manage': 'مدیریت محتوای سایت',
+    'pages.manage': 'مدیریت صفحات',
+    'organization.manage': 'مدیریت ساختار سازمانی',
+    'media.manage': 'مدیریت کتابخانه رسانه',
+    'messages.manage': 'مدیریت پیام‌ها',
+    'messages.view': 'مشاهدهٔ پیام‌ها',
+    'comments.manage': 'مدیریت دیدگاه‌ها',
+    'users.manage': 'مدیریت کاربران و نقش‌ها',
+    'users.view': 'مشاهدهٔ کاربران و نقش‌ها',
+    'settings.manage': 'مدیریت تنظیمات سامانه',
+    'reports.export': 'دریافت گزارش‌ها',
+    'documents.download_authorized': 'دریافت اسناد مجاز',
+    'profile.manage': 'مدیریت پروفایل',
+    'notifications.view': 'مشاهدهٔ اعلان‌ها',
+    'logs.view': 'مشاهدهٔ گزارش رویدادها',
+  };
+  const permissionNamesEn: Record<string, string> = {
+    'dashboard.view': 'View dashboard',
+    'analytics.view': 'View analytics',
+    'theme.manage': 'Manage theme',
+    'themes.manage': 'Manage themes',
+    'slider.manage': 'Manage slider',
+    'sliders.manage': 'Manage sliders',
+    'projects.manage': 'Manage projects',
+    'projects.view': 'View projects',
+    'contracts.manage': 'Manage contracts',
+    'contracts.view': 'View contracts',
+    'licenses.manage': 'Manage licenses',
+    'licenses.view': 'View licenses',
+    'menus.manage': 'Manage menus',
+    'cms.manage': 'Manage site content',
+    'pages.manage': 'Manage pages',
+    'organization.manage': 'Manage organization',
+    'media.manage': 'Manage media library',
+    'messages.manage': 'Manage messages',
+    'messages.view': 'View messages',
+    'comments.manage': 'Manage comments',
+    'users.manage': 'Manage users and roles',
+    'users.view': 'View users and roles',
+    'settings.manage': 'Manage system settings',
+    'reports.export': 'Export reports',
+    'documents.download_authorized': 'Download authorized documents',
+    'profile.manage': 'Manage profile',
+    'notifications.view': 'View notifications',
+    'logs.view': 'View activity logs',
+  };
 
   const load = async (targetPage = page) => {
     try {
@@ -294,7 +354,9 @@ export const UsersRolesAdminPage: React.FC = () => {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="py-2.5 text-start font-bold">مجوز (Permission)</th>
+                <th className="py-2.5 text-start font-bold">
+                  {language === 'fa' ? 'صفحه و دسترسی' : 'Page & permission'}
+                </th>
                 {roles.map((role) => (
                   <th key={role.id} className="min-w-28 px-3 py-2.5 text-center font-bold">
                     <span>{role.label_fa}</span>
@@ -315,7 +377,18 @@ export const UsersRolesAdminPage: React.FC = () => {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {permissions.map((permission) => (
                 <tr key={permission}>
-                  <td className="py-2.5 font-mono text-slate-600 dark:text-slate-300">{permission}</td>
+                  <td className="py-2.5">
+                    <div className="font-semibold text-slate-800 dark:text-slate-200">
+                      {language === 'fa'
+                        ? permissionNamesFa[permission] || permission
+                        : permissionNamesEn[permission] || permission}
+                    </div>
+                    {language === 'fa' && (
+                      <div dir="ltr" className="mt-0.5 text-start font-mono text-[10px] text-slate-400">
+                        {permission}
+                      </div>
+                    )}
+                  </td>
                   {roles.map((role) => {
                     const checked = role.permissions.includes('*') || role.permissions.includes(permission);
                     return (

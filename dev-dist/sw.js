@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
+define(['./workbox-b4e67f7e'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -81,11 +81,67 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.va3inbmia5g"
+    "revision": "0.77c5b5aj234"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/]
   }));
+  workbox.registerRoute(({
+    url
+  }) => url.origin === self.location.origin && /^\/(?:storage|images)\//.test(url.pathname) && /\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(url.pathname), new workbox.CacheFirst({
+    "cacheName": "public-media-immutable-images-v1",
+    plugins: [new workbox.CacheableResponsePlugin({
+      statuses: [200]
+    }), new workbox.ExpirationPlugin({
+      maxEntries: 60,
+      maxAgeSeconds: 2592000,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(({
+    url
+  }) => url.origin === self.location.origin && /^\/(?:storage|images)\//.test(url.pathname) && /\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(url.pathname), new workbox.NetworkFirst({
+    "cacheName": "public-media-images-v1",
+    "networkTimeoutSeconds": 3,
+    "fetchOptions": {
+      "cache": "no-cache"
+    },
+    plugins: [new workbox.CacheableResponsePlugin({
+      statuses: [200]
+    }), new workbox.ExpirationPlugin({
+      maxEntries: 40,
+      maxAgeSeconds: 2592000,
+      purgeOnQuotaError: true
+    })]
+  }), 'GET');
+  workbox.registerRoute(({
+    url
+  }) => url.origin === self.location.origin && /^\/(?:storage|images)\//.test(url.pathname) && /\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:mp4|webm|ogv|ogg)$/i.test(url.pathname), new workbox.CacheFirst({
+    "cacheName": "public-media-immutable-videos-v1",
+    plugins: [new workbox.CacheableResponsePlugin({
+      statuses: [200]
+    }), new workbox.ExpirationPlugin({
+      maxEntries: 2,
+      maxAgeSeconds: 604800,
+      purgeOnQuotaError: true
+    }), new workbox.RangeRequestsPlugin()]
+  }), 'GET');
+  workbox.registerRoute(({
+    url
+  }) => url.origin === self.location.origin && /^\/(?:storage|images)\//.test(url.pathname) && /\.(?:mp4|webm|ogv|ogg)$/i.test(url.pathname), new workbox.NetworkFirst({
+    "cacheName": "public-media-videos-v1",
+    "networkTimeoutSeconds": 3,
+    "fetchOptions": {
+      "cache": "no-cache"
+    },
+    plugins: [new workbox.CacheableResponsePlugin({
+      statuses: [200]
+    }), new workbox.ExpirationPlugin({
+      maxEntries: 2,
+      maxAgeSeconds: 604800,
+      purgeOnQuotaError: true
+    }), new workbox.RangeRequestsPlugin()]
+  }), 'GET');
 
 }));

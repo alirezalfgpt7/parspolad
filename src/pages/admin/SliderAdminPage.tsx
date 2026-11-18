@@ -10,6 +10,7 @@ import { Modal } from '../../components/ui/Modal.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
 
 const EFFECTS: Array<{ value: SlideEffect; label: string }> = [
   { value: 'ken-burns', label: 'Ken Burns (زوم نرم سینمایی)' },
@@ -25,6 +26,37 @@ const TEXT_ANIMS: Array<{ value: SlideTextAnimation; label: string }> = [
   { value: 'typewriter', label: 'Typewriter (ماشین تحریر)' },
   { value: 'mask-reveal', label: 'Mask Reveal' },
 ];
+
+const CTA_DESTINATIONS = [
+  { value: '/', label: 'صفحه اصلی' },
+  { value: '/about', label: 'درباره ما' },
+  { value: '/services', label: 'خدمات' },
+  { value: '/products', label: 'محصولات' },
+  { value: '/projects', label: 'پروژه‌ها' },
+  { value: '/contracts-licenses', label: 'قراردادها و گواهینامه‌ها' },
+  { value: '/org-chart', label: 'ساختار سازمانی' },
+  { value: '/news', label: 'اخبار و مقالات' },
+  { value: '/contact', label: 'تماس با ما' },
+  { value: '/rfq', label: 'درخواست همکاری' },
+  { value: '/faq', label: 'سوالات متداول' },
+  { value: '/legal', label: 'قوانین' },
+  { value: '/sitemap', label: 'نقشه سایت' },
+] as const;
+
+const OVERLAY_PRESETS = [
+  {
+    label: 'تیره از سمت چپ',
+    value: 'linear-gradient(90deg, rgba(10,15,28,0.88) 0%, rgba(15,23,42,0.4) 100%)',
+  },
+  {
+    label: 'تیره از پایین',
+    value: 'linear-gradient(180deg, rgba(15,23,42,0.35) 0%, rgba(15,23,42,0.82) 100%)',
+  },
+  {
+    label: 'تیره ملایم',
+    value: 'linear-gradient(90deg, rgba(10,15,28,0.55) 0%, rgba(15,23,42,0.18) 100%)',
+  },
+] as const;
 
 const slideFormSchema = z.object({
   slider_id: z.number().int().positive(),
@@ -42,12 +74,39 @@ const slideFormSchema = z.object({
   text_color: z.string().min(1).max(20),
   button_color: z.string().min(1).max(20),
   overlay_gradient: z.string().max(255).nullish().transform((value) => value ?? ''),
-  duration_ms: z.number().int().min(2000).max(30000),
+  duration_ms: z.number().int().min(3000).max(30000),
   effect: z.enum(['ken-burns', 'fade', 'slide', 'zoom-in', 'parallax']),
   text_animation: z.enum(['fade-up', 'split-text', 'typewriter', 'mask-reveal']),
   particles_enabled: z.boolean(),
   sort_order: z.number().int().min(0),
   is_active: z.boolean(),
+}).superRefine((slide, context) => {
+  const desktopIsVideo = isVideoMediaUrl(slide.desktop_media);
+  if ((slide.media_type === 'video') !== desktopIsVideo) {
+    context.addIssue({
+      code: 'custom',
+      path: ['desktop_media'],
+      message: slide.media_type === 'video'
+        ? 'برای نوع ویدیو، فایل دسکتاپ باید MP4 یا WebM باشد.'
+        : 'فایل دسکتاپ ویدیویی است؛ نوع رسانه را روی ویدیو بگذارید.',
+    });
+  }
+
+  if ((slide.cta_text_fa.trim() || slide.cta_text_en.trim()) && !slide.cta_link.trim()) {
+    context.addIssue({
+      code: 'custom',
+      path: ['cta_link'],
+      message: 'برای نمایش دکمه، مقصد آن را انتخاب یا وارد کنید.',
+    });
+  }
+
+  if (slide.cta_link && (!slide.cta_link.startsWith('/') || slide.cta_link.startsWith('//'))) {
+    context.addIssue({
+      code: 'custom',
+      path: ['cta_link'],
+      message: 'مسیر داخلی باید با / شروع شود؛ برای مقصدهای رایج از فهرست استفاده کنید.',
+    });
+  }
 });
 
 export const SliderAdminPage: React.FC = () => {
@@ -61,6 +120,7 @@ export const SliderAdminPage: React.FC = () => {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [savingSlide, setSavingSlide] = useState(false);
   const slider = sliders.find((item) => item.id === selectedSliderId) ?? null;
 
   useEffect(() => {
@@ -96,10 +156,17 @@ export const SliderAdminPage: React.FC = () => {
 
   const persistSlides = async (nextSlides: Slide[], successMessage = 'ترتیب و تنظیمات اسلایدر با موفقیت ذخیره شد.') => {
     if (!slider) return;
-    await apiRequest(`/admin/sliders/${slider.id}/slides`, {
+    const slidesToSave = nextSlides.map(({ id, ...slide }) => ({
+      ...slide,
+      ...(id > 0 ? { id } : {}),
+    }));
+    const response = await apiRequest<{ data: Slider }>(`/admin/sliders/${slider.id}/slides`, {
       method: 'PUT',
-      body: JSON.stringify({ slides: nextSlides }),
+      body: JSON.stringify({ slides: slidesToSave }),
     });
+    const savedSlides = [...response.data.slides].sort((a, b) => a.sort_order - b.sort_order);
+    setSlides(savedSlides);
+    setSliders((current) => current.map((item) => item.id === response.data.id ? response.data : item));
     await fetchBootstrap();
     addToast('success', successMessage);
   };
@@ -110,15 +177,18 @@ export const SliderAdminPage: React.FC = () => {
     const [moved] = copy.splice(dragIdx, 1);
     copy.splice(targetIdx, 0, moved);
     const reordered = copy.map((s, idx) => ({ ...s, sort_order: idx + 1 }));
-    setSlides(reordered);
     setDragIdx(null);
-    await persistSlides(reordered);
+    try {
+      await persistSlides(reordered);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره ترتیب اسلایدها ناموفق بود.');
+    }
   };
 
   const openNewSlide = () => {
     if (!slider) return;
     setEditing({
-      id: Date.now(),
+      id: -Date.now(),
       slider_id: slider.id,
       title_fa: 'عنوان اسلاید جدید',
       title_en: 'New Slide Headline',
@@ -156,9 +226,15 @@ export const SliderAdminPage: React.FC = () => {
     const next = exists
       ? slides.map((s) => (s.id === editing.id ? validatedSlide : s))
       : [...slides, validatedSlide];
-    setSlides(next);
-    setEditing(null);
-    await persistSlides(next);
+    setSavingSlide(true);
+    try {
+      await persistSlides(next);
+      setEditing(null);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ذخیره اسلاید ناموفق بود.');
+    } finally {
+      setSavingSlide(false);
+    }
   };
 
   const confirmDeleteSlide = async () => {
@@ -168,7 +244,6 @@ export const SliderAdminPage: React.FC = () => {
     setDeleting(true);
     try {
       await persistSlides(next, 'اسلاید حذف شد.');
-      setSlides(next);
       setDeleteId(null);
     } catch (error) {
       addToast('error', error instanceof Error ? error.message : 'حذف اسلاید ناموفق بود.');
@@ -273,7 +348,14 @@ export const SliderAdminPage: React.FC = () => {
         ))}
       </div>
 
-      <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title="ویرایش اسلاید صفحه اول" size="xl">
+      <Modal
+        open={Boolean(editing)}
+        onClose={() => {
+          if (!savingSlide) setEditing(null);
+        }}
+        title={editing && editing.id < 0 ? 'افزودن اسلاید' : 'ویرایش اسلاید'}
+        size="xl"
+      >
         {editing && (
           <form onSubmit={saveSlideEdit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -283,27 +365,61 @@ export const SliderAdminPage: React.FC = () => {
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium">عنوان انگلیسی</label>
-                <input value={editing.title_en} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <input required value={editing.title_en} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
               </div>
             </div>
 
-            <div>
-              <label className="mb-1 block text-xs font-medium">زیرعنوان فارسی</label>
-              <textarea rows={2} value={editing.subtitle_fa} onChange={(e) => setEditing({ ...editing, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium">زیرعنوان فارسی</label>
+                <textarea rows={2} value={editing.subtitle_fa} onChange={(e) => setEditing({ ...editing, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium">زیرعنوان انگلیسی</label>
+                <textarea rows={2} value={editing.subtitle_en} onChange={(e) => setEditing({ ...editing, subtitle_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">متن دکمه (CTA)</label>
+                <label className="mb-1 block text-xs font-medium">متن دکمه فارسی</label>
                 <input value={editing.cta_text_fa} onChange={(e) => setEditing({ ...editing, cta_text_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">لینک دکمه</label>
-                <input dir="ltr" value={editing.cta_link} onChange={(e) => setEditing({ ...editing, cta_link: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium">متن دکمه انگلیسی</label>
+                <input dir="ltr" value={editing.cta_text_en} onChange={(e) => setEditing({ ...editing, cta_text_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium">مقصد پیشنهادی دکمه</label>
+                <select
+                  value={CTA_DESTINATIONS.some((route) => route.value === editing.cta_link) ? editing.cta_link : ''}
+                  onChange={(event) => setEditing({ ...editing, cta_link: event.target.value })}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                >
+                  <option value="">انتخاب از مسیرهای آماده</option>
+                  {CTA_DESTINATIONS.map((route) => (
+                    <option key={route.value} value={route.value}>{route.label} — {route.value}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-slate-500">برای مثال، «پروژه‌ها» مسیر /projects را تنظیم می‌کند.</p>
               </div>
               <div>
+                <label className="mb-1 block text-xs font-medium">مسیر داخلی سفارشی</label>
+                <input dir="ltr" value={editing.cta_link} onChange={(e) => setEditing({ ...editing, cta_link: e.target.value })} placeholder="/projects/example" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <p className="mt-1 text-[11px] text-slate-500">مسیر باید با / شروع شود. اگر متن دکمه خالی باشد، دکمه نمایش داده نمی‌شود.</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
                 <label className="mb-1 block text-xs font-medium">مدت نمایش (میلی‌ثانیه)</label>
-                <input type="number" min={2000} step={500} value={editing.duration_ms} onChange={(e) => setEditing({ ...editing, duration_ms: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <input type="number" min={3000} max={30000} step={500} value={editing.duration_ms} onChange={(e) => setEditing({ ...editing, duration_ms: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <p className="mt-1 text-[11px] text-slate-500">
+                  معادل {(editing.duration_ms / 1000).toLocaleString('fa-IR', { maximumFractionDigits: 2 })} ثانیه؛ حد مجاز ۳ تا ۳۰ ثانیه است.
+                </p>
               </div>
             </div>
 
@@ -336,21 +452,42 @@ export const SliderAdminPage: React.FC = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <MediaUrlField
-                label="رسانه دسکتاپ (تصویر، GIF یا ویدیو)"
+                label="رسانه دسکتاپ (منبع اصلی)"
                 value={editing.desktop_media}
                 onChange={(url) => setEditing({ ...editing, desktop_media: url })}
                 folder="hero"
                 accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm"
                 placeholder="/storage/hero/hero-banner.jpg"
+                hint="نوع فایل دسکتاپ باید با «نوع رسانه» هماهنگ باشد. فایل ویدیویی روی دسکتاپ با دکمه پخش اجرا می‌شود."
               />
               <MediaUrlField
-                label="رسانه موبایل"
+                label="رسانه جایگزین موبایل"
                 value={editing.mobile_media}
                 onChange={(url) => setEditing({ ...editing, mobile_media: url })}
                 folder="hero"
                 accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm"
                 placeholder="/storage/hero/hero-banner.jpg"
+                hint="فقط در نمایشگرهای موبایل استفاده می‌شود؛ اگر خالی باشد، رسانه دسکتاپ به‌کار می‌رود."
               />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium">پوشش رنگی روی تصویر (Overlay)</label>
+                <select
+                  value={OVERLAY_PRESETS.some((preset) => preset.value === editing.overlay_gradient) ? editing.overlay_gradient : ''}
+                  onChange={(event) => {
+                    if (event.target.value) setEditing({ ...editing, overlay_gradient: event.target.value });
+                  }}
+                  className="mb-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                >
+                  <option value="">گرادیان سفارشی</option>
+                  {OVERLAY_PRESETS.map((preset) => (
+                    <option key={preset.value} value={preset.value}>{preset.label}</option>
+                  ))}
+                </select>
+                <textarea rows={2} value={editing.overlay_gradient} onChange={(event) => setEditing({ ...editing, overlay_gradient: event.target.value })} dir="ltr" aria-label="CSS گرادیان پوشش اسلاید" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -370,10 +507,10 @@ export const SliderAdminPage: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold dark:border-slate-700">انصراف</button>
-              <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="inline-flex items-center gap-1.5 rounded-lg px-5 py-2 text-xs font-semibold text-white">
+              <button type="button" onClick={() => setEditing(null)} disabled={savingSlide} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold disabled:opacity-50 dark:border-slate-700">انصراف</button>
+              <button type="submit" disabled={savingSlide} style={{ backgroundColor: 'var(--theme-primary)' }} className="inline-flex items-center gap-1.5 rounded-lg px-5 py-2 text-xs font-semibold text-white disabled:opacity-50">
                 <Save className="h-4 w-4" />
-                <span>ذخیره اسلاید</span>
+                <span>{savingSlide ? 'در حال ذخیره...' : 'ذخیره اسلاید'}</span>
               </button>
             </div>
           </form>

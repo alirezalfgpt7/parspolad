@@ -167,6 +167,9 @@ export const NotificationsPage: React.FC = () => {
         <Bell className="h-5 w-5 text-(--theme-primary)" />
         <span>مرکز اعلان‌ها (Notification Center)</span>
       </h1>
+      <p className="text-xs leading-6 text-slate-500">
+        اعلان‌های داخل پنل را اینجا می‌بینید و می‌توانید وضعیت خوانده‌شدنشان را مدیریت کنید؛ این بخش تنظیمات ارسال ایمیل یا پیامک نیست.
+      </p>
       {items.map((n) => (
         <div key={n.id} className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <div>

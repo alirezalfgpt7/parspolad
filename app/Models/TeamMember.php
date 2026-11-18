@@ -21,11 +21,12 @@ class TeamMember extends Model
         'email',
         'phone',
         'avatar_url',
+        'sort_order',
     ];
 
     protected function casts(): array
     {
-        return ['experience_years' => 'integer'];
+        return ['experience_years' => 'integer', 'sort_order' => 'integer'];
     }
 
     public function department(): BelongsTo

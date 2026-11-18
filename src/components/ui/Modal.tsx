@@ -1,4 +1,5 @@
 import React, { useEffect, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/i18n.ts';
 import '../effects/ExplosionModal.css';
@@ -37,8 +38,8 @@ export const Modal: React.FC<ModalProps> = ({
     xl: 'max-w-5xl',
   };
 
-  return (
-    <div className="effect-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+  return createPortal(
+    <div className="effect-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
         className={cn(
           'theme-solid-surface effect-modal-panel flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900',
@@ -62,6 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
         <div className="overflow-y-auto p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

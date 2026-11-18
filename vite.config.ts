@@ -55,6 +55,80 @@ export default defineConfig(() => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,gif,woff,woff2}'],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          runtimeCaching: [
+            // Uploaded media uses unique UUID URLs; only those are safe for CacheFirst.
+            {
+              urlPattern: ({ url }) =>
+                url.origin === self.location.origin
+                && /^\/(?:storage|images)\//.test(url.pathname)
+                && /\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(url.pathname),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'public-media-immutable-images-v1',
+                cacheableResponse: { statuses: [200] },
+                expiration: {
+                  maxEntries: 60,
+                  maxAgeSeconds: 30 * 24 * 60 * 60,
+                  purgeOnQuotaError: true,
+                },
+              },
+            },
+            {
+              urlPattern: ({ url }) =>
+                url.origin === self.location.origin
+                && /^\/(?:storage|images)\//.test(url.pathname)
+                && /\.(?:avif|gif|jpe?g|png|svg|webp)$/i.test(url.pathname),
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'public-media-images-v1',
+                networkTimeoutSeconds: 3,
+                fetchOptions: { cache: 'no-cache' },
+                cacheableResponse: { statuses: [200] },
+                expiration: {
+                  maxEntries: 40,
+                  maxAgeSeconds: 30 * 24 * 60 * 60,
+                  purgeOnQuotaError: true,
+                },
+              },
+            },
+            {
+              urlPattern: ({ url }) =>
+                url.origin === self.location.origin
+                && /^\/(?:storage|images)\//.test(url.pathname)
+                && /\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:mp4|webm|ogv|ogg)$/i.test(url.pathname),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'public-media-immutable-videos-v1',
+                cacheableResponse: { statuses: [200] },
+                expiration: {
+                  maxEntries: 2,
+                  maxAgeSeconds: 7 * 24 * 60 * 60,
+                  purgeOnQuotaError: true,
+                },
+                // Cache only full responses; this plugin serves video Range requests from them.
+                rangeRequests: true,
+              },
+            },
+            {
+              urlPattern: ({ url }) =>
+                url.origin === self.location.origin
+                && /^\/(?:storage|images)\//.test(url.pathname)
+                && /\.(?:mp4|webm|ogv|ogg)$/i.test(url.pathname),
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'public-media-videos-v1',
+                networkTimeoutSeconds: 3,
+                fetchOptions: { cache: 'no-cache' },
+                cacheableResponse: { statuses: [200] },
+                expiration: {
+                  maxEntries: 2,
+                  maxAgeSeconds: 7 * 24 * 60 * 60,
+                  purgeOnQuotaError: true,
+                },
+                rangeRequests: true,
+              },
+            },
+          ],
         },
         devOptions: {
           enabled: true,

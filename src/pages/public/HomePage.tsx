@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, PlayCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Compass, Factory, PlayCircle, ShieldCheck, Wrench } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Article, Project } from '../../types/index.ts';
@@ -20,6 +20,7 @@ import {
   Reveal,
 } from '../../components/effects/index.ts';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
+import './HomePage.css';
 
 export const HomePage: React.FC = () => {
   const { bootstrap, previewPagesConfig, language } = useAppStore();
@@ -49,6 +50,41 @@ export const HomePage: React.FC = () => {
 
   const kpis = bootstrap?.kpis || [];
   const services = bootstrap?.services || [];
+  const capabilityStages = [
+    {
+      slug: 'design-engineering',
+      label_fa: 'طراحی و مهندسی',
+      label_en: 'Design & Engineering',
+      icon: <Compass className="h-5 w-5" />,
+    },
+    {
+      slug: 'precision-manufacturing',
+      label_fa: 'ساخت دقیق',
+      label_en: 'Precision Manufacturing',
+      icon: <Factory className="h-5 w-5" />,
+    },
+    {
+      slug: 'qc-hydrostatic-testing',
+      label_fa: 'آزمون و تضمین کیفیت',
+      label_en: 'Testing & Quality',
+      icon: <ShieldCheck className="h-5 w-5" />,
+    },
+    {
+      slug: 'field-installation',
+      label_fa: 'نصب و پشتیبانی',
+      label_en: 'Field Installation',
+      icon: <Wrench className="h-5 w-5" />,
+    },
+  ];
+  const capabilityServices = [...services]
+    .sort((a, b) => {
+      const stageRank = (slug: string, sortOrder: number) => {
+        const index = capabilityStages.findIndex((stage) => stage.slug === slug);
+        return index === -1 ? capabilityStages.length + sortOrder : index;
+      };
+      return stageRank(a.slug, a.sort_order) - stageRank(b.slug, b.sort_order);
+    })
+    .slice(0, 4);
   const partners = bootstrap?.partners || [];
   const banner = bootstrap?.banners?.find((b) => b.placement === 'landing_mid');
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
@@ -104,7 +140,7 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Core Capabilities Asymmetric Bento Section */}
+      {/* Full-cycle wellhead engineering and manufacturing route */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -122,49 +158,75 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {services.map((svc, idx) => {
-            const isWide = idx === 0 || idx === 3;
-            return (
-              <Reveal
-                key={svc.id}
-                delay={idx * 0.06}
-                className={`group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 ${
-                  isWide ? 'md:col-span-2' : 'md:col-span-1'
-                }`}
-              >
-                <div className={`grid h-full ${isWide ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
-                  <div className="flex flex-col justify-between p-6">
-                    <div>
-                      <span className="text-xs font-bold text-slate-400 tabular-nums">
-                        {String(idx + 1).padStart(2, '0')}.
-                      </span>
-                      <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-white">
+        <div className="home-capability-panel">
+          <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden="true">
+            <svg viewBox="0 0 180 480" className="absolute -end-2 top-1/2 h-[110%] w-36 -translate-y-1/2 text-cyan-200/50" fill="none">
+              <g stroke="currentColor" strokeWidth="2">
+                <path d="M90 10v460M54 82h72M42 96h96M58 108h64M66 108v48h48v-48M74 156v64h32v-64M45 220h90M53 236h74M78 236v58h24v-58M58 294h64M50 308h80M84 308v92M96 308v92M62 400h56M54 414h72M70 428h44" />
+                <path d="M54 82V52h72v30M42 96V76h96v20M45 220v-26h36v26M99 220v-26h36v26M58 294v-22h-22v-40M122 294v-22h22v-40" />
+                <circle cx="34" cy="214" r="13" />
+                <circle cx="146" cy="214" r="13" />
+                <circle cx="90" cy="40" r="10" />
+                <rect x="64" y="448" width="52" height="16" rx="3" />
+              </g>
+            </svg>
+          </div>
+          <div className="relative z-10 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.18em] text-cyan-200/80" dir="ltr">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+              WELLHEAD ENGINEERING FLOW
+            </div>
+            <div className="flex flex-wrap gap-2 text-[9px] font-semibold tracking-wider text-slate-300/80" dir="ltr">
+              <span className="rounded border border-white/10 px-2 py-1">DESIGN</span>
+              <span className="rounded border border-white/10 px-2 py-1">BUILD</span>
+              <span className="rounded border border-white/10 px-2 py-1">TEST</span>
+              <span className="rounded border border-white/10 px-2 py-1">DEPLOY</span>
+            </div>
+          </div>
+
+          <ol
+            dir={language === 'fa' ? 'rtl' : 'ltr'}
+            aria-label={language === 'fa' ? 'مراحل طراحی، ساخت و نصب تجهیزات' : 'Equipment design, manufacturing and installation stages'}
+            className="home-capability-flow relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+          >
+            {capabilityServices.map((svc, index) => {
+              const stageIndex = capabilityStages.findIndex((stage) => stage.slug === svc.slug);
+              const stage = capabilityStages[stageIndex === -1 ? index : stageIndex];
+
+              return (
+                <li key={svc.id} className="home-capability-station relative min-w-0">
+                  <span className="home-capability-node grid place-items-center rounded-full border border-cyan-200/50 bg-slate-950 text-cyan-100 shadow-[0_0_24px_rgb(34_211_238_/_18%)]">
+                    {stage?.icon || <Factory className="h-5 w-5" />}
+                  </span>
+                  <Reveal delay={shouldReduceMotion ? 0 : index * 0.06} className="h-full">
+                    <article className="home-capability-card flex h-full flex-col rounded-2xl border border-white/10 bg-slate-900/75 p-4 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900">
+                      <div className="mb-4 flex items-center justify-between gap-2">
+                        <span className="rounded-md bg-amber-300/10 px-2 py-1 text-[10px] font-bold text-amber-200">
+                          {language === 'fa' ? stage?.label_fa || `مرحله ${index + 1}` : stage?.label_en || `Stage ${index + 1}`}
+                        </span>
+                        <span className="font-mono text-[11px] font-bold tracking-widest text-cyan-100/60">
+                          {String(index + 1).padStart(2, '0')} / {String(capabilityServices.length).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-extrabold leading-6 text-white">
                         {language === 'fa' ? svc.title_fa : svc.title_en}
                       </h3>
-                      <p className="mt-2.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                      <p className="mt-2 line-clamp-3 flex-1 text-xs leading-6 text-slate-300">
                         {language === 'fa' ? svc.summary_fa : svc.summary_en}
                       </p>
-                    </div>
-                    <Link
-                      to="/services"
-                      className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-primary) hover:underline"
-                    >
-                      <span>{homeText('service_details')}</span>
-                      <ArrowIcon className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                  <div className="h-52 overflow-hidden bg-slate-100 sm:h-full dark:bg-slate-800">
-                    <EffectImage
-                      src={svc.image_url}
-                      alt={language === 'fa' ? svc.title_fa : svc.title_en}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                </div>
-              </Reveal>
-            );
-          })}
+                      <Link
+                        to="/services"
+                        className="mt-4 inline-flex items-center gap-1.5 border-t border-white/10 pt-3 text-[11px] font-semibold text-cyan-100 transition-colors hover:text-amber-200"
+                      >
+                        <span>{homeText('service_details')}</span>
+                        <ArrowIcon className="h-3.5 w-3.5" />
+                      </Link>
+                    </article>
+                  </Reveal>
+                </li>
+              );
+            })}
+          </ol>
         </div>
       </section>
 

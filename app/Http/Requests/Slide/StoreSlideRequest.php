@@ -32,7 +32,7 @@ class StoreSlideRequest extends FormRequest
             'text_color' => ['required', 'string', 'max:20'],
             'button_color' => ['required', 'string', 'max:20'],
             'overlay_gradient' => ['nullable', 'string', 'max:255'],
-            'duration_ms' => ['required', 'integer', 'min:2000', 'max:30000'],
+            'duration_ms' => ['required', 'integer', 'min:3000', 'max:30000'],
             'effect' => ['required', new Enum(SlideEffectEnum::class)],
             'text_animation' => ['required', new Enum(SlideTextAnimationEnum::class)],
             'particles_enabled' => ['boolean'],

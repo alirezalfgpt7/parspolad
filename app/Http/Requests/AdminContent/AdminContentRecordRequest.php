@@ -3,6 +3,7 @@
 namespace App\Http\Requests\AdminContent;
 
 use App\Support\AdminContentRegistry;
+use App\Models\Department;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -88,6 +89,39 @@ abstract class AdminContentRecordRequest extends FormRequest
             }
 
             $rules[$field] = $fieldRules;
+        }
+
+        if ($resource === 'departments') {
+            $rules['parent_id'][] = Rule::exists('departments', 'id')->whereNull('deleted_at');
+            if ($ignoreId !== null) {
+                $rules['parent_id'][] = Rule::notIn([$ignoreId]);
+                $rules['parent_id'][] = function (string $attribute, mixed $value, \Closure $fail) use ($ignoreId): void {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+
+                    $descendantIds = [];
+                    $frontier = [(int) $ignoreId];
+                    $visited = $frontier;
+                    while ($frontier !== []) {
+                        $children = Department::query()
+                            ->whereIn('parent_id', $frontier)
+                            ->whereNotIn('id', $visited)
+                            ->pluck('id')
+                            ->map(fn ($id): int => (int) $id)
+                            ->all();
+                        $descendantIds = [...$descendantIds, ...$children];
+                        $visited = [...$visited, ...$children];
+                        $frontier = $children;
+                    }
+
+                    if (in_array((int) $value, $descendantIds, true)) {
+                        $fail('واحد بالادست نمی‌تواند یکی از زیرواحدهای همین واحد باشد.');
+                    }
+                };
+            }
+        } elseif ($resource === 'team') {
+            $rules['department_id'][] = Rule::exists('departments', 'id')->whereNull('deleted_at');
         }
 
         return $rules;

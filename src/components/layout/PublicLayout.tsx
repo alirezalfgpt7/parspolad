@@ -6,6 +6,7 @@ import { PublicInfoBar } from './PublicInfoBar.tsx';
 import { PublicNavbar } from './PublicNavbar.tsx';
 import { PageTransition } from '../effects/PageTransition.tsx';
 import { ScrollToTopButton } from '../effects/ScrollToTopButton.tsx';
+import { LiveChatWidget } from '../common/LiveChatWidget.tsx';
 
 const MaintenancePage = lazy(() => import('../../pages/public/MiscPages.tsx').then((module) => ({ default: module.MaintenancePage })));
 const HeroSlider = lazy(() => import('../slider/HeroSlider.tsx').then((module) => ({ default: module.HeroSlider })));
@@ -40,6 +41,7 @@ export const PublicLayout: React.FC = () => {
       </main>
       <PublicFooter />
       <ScrollToTopButton />
+      <LiveChatWidget />
     </div>
   );
 };

@@ -6,6 +6,7 @@ use App\Enums\UserRoleEnum;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -13,6 +14,9 @@ class RoleAndAdminSeeder extends Seeder
 {
     public function run(): void
     {
+        $permissionRegistrar = app(PermissionRegistrar::class);
+        $permissionRegistrar->forgetCachedPermissions();
+
         $permissions = [
             'dashboard.view',
             'analytics.view',
@@ -48,6 +52,8 @@ class RoleAndAdminSeeder extends Seeder
             Permission::query()->firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
+        $permissionRegistrar->forgetCachedPermissions();
+
         $roles = [
             UserRoleEnum::SUPER_ADMIN->value => ['label_fa' => 'سوپر ادمین', 'label_en' => 'Super Admin', 'perms' => $permissions],
             UserRoleEnum::ADMIN->value => ['label_fa' => 'مدیر سامانه', 'label_en' => 'Admin', 'perms' => $permissions],
@@ -61,7 +67,12 @@ class RoleAndAdminSeeder extends Seeder
                 ['name' => $name, 'guard_name' => 'web'],
                 ['label_fa' => $meta['label_fa'], 'label_en' => $meta['label_en']]
             );
-            $role->syncPermissions($meta['perms']);
+            $rolePermissions = Permission::query()
+                ->where('guard_name', 'web')
+                ->whereIn('name', $meta['perms'])
+                ->get();
+
+            $role->syncPermissions($rolePermissions);
         }
 
         $adminEmail = env('SUPER_ADMIN_EMAIL', 'admin@parspooladaghaei.ir');
@@ -78,5 +89,7 @@ class RoleAndAdminSeeder extends Seeder
             ]
         );
         $superAdmin->assignRole(UserRoleEnum::SUPER_ADMIN->value);
+
+        $permissionRegistrar->forgetCachedPermissions();
     }
 }

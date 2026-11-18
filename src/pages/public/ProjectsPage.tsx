@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -19,6 +19,8 @@ interface ProjectFilterOptions {
 
 export const ProjectsPage: React.FC = () => {
   const { language, addToast } = useAppStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const category = searchParams.get('category') || '';
   const [filterOptions, setFilterOptions] = useState<ProjectFilterOptions>({
     categories: [],
     years: [],
@@ -31,13 +33,28 @@ export const ProjectsPage: React.FC = () => {
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const [category, setCategory] = useState('');
   const [year, setYear] = useState('');
   const [client, setClient] = useState('');
   const [location, setLocation] = useState('');
   const [contractType, setContractType] = useState('');
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
+
+  const updateCategory = (value: string) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (value) {
+        next.set('category', value);
+      } else {
+        next.delete('category');
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setPage(1);
+  }, [category]);
 
   useEffect(() => {
     let active = true;
@@ -155,7 +172,7 @@ export const ProjectsPage: React.FC = () => {
               />
             </div>
           </div>
-          <SearchableSelect label="دسته‌بندی فنی" options={categoryOpts} value={category} onChange={(v) => { setCategory(v); setPage(1); }} allowClear />
+          <SearchableSelect label="دسته‌بندی فنی" options={categoryOpts} value={category} onChange={updateCategory} allowClear />
           <SearchableSelect label="سال اجرا" options={yearOpts} value={year} onChange={(v) => { setYear(v); setPage(1); }} allowClear />
           <SearchableSelect label="کارفرما" options={clientOpts} value={client} onChange={(v) => { setClient(v); setPage(1); }} allowClear />
           <SearchableSelect label="موقعیت جغرافیایی" options={locationOpts} value={location} onChange={(v) => { setLocation(v); setPage(1); }} allowClear />

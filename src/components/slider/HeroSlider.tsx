@@ -68,7 +68,9 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
   const language = useAppStore((state) => state.language);
   const shouldReduceMotion = usePrefersReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 768,
+  );
   const [isPaused, setIsPaused] = useState(false);
   const activeSlides = useMemo(
     () => slides.filter((slide) => slide.is_active).sort((a, b) => a.sort_order - b.sort_order),
@@ -123,13 +125,11 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
       {activeSlides.map((slide, index) => {
         const active = activeIndex === index;
         const hasMobileMedia = isMobile && Boolean(slide.mobile_media);
-        const mobileVideoFallback = hasMobileMedia
-          && slide.media_type === 'video'
-          && !isVideoMedia(slide.mobile_media);
-        const mediaSrc = mobileVideoFallback
-          ? slide.desktop_media
-          : hasMobileMedia ? slide.mobile_media : slide.desktop_media;
-        const showVideo = slide.media_type === 'video' || isVideoMedia(mediaSrc);
+        const mediaSrc = hasMobileMedia ? slide.mobile_media : slide.desktop_media;
+        const showVideo = isVideoMedia(mediaSrc);
+        const videoPoster = isMobile && slide.mobile_media && !isVideoMedia(slide.mobile_media)
+          ? slide.mobile_media
+          : '/images/hero/slide-1.jpg';
         const title = language === 'fa' ? slide.title_fa : slide.title_en;
         const subtitle = language === 'fa' ? slide.subtitle_fa : slide.subtitle_en;
         const cta = language === 'fa' ? slide.cta_text_fa : slide.cta_text_en;
@@ -147,16 +147,23 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
             data-transition={slide.effect}
             aria-hidden={!active}
           >
-            {showVideo ? (
+            {showVideo && active && !shouldReduceMotion ? (
               <video
                 src={mediaSrc}
-                poster={mobileVideoFallback ? slide.mobile_media : undefined}
-                autoPlay={active && !shouldReduceMotion}
+                poster={videoPoster}
+                autoPlay
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                preload="auto"
                 aria-hidden="true"
+                className="effect-hero-media absolute inset-0 h-full w-full object-cover"
+              />
+            ) : showVideo ? (
+              <ZeroBrokenImage
+                src={videoPoster}
+                alt=""
+                loading={index === 0 ? 'eager' : 'lazy'}
                 className="effect-hero-media absolute inset-0 h-full w-full object-cover"
               />
             ) : (
@@ -208,7 +215,10 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
       })}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
-        <WaveHeroEffect bottomFill="var(--theme-bg)" tintRgb="255 255 255" />
+        <WaveHeroEffect
+          bottomFill="color-mix(in srgb, var(--theme-bg) 84%, #38bdf8)"
+          tintRgb="125 211 252"
+        />
       </div>
 
       {activeSlides.length > 1 && (
@@ -241,8 +251,13 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
                 aria-current={activeIndex === index ? 'true' : undefined}
                 className={cn(
                   'h-1.5 rounded-full transition-all duration-300',
-                  activeIndex === index ? 'w-8 bg-white' : 'w-3 bg-white/45 hover:bg-white/75',
+                  activeIndex === index ? 'w-8' : 'w-3',
                 )}
+                style={{
+                  backgroundColor: activeIndex === index
+                    ? 'var(--theme-primary)'
+                    : 'color-mix(in srgb, var(--theme-primary) 45%, transparent)',
+                }}
               />
             ))}
           </div>

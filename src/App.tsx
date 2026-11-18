@@ -46,6 +46,7 @@ const SettingsAdminPage = lazy(() => import('./pages/admin/SettingsAdminPage.tsx
 const SliderAdminPage = lazy(() => import('./pages/admin/SliderAdminPage.tsx').then((module) => ({ default: module.SliderAdminPage })));
 const ThemeAdminPage = lazy(() => import('./pages/admin/ThemeAdminPage.tsx').then((module) => ({ default: module.ThemeAdminPage })));
 const LoginAppearanceAdminPage = lazy(() => import('./pages/admin/LoginAppearanceAdminPage.tsx').then((module) => ({ default: module.LoginAppearanceAdminPage })));
+const LiveChatAdminPage = lazy(() => import('./pages/admin/LiveChatAdminPage.tsx').then((module) => ({ default: module.LiveChatAdminPage })));
 const UsersRolesAdminPage = lazy(() => import('./pages/admin/UsersRolesAdminPage.tsx').then((module) => ({ default: module.UsersRolesAdminPage })));
 
 const ProtectedAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -136,6 +137,7 @@ export default function App() {
               <Route path="organization" element={<OrganizationAdminPage />} />
               <Route path="media" element={<MediaLibraryPage />} />
               <Route path="messages" element={<MessagesRfqAdminPage />} />
+              <Route path="live-chat" element={<LiveChatAdminPage />} />
               <Route path="users" element={<UsersRolesAdminPage />} />
               <Route path="reports" element={<ReportsLogsAdminPage />} />
               <Route path="settings" element={<SettingsAdminPage />} />

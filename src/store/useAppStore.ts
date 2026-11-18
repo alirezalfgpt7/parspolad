@@ -153,7 +153,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   fetchBootstrap: async () => {
     try {
-      const data = await apiRequest<BootstrapPayload>('/bootstrap');
+      const data = await apiRequest<BootstrapPayload>('/bootstrap', { cache: 'no-store' });
       set({ bootstrap: data, loading: false });
     } catch {
       set({ loading: false });

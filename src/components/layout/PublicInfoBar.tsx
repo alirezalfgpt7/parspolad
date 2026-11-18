@@ -1,14 +1,15 @@
 import React from 'react';
-import { Clapperboard, Instagram, Linkedin, MessageCircle, Moon, Phone, Search, Send, Sun } from 'lucide-react';
+import { Moon, Search, Sun } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ExpandingSearchEffect } from '../effects/index.ts';
+import { DynamicLucideIcon } from '../ui/LucideIconMap.tsx';
 
 const socialNetworks = [
-  { key: 'instagram_url', label: 'Instagram', Icon: Instagram },
-  { key: 'linkedin_url', label: 'LinkedIn', Icon: Linkedin },
-  { key: 'aparat_url', label: 'Aparat', Icon: Clapperboard },
-  { key: 'telegram_url', label: 'Telegram', Icon: Send },
-  { key: 'whatsapp_url', label: 'WhatsApp', Icon: MessageCircle },
+  { key: 'instagram_url', name: 'Instagram', icon: 'Instagram' },
+  { key: 'linkedin_url', name: 'LinkedIn', icon: 'Linkedin' },
+  { key: 'aparat_url', name: 'Aparat', icon: 'Clapperboard' },
+  { key: 'telegram_url', name: 'Telegram', icon: 'Send' },
+  { key: 'whatsapp_url', name: 'WhatsApp', icon: 'WhatsApp' },
 ] as const;
 
 function safeSocialUrl(value: string | undefined): string | null {
@@ -28,7 +29,7 @@ export const PublicInfoBar: React.FC = () => {
   const site = bootstrap?.site;
   const showContactInfo = site?.info_bar_enabled !== false;
 
-  const phone = showContactInfo
+  const phone = showContactInfo && site?.info_bar_phone_enabled !== false
     ? site?.info_bar_phone?.trim()
       || company?.commercial_phone?.trim()
       || company?.office_phone?.trim()
@@ -36,10 +37,16 @@ export const PublicInfoBar: React.FC = () => {
       || ''
     : '';
   const phoneHref = phone.replace(/[^\d+]/g, '');
+  const legacyLinks = socialNetworks.flatMap(({ key, ...network }, index) => {
+    const url = company?.[key];
+    return url ? [{ id: index + 1, ...network, url, is_active: true }] : [];
+  });
+  const configuredLinks = site?.social_links?.length ? site.social_links : legacyLinks;
   const links = showContactInfo
-    ? socialNetworks
-      .map(({ key, ...network }) => ({ ...network, href: safeSocialUrl(company?.[key]) }))
-      .filter((network) => network.href)
+    ? configuredLinks.flatMap((network) => {
+      const href = safeSocialUrl(network.url);
+      return network.is_active && href ? [{ ...network, href }] : [];
+    })
     : [];
 
   return (
@@ -52,13 +59,32 @@ export const PublicInfoBar: React.FC = () => {
           {phoneHref && (
             <a
               href={`tel:${phoneHref}`}
-              dir="ltr"
               className="inline-flex items-center gap-1.5 whitespace-nowrap opacity-85 transition-opacity hover:opacity-100"
               aria-label={language === 'fa' ? `تماس با ${phone}` : `Call ${phone}`}
             >
-              <Phone className="h-3 w-3 text-(--theme-primary)" aria-hidden="true" />
-              <span>{phone}</span>
+              <DynamicLucideIcon name={site?.info_bar_phone_icon || 'Phone'} fallback="Phone" className="h-3 w-3 text-(--theme-primary)" />
+              <span dir="ltr">{phone}</span>
             </a>
+          )}
+          {phoneHref && links.length > 0 && (
+            <span aria-hidden="true" className="mx-1 h-4 border-s border-current opacity-30" />
+          )}
+          {links.length > 0 && (
+            <nav className="flex shrink-0 items-center gap-1" aria-label={language === 'fa' ? 'شبکه‌های اجتماعی' : 'Social networks'}>
+              {links.map(({ id, name, icon, href }) => (
+                <a
+                  key={id}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={name}
+                  title={name}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-75 transition-all hover:text-(--theme-primary) hover:opacity-100"
+                >
+                  <DynamicLucideIcon name={icon} fallback="Globe" className="h-3.5 w-3.5" />
+                </a>
+              ))}
+            </nav>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -105,23 +131,6 @@ export const PublicInfoBar: React.FC = () => {
               )}
             </button>
           </div>
-          {links.length > 0 && (
-            <nav className="flex shrink-0 items-center gap-1" aria-label={language === 'fa' ? 'شبکه‌های اجتماعی' : 'Social networks'}>
-              {links.map(({ label, href, Icon }) => (
-                <a
-                  key={label}
-                  href={href || undefined}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-75 transition-all hover:text-(--theme-primary) hover:opacity-100"
-                >
-                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                </a>
-              ))}
-            </nav>
-          )}
         </div>
       </div>
     </div>
