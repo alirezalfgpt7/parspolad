@@ -177,7 +177,7 @@ export const NewsPage: React.FC = () => {
           </div>
           <div className="p-6 sm:p-8">
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 tabular-nums">
-              <span>{single.category_fa}</span>
+              <span>{language === 'fa' ? single.category_fa : single.category_en}</span>
               <span>·</span>
               <span>{single.published_at}</span>
               <span>·</span>
@@ -323,7 +323,7 @@ export const NewsPage: React.FC = () => {
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2 text-xs text-slate-500 tabular-nums">
-                <span>{art.category_fa}</span>
+                <span>{language === 'fa' ? art.category_fa : art.category_en}</span>
                 <span>·</span>
                 <span>{art.published_at}</span>
                 {art.author_fa && (

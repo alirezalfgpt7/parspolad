@@ -43,7 +43,7 @@ abstract class AdminContentRecordRequest extends FormRequest
 
         $columns = collect($model->getConnection()->getSchemaBuilder()->getColumns($model->getTable()))->keyBy('name');
         $uniqueFields = match ($resource) {
-            'categories', 'services', 'products', 'articles', 'pages' => ['slug'],
+            'categories', 'services', 'products', 'articles', 'article-categories', 'pages' => ['slug'],
             'kpis' => ['key'],
             'notification-templates' => ['event_key'],
             default => [],
@@ -54,8 +54,9 @@ abstract class AdminContentRecordRequest extends FormRequest
             $column = $columns->get($field, []);
             $cast = $model->getCasts()[$field] ?? null;
             $columnType = strtolower((string) ($column['type_name'] ?? $column['type'] ?? ''));
-            $isRequired = in_array($field, AdminContentRegistry::requiredFields($resource), true)
-                || (($column['nullable'] ?? true) === false && ($column['default'] ?? null) === null);
+            $isRequired = ! ($resource === 'articles' && in_array($field, ['category_fa', 'category_en'], true))
+                && (in_array($field, AdminContentRegistry::requiredFields($resource), true)
+                || (($column['nullable'] ?? true) === false && ($column['default'] ?? null) === null));
             $fieldRules = $ignoreId === null
                 ? [$isRequired ? 'required' : 'sometimes']
                 : ($isRequired ? ['sometimes', 'required'] : ['sometimes']);
@@ -75,6 +76,10 @@ abstract class AdminContentRecordRequest extends FormRequest
             } else {
                 $fieldRules[] = 'string';
                 $fieldRules[] = 'max:10000';
+            }
+
+            if ($field === 'background_color') {
+                $fieldRules[] = 'regex:/^#[0-9a-fA-F]{6}$/';
             }
 
             if (in_array($field, $uniqueFields, true)) {
@@ -122,6 +127,8 @@ abstract class AdminContentRecordRequest extends FormRequest
             }
         } elseif ($resource === 'team') {
             $rules['department_id'][] = Rule::exists('departments', 'id')->whereNull('deleted_at');
+        } elseif ($resource === 'articles') {
+            $rules['article_category_id'][] = Rule::exists('article_categories', 'id');
         }
 
         return $rules;

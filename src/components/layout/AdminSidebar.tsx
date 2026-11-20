@@ -66,8 +66,8 @@ export const adminNavGroups: AdminNavGroup[] = [
     items: [
       { to: '/admin/projects', label_fa: 'پروژه‌ها و دسته‌ها', label_en: 'Projects', icon: FolderKanban },
       { to: '/admin/contracts-licenses', label_fa: 'قراردادها و گواهینامه‌ها', label_en: 'Contracts & Licenses', icon: Award },
-      { to: '/admin/content', label_fa: 'صفحات، خدمات و اخبار', label_en: 'CMS & Services', icon: FileText },
-      { to: '/admin/content-records', label_fa: 'مدیریت داده‌های محتوا', label_en: 'Content Data', icon: Files },
+      { to: '/admin/content', label_fa: 'صفحات و مدیریت محتوای سایت', label_en: 'Pages & Site Content', icon: FileText },
+      { to: '/admin/content-records', label_fa: 'CRUD کامل داده‌های محتوا', label_en: 'Content Data CRUD', icon: Files },
       { to: '/admin/faqs', label_fa: 'سوالات متداول', label_en: 'FAQs', icon: HelpCircle },
       { to: '/admin/media', label_fa: 'کتابخانه رسانه و فایل‌ها', label_en: 'Media Library', icon: ImageIcon },
     ],

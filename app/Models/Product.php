@@ -22,12 +22,13 @@ class Product extends Model
         'summary_fa',
         'summary_en',
         'specs',
+        'specs_en',
         'image_url',
         'catalog_url',
     ];
 
     protected function casts(): array
     {
-        return ['specs' => 'array'];
+        return ['specs' => 'array', 'specs_en' => 'array'];
     }
 }

@@ -3,10 +3,31 @@
 use App\Models\Service;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Database\Connection;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
+
+it('scopes backup table discovery to the active database schema', function (): void {
+    $schema = Mockery::mock(Builder::class);
+    $schema->shouldReceive('getCurrentSchemaName')
+        ->once()
+        ->andReturn('parspoolad_portal');
+    $schema->shouldReceive('getTableListing')
+        ->once()
+        ->with('parspoolad_portal', false)
+        ->andReturn(['services']);
+
+    $connection = Mockery::mock(Connection::class);
+    $connection->shouldReceive('getSchemaBuilder')->once()->andReturn($schema);
+
+    DB::shouldReceive('connection')->once()->andReturn($connection);
+
+    expect(app(\App\Services\DatabaseBackupService::class)->tableNames())
+        ->toBe(['services']);
+});
 
 it('exports all or selected application tables in a versioned JSON backup', function (): void {
     $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))

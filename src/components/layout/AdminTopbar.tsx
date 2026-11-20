@@ -172,7 +172,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
             <div
               id="admin-user-menu"
               role="menu"
-              className="theme-popover absolute end-0 top-full z-50 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="theme-popover absolute inset-e-0 top-full z-50 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
               style={{ backgroundColor: 'var(--theme-surface)' }}
             >
               <Link

@@ -27,6 +27,7 @@ class BootstrapService
 {
     public function getPublicBootstrap(Request $request): array
     {
+        ThemePreset::ensureBuiltInPresets();
         $themeSettings = ThemeSetting::query()->first();
 
         return [

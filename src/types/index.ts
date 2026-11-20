@@ -244,7 +244,8 @@ export interface Product {
   standard: string;
   summary_fa: string;
   summary_en: string;
-  specs: Record<string, string>;
+  specs: Record<string, string> | null;
+  specs_en?: Record<string, string> | null;
   image_url: string;
   catalog_url?: string;
 }
@@ -298,6 +299,7 @@ export interface Article {
   content_en: string;
   category_fa: string;
   category_en: string;
+  article_category_id?: number | null;
   cover_image: string;
   author_fa: string;
   published_at: string;
@@ -345,6 +347,8 @@ export interface KPI {
   value: number;
   suffix_fa: string;
   suffix_en: string;
+  icon?: string | null;
+  background_color?: string | null;
   sort_order: number;
 }
 
@@ -532,6 +536,7 @@ export interface PageOverrideEntry {
   performance_footer_fa?: string;
   performance_footer_en?: string;
   performance_background_url?: string;
+  performance_background_color?: string;
   performance_overlay_color?: string;
   performance_overlay_opacity?: number;
   section_background_color?: string;

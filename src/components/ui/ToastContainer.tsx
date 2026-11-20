@@ -8,7 +8,7 @@ export const ToastContainer: React.FC = () => {
   if (!toasts.length) return null;
 
   return (
-    <div className="fixed bottom-4 end-4 z-50 flex max-w-sm flex-col gap-2">
+    <div className="fixed bottom-4 inset-e-4 z-50 flex max-w-sm flex-col gap-2">
       {toasts.map((t) => {
         const Icon = t.type === 'success' ? CheckCircle2 : t.type === 'error' ? XCircle : Info;
         const colors =

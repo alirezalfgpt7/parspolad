@@ -13,6 +13,7 @@ import {
   Drill,
 } from 'lucide-react';
 import { formatLocalizedNumber } from '../../utils/i18n.ts';
+import { DynamicLucideIcon } from './LucideIconMap.tsx';
 import type { Language } from '../../types/index.ts';
 
 interface StatCounterProps {
@@ -21,6 +22,8 @@ interface StatCounterProps {
   label: string;
   lang: Language;
   index?: number;
+  icon?: string | null;
+  backgroundColor?: string | null;
 }
 
 const resolveIcon = (label: string, index: number) => {
@@ -43,6 +46,8 @@ export const StatCounter: React.FC<StatCounterProps> = ({
   label,
   lang,
   index = 0,
+  icon,
+  backgroundColor,
 }) => {
   const [value, setValue] = useState(0);
   const [visible, setVisible] = useState(false);
@@ -98,17 +103,19 @@ export const StatCounter: React.FC<StatCounterProps> = ({
     return () => window.clearInterval(timer);
   }, [target, visible]);
 
-  const Icon = resolveIcon(label, index);
+  const FallbackIcon = resolveIcon(label, index);
   return (
     <article
       id={`industrial-stat-${index}`}
       className="industrial-stat"
       data-cursor="industrial"
-      style={{ '--stat-order': index } as React.CSSProperties}
+      style={{ '--stat-order': index, '--stat-background': backgroundColor || undefined } as React.CSSProperties}
     >
       <div className="industrial-stat-icon-wrap">
         <span className="industrial-stat-icon">
-          <Icon size={23} strokeWidth={1.7} aria-hidden="true" />
+          {icon
+            ? <DynamicLucideIcon name={icon} className="h-23px w-23px" />
+            : <FallbackIcon size={23} strokeWidth={1.7} aria-hidden="true" />}
         </span>
         <span className="industrial-stat-icon-ring" />
       </div>

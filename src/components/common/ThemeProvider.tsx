@@ -21,6 +21,27 @@ function paletteColor(value: string | undefined, fallback: string): string {
     : fallback;
 }
 
+function relativeLuminance(hex: string): number {
+  const normalized = hex.replace('#', '');
+  if (!/^[0-9a-f]{6}$/i.test(normalized)) return 0;
+  const channels = [0, 2, 4].map((offset) => {
+    const value = parseInt(normalized.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+
+function contrastRatio(first: string, second: string): number {
+  const lighter = Math.max(relativeLuminance(first), relativeLuminance(second));
+  const darker = Math.min(relativeLuminance(first), relativeLuminance(second));
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function readableText(preferred: string, background: string): string {
+  if (contrastRatio(preferred, background) >= 4.5) return preferred;
+  return relativeLuminance(background) > 0.45 ? '#0F172A' : '#FFFFFF';
+}
+
 function applyPaletteToRoot(
   palette: Partial<ThemePalette>,
   mode: 'light' | 'dark',
@@ -54,25 +75,28 @@ function applyPaletteToRoot(
   root.style.setProperty('--theme-secondary', colors.secondary);
   root.style.setProperty('--theme-accent', colors.accent);
   root.style.setProperty('--theme-btn-bg', colors.buttonBg);
-  root.style.setProperty('--theme-btn-text', colors.buttonText);
+  root.style.setProperty('--theme-btn-text', readableText(colors.buttonText, colors.buttonBg));
   root.style.setProperty('--theme-link', colors.link);
 
   if (mode === 'light') {
     root.style.setProperty('--theme-bg', colors.background);
     root.style.setProperty('--theme-surface', colors.surface);
-    root.style.setProperty('--theme-text', colors.text);
+    root.style.setProperty('--theme-text', readableText(colors.text, colors.surface));
     root.style.setProperty('--theme-header-bg', colors.headerBg);
-    root.style.setProperty('--theme-header-text', colors.headerText);
+    root.style.setProperty('--theme-header-text', readableText(colors.headerText, colors.headerBg));
     root.style.setProperty('--theme-footer-bg', colors.footerBg);
-    root.style.setProperty('--theme-footer-text', colors.footerText);
+    root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
   } else {
-    root.style.setProperty('--theme-bg', '#0B1120');
-    root.style.setProperty('--theme-surface', '#111827');
-    root.style.setProperty('--theme-text', '#F8FAFC');
-    root.style.setProperty('--theme-header-bg', '#0F172A');
-    root.style.setProperty('--theme-header-text', '#F8FAFC');
-    root.style.setProperty('--theme-footer-bg', '#060913');
-    root.style.setProperty('--theme-footer-text', '#E2E8F0');
+    const darkBackground = paletteColor(palette.background, '#0B1120');
+    const darkSurface = paletteColor(palette.surface, '#111827');
+    const darkText = readableText(paletteColor(palette.text, '#F8FAFC'), darkSurface);
+    root.style.setProperty('--theme-bg', darkBackground);
+    root.style.setProperty('--theme-surface', darkSurface);
+    root.style.setProperty('--theme-text', darkText);
+    root.style.setProperty('--theme-header-bg', colors.headerBg);
+    root.style.setProperty('--theme-header-text', readableText(colors.headerText, colors.headerBg));
+    root.style.setProperty('--theme-footer-bg', colors.footerBg);
+    root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
   }
 }
 

@@ -198,17 +198,17 @@ export const LiveChatWidget: React.FC = () => {
   ).format(new Date(value));
 
   return (
-    <div className="fixed bottom-5 right-5 z-[70] flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-5 z-70 flex flex-col items-end gap-3">
       {open && (
         <section
           aria-label={isPersian ? 'گفتگوی آنلاین' : 'Live chat'}
-          className="flex h-[min(34rem,calc(100dvh-7rem))] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+          className="flex h-[min(34rem,calc(100dvh-7rem))] w-88 max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
         >
           <header className="flex items-center justify-between border-b border-slate-200 bg-(--theme-primary)/5 px-4 py-3 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <span className="relative grid h-10 w-10 place-items-center rounded-xl bg-(--theme-primary) text-white">
                 <Headset className="h-5 w-5" />
-                <span className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-900" />
+                <span className="absolute -bottom-0.5 -inset-e-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-900" />
               </span>
               <div>
                 <h2 className="text-sm font-bold">{isPersian ? 'پشتیبانی آنلاین' : 'Online support'}</h2>
@@ -270,7 +270,7 @@ export const LiveChatWidget: React.FC = () => {
                         {message.sender_type === 'agent' && message.sender_name && (
                           <p className="mb-1 text-[10px] font-bold opacity-75">{message.sender_name}</p>
                         )}
-                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{message.body}</p>
+                        <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">{message.body}</p>
                         <time className="mt-1 block text-end text-[10px] opacity-60">{formatMessageTime(message.created_at)}</time>
                       </article>
                     </div>

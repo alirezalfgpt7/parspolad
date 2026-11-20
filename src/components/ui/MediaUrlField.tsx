@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { FolderOpen, Sparkles, Trash2, UploadCloud } from 'lucide-react';
+import { FileText, FolderOpen, Sparkles, Trash2, UploadCloud } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
+import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { BUILTIN_BRAND_MEDIA_PRESETS, isAnimatedMediaUrl, isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
 import { FileUploader } from './FileUploader.tsx';
 import { Modal } from './Modal.tsx';
+import { Pagination } from './Pagination.tsx';
 import { ZeroBrokenImage } from './ZeroBrokenImage.tsx';
 
 interface MediaUrlFieldProps {
@@ -35,22 +37,42 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaFile[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
+  const [libraryPage, setLibraryPage] = useState(1);
+  const [libraryLastPage, setLibraryLastPage] = useState(1);
+  const addToast = useAppStore((state) => state.addToast);
 
-  const openLibrary = async () => {
-    setLibraryOpen(true);
+  const loadLibraryPage = async (page: number) => {
     setLoadingLibrary(true);
     try {
-      const res = await apiRequest<{ data: MediaFile[] }>('/admin/media?per_page=40');
+      const res = await apiRequest<{ data: MediaFile[]; meta: { last_page: number } }>(`/admin/media?page=${page}&per_page=40`);
       setMediaItems(res.data || []);
-    } catch {
-      setMediaItems([]);
+      setLibraryPage(page);
+      setLibraryLastPage(res.meta.last_page);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'دریافت کتابخانهٔ رسانه ناموفق بود.');
     } finally {
       setLoadingLibrary(false);
     }
   };
 
+  const openLibrary = () => {
+    setLibraryOpen(true);
+    void loadLibraryPage(1);
+  };
+
   const isVideo = isVideoMediaUrl(value);
   const isAnimated = isAnimatedMediaUrl(value);
+  const acceptedExtensions = accept
+    .split(',')
+    .map((extension) => extension.trim().replace(/^\./, '').toLowerCase())
+    .filter((extension) => extension && !extension.includes('/'));
+  const matchesAccept = (item: Pick<MediaFile, 'url' | 'extension'>): boolean => {
+    if (acceptedExtensions.length === 0 || acceptedExtensions.includes('*')) return true;
+    const extension = (item.extension || item.url.split(/[?#]/, 1)[0].split('.').pop() || '').replace(/^\./, '').toLowerCase();
+    return acceptedExtensions.includes(extension);
+  };
+  const acceptsDocuments = acceptedExtensions.some((extension) => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'dwg'].includes(extension));
+  const isImage = /\.(png|jpe?g|webp|gif|svg|ico)(\?.*)?$/i.test(value);
 
   return (
     <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/50">
@@ -78,12 +100,14 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
               playsInline
               className="h-full w-full rounded-lg object-contain"
             />
-          ) : (
+          ) : isImage ? (
             <ZeroBrokenImage
               src={value}
               alt={label}
               className="h-full w-full rounded-lg object-contain"
             />
+          ) : (
+            <FileText className="h-7 w-7 text-slate-400" aria-hidden="true" />
           )}
         </div>
 
@@ -146,6 +170,7 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
           <FileUploader
             folder={folder}
             accept={accept}
+            label={acceptsDocuments ? 'آپلود کاتالوگ یا سند' : 'آپلود تصویر یا ویدئو'}
             onUploaded={(url) => {
               onChange(url);
               setUploadOpen(false);
@@ -154,7 +179,7 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
         </div>
       )}
 
-      <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title="انتخاب تصویر یا فایل متحرک از کتابخانه رسانه" size="lg">
+      <Modal open={libraryOpen} onClose={() => setLibraryOpen(false)} title={acceptsDocuments ? 'انتخاب سند از کتابخانه رسانه' : 'انتخاب تصویر یا فایل از کتابخانه رسانه'} size="lg">
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {BUILTIN_BRAND_MEDIA_PRESETS.map((preset) => (
@@ -175,10 +200,14 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
           {loadingLibrary ? (
             <p className="py-8 text-center text-xs text-slate-500">در حال بارگذاری رسانه...</p>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {mediaItems
-                .filter((m) => /\.(png|jpe?g|webp|gif|mp4|webm|svg)$/i.test(m.url))
-                .map((item) => (
+            <>
+              {mediaItems.filter(matchesAccept).length === 0 ? (
+                <p className="py-8 text-center text-xs text-slate-500">در این صفحه رسانهٔ سازگار پیدا نشد؛ صفحه‌های دیگر را بررسی یا فایل را آپلود کنید.</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {mediaItems
+                    .filter(matchesAccept)
+                    .map((item) => (
                   <button
                     key={item.id}
                     type="button"
@@ -189,18 +218,23 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
                     className="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 text-start hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
                   >
                     <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-slate-900">
-                      {isVideoMediaUrl(item.url) ? (
+                      {isVideoMediaUrl(item.url) || item.mime_type.startsWith('video/') ? (
                         <video src={item.url} muted loop autoPlay playsInline className="h-full w-full object-contain" />
-                      ) : (
+                      ) : item.mime_type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg|ico)(\?.*)?$/i.test(item.url) ? (
                         <ZeroBrokenImage src={item.url} alt={item.name} className="h-full w-full object-contain" />
+                      ) : (
+                        <FileText className="h-7 w-7 text-slate-400" aria-hidden="true" />
                       )}
                     </div>
                     <div className="mt-1.5 truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
                       {item.name}
                     </div>
                   </button>
-                ))}
-            </div>
+                    ))}
+                </div>
+              )}
+              <Pagination page={libraryPage} lastPage={libraryLastPage} onChange={(page) => void loadLibraryPage(page)} />
+            </>
           )}
         </div>
       </Modal>

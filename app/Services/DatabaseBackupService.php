@@ -76,8 +76,11 @@ class DatabaseBackupService
 
     public function tableNames(): array
     {
+        $connection = DB::connection();
+        $schema = $connection->getSchemaBuilder();
+
         return $this->tableNamesCache ??= array_values(array_filter(
-            DB::connection()->getSchemaBuilder()->getTableListing(null, false),
+            $schema->getTableListing($schema->getCurrentSchemaName(), false),
             fn (string $table): bool => ! in_array($table, self::EXCLUDED_TABLES, true)
                 && ! str_starts_with($table, 'sqlite_'),
         ));

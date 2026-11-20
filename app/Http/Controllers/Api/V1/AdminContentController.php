@@ -15,6 +15,7 @@ use App\Support\AdminContentRegistry;
 use App\Services\DatabaseBackupService;
 use Illuminate\Support\Arr;
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\Banner;
 use App\Models\ContactMessage;
 use App\Models\Contract;
@@ -57,6 +58,7 @@ class AdminContentController extends Controller
                     'key' => $resource,
                     'label_fa' => AdminContentRegistry::resourceLabel($resource)['fa'],
                     'label_en' => AdminContentRegistry::resourceLabel($resource)['en'],
+                    ...AdminContentRegistry::resourceGuidance($resource),
                     'count' => $modelClass::query()->count(),
                 ];
             })
@@ -132,23 +134,60 @@ class AdminContentController extends Controller
         $fields = [];
 
         foreach ($model->getFillable() as $field) {
+            if ($resource === 'articles' && in_array($field, ['category_fa', 'category_en'], true)) {
+                continue;
+            }
+
             $cast = $model->getCasts()[$field] ?? null;
             $column = $columns->get($field, []);
             $columnType = $column['type_name'] ?? $column['type'] ?? $schema->getColumnType($model->getTable(), $field);
+            $columnTypeLower = strtolower((string) $columnType);
+            $fieldOptions = AdminContentRegistry::fieldOptions($resource, $field);
+            if ($resource === 'articles' && $field === 'article_category_id') {
+                $fieldOptions = ArticleCategory::query()
+                    ->orderBy('name_fa')
+                    ->get(['id', 'name_fa', 'name_en'])
+                    ->map(fn (ArticleCategory $category): array => [
+                        'value' => (string) $category->id,
+                        'label_fa' => $category->name_fa,
+                        'label_en' => $category->name_en,
+                    ])
+                    ->all();
+            }
             $type = match (true) {
+                $resource === 'articles' && $field === 'article_category_id' => 'select',
+                $fieldOptions !== [] => 'select',
                 is_string($cast) && enum_exists($cast) => 'select',
                 in_array($cast, ['boolean', 'bool'], true) => 'boolean',
                 in_array($cast, ['array', 'json', 'object', 'collection'], true) => 'json',
                 in_array($cast, ['integer', 'int', 'float', 'double', 'decimal'], true) => 'number',
                 in_array($columnType, ['boolean', 'bool'], true) => 'boolean',
                 in_array($columnType, ['json', 'jsonb'], true) => 'json',
-                preg_match('/int|decimal|numeric|float|double/', $columnType) === 1 => 'number',
-                str_contains($columnType, 'text') => 'textarea',
+                preg_match('/int|decimal|numeric|float|double/', $columnTypeLower) === 1 => 'number',
+                $field === 'published_at' => 'jalali-date',
+                str_contains($columnTypeLower, 'datetime') || str_contains($columnTypeLower, 'timestamp') => 'datetime',
+                str_contains($columnTypeLower, 'date') => 'date',
+                str_contains($field, 'color') => 'color',
+                in_array($field, ['content_fa', 'content_en'], true) => 'richtext',
+                str_contains($columnTypeLower, 'text') => 'textarea',
                 default => 'string',
             };
 
-            $options = [];
-            if ($type === 'select' && is_string($cast) && enum_exists($cast)) {
+            $options = $fieldOptions;
+            if ($resource === 'banners' && $field === 'placement') {
+                $knownValues = array_column($options, 'value');
+                foreach (DB::table($model->getTable())->distinct()->pluck($field)->filter() as $existingValue) {
+                    $existingValue = (string) $existingValue;
+                    if (! in_array($existingValue, $knownValues, true)) {
+                        $options[] = [
+                            'value' => $existingValue,
+                            'label_fa' => 'موقعیت موجود: '.$existingValue,
+                            'label_en' => 'Existing placement: '.$existingValue,
+                        ];
+                    }
+                }
+            }
+            if ($type === 'select' && $options === [] && is_string($cast) && enum_exists($cast)) {
                 $options = array_map(function ($case): array {
                     $value = $case instanceof \BackedEnum ? (string) $case->value : $case->name;
                     $label = AdminContentRegistry::enumLabel($value);
@@ -176,7 +215,9 @@ class AdminContentController extends Controller
     {
         $modelClass = AdminContentRegistry::modelClass($resource);
         $model = new $modelClass;
-        $item = $modelClass::query()->create($request->safe()->only($model->getFillable()));
+        $data = $request->safe()->only($model->getFillable());
+        $this->applyArticleCategory($resource, $data);
+        $item = $modelClass::query()->create($data);
 
         return response()->json(['data' => (new AdminContentRecordResource($item))->resolve($request)], 201);
     }
@@ -186,7 +227,9 @@ class AdminContentController extends Controller
         $modelClass = AdminContentRegistry::modelClass($resource);
         $model = new $modelClass;
         $item = $modelClass::query()->findOrFail($id);
-        $item->update($request->safe()->only($model->getFillable()));
+        $data = $request->safe()->only($model->getFillable());
+        $this->applyArticleCategory($resource, $data);
+        $item->update($data);
 
         return response()->json([
             'data' => (new AdminContentRecordResource($item->fresh()))->resolve($request),
@@ -492,6 +535,17 @@ class AdminContentController extends Controller
     {
         $modelClass = AdminContentRegistry::modelClass($resource);
         $this->authorize($ability, [$modelClass, $resource]);
+    }
+
+    private function applyArticleCategory(string $resource, array &$data): void
+    {
+        if ($resource !== 'articles' || ! array_key_exists('article_category_id', $data) || $data['article_category_id'] === null) {
+            return;
+        }
+
+        $category = ArticleCategory::query()->findOrFail($data['article_category_id']);
+        $data['category_fa'] = $category->name_fa;
+        $data['category_en'] = $category->name_en;
     }
 
     private function ensurePermission(Request $request, string $permission): void

@@ -856,6 +856,11 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                         />
                         <div className="grid gap-3 sm:grid-cols-2">
                           <ColorPicker
+                            label="رنگ پایه پس‌زمینه شاخص‌ها"
+                            value={entry.performance_background_color || '#080d17'}
+                            onChange={(color) => updatePageOverride(card.key, { performance_background_color: color })}
+                          />
+                          <ColorPicker
                             label="رنگ لایه روی تصویر"
                             value={entry.performance_overlay_color || '#080d17'}
                             onChange={(color) => updatePageOverride(card.key, { performance_overlay_color: color })}
@@ -880,6 +885,15 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                             />
                           </label>
                         </div>
+                        {entry.performance_background_color && (
+                          <button
+                            type="button"
+                            onClick={() => updatePageOverride(card.key, { performance_background_color: '' })}
+                            className="text-[11px] font-semibold text-slate-500 underline-offset-2 hover:text-(--theme-primary) hover:underline"
+                          >
+                            بازگشت به پس‌زمینهٔ صنعتی پیش‌فرض
+                          </button>
+                        )}
                       </div>
                     )}
                     {card.key === 'home_spotlight' && (

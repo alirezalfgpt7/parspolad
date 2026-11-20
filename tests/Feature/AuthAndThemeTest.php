@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ThemeSetting;
+use App\Models\ThemePreset;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use PragmaRX\Google2FA\Google2FA;
@@ -40,6 +41,14 @@ it('returns public bootstrap payload with active industrial crimson theme', func
             'licenses',
             'settings',
         ]);
+
+    expect(ThemePreset::query()->whereIn('slug', [
+        'midnight-violet',
+        'rose-burgundy',
+        'teal-sunset',
+        'forest-mint',
+        'deep-ocean',
+    ])->count())->toBe(5);
 });
 
 it('authenticates seeded super admin with Sanctum token and updates theme', function (): void {

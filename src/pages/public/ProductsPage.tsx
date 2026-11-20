@@ -78,7 +78,9 @@ export const ProductsPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {products.map((pr) => (
+        {products.map((pr) => {
+          const specs = language === 'fa' ? pr.specs || {} : pr.specs_en || pr.specs || {};
+          return (
           <div
             key={pr.id}
             className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
@@ -102,9 +104,9 @@ export const ProductsPage: React.FC = () => {
                 <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                   {language === 'fa' ? pr.summary_fa : pr.summary_en}
                 </p>
-                {Object.keys(pr.specs).length > 0 && (
+                {Object.keys(specs).length > 0 && (
                   <dl className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
-                    {Object.entries(pr.specs).map(([k, v]) => (
+                    {Object.entries(specs).map(([k, v]) => (
                       <div key={k} className="flex items-center justify-between gap-2">
                         <dt className="text-slate-500">{k}</dt>
                         <dd className="font-medium text-slate-800 dark:text-slate-200 tabular-nums">{v}</dd>
@@ -126,7 +128,8 @@ export const ProductsPage: React.FC = () => {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
     </div>

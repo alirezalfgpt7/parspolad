@@ -129,7 +129,7 @@ export const ContractsLicensesPage: React.FC = () => {
                   alt={lic.title_fa}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <span className="absolute bottom-2 end-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[11px] text-white">
+                <span className="absolute bottom-2 inset-e-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-1 text-[11px] text-white">
                   <Eye className="h-3 w-3" />
                   <span>بزرگنمایی</span>
                 </span>

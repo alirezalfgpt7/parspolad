@@ -19,6 +19,7 @@ class Article extends Model
         'excerpt_en',
         'content_fa',
         'content_en',
+        'article_category_id',
         'category_fa',
         'category_en',
         'cover_image',

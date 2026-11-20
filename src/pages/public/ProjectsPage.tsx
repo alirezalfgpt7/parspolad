@@ -8,6 +8,7 @@ import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { PublicBanner } from '../../components/common/PublicBanner.tsx';
 
 interface ProjectFilterOptions {
   categories: Array<{ id: number; slug: string; name_fa: string; name_en: string }>;
@@ -18,7 +19,7 @@ interface ProjectFilterOptions {
 }
 
 export const ProjectsPage: React.FC = () => {
-  const { language, addToast } = useAppStore();
+  const { language, addToast, bootstrap } = useAppStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const category = searchParams.get('category') || '';
   const [filterOptions, setFilterOptions] = useState<ProjectFilterOptions>({
@@ -150,6 +151,9 @@ export const ProjectsPage: React.FC = () => {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <CmsPageIntro slug="projects" className="mb-8" />
+      {bootstrap?.banners?.filter((banner) => banner.placement === 'projects_top').map((banner) => (
+        <PublicBanner key={banner.id} banner={banner} language={language} />
+      ))}
 
       {/* Advanced SearchableSelect Filter Panel */}
       <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -159,7 +163,7 @@ export const ProjectsPage: React.FC = () => {
               جستجوی متنی (عنوان یا شماره قرارداد)
             </label>
             <div className="relative">
-              <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={q}

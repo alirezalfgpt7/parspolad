@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\Banner;
 use App\Models\Department;
 use App\Models\Faq;
@@ -26,6 +27,7 @@ class AdminContentRegistry
         'team' => TeamMember::class,
         'partners' => Partner::class,
         'articles' => Article::class,
+        'article-categories' => ArticleCategory::class,
         'pages' => Page::class,
         'banners' => Banner::class,
         'kpis' => Kpi::class,
@@ -41,6 +43,7 @@ class AdminContentRegistry
         'team' => 'pages.manage',
         'partners' => 'pages.manage',
         'articles' => 'pages.manage',
+        'article-categories' => 'pages.manage',
         'pages' => 'pages.manage',
         'banners' => 'pages.manage',
         'kpis' => 'pages.manage',
@@ -55,7 +58,8 @@ class AdminContentRegistry
         'departments' => ['name_fa', 'name_en', 'head_name_fa', 'head_name_en', 'head_title_fa', 'head_title_en'],
         'team' => ['department_id', 'name_fa', 'name_en', 'role_fa', 'role_en'],
         'partners' => ['name_fa', 'name_en', 'logo_url'],
-        'articles' => ['slug', 'title_fa', 'title_en', 'excerpt_fa', 'content_fa', 'category_fa', 'category_en', 'cover_image', 'author_fa', 'published_at'],
+        'articles' => ['slug', 'title_fa', 'title_en', 'excerpt_fa', 'content_fa', 'article_category_id', 'cover_image', 'author_fa', 'published_at'],
+        'article-categories' => ['slug', 'name_fa', 'name_en'],
         'pages' => ['slug', 'title_fa', 'title_en', 'content_fa'],
         'banners' => ['title_fa', 'title_en', 'image_url'],
         'kpis' => ['key', 'label_fa', 'label_en', 'value'],
@@ -71,10 +75,82 @@ class AdminContentRegistry
         'team' => ['fa' => 'اعضای تیم', 'en' => 'Team members'],
         'partners' => ['fa' => 'کارفرمایان و شرکا', 'en' => 'Clients & partners'],
         'articles' => ['fa' => 'اخبار و مقالات', 'en' => 'News & articles'],
+        'article-categories' => ['fa' => 'دسته‌بندی اخبار و مقالات', 'en' => 'Article categories'],
         'pages' => ['fa' => 'صفحات', 'en' => 'Pages'],
         'banners' => ['fa' => 'بنرها', 'en' => 'Banners'],
         'kpis' => ['fa' => 'شاخص‌های آماری', 'en' => 'Performance indicators'],
         'notification-templates' => ['fa' => 'قالب‌های اعلان', 'en' => 'Notification templates'],
+    ];
+
+    private const RESOURCE_GUIDANCE = [
+        'pages' => [
+            'description_fa' => 'عنوان، زیرعنوان و متن معرفی صفحه‌های عمومی را ویرایش کنید؛ این بخش هدر اصلی سایت نیست.',
+            'usage_fa' => 'در سربرگ معرفی صفحه‌ای با همان شناسهٔ یکتا (slug) نمایش داده می‌شود.',
+            'public_path' => null,
+            'related_admin_path' => null,
+        ],
+        'services' => [
+            'description_fa' => 'شرح، تصویر، آیکن، ترتیب و اطلاعات فارسی/انگلیسی خدمات مهندسی.',
+            'usage_fa' => 'در صفحهٔ خدمات و بخش خدمات مهندسی صفحهٔ اصلی نمایش داده می‌شود.',
+            'public_path' => '/services',
+            'related_admin_path' => null,
+        ],
+        'products' => [
+            'description_fa' => 'اطلاعات دوزبانهٔ محصول، مدل، مشخصات فنی، تصویر و فایل کاتالوگ.',
+            'usage_fa' => 'در فهرست عمومی محصولات و صفحهٔ جزئیات محصول استفاده می‌شود.',
+            'public_path' => '/products',
+            'related_admin_path' => null,
+        ],
+        'articles' => [
+            'description_fa' => 'مدیریت کامل خبر یا مقاله شامل عنوان و متن دوزبانه، دسته‌بندی، نویسنده، کاور و تاریخ انتشار شمسی.',
+            'usage_fa' => 'دسته‌ها را ابتدا در «دسته‌بندی اخبار و مقالات» تعریف کنید؛ خبرها در صفحهٔ اخبار و کارت‌های منتخب صفحهٔ اصلی دیده می‌شوند.',
+            'public_path' => '/news',
+            'related_admin_path' => '/admin/content-records?resource=article-categories',
+        ],
+        'article-categories' => [
+            'description_fa' => 'دسته‌های دوزبانهٔ اخبار و مقالات را یک‌بار تعریف کنید و هنگام ساخت یا ویرایش مقاله از فهرست انتخاب کنید.',
+            'usage_fa' => 'نام فارسی و انگلیسی دسته کنار هر خبر و مقاله در سایت نمایش داده می‌شود.',
+            'public_path' => '/news',
+            'related_admin_path' => null,
+        ],
+        'banners' => [
+            'description_fa' => 'ساخت و ویرایش بنر فراخوان شامل عنوان، توضیح، تصویر و پیوند دکمه.',
+            'usage_fa' => 'محل نمایش را از خانه، بالای فهرست پروژه‌ها یا پایین فهرست خدمات انتخاب کنید؛ بنر غیرفعال پنهان است.',
+            'public_path' => '/',
+            'related_admin_path' => null,
+        ],
+        'kpis' => [
+            'description_fa' => 'هر رکورد یک شاخص است: برچسب و مقدار دوزبانه، آیکون، رنگ پس‌زمینه و ترتیب را تنظیم کنید.',
+            'usage_fa' => 'کارت‌های شاخص در بخش عملکرد صفحهٔ اصلی نمایش داده می‌شوند؛ تیتر و پس‌زمینهٔ کلی در تنظیمات ظاهر صفحهٔ اصلی است.',
+            'public_path' => '/',
+            'related_admin_path' => '/admin/login-appearance',
+        ],
+        'categories' => [
+            'description_fa' => 'دسته‌بندی پروژه‌ها و مشخصات دوزبانهٔ آن‌ها.',
+            'usage_fa' => 'در فهرست و فیلتر پروژه‌های سایت استفاده می‌شود.',
+            'public_path' => '/projects',
+            'related_admin_path' => null,
+        ],
+        'faqs' => [
+            'description_fa' => 'مدیریت پرسش‌ها و پاسخ‌های متداول، ترتیب و وضعیت انتشار.',
+            'usage_fa' => 'در بخش پرسش‌های متداول سایت نمایش داده می‌شود.',
+            'public_path' => '/faq',
+            'related_admin_path' => null,
+        ],
+        'partners' => [
+            'description_fa' => 'نام و لوگوی کارفرمایان و شرکای سازمان.',
+            'usage_fa' => 'در اسلایدر شرکا و کارفرمایان سایت نمایش داده می‌شود.',
+            'public_path' => '/',
+            'related_admin_path' => null,
+        ],
+    ];
+
+    private const FIELD_OPTIONS = [
+        'banners.placement' => [
+            ['value' => 'landing_mid', 'label_fa' => 'خانه · میان‌بخش‌ها', 'label_en' => 'Home · Mid-page'],
+            ['value' => 'projects_top', 'label_fa' => 'پروژه‌ها · بالای فهرست', 'label_en' => 'Projects · Above list'],
+            ['value' => 'services_bottom', 'label_fa' => 'خدمات · پایین فهرست', 'label_en' => 'Services · Below list'],
+        ],
     ];
 
     private const FIELD_LABELS = [
@@ -110,6 +186,7 @@ class AdminContentRegistry
         'meta_title' => ['fa' => 'عنوان سئو', 'en' => 'SEO title'],
         'meta_description' => ['fa' => 'توضیحات سئو', 'en' => 'SEO description'],
         'category' => ['fa' => 'دسته‌بندی', 'en' => 'Category'],
+        'article_category_id' => ['fa' => 'دسته‌بندی مقاله', 'en' => 'Article category'],
         'client' => ['fa' => 'کارفرما', 'en' => 'Client'],
         'contract' => ['fa' => 'قرارداد', 'en' => 'Contract'],
         'location' => ['fa' => 'موقعیت', 'en' => 'Location'],
@@ -161,7 +238,9 @@ class AdminContentRegistry
         'role' => ['fa' => 'سمت', 'en' => 'Role'],
         'model_code' => ['fa' => 'کد مدل', 'en' => 'Model code'],
         'pressure_rating' => ['fa' => 'ردهٔ فشار', 'en' => 'Pressure rating'],
-        'specs' => ['fa' => 'مشخصات فنی', 'en' => 'Specifications'],
+        'specs' => ['fa' => 'مشخصات فنی (فارسی)', 'en' => 'Specifications (Persian)'],
+        'specs_en' => ['fa' => 'مشخصات فنی (انگلیسی)', 'en' => 'Specifications (English)'],
+        'background_color' => ['fa' => 'رنگ پس‌زمینهٔ کارت', 'en' => 'Card background color'],
         'catalog' => ['fa' => 'کاتالوگ', 'en' => 'Catalog'],
         'metadata' => ['fa' => 'اطلاعات تکمیلی', 'en' => 'Metadata'],
         'seo' => ['fa' => 'تنظیمات سئو', 'en' => 'SEO settings'],
@@ -199,6 +278,21 @@ class AdminContentRegistry
     public static function resourceLabel(string $resource): array
     {
         return self::RESOURCE_LABELS[$resource] ?? ['fa' => $resource, 'en' => str_replace('-', ' ', $resource)];
+    }
+
+    public static function resourceGuidance(string $resource): array
+    {
+        return self::RESOURCE_GUIDANCE[$resource] ?? [
+            'description_fa' => 'افزودن، جست‌وجو، ویرایش و حذف اطلاعات این بخش.',
+            'usage_fa' => 'این اطلاعات در بخش مرتبط سایت و پنل مدیریت استفاده می‌شود.',
+            'public_path' => null,
+            'related_admin_path' => null,
+        ];
+    }
+
+    public static function fieldOptions(string $resource, string $field): array
+    {
+        return self::FIELD_OPTIONS[$resource.'.'.$field] ?? [];
     }
 
     public static function fieldLabel(string $field): array

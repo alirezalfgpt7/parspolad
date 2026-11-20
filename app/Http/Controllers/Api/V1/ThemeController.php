@@ -14,6 +14,7 @@ class ThemeController extends Controller
 {
     public function show(): JsonResponse
     {
+        ThemePreset::ensureBuiltInPresets();
         return response()->json([
             'presets' => ThemePreset::query()->orderBy('id')->get(),
             'settings' => new ThemeSettingResource(ThemeSetting::query()->firstOrFail()),

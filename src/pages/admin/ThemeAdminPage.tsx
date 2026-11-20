@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Save } from 'lucide-react';
+import { Check, Palette, Plus, RotateCcw, Save, SwatchBook } from 'lucide-react';
 import { ThemeScopeEditor, type ThemeScopeValues } from '../../components/admin/theme/ThemeScopeEditor.tsx';
 import { ThemeScopeTabs } from '../../components/admin/theme/ThemeScopeTabs.tsx';
 import { ThemeStudioHero } from '../../components/admin/theme/ThemeStudioHero.tsx';
@@ -116,15 +116,67 @@ export const ThemeAdminPage: React.FC = () => {
     if (!settings) return;
     const preset = presets.find((item) => item.slug === slug);
     if (!preset) return;
-    previewSettings({
-      ...settings,
-      active_preset_slug: preset.slug,
-      active_palette: { ...preset.palette },
-      design_style: preset.design_style,
-      button_shape: preset.button_shape,
-      button_effect: preset.button_effect,
-    }, 'site');
-    setScope('site');
+    let next = settings;
+    if (scope === 'landing') {
+      next = {
+        ...settings,
+        landing_palette: { ...preset.palette },
+        landing_design_style: preset.design_style,
+        landing_button_shape: preset.button_shape,
+        landing_button_effect: preset.button_effect,
+      };
+    } else if (scope === 'admin') {
+      next = {
+        ...settings,
+        admin_palette: { ...preset.palette },
+        admin_design_style: preset.design_style,
+        admin_button_shape: preset.button_shape,
+        admin_button_effect: preset.button_effect,
+      };
+    } else {
+      next = {
+        ...settings,
+        active_preset_slug: preset.slug,
+        active_palette: { ...preset.palette },
+        design_style: preset.design_style,
+        button_shape: preset.button_shape,
+        button_effect: preset.button_effect,
+      };
+    }
+    previewSettings(next, scope);
+  };
+
+  const handleResetScopeDefaults = () => {
+    if (!settings) return;
+    const preset = presets.find((item) => item.is_default) || presets[0];
+    if (!preset) return;
+    const next = scope === 'landing'
+      ? {
+          ...settings,
+          landing_theme_enabled: true,
+          landing_palette: { ...preset.palette },
+          landing_design_style: preset.design_style,
+          landing_button_shape: preset.button_shape,
+          landing_button_effect: preset.button_effect,
+        }
+      : scope === 'admin'
+        ? {
+            ...settings,
+            admin_palette: { ...preset.palette },
+            admin_design_style: preset.design_style,
+            admin_button_shape: preset.button_shape,
+            admin_button_effect: preset.button_effect,
+          }
+        : {
+            ...settings,
+            active_preset_slug: preset.slug,
+            active_palette: { ...preset.palette },
+            design_style: preset.design_style,
+            button_shape: preset.button_shape,
+            button_effect: preset.button_effect,
+          };
+    previewSettings(next, scope);
+    addToast('info', 'تنظیمات این بخش به تم پیش‌فرض قرمز صنعتی بازگشت.');
   };
 
   const handleSave = async () => {
@@ -192,6 +244,73 @@ export const ThemeAdminPage: React.FC = () => {
       />
 
       <ThemeScopeTabs selected={scope} onSelect={handleSelectScope} />
+
+      <section className="theme-editor-section">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary)">
+              <SwatchBook className="h-4 w-4" />
+            </span>
+            <div>
+              <h2 className="text-sm font-bold">کتابچهٔ تم‌های آماده</h2>
+              <p className="mt-1 text-[11px] text-slate-500">یک ترکیب انتخاب کنید؛ پیش‌نمایش آن روی محدودهٔ فعال اعمال می‌شود.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleResetScopeDefaults}
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            بازگشت به پیش‌فرض قرمز صنعتی
+          </button>
+        </div>
+
+        <div className="theme-preset-grid">
+          {presets.map((preset) => {
+            const isActive = scope === 'site'
+              ? settings.active_preset_slug === preset.slug
+              : scope === 'landing'
+                ? settings.landing_palette.primary === preset.palette.primary
+                  && settings.landing_palette.secondary === preset.palette.secondary
+                : settings.admin_palette.primary === preset.palette.primary
+                  && settings.admin_palette.secondary === preset.palette.secondary;
+
+            return (
+              <button
+                key={preset.slug}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => handleSelectPreset(preset.slug)}
+                className="theme-preset-card"
+              >
+                <span className="theme-preset-preview" style={{ background: preset.palette.secondary }} aria-hidden="true">
+                  {[preset.palette.primary, preset.palette.secondary, preset.palette.accent, preset.palette.background, preset.palette.surface].map((color, index) => (
+                    <span key={color + index} style={{ backgroundColor: color }} />
+                  ))}
+                  <span
+                    className="theme-preset-icon"
+                    style={{ backgroundColor: preset.palette.surface, color: preset.palette.primary }}
+                  >
+                    {isActive ? <Check className="h-4 w-4" /> : <Palette className="h-4 w-4" />}
+                  </span>
+                </span>
+                <span className="mt-3 flex items-start justify-between gap-2 text-start">
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-bold">{preset.name_fa}</span>
+                    <span className="mt-1 block truncate text-[10px] text-slate-400" dir="ltr">{preset.name_en}</span>
+                  </span>
+                  {preset.is_default && (
+                    <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                      پیش‌فرض
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {scope === 'landing' && (
         <label className="theme-editor-section flex cursor-pointer items-start gap-3">

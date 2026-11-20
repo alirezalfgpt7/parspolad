@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\Banner;
 use App\Models\Contract;
 use App\Models\Department;
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class PortalContentSeeder extends Seeder
@@ -251,7 +253,23 @@ class PortalContentSeeder extends Seeder
             $this->upsert(Kpi::class, 'key', $kpi);
         }
 
+        $categoryIds = [];
         foreach ($data['articles'] as $article) {
+            $categoryKey = $article['category_fa'].'|'.$article['category_en'];
+            if (! isset($categoryIds[$categoryKey])) {
+                $slug = (Str::slug($article['category_en']) ?: 'category')
+                    .'-'.substr(sha1($categoryKey), 0, 8);
+                $category = ArticleCategory::query()->updateOrCreate(
+                    ['slug' => $slug],
+                    [
+                        'name_fa' => $article['category_fa'],
+                        'name_en' => $article['category_en'],
+                    ],
+                );
+                $categoryIds[$categoryKey] = $category->id;
+            }
+
+            $article['article_category_id'] = $categoryIds[$categoryKey];
             $this->upsert(Article::class, 'slug', $article);
         }
 

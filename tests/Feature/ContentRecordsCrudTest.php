@@ -10,6 +10,8 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
     $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
         ->assertOk()->json('token');
 
+    expect(DB::table('articles')->whereNull('article_category_id')->exists())->toBeFalse();
+
     $this->withToken($token)->getJson('/api/v1/admin/content-resources')
         ->assertOk()
         ->assertJsonFragment([
@@ -30,6 +32,64 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
         ->assertJsonPath('data.fields.2.type', 'select')
         ->assertJsonPath('data.fields.2.options.0.label_fa', 'ایمیل')
         ->assertJsonPath('data.fields.2.options.0.label_en', 'Email');
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-resources')
+        ->assertOk()
+        ->assertJsonPath('data.0.description_fa', 'دسته‌بندی پروژه‌ها و مشخصات دوزبانهٔ آن‌ها.')
+        ->assertJsonPath('data.0.usage_fa', 'در فهرست و فیلتر پروژه‌های سایت استفاده می‌شود.')
+        ->assertJsonPath('data.11.related_admin_path', '/admin/login-appearance');
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-schema/articles')
+        ->assertOk()
+        ->assertJsonPath('data.fields.5.name', 'content_fa')
+        ->assertJsonPath('data.fields.5.type', 'richtext')
+        ->assertJsonPath('data.fields.7.name', 'article_category_id')
+        ->assertJsonPath('data.fields.7.type', 'select')
+        ->assertJsonPath('data.fields.10.type', 'jalali-date');
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-schema/banners')
+        ->assertOk()
+        ->assertJsonPath('data.fields.8.type', 'select')
+        ->assertJsonPath('data.fields.8.options.0.value', 'landing_mid')
+        ->assertJsonPath('data.fields.8.options.1.value', 'projects_top')
+        ->assertJsonPath('data.fields.8.options.2.value', 'services_bottom');
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-schema/products')
+        ->assertOk()
+        ->assertJsonFragment(['name' => 'specs_en', 'type' => 'json']);
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-schema/kpis')
+        ->assertOk()
+        ->assertJsonFragment(['name' => 'icon', 'type' => 'string'])
+        ->assertJsonFragment(['name' => 'background_color', 'type' => 'color']);
+
+    $category = $this->withToken($token)->postJson('/api/v1/admin/article-categories', [
+        'slug' => 'technical-news',
+        'name_fa' => 'فنی',
+        'name_en' => 'Technical',
+    ])->assertCreated()->json('data');
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-schema/articles')
+        ->assertOk()
+        ->assertJsonFragment([
+            'value' => (string) $category['id'],
+            'label_fa' => 'فنی',
+            'label_en' => 'Technical',
+        ]);
+
+    $article = $this->withToken($token)->postJson('/api/v1/admin/articles', [
+        'slug' => 'categorized-news',
+        'title_fa' => 'خبر دسته‌بندی‌شده',
+        'title_en' => 'Categorized news',
+        'excerpt_fa' => 'چکیده خبر',
+        'content_fa' => '<p>متن خبر</p>',
+        'article_category_id' => $category['id'],
+        'cover_image' => '/storage/articles/cover.jpg',
+        'author_fa' => 'نویسنده',
+        'published_at' => '1404/08/01',
+    ])->assertCreated()->json('data');
+    expect($article['category_fa'])->toBe('فنی')
+        ->and($article['category_en'])->toBe('Technical');
 
     $created = $this->withToken($token)->postJson('/api/v1/admin/services', [
         'slug' => 'dynamic-service',

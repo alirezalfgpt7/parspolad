@@ -85,7 +85,7 @@ export const HomePage: React.FC = () => {
     })
     .slice(0, 4);
   const partners = bootstrap?.partners || [];
-  const banner = bootstrap?.banners?.find((b) => b.placement === 'landing_mid');
+  const banners = bootstrap?.banners?.filter((b) => b.placement === 'landing_mid') || [];
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
   const homeText = (key: string): string => {
     const value = spotlight?.metadata?.[`${key}_${language}`];
@@ -105,6 +105,10 @@ export const HomePage: React.FC = () => {
     footer: language === 'fa' ? spotlightOverride.performance_footer_fa : spotlightOverride.performance_footer_en,
   };
   const performanceBackgroundUrl = spotlightOverride.performance_background_url || '';
+  const configuredBackgroundColor = spotlightOverride.performance_background_color || '';
+  const performanceBackgroundColor = /^#[\da-f]{6}$/i.test(configuredBackgroundColor)
+    ? configuredBackgroundColor
+    : '';
   const configuredOverlayColor = spotlightOverride.performance_overlay_color || '#080d17';
   const performanceOverlayColor = /^#[\da-f]{6}$/i.test(configuredOverlayColor)
     ? configuredOverlayColor
@@ -164,11 +168,12 @@ export const HomePage: React.FC = () => {
 
       {/* Industrial performance metrics */}
       <section
-        className="industrial-performance home-page-snap-section"
+        className={`industrial-performance home-page-snap-section${performanceBackgroundColor ? ' industrial-performance--custom-background' : ''}`}
         dir={language === 'fa' ? 'rtl' : 'ltr'}
         style={{
           '--industrial-overlay-color': performanceOverlayColor,
           '--industrial-overlay-opacity': performanceOverlayOpacity,
+          '--industrial-background-color': performanceBackgroundColor || undefined,
         } as React.CSSProperties}
       >
         {performanceBackgroundUrl && (
@@ -283,6 +288,8 @@ export const HomePage: React.FC = () => {
                   label={language === 'fa' ? k.label_fa : k.label_en}
                   lang={language}
                   index={index}
+                  icon={k.icon}
+                  backgroundColor={k.background_color}
                 />
               </Reveal>
             ))}
@@ -632,7 +639,7 @@ export const HomePage: React.FC = () => {
             <Reveal key={art.id} delay={shouldReduceMotion ? 0 : index * 0.055} className="h-full">
               <Link
                 to={`/news/${art.slug}`}
-                className="group relative block aspect-[4/3] h-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-(--theme-primary) hover:shadow-xl hover:shadow-slate-900/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-black/30"
+                className="group relative block aspect-4/3 h-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-(--theme-primary) hover:shadow-xl hover:shadow-slate-900/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-black/30"
               >
                 <ZeroBrokenImage
                   src={art.cover_image}
@@ -668,8 +675,8 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Mid/Bottom Conversion CTA Banner */}
-      {banner && (
-        <section className="home-page-snap-section mx-auto mb-16 max-w-7xl px-4 sm:px-6 lg:px-8">
+      {banners.map((banner) => (
+        <section key={banner.id} className="home-page-snap-section mx-auto mb-16 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-2xl bg-slate-900 px-6 py-12 text-white sm:px-12">
             <ZeroBrokenImage
               src={banner.image_url}
@@ -696,7 +703,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
         </section>
-      )}
+      ))}
     </div>
   );
 };

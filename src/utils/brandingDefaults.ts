@@ -220,6 +220,7 @@ export const DEFAULT_PAGES_CONFIG: PagesConfigSettings = {
     performance_footer_fa: 'توانمندی‌های مهندسی و تولید',
     performance_footer_en: 'ENGINEERING & MANUFACTURING',
     performance_background_url: '',
+    performance_background_color: '',
     performance_overlay_color: '#080d17',
     performance_overlay_opacity: 0,
     section_background_color: '#0f172a',

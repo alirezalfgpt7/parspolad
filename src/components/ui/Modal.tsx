@@ -39,7 +39,7 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return createPortal(
-    <div className="effect-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="effect-modal-backdrop fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
         className={cn(
           'theme-solid-surface effect-modal-panel flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900',

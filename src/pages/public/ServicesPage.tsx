@@ -7,10 +7,11 @@ import type { Service } from '../../types/index.ts';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
+import { PublicBanner } from '../../components/common/PublicBanner.tsx';
 import './ServicesPage.css';
 
 export const ServicesPage: React.FC = () => {
-  const { language, addToast } = useAppStore();
+  const { language, addToast, bootstrap } = useAppStore();
   const [services, setServices] = useState<Service[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -127,7 +128,7 @@ export const ServicesPage: React.FC = () => {
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => (
               <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div className="aspect-[16/10] animate-pulse bg-slate-100 dark:bg-slate-800" />
+                <div className="aspect-16/10 animate-pulse bg-slate-100 dark:bg-slate-800" />
                 <div className="space-y-3 p-5">
                   <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
                   <div className="h-3 w-full animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
@@ -152,13 +153,13 @@ export const ServicesPage: React.FC = () => {
                 <div className="service-flip-container group/flip">
                   <div className="service-flipper">
                     <div className="service-flip-face service-flip-face--front bg-white dark:bg-slate-900">
-                      <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 p-4 dark:bg-slate-800/60">
+                      <div className="relative aspect-16/10 overflow-hidden bg-slate-50 p-4 dark:bg-slate-800/60">
                         <ZeroBrokenImage
                           src={svc.image_url}
                           alt={language === 'fa' ? svc.title_fa : svc.title_en}
                           className="h-full w-full object-contain transition-transform duration-500 group-hover/flip:scale-105"
                         />
-                        <span className="absolute start-4 top-4 rounded-full border border-white/70 bg-white/90 px-2.5 py-1 font-mono text-[11px] font-bold text-(--theme-primary) shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+                        <span className="absolute inset-s-4 top-4 rounded-full border border-white/70 bg-white/90 px-2.5 py-1 font-mono text-[11px] font-bold text-(--theme-primary) shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
                           {String((page - 1) * 3 + idx + 1).padStart(2, '0')}
                         </span>
                       </div>
@@ -176,9 +177,9 @@ export const ServicesPage: React.FC = () => {
                     </div>
                     <div
                       aria-hidden="true"
-                      className="service-flip-face service-flip-face--back relative bg-gradient-to-br from-white via-white to-red-50/70 p-6 dark:from-slate-900 dark:via-slate-900 dark:to-red-950/30"
+                      className="service-flip-face service-flip-face--back relative bg-linear-to-br from-white via-white to-red-50/70 p-6 dark:from-slate-900 dark:via-slate-900 dark:to-red-950/30"
                     >
-                      <span className="absolute end-5 top-3 font-mono text-6xl font-black text-(--theme-primary)/10">
+                      <span className="absolute inset-e-5 top-3 font-mono text-6xl font-black text-(--theme-primary)/10">
                         {String((page - 1) * 3 + idx + 1).padStart(2, '0')}
                       </span>
                       <div className="relative flex h-full flex-col">
@@ -216,6 +217,9 @@ export const ServicesPage: React.FC = () => {
         )}
         {!isLoading && <Pagination page={page} lastPage={lastPage} onChange={setPage} />}
       </section>
+      {bootstrap?.banners?.filter((banner) => banner.placement === 'services_bottom').map((banner) => (
+        <PublicBanner key={banner.id} banner={banner} language={language} />
+      ))}
     </div>
   );
 };

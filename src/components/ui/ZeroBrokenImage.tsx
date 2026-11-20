@@ -21,7 +21,7 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
     return (
       <div
         className={cn(
-          'zero-broken-image-fallback bg-gradient-to-br from-slate-100 to-slate-200 text-slate-500 dark:from-slate-800 dark:to-slate-900 dark:text-slate-400',
+          'zero-broken-image-fallback bg-linear-to-br from-slate-100 to-slate-200 text-slate-500 dark:from-slate-800 dark:to-slate-900 dark:text-slate-400',
           className
         )}
       >

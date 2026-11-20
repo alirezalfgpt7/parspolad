@@ -312,7 +312,7 @@ export const LiveChatAdminPage: React.FC = () => {
                           </span>
                           <time className="text-[10px] opacity-60">{formatDate(message.created_at)}</time>
                         </div>
-                        <p className="whitespace-pre-wrap break-words text-sm leading-7">{message.body}</p>
+                        <p className="whitespace-pre-wrap wrap-break-word text-sm leading-7">{message.body}</p>
                       </article>
                     </div>
                   );
