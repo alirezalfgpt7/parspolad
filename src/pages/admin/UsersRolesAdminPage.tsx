@@ -27,6 +27,7 @@ interface RoleForm {
 const emptyUser: UserForm = { name: '', email: '', phone: '', role: '', password: '' };
 const emptyRole: RoleForm = { name: '', label_fa: '', label_en: '', permissions: [] };
 const systemRoles = ['super-admin', 'admin', 'editor', 'project_manager', 'client', 'content-manager', 'operator', 'user'];
+const isSuperAdminRole = (role?: string): boolean => ['super-admin', 'super_admin'].includes(role ?? '');
 const userFormSchema = z.object({
   name: z.string().trim().min(1, 'نام کاربر الزامی است.').max(120),
   email: z.string().trim().email('ایمیل معتبر وارد کنید.').max(255),
@@ -42,7 +43,7 @@ const roleFormSchema = z.object({
 });
 
 export const UsersRolesAdminPage: React.FC = () => {
-  const { addToast, language } = useAppStore();
+  const { addToast, language, user: currentUser } = useAppStore();
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -271,7 +272,7 @@ export const UsersRolesAdminPage: React.FC = () => {
       render: (user) => (
         <div className="w-44">
           <SearchableSelect
-            disabled={user.role === 'super-admin'}
+            disabled={isSuperAdminRole(user.role)}
             options={roles.map((role) => ({ value: role.name, label: role.label_fa }))}
             value={user.role}
             onChange={async (role) => {
@@ -293,7 +294,7 @@ export const UsersRolesAdminPage: React.FC = () => {
       render: (user) => (
         <button
           type="button"
-          disabled={user.role === 'super-admin'}
+          disabled={isSuperAdminRole(user.role)}
           onClick={async () => {
             try {
               await apiRequest(`/admin/users/${user.id}`, { method: 'PUT', body: JSON.stringify({ is_active: !user.is_active }) });
@@ -314,10 +315,17 @@ export const UsersRolesAdminPage: React.FC = () => {
       header: 'عملیات',
       render: (user) => (
         <div className="flex items-center gap-2">
-          <button type="button" disabled={user.role === 'super-admin'} onClick={() => openEditUser(user)} className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-40 dark:hover:bg-slate-800" aria-label="ویرایش کاربر">
+          <button
+            type="button"
+            disabled={isSuperAdminRole(user.role) && !isSuperAdminRole(currentUser?.role)}
+            onClick={() => openEditUser(user)}
+            title={isSuperAdminRole(user.role) && !isSuperAdminRole(currentUser?.role) ? 'فقط سوپر ادمین می‌تواند حساب سوپر ادمین را ویرایش کند.' : 'ویرایش کاربر'}
+            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-slate-800"
+            aria-label={`ویرایش کاربر ${user.name}`}
+          >
             <Pencil className="h-4 w-4" />
           </button>
-          <button type="button" disabled={user.role === 'super-admin'} onClick={() => void deleteUser(user)} className="rounded-md p-1.5 text-red-600 hover:bg-red-50 disabled:opacity-40 dark:hover:bg-red-950/30" aria-label="حذف کاربر">
+          <button type="button" disabled={isSuperAdminRole(user.role)} onClick={() => void deleteUser(user)} className="rounded-md p-1.5 text-red-600 hover:bg-red-50 disabled:opacity-40 dark:hover:bg-red-950/30" aria-label="حذف کاربر">
             <Trash2 className="h-4 w-4" />
           </button>
         </div>

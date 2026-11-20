@@ -27,6 +27,7 @@ class SettingsController extends Controller
             'appearance',
             'logos',
             'pages_config',
+            'logs',
         ])->get();
         $groups = [];
         foreach ($settings as $setting) {
@@ -71,6 +72,8 @@ class SettingsController extends Controller
             'appearance' => ['sometimes', 'array'],
             'logos' => ['sometimes', 'array'],
             'pages_config' => ['sometimes', 'array'],
+            'logs' => ['sometimes', 'array'],
+            'logs.activity_logs_retention_months' => ['sometimes', 'integer', Rule::in([1, 3, 6, 12])],
             'seo.site_title' => ['sometimes', 'string', 'max:255'],
             'seo.site_title_en' => ['sometimes', 'nullable', 'string', 'max:255'],
             'seo.meta_description' => ['sometimes', 'string', 'max:500'],
@@ -105,7 +108,7 @@ class SettingsController extends Controller
             'sms.api_key_plain' => ['sometimes', 'nullable', 'string'],
         ]);
 
-        foreach (Arr::only($payload, ['company', 'map', 'seo', 'site', 'login', 'appearance', 'logos', 'pages_config']) as $group => $entries) {
+        foreach (Arr::only($payload, ['company', 'map', 'seo', 'site', 'login', 'appearance', 'logos', 'pages_config', 'logs']) as $group => $entries) {
             foreach ($entries as $key => $value) {
                 Setting::query()->updateOrCreate(
                     ['key' => $key],

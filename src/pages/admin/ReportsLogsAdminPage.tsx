@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { FileSpreadsheet, Upload } from 'lucide-react';
+import { Eraser, FileSpreadsheet, Trash2, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ActivityLog } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 interface ProjectImportRow {
   line: number;
@@ -17,12 +18,40 @@ interface ProjectImportRow {
 }
 
 export const ReportsLogsAdminPage: React.FC = () => {
-  const { token, addToast, bootstrap } = useAppStore();
+  const { token, addToast, bootstrap, user } = useAppStore();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [logsRefreshVersion, setLogsRefreshVersion] = useState(0);
   const [importRows, setImportRows] = useState<ProjectImportRow[]>([]);
   const [importing, setImporting] = useState(false);
+  const [logMaintenanceAction, setLogMaintenanceAction] = useState<'prune' | 'reset' | null>(null);
+  const [maintainingLogs, setMaintainingLogs] = useState(false);
+  const isSuperAdmin = ['super-admin', 'super_admin'].includes(user?.role ?? '');
+
+  const maintainLogs = async () => {
+    if (!logMaintenanceAction) return;
+    setMaintainingLogs(true);
+    try {
+      const response = await apiRequest<{ deleted: number; retention_months?: number }>(
+        logMaintenanceAction === 'prune' ? '/admin/activity-logs/prune' : '/admin/activity-logs',
+        { method: logMaintenanceAction === 'prune' ? 'POST' : 'DELETE' },
+      );
+      addToast(
+        'success',
+        logMaintenanceAction === 'prune'
+          ? `${response.deleted} لاگ قدیمی‌تر از ${response.retention_months} ماه حذف شد.`
+          : `${response.deleted} لاگ ریست شد.`,
+      );
+      setLogMaintenanceAction(null);
+      setPage(1);
+      setLogsRefreshVersion((version) => version + 1);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'پاک‌سازی لاگ‌ها ناموفق بود.');
+    } finally {
+      setMaintainingLogs(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -40,7 +69,7 @@ export const ReportsLogsAdminPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [page, addToast]);
+  }, [page, logsRefreshVersion, addToast]);
 
   const exportExcel = async (entity: 'projects' | 'contracts' | 'logs') => {
     try {
@@ -196,6 +225,26 @@ export const ReportsLogsAdminPage: React.FC = () => {
             <FileSpreadsheet className="h-4 w-4" />
             <span>اکسل لاگ‌ها</span>
           </button>
+          {isSuperAdmin && (
+            <>
+              <button
+                type="button"
+                onClick={() => setLogMaintenanceAction('prune')}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/40 px-3.5 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-950/30"
+              >
+                <Eraser className="h-4 w-4" />
+                <span>پاک‌سازی لاگ‌های منقضی</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLogMaintenanceAction('reset')}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-red-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-red-800"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>ریست همه لاگ‌ها</span>
+              </button>
+            </>
+          )}
           <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700">
             <Upload className="h-4 w-4" />
             <span>بررسی فایل اکسل پروژه‌ها</span>
@@ -231,6 +280,19 @@ export const ReportsLogsAdminPage: React.FC = () => {
 
       <DataTable data={logs} columns={cols} pageSize={50} searchKeys={[(l) => l.user_name, (l) => l.action, (l) => l.subject_label]} />
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      <ConfirmDialog
+        open={logMaintenanceAction !== null}
+        onClose={() => setLogMaintenanceAction(null)}
+        onConfirm={() => void maintainLogs()}
+        title={logMaintenanceAction === 'reset' ? 'ریست کامل لاگ‌های فعالیت' : 'پاک‌سازی لاگ‌های منقضی'}
+        message={
+          logMaintenanceAction === 'reset'
+            ? 'همه لاگ‌های فعالیت برای همیشه حذف می‌شوند. این عملیات فقط برای سوپر ادمین است و قابل بازگشت نیست.'
+            : 'لاگ‌های قدیمی‌تر از مدت نگهداری انتخاب‌شده در تنظیمات حذف می‌شوند. ادامه می‌دهید؟'
+        }
+        confirmLabel={logMaintenanceAction === 'reset' ? 'حذف همه لاگ‌ها' : 'پاک‌سازی لاگ‌های منقضی'}
+        loading={maintainingLogs}
+      />
     </div>
   );
 };

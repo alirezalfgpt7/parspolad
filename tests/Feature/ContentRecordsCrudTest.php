@@ -10,10 +10,26 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
     $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
         ->assertOk()->json('token');
 
+    $this->withToken($token)->getJson('/api/v1/admin/content-resources')
+        ->assertOk()
+        ->assertJsonFragment([
+            'key' => 'services',
+            'label_fa' => 'خدمات',
+            'label_en' => 'Services',
+        ]);
+
     $this->withToken($token)->getJson('/api/v1/admin/content-schema/services')
         ->assertOk()
         ->assertJsonPath('data.resource', 'services')
-        ->assertJsonPath('data.fields.0.name', 'slug');
+        ->assertJsonPath('data.fields.0.name', 'slug')
+        ->assertJsonPath('data.fields.0.label_fa', 'شناسهٔ یکتا')
+        ->assertJsonPath('data.fields.0.label_en', 'Slug');
+
+    $this->withToken($token)->getJson('/api/v1/admin/content-schema/notification-templates')
+        ->assertOk()
+        ->assertJsonPath('data.fields.2.type', 'select')
+        ->assertJsonPath('data.fields.2.options.0.label_fa', 'ایمیل')
+        ->assertJsonPath('data.fields.2.options.0.label_en', 'Email');
 
     $created = $this->withToken($token)->postJson('/api/v1/admin/services', [
         'slug' => 'dynamic-service',
@@ -22,6 +38,12 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
         'summary_fa' => 'شرح خدمت پویا',
         'image_url' => '/storage/services/dynamic.jpg',
     ])->assertCreated()->json('data');
+
+    $this->withToken($token)->getJson('/api/v1/admin/services?search=Dynamic%20Service&sort_by=title_en&sort_order=asc&per_page=1')
+        ->assertOk()
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('meta.per_page', 1)
+        ->assertJsonPath('data.0.title_en', 'Dynamic Service');
 
     $this->withToken($token)->putJson('/api/v1/admin/services/'.$created['id'], [
         'title_fa' => 'خدمت ویرایش‌شده',

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Partner } from '../../types/index.ts';
@@ -12,9 +12,11 @@ interface PartnerDraft {
   name_fa: string;
   name_en: string;
   logo_url: string;
+  sector_fa: string;
+  website: string;
 }
 
-const emptyDraft: PartnerDraft = { name_fa: '', name_en: '', logo_url: '' };
+const emptyDraft: PartnerDraft = { name_fa: '', name_en: '', logo_url: '', sector_fa: 'همکار راهبردی', website: '' };
 
 export const PartnerLogoManager: React.FC = () => {
   const { addToast, fetchBootstrap } = useAppStore();
@@ -25,6 +27,7 @@ export const PartnerLogoManager: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [partnerToDelete, setPartnerToDelete] = useState<Partner | null>(null);
+  const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
 
   const loadPartners = useCallback(async () => {
     const response = await apiRequest<{ data: Partner[] }>('/admin/partners?per_page=100');
@@ -55,7 +58,6 @@ export const PartnerLogoManager: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({
           ...draft,
-          sector_fa: 'همکار راهبردی',
           is_active: true,
         }),
       });
@@ -64,6 +66,41 @@ export const PartnerLogoManager: React.FC = () => {
       addToast('success', 'لوگوی همکار به اسلایدر صفحه اصلی اضافه شد.');
     } catch (error) {
       addToast('error', error instanceof Error ? error.message : 'افزودن لوگو ناموفق بود.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const beginEdit = (partner: Partner) => {
+    setEditingPartner(partner);
+    setDraft({
+      name_fa: partner.name_fa,
+      name_en: partner.name_en,
+      logo_url: partner.logo_url,
+      sector_fa: partner.sector_fa || '',
+      website: partner.website || '',
+    });
+  };
+
+  const savePartner = async () => {
+    if (!editingPartner) return;
+    if (!draft.name_fa.trim() || !draft.name_en.trim() || !draft.logo_url.trim()) {
+      addToast('error', 'نام فارسی، نام انگلیسی و لوگو الزامی هستند.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await apiRequest(`/admin/partners/${editingPartner.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(draft),
+      });
+      setEditingPartner(null);
+      setDraft(emptyDraft);
+      await refreshAfterChange();
+      addToast('success', 'اطلاعات و لوگوی همکار بروزرسانی شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'ویرایش لوگو ناموفق بود.');
     } finally {
       setSaving(false);
     }
@@ -135,17 +172,55 @@ export const PartnerLogoManager: React.FC = () => {
             label="بارگذاری لوگو"
             onUploaded={(logo_url) => setDraft((current) => ({ ...current, logo_url }))}
           />
+          {editingPartner && (
+            <>
+              <label className="text-xs font-medium">
+                حوزه فعالیت
+                <input
+                  value={draft.sector_fa}
+                  onChange={(event) => setDraft((current) => ({ ...current, sector_fa: event.target.value }))}
+                  maxLength={255}
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+              <label className="text-xs font-medium">
+                وب‌سایت
+                <input
+                  dir="ltr"
+                  type="url"
+                  value={draft.website}
+                  onChange={(event) => setDraft((current) => ({ ...current, website: event.target.value }))}
+                  maxLength={2048}
+                  placeholder="https://example.com"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800"
+                />
+              </label>
+            </>
+          )}
           <div className="flex items-end">
             <button
               type="button"
-              onClick={addPartner}
+              onClick={editingPartner ? savePartner : addPartner}
               disabled={saving}
               className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-(--theme-primary) px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              <Plus className="h-4 w-4" />
-              {saving ? 'در حال افزودن...' : 'افزودن به اسلایدر'}
+              {editingPartner ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              {saving ? 'در حال ذخیره...' : editingPartner ? 'ذخیره ویرایش' : 'افزودن به اسلایدر'}
             </button>
           </div>
+          {editingPartner && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingPartner(null);
+                setDraft(emptyDraft);
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white"
+            >
+              <X className="h-4 w-4" />
+              انصراف از ویرایش
+            </button>
+          )}
         </div>
       </section>
 
@@ -180,6 +255,15 @@ export const PartnerLogoManager: React.FC = () => {
                   <p className="mt-1 text-[10px] text-slate-400">{partner.is_active ? 'نمایش در صفحه اصلی' : 'پنهان از صفحه اصلی'}</p>
                 </div>
                 <div className="flex shrink-0 flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => beginEdit(partner)}
+                    aria-label={`ویرایش ${partner.name_fa}`}
+                    title="ویرایش لوگو و مشخصات"
+                    className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-(--theme-primary) dark:hover:bg-slate-800"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => togglePartner(partner)}

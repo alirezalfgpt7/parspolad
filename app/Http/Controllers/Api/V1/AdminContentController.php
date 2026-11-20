@@ -12,6 +12,7 @@ use App\Http\Requests\AdminContent\StoreAdminContentRecordRequest;
 use App\Http\Requests\AdminContent\UpdateAdminContentRecordRequest;
 use App\Http\Resources\AdminContentRecordResource;
 use App\Support\AdminContentRegistry;
+use App\Services\DatabaseBackupService;
 use Illuminate\Support\Arr;
 use App\Models\Article;
 use App\Models\Banner;
@@ -45,13 +46,62 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminContentController extends Controller
 {
+    public function resources(Request $request): JsonResponse
+    {
+        $resources = collect(AdminContentRegistry::MODELS)
+            ->filter(fn (string $modelClass, string $resource): bool =>
+                $request->user()?->can(AdminContentRegistry::permission($resource)) ?? false
+            )
+            ->map(function (string $modelClass, string $resource): array {
+                return [
+                    'key' => $resource,
+                    'label_fa' => AdminContentRegistry::resourceLabel($resource)['fa'],
+                    'label_en' => AdminContentRegistry::resourceLabel($resource)['en'],
+                    'count' => $modelClass::query()->count(),
+                ];
+            })
+            ->values();
+
+        return response()->json(['data' => $resources]);
+    }
+
     public function index(Request $request, string $resource): JsonResponse
     {
         $this->ensureResourcePermission($request, $resource);
         $modelClass = AdminContentRegistry::modelClass($resource);
         $query = $modelClass::query();
+        $data = $request->validate([
+            'search' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'sort_by' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'sort_order' => ['sometimes', 'nullable', Rule::in(['asc', 'desc'])],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ]);
 
-        if ($resource === 'articles') {
+        if (($search = trim((string) ($data['search'] ?? ''))) !== '') {
+            $model = new $modelClass;
+            $schema = $model->getConnection()->getSchemaBuilder();
+            $searchableFields = collect($model->getFillable())
+                ->filter(function (string $field) use ($model, $schema): bool {
+                    $type = strtolower($schema->getColumnType($model->getTable(), $field));
+
+                    return str_contains($type, 'char') || str_contains($type, 'text');
+                })
+                ->values();
+
+            if ($searchableFields->isNotEmpty()) {
+                $query->where(function ($nested) use ($searchableFields, $search): void {
+                    foreach ($searchableFields as $field) {
+                        $nested->orWhere($field, 'like', '%'.$search.'%');
+                    }
+                });
+            }
+        }
+
+        $sortBy = $data['sort_by'] ?? null;
+        if ($sortBy !== null && $sortBy !== '') {
+            abort_unless($sortBy === 'id' || in_array($sortBy, (new $modelClass)->getFillable(), true), 422, 'ستون مرتب‌سازی معتبر نیست.');
+            $query->orderBy($sortBy, $data['sort_order'] ?? 'asc');
+        } elseif ($resource === 'articles') {
             $query->orderByDesc('published_at');
         } elseif (in_array($resource, ['kpis', 'faqs', 'departments', 'team'], true)) {
             $query->orderBy('sort_order');
@@ -75,6 +125,10 @@ class AdminContentController extends Controller
         $model = new (AdminContentRegistry::modelClass($resource));
         $schema = $model->getConnection()->getSchemaBuilder();
         $columns = collect($schema->getColumns($model->getTable()))->keyBy('name');
+        $uniqueFields = collect($schema->getIndexes($model->getTable()))
+            ->filter(fn (array $index): bool => (bool) ($index['unique'] ?? false))
+            ->flatMap(fn (array $index): array => $index['columns'] ?? [])
+            ->all();
         $fields = [];
 
         foreach ($model->getFillable() as $field) {
@@ -82,6 +136,7 @@ class AdminContentController extends Controller
             $column = $columns->get($field, []);
             $columnType = $column['type_name'] ?? $column['type'] ?? $schema->getColumnType($model->getTable(), $field);
             $type = match (true) {
+                is_string($cast) && enum_exists($cast) => 'select',
                 in_array($cast, ['boolean', 'bool'], true) => 'boolean',
                 in_array($cast, ['array', 'json', 'object', 'collection'], true) => 'json',
                 in_array($cast, ['integer', 'int', 'float', 'double', 'decimal'], true) => 'number',
@@ -92,9 +147,23 @@ class AdminContentController extends Controller
                 default => 'string',
             };
 
+            $options = [];
+            if ($type === 'select' && is_string($cast) && enum_exists($cast)) {
+                $options = array_map(function ($case): array {
+                    $value = $case instanceof \BackedEnum ? (string) $case->value : $case->name;
+                    $label = AdminContentRegistry::enumLabel($value);
+
+                    return ['value' => $value, 'label_fa' => $label['fa'], 'label_en' => $label['en']];
+                }, $cast::cases());
+            }
+
             $fields[] = [
                 'name' => $field,
+                'label_fa' => AdminContentRegistry::fieldLabel($field)['fa'],
+                'label_en' => AdminContentRegistry::fieldLabel($field)['en'],
                 'type' => $type,
+                'options' => $options,
+                'unique' => in_array($field, $uniqueFields, true),
                 'required' => in_array($field, AdminContentRegistry::requiredFields($resource), true)
                     || (($column['nullable'] ?? true) === false && ($column['default'] ?? null) === null),
             ];
@@ -324,52 +393,99 @@ class AdminContentController extends Controller
         };
     }
 
-    public function backup(Request $request): JsonResponse
+    public function backupTables(Request $request, DatabaseBackupService $backups): JsonResponse
     {
-        $this->ensurePermission($request, 'settings.manage');
-        $tables = [
-            'settings',
-            'theme_presets',
-            'theme_settings',
-            'sliders',
-            'slides',
-            'menus',
-            'menu_items',
-            'project_categories',
-            'projects',
-            'project_images',
-            'project_videos',
-            'project_documents',
-            'contracts',
-            'contract_documents',
-            'licenses',
-            'license_attachments',
-            'services',
-            'products',
-            'departments',
-            'team_members',
-            'partners',
-            'articles',
-            'pages',
-            'banners',
-            'kpis',
-            'contact_messages',
-            'notifications',
-            'notification_templates',
-            'media_files',
-            'activity_log',
-        ];
-        $data = [];
-        foreach ($tables as $table) {
-            $data[$table] = DB::table($table)->get();
-        }
-        $data['users'] = DB::table('users')
-            ->select(['id', 'name', 'email', 'phone', 'avatar', 'is_active', 'created_at', 'updated_at'])
-            ->get();
+        $this->ensureSuperAdmin($request);
 
-        return response()->json(['data' => $data], 200, [
-            'Content-Disposition' => 'attachment; filename="parspolad-backup.json"',
+        return response()->json(['data' => $backups->catalog()]);
+    }
+
+    public function backup(Request $request, DatabaseBackupService $backups)
+    {
+        $this->ensureSuperAdmin($request);
+        $data = $request->validate([
+            'tables' => ['sometimes', 'array', 'min:1'],
+            'tables.*' => ['required', 'string', 'distinct'],
         ]);
+        $tables = $backups->selectedTables($data['tables'] ?? null);
+        $isComplete = count($tables) === count($backups->tableNames());
+        $createdAt = now()->toIso8601String();
+        $filename = 'parspolad-backup-'.now()->format('Ymd-His').'.json';
+
+        return response()->streamDownload(function () use ($tables, $isComplete, $createdAt): void {
+            echo '{"format":"'.DatabaseBackupService::FORMAT.'","version":'.DatabaseBackupService::VERSION;
+            echo ',"scope":"'.($isComplete ? 'complete' : 'selected').'"';
+            echo ',"created_at":'.json_encode($createdAt, JSON_THROW_ON_ERROR);
+            echo ',"tables":{';
+
+            foreach ($tables as $index => $table) {
+                if ($index > 0) {
+                    echo ',';
+                }
+                echo json_encode($table, JSON_THROW_ON_ERROR).':[';
+                $firstRow = true;
+                foreach (DB::table($table)->cursor() as $row) {
+                    if (! $firstRow) {
+                        echo ',';
+                    }
+                    echo json_encode(
+                        $row,
+                        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR,
+                    );
+                    $firstRow = false;
+                }
+                echo ']';
+            }
+
+            echo '}}';
+        }, $filename, ['Content-Type' => 'application/json; charset=utf-8']);
+    }
+
+    public function inspectBackup(Request $request, DatabaseBackupService $backups): JsonResponse
+    {
+        $this->ensureSuperAdmin($request);
+        $file = $this->validatedBackupFile($request);
+
+        return response()->json(['data' => $backups->inspect($backups->readBackup($file))]);
+    }
+
+    public function restoreBackup(Request $request, DatabaseBackupService $backups): JsonResponse
+    {
+        $this->ensureSuperAdmin($request);
+        $data = $request->validate([
+            'file' => ['required', 'file', 'max:102400'],
+            'tables' => ['required', 'array', 'min:1', 'max:100'],
+            'tables.*' => ['required', 'string', 'distinct'],
+        ]);
+        $file = $this->assertJsonBackup($data['file']);
+        $backup = $backups->readBackup($file);
+        $restored = $backups->restore($backup, $data['tables']);
+
+        return response()->json([
+            'ok' => true,
+            'restored_tables' => $restored,
+            'requires_relogin' => true,
+        ]);
+    }
+
+    private function validatedBackupFile(Request $request): \Illuminate\Http\UploadedFile
+    {
+        $data = $request->validate([
+            'file' => ['required', 'file', 'max:102400'],
+        ]);
+
+        return $this->assertJsonBackup($data['file']);
+    }
+
+    private function assertJsonBackup(\Illuminate\Http\UploadedFile $file): \Illuminate\Http\UploadedFile
+    {
+        if (strtolower($file->getClientOriginalExtension()) !== 'json') {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'file' => 'فقط فایل JSON پشتیبان پارس‌پولاد پذیرفته می‌شود.',
+            ]);
+        }
+
+        return $file;
     }
 
     private function ensureResourcePermission(Request $request, string $resource, string $ability = 'viewAny'): void
@@ -381,6 +497,11 @@ class AdminContentController extends Controller
     private function ensurePermission(Request $request, string $permission): void
     {
         abort_unless($request->user()?->can($permission), 403);
+    }
+
+    private function ensureSuperAdmin(Request $request): void
+    {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
     }
 
     private function modelFor(string $resource): string

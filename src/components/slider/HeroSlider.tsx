@@ -216,8 +216,8 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
         <WaveHeroEffect
-          bottomFill="color-mix(in srgb, var(--theme-bg) 84%, #38bdf8)"
-          tintRgb="125 211 252"
+          bottomFill="color-mix(in srgb, var(--theme-bg) 84%, #ef4444)"
+          tintRgb="220 38 38"
         />
       </div>
 

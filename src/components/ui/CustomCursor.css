@@ -1,0 +1,103 @@
+.custom-cursor {
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(var(--cursor-x, -100px), var(--cursor-y, -100px), 0);
+  transition: opacity 180ms ease;
+}
+
+.custom-cursor[data-visible='true'] {
+  opacity: 1;
+}
+
+.custom-cursor__visual {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid rgb(248 113 113 / 80%);
+  border-radius: 50%;
+  background: rgb(15 23 42 / 82%);
+  color: #fee2e2;
+  box-shadow:
+    0 0 0 5px rgb(220 38 38 / 9%),
+    0 0 22px rgb(220 38 38 / 38%),
+    inset 0 1px rgb(255 255 255 / 14%);
+  transform: translate(-50%, -50%) scale(0.82);
+  transition:
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.custom-cursor[data-visible='true'] .custom-cursor__visual {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.custom-cursor__orbit {
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgb(248 113 113 / 38%);
+  border-radius: 50%;
+  animation: customCursorOrbit 3s ease-in-out infinite;
+}
+
+.custom-cursor__icon {
+  position: relative;
+  z-index: 1;
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke-width: 1.8;
+  display: none;
+}
+
+.custom-cursor[data-variant='industrial'] [data-cursor-icon='industrial'],
+.custom-cursor[data-variant='pointer'] [data-cursor-icon='pointer'],
+.custom-cursor[data-variant='crosshair'] [data-cursor-icon='crosshair'] {
+  display: block;
+}
+
+.custom-cursor[data-variant='pointer'] .custom-cursor__visual {
+  border-radius: 12px;
+  color: #fff;
+}
+
+.custom-cursor[data-variant='crosshair'] .custom-cursor__visual {
+  border-color: rgb(125 211 252 / 85%);
+  color: #bae6fd;
+  box-shadow:
+    0 0 0 5px rgb(14 165 233 / 9%),
+    0 0 22px rgb(14 165 233 / 34%),
+    inset 0 1px rgb(255 255 255 / 14%);
+}
+
+.custom-cursor[data-pressed='true'] .custom-cursor__visual {
+  transform: translate(-50%, -50%) scale(0.86);
+}
+
+@keyframes customCursorOrbit {
+  50% {
+    transform: scale(1.13);
+    opacity: 0.45;
+  }
+}
+
+html[data-custom-cursor-enabled='true'] [data-cursor]:hover {
+  cursor: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-cursor__visual,
+  .custom-cursor__orbit {
+    animation: none;
+    transition: none;
+  }
+}

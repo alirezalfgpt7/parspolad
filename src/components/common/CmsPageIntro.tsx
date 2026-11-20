@@ -62,7 +62,7 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
             />
           </div>
           <div className="pointer-events-none absolute inset-x-0 bottom-0">
-            <WaveHeroEffect bottomFill="var(--theme-bg)" tintRgb="255 255 255" heightClassName="!h-12" />
+            <WaveHeroEffect bottomFill="transparent" tintRgb="220 38 38" heightClassName="!h-12" />
           </div>
         </div>
         {showContent && content && (

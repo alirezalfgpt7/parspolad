@@ -36,6 +36,22 @@ export const ContentCmsAdminPage: React.FC = () => {
   const [newArticleDate, setNewArticleDate] = useState(getTodayJalali);
   const [deleteArticle, setDeleteArticle] = useState<Article | null>(null);
   const [deletingArticle, setDeletingArticle] = useState(false);
+  const [savingPage, setSavingPage] = useState(false);
+  const isHomeSpotlight = editPage?.slug === 'home-spotlight';
+  const getPageMetadataText = (key: string): string => {
+    const value = editPage?.metadata?.[key];
+    return typeof value === 'string' ? value : '';
+  };
+  const updatePageMetadata = (key: string, value: string) => {
+    setEditPage((current) =>
+      current
+        ? {
+            ...current,
+            metadata: { ...(current.metadata || {}), [key]: value },
+          }
+        : current,
+    );
+  };
 
   const load = async () => {
     const [pg, sv, pr, ar, bn, kp] = await Promise.all([
@@ -119,8 +135,15 @@ export const ContentCmsAdminPage: React.FC = () => {
           </div>
           {editPage && (
             <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 lg:col-span-9 dark:border-slate-800 dark:bg-slate-900">
-              <input value={editPage.title_fa} onChange={(e) => setEditPage({ ...editPage, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold dark:border-slate-700 dark:bg-slate-800" />
-              <input value={editPage.subtitle_fa} onChange={(e) => setEditPage({ ...editPage, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+              <input aria-label="عنوان فارسی صفحه" value={editPage.title_fa} onChange={(e) => setEditPage({ ...editPage, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold dark:border-slate-700 dark:bg-slate-800" />
+              <input aria-label="عنوان انگلیسی صفحه" dir="ltr" value={editPage.title_en} onChange={(e) => setEditPage({ ...editPage, title_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold dark:border-slate-700 dark:bg-slate-800" />
+              <input aria-label="زیرعنوان فارسی صفحه" value={editPage.subtitle_fa} onChange={(e) => setEditPage({ ...editPage, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+              <input aria-label="زیرعنوان انگلیسی صفحه" dir="ltr" value={editPage.subtitle_en} onChange={(e) => setEditPage({ ...editPage, subtitle_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+              {isHomeSpotlight && (
+                <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-[11px] leading-5 text-slate-600 dark:text-slate-300">
+                  عنوان و نشان اصلی این بخش و لوگوی آن از «تنظیمات ظاهر ← متون و لوگوها ← بخش ویژه صفحه اصلی» تنظیم می‌شوند. تصاویر اسلایدی، متن توضیحات و دکمه‌ها را در همین فرم ویرایش کنید.
+                </div>
+              )}
               <MediaUrlField
                 label="تصویر کاور / پیش‌نمایش صفحه (Meta Image)"
                 value={editPage.meta_image || ''}
@@ -129,19 +152,113 @@ export const ContentCmsAdminPage: React.FC = () => {
                 accept=".jpg,.jpeg,.png,.webp,.gif"
                 placeholder="/storage/hero/hero-banner.jpg"
               />
-              <RichTextEditor label="محتوای صفحه" value={editPage.content_fa} onChange={(html) => setEditPage({ ...editPage, content_fa: html })} />
+              {isHomeSpotlight && (
+                <div className="space-y-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
+                  <h3 className="text-sm font-bold">محتوای بخش ویژه صفحه اصلی</h3>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <MediaUrlField
+                      label="تصویر اسلاید اول"
+                      value={getPageMetadataText('image_url')}
+                      onChange={(url) => updatePageMetadata('image_url', url)}
+                      folder="pages"
+                      accept=".jpg,.jpeg,.png,.webp,.gif"
+                      placeholder="/storage/hero/home-spotlight-1.jpg"
+                    />
+                    <MediaUrlField
+                      label="تصویر اسلاید دوم"
+                      value={getPageMetadataText('secondary_image_url')}
+                      onChange={(url) => updatePageMetadata('secondary_image_url', url)}
+                      folder="pages"
+                      accept=".jpg,.jpeg,.png,.webp,.gif"
+                      placeholder="/storage/hero/home-spotlight-2.jpg"
+                    />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {([
+                      ['primary_link', 'پیوند دکمه اصلی'],
+                      ['primary_label_fa', 'متن دکمه اصلی (فارسی)'],
+                      ['primary_label_en', 'متن دکمه اصلی (انگلیسی)'],
+                      ['secondary_link', 'پیوند دکمه دوم'],
+                      ['secondary_label_fa', 'متن دکمه دوم (فارسی)'],
+                      ['secondary_label_en', 'متن دکمه دوم (انگلیسی)'],
+                    ] as const).map(([key, label]) => (
+                      <label key={key} className="block space-y-1">
+                        <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">{label}</span>
+                        <input
+                          type="text"
+                          dir={key.endsWith('_en') || key.endsWith('_link') ? 'ltr' : 'rtl'}
+                          value={getPageMetadataText(key)}
+                          onChange={(event) => updatePageMetadata(key, event.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <MediaUrlField
+                    label="تصویر پس‌زمینه بخش معرفی"
+                    value={getPageMetadataText('section_background_url')}
+                    onChange={(url) => updatePageMetadata('section_background_url', url)}
+                    folder="pages"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    placeholder="/storage/hero/home-spotlight-background.jpg"
+                    hint="در صورت خالی بودن، رنگ پس‌زمینه انتخاب‌شده نمایش داده می‌شود."
+                  />
+                  <label className="block space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+                    <span className="flex items-center justify-between text-[11px] font-semibold">
+                      <span>تیرگی روی تصویر پس‌زمینه</span>
+                      <span>{getPageMetadataText('section_background_overlay_opacity') || '35'}%</span>
+                    </span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={getPageMetadataText('section_background_overlay_opacity') || '35'}
+                      onChange={(event) => updatePageMetadata('section_background_overlay_opacity', event.target.value)}
+                      className="w-full accent-(--theme-primary)"
+                    />
+                  </label>
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <RichTextEditor
+                      label="توضیحات بخش (فارسی)"
+                      value={editPage.content_fa}
+                      onChange={(html) => setEditPage({ ...editPage, content_fa: html })}
+                    />
+                    <RichTextEditor
+                      label="Section description (English)"
+                      value={editPage.content_en}
+                      onChange={(html) => setEditPage({ ...editPage, content_en: html })}
+                    />
+                  </div>
+                </div>
+              )}
+              {!isHomeSpotlight && (
+                <RichTextEditor
+                  label="محتوای صفحه"
+                  value={editPage.content_fa}
+                  onChange={(html) => setEditPage({ ...editPage, content_fa: html })}
+                />
+              )}
               <button
                 type="button"
+                disabled={savingPage}
                 onClick={async () => {
-                  await apiRequest(`/admin/pages/${editPage.id}`, { method: 'PUT', body: JSON.stringify(editPage) });
-                  addToast('success', 'صفحه ذخیره شد.');
-                  load();
+                  setSavingPage(true);
+                  try {
+                    await apiRequest(`/admin/pages/${editPage.id}`, { method: 'PUT', body: JSON.stringify(editPage) });
+                    addToast('success', 'صفحه ذخیره شد.');
+                    await load();
+                  } catch (error) {
+                    addToast('error', error instanceof Error ? error.message : 'ذخیره صفحه ناموفق بود.');
+                  } finally {
+                    setSavingPage(false);
+                  }
                 }}
                 style={{ backgroundColor: 'var(--theme-primary)' }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
+                className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
               >
                 <Save className="h-4 w-4" />
-                <span>ذخیره تغییرات صفحه</span>
+                <span>{savingPage ? 'در حال ذخیره...' : 'ذخیره تغییرات صفحه'}</span>
               </button>
             </div>
           )}

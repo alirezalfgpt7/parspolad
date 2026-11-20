@@ -89,7 +89,14 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::get('/media', [AdminResourceController::class, 'media'])->middleware('permission:media.manage');
             Route::put('/media/{media}', [AdminResourceController::class, 'updateMedia']);
             Route::delete('/media/{media}', [AdminResourceController::class, 'destroyMedia']);
-            Route::get('/backup', [AdminContentController::class, 'backup'])->middleware('permission:settings.manage');
+            Route::get('/backup/tables', [AdminContentController::class, 'backupTables'])
+                ->middleware('role:super_admin');
+            Route::get('/backup', [AdminContentController::class, 'backup'])
+                ->middleware('role:super_admin');
+            Route::post('/backup/inspect', [AdminContentController::class, 'inspectBackup'])
+                ->middleware('role:super_admin');
+            Route::post('/restore', [AdminContentController::class, 'restoreBackup'])
+                ->middleware('role:super_admin');
             Route::get('/reports/export/{entity}', [AdminContentController::class, 'exportReport'])
                 ->middleware('permission:reports.export');
 
@@ -131,6 +138,8 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::put('/roles/{role}', [AdminResourceController::class, 'updateRole']);
             Route::delete('/roles/{role}', [AdminResourceController::class, 'destroyRole']);
             Route::get('/messages', [AdminResourceController::class, 'messages'])->middleware('permission:messages.view');
+            Route::post('/activity-logs/prune', [AdminResourceController::class, 'pruneActivityLogs']);
+            Route::delete('/activity-logs', [AdminResourceController::class, 'resetActivityLogs']);
             Route::get('/live-chat/conversations', [LiveChatController::class, 'adminIndex'])->middleware('permission:messages.view');
             Route::get('/live-chat/conversations/{conversation}/messages', [LiveChatController::class, 'adminMessages'])
                 ->middleware('permission:messages.view')
@@ -158,6 +167,7 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::get('/activity-logs-export', [AdminResourceController::class, 'exportLogs'])
                 ->middleware('permission:reports.export');
 
+            Route::get('/content-resources', [AdminContentController::class, 'resources']);
             Route::get('/content-schema/{resource}', [AdminContentController::class, 'schema'])
                 ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|pages|banners|kpis|notification-templates');
             Route::get('/{resource}', [AdminContentController::class, 'index'])

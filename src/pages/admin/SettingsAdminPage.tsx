@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Database, Download, Plus, Save, Trash2 } from 'lucide-react';
+import { Database, Download, FileUp, Plus, RotateCcw, Save, ShieldAlert, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { NotificationTemplate, SiteSettings, SocialLinkSetting, SmsProvider } from '../../types/index.ts';
@@ -10,6 +10,54 @@ import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { PartnerLogoManager } from '../../components/admin/PartnerLogoManager.tsx';
 import { EffectAction, EffectTabButton, EffectTabPanel } from '../../components/effects/index.ts';
 import { DynamicLucideIcon, LUCIDE_ICON_REGISTRY } from '../../components/ui/LucideIconMap.tsx';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+
+interface BackupTableInfo {
+  name: string;
+  label_fa: string;
+  label_en: string;
+  count: number;
+  sensitive: boolean;
+}
+
+interface BackupFileTable {
+  name: string;
+  label_fa: string;
+  label_en: string;
+  row_count: number;
+  supported: boolean;
+  restorable: boolean;
+  error: string | null;
+}
+
+interface BackupInspection {
+  format: string;
+  version: number;
+  created_at: string | null;
+  legacy: boolean;
+  complete: boolean;
+  table_count: number;
+  current_table_count: number;
+  missing_tables: string[];
+  unsupported_tables: string[];
+  tables: BackupFileTable[];
+}
+
+async function readAdminApiResponse<T>(response: Response): Promise<T> {
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const payload = body && typeof body === 'object'
+      ? body as { message?: unknown; errors?: Record<string, string[]> }
+      : {};
+    const validationMessage = Object.values(payload.errors ?? {}).flat()[0];
+    throw new Error(
+      typeof payload.message === 'string'
+        ? payload.message
+        : validationMessage ?? `درخواست با خطای HTTP ${response.status} روبه‌رو شد.`,
+    );
+  }
+  return body as T;
+}
 
 const legacySocialNetworks: Array<{
   key: 'instagram_url' | 'linkedin_url' | 'aparat_url' | 'telegram_url' | 'whatsapp_url';
@@ -31,7 +79,7 @@ function getLegacySocialLinks(settings: SiteSettings): SocialLinkSetting[] {
 }
 
 export const SettingsAdminPage: React.FC = () => {
-  const { addToast, fetchBootstrap, token } = useAppStore();
+  const { addToast, fetchBootstrap, token, user, logout } = useAppStore();
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
@@ -39,11 +87,25 @@ export const SettingsAdminPage: React.FC = () => {
   const [emailTestAddress, setEmailTestAddress] = useState('');
   const [testingEmail, setTestingEmail] = useState(false);
   const [smsKeyPlain, setSmsKeyPlain] = useState('');
-  const [tab, setTab] = useState<'company' | 'social' | 'email' | 'sms' | 'map_seo' | 'backup' | 'partners'>('company');
+  const [tab, setTab] = useState<'company' | 'social' | 'email' | 'sms' | 'map_seo' | 'backup' | 'partners' | 'logs'>('company');
+  const [backupTables, setBackupTables] = useState<BackupTableInfo[]>([]);
+  const [selectedBackupTables, setSelectedBackupTables] = useState<string[]>([]);
+  const [loadingBackupTables, setLoadingBackupTables] = useState(false);
+  const [downloadingBackup, setDownloadingBackup] = useState(false);
+  const [restoreFile, setRestoreFile] = useState<File | null>(null);
+  const [backupInspection, setBackupInspection] = useState<BackupInspection | null>(null);
+  const [selectedRestoreTables, setSelectedRestoreTables] = useState<string[]>([]);
+  const [inspectingBackup, setInspectingBackup] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [restoringBackup, setRestoringBackup] = useState(false);
+  const isSuperAdmin = ['super-admin', 'super_admin'].includes(user?.role ?? '');
 
   useEffect(() => {
     apiRequest<{ data: SiteSettings }>('/admin/settings').then((r) => setSettings({
       ...r.data,
+      logs: {
+        activity_logs_retention_months: r.data.logs?.activity_logs_retention_months ?? 12,
+      },
       site: {
         ...r.data.site,
         social_links: r.data.site.social_links ?? getLegacySocialLinks(r.data),
@@ -53,6 +115,28 @@ export const SettingsAdminPage: React.FC = () => {
     });
     apiRequest<{ data: NotificationTemplate[] }>('/admin/notification-templates').then((r) => setTemplates(r.data)).catch(() => {});
   }, [addToast]);
+
+  useEffect(() => {
+    if (tab !== 'backup' || !isSuperAdmin) return;
+    let active = true;
+    setLoadingBackupTables(true);
+    apiRequest<{ data: BackupTableInfo[] }>('/admin/backup/tables')
+      .then(({ data }) => {
+        if (!active) return;
+        setBackupTables(data);
+        setSelectedBackupTables(data.map((table) => table.name));
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'دریافت فهرست جدول‌های پشتیبان ناموفق بود.');
+      })
+      .finally(() => {
+        if (active) setLoadingBackupTables(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [tab, isSuperAdmin, addToast]);
 
   if (!settings) return <PagePreloader label="در حال دریافت تنظیمات..." />;
 
@@ -94,6 +178,12 @@ export const SettingsAdminPage: React.FC = () => {
               sender_line: settings.sms.sender_line,
               enabled: settings.sms.enabled,
               api_key_plain: smsKeyPlain || undefined,
+            },
+          };
+        case 'logs':
+          return {
+            logs: {
+              activity_logs_retention_months: settings.logs?.activity_logs_retention_months ?? 12,
             },
           };
         case 'map_seo':
@@ -143,18 +233,104 @@ export const SettingsAdminPage: React.FC = () => {
   };
 
   const downloadBackup = async () => {
-    const res = await fetch('/api/v1/admin/backup', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `parspolad-backup-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addToast('success', 'فایل پشتیبان دیتابیس دانلود شد.');
+    if (selectedBackupTables.length === 0) {
+      addToast('error', 'برای پشتیبان‌گیری حداقل یک جدول انتخاب کنید.');
+      return;
+    }
+
+    setDownloadingBackup(true);
+    try {
+      const params = new URLSearchParams();
+      if (selectedBackupTables.length !== backupTables.length) {
+        selectedBackupTables.forEach((table) => params.append('tables[]', table));
+      }
+      const query = params.toString();
+      const response = await fetch(`/api/v1/admin/backup${query ? `?${query}` : ''}`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) await readAdminApiResponse(response);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `parspolad-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      addToast('success', selectedBackupTables.length === backupTables.length
+        ? 'نسخهٔ پشتیبان کامل پایگاه‌داده دانلود شد.'
+        : `نسخهٔ پشتیبان ${selectedBackupTables.length} جدول دانلود شد.`);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'دریافت فایل پشتیبان ناموفق بود.');
+    } finally {
+      setDownloadingBackup(false);
+    }
   };
+
+  const inspectBackupFile = async (file?: File) => {
+    if (!file) return;
+    setRestoreFile(null);
+    setBackupInspection(null);
+    setSelectedRestoreTables([]);
+    setInspectingBackup(true);
+
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const response = await fetch('/api/v1/admin/backup/inspect', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      });
+      const result = await readAdminApiResponse<{ data: BackupInspection }>(response);
+      setRestoreFile(file);
+      setBackupInspection(result.data);
+      setSelectedRestoreTables(result.data.tables.filter((table) => table.restorable).map((table) => table.name));
+      addToast('success', `فایل بررسی شد؛ ${result.data.tables.length} جدول در آن شناسایی شد.`);
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'بررسی فایل پشتیبان ناموفق بود.');
+    } finally {
+      setInspectingBackup(false);
+    }
+  };
+
+  const restoreBackup = async () => {
+    if (!restoreFile || selectedRestoreTables.length === 0) return;
+    setRestoringBackup(true);
+    try {
+      const form = new FormData();
+      form.append('file', restoreFile);
+      selectedRestoreTables.forEach((table) => form.append('tables[]', table));
+      const response = await fetch('/api/v1/admin/restore', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      });
+      const result = await readAdminApiResponse<{ restored_tables: Array<{ name: string; row_count: number }> }>(response);
+      setRestoreDialogOpen(false);
+      addToast('success', `بازیابی ${result.restored_tables.length} جدول انجام شد. برای ورود امن، دوباره وارد سامانه شوید.`);
+      await logout();
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'بازیابی پایگاه‌داده ناموفق بود.');
+    } finally {
+      setRestoringBackup(false);
+    }
+  };
+
+  const allBackupTablesSelected = backupTables.length > 0 && selectedBackupTables.length === backupTables.length;
+  const restorableBackupTables = backupInspection?.tables.filter((table) => table.restorable) ?? [];
+  const allRestoreTablesSelected = restorableBackupTables.length > 0
+    && selectedRestoreTables.length === restorableBackupTables.length;
 
   return (
     <div className="space-y-6">
@@ -168,6 +344,7 @@ export const SettingsAdminPage: React.FC = () => {
             { id: 'map_seo', label: 'نقشه، سئو و حالت نگهداری' },
             { id: 'backup', label: 'پشتیبان‌گیری دیتابیس' },
             { id: 'partners', label: 'لوگوهای اسلایدر صفحه اصلی' },
+            { id: 'logs', label: 'نگهداری لاگ‌ها' },
           ].map((t) => (
             <EffectTabButton
               key={t.id}
@@ -461,6 +638,37 @@ export const SettingsAdminPage: React.FC = () => {
 
       {tab === 'partners' && <EffectTabPanel><PartnerLogoManager /></EffectTabPanel>}
 
+      {tab === 'logs' && (
+        <EffectTabPanel className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <div>
+            <h2 className="text-sm font-bold">مدت نگهداری لاگ‌های فعالیت</h2>
+            <p className="mt-1 text-xs leading-6 text-slate-500">
+              پاک‌سازی خودکار روزانه اجرا می‌شود و گزارش‌های قدیمی‌تر از بازه انتخابی حذف می‌شوند. اجرای زمان‌بندی‌شده نیازمند فعال بودن زمان‌بند Laravel روی سرور است.
+            </p>
+          </div>
+          <label className="block max-w-md space-y-1.5 text-xs font-semibold">
+            <span>حفظ لاگ‌ها برای</span>
+            <select
+              value={settings.logs?.activity_logs_retention_months ?? 12}
+              onChange={(event) =>
+                setSettings({
+                  ...settings,
+                  logs: {
+                    activity_logs_retention_months: Number(event.target.value) as 1 | 3 | 6 | 12,
+                  },
+                })
+              }
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            >
+              <option value={1}>۱ ماه</option>
+              <option value={3}>۳ ماه</option>
+              <option value={6}>۶ ماه</option>
+              <option value={12}>۱ سال</option>
+            </select>
+          </label>
+        </EffectTabPanel>
+      )}
+
       {tab === 'email' && (
         <EffectTabPanel className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -577,26 +785,212 @@ export const SettingsAdminPage: React.FC = () => {
       )}
 
       {tab === 'backup' && (
-        <EffectTabPanel className="rounded-xl border border-slate-200 bg-white p-6 space-y-4 dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex items-center gap-2 text-base font-bold">
-            <Database className="h-5 w-5 text-(--theme-primary)" />
-            <span>پشتیبان‌گیری دستی از پایگاه داده</span>
+        isSuperAdmin ? (
+          <div className="space-y-4">
+            <EffectTabPanel className="space-y-4 rounded-xl border border-amber-300/70 bg-amber-50/80 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-300" />
+                <div>
+                  <h2 className="text-sm font-bold text-amber-950 dark:text-amber-200">فایل پشتیبان شامل اطلاعات حساس است</h2>
+                  <p className="mt-1 text-xs leading-6 text-amber-900/80 dark:text-amber-200/80">
+                    فایل کامل می‌تواند شامل حساب‌ها، هش رمز عبور و تنظیمات رمزگذاری‌شده باشد. آن را فقط در محل امن نگه دارید. نشست‌ها و توکن‌های ورود عمداً در فایل قرار نمی‌گیرند.
+                  </p>
+                </div>
+              </div>
+            </EffectTabPanel>
+
+            <div className="grid gap-4 xl:grid-cols-2">
+              <EffectTabPanel className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-(--theme-primary)/10 p-2.5 text-(--theme-primary)">
+                    <Download className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-extrabold">ساخت فایل پشتیبان</h2>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">همهٔ جدول‌ها یا فقط جدول‌های انتخاب‌شده را در قالب JSON دریافت کنید.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 border-y border-slate-100 py-3 dark:border-slate-800">
+                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    {loadingBackupTables ? 'در حال خواندن فهرست جدول‌ها...' : `${selectedBackupTables.length} از ${backupTables.length} جدول انتخاب شده`}
+                  </p>
+                  <button
+                    type="button"
+                    disabled={loadingBackupTables || backupTables.length === 0}
+                    onClick={() => setSelectedBackupTables(allBackupTablesSelected ? [] : backupTables.map((table) => table.name))}
+                    className="text-xs font-bold text-(--theme-primary) hover:underline disabled:opacity-50"
+                  >
+                    {allBackupTablesSelected ? 'لغو انتخاب همه' : 'انتخاب همهٔ جدول‌ها'}
+                  </button>
+                </div>
+
+                <div className="grid max-h-72 gap-1 overflow-y-auto sm:grid-cols-2">
+                  {backupTables.map((table) => (
+                    <label key={table.name} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-lg px-2.5 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800/70">
+                      <input
+                        type="checkbox"
+                        checked={selectedBackupTables.includes(table.name)}
+                        onChange={() => setSelectedBackupTables((current) => current.includes(table.name)
+                          ? current.filter((name) => name !== table.name)
+                          : [...current, table.name])}
+                        className="mt-1 h-4 w-4 shrink-0 accent-(--theme-primary)"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="truncate text-xs font-semibold">{table.label_fa}</span>
+                          <span className="shrink-0 text-[10px] tabular-nums text-slate-400">{table.count.toLocaleString('fa-IR')}</span>
+                        </span>
+                        <span className="mt-0.5 block truncate text-[10px] text-slate-400" dir="ltr">{table.label_en} · {table.name}</span>
+                        {table.sensitive && <span className="mt-1 inline-block text-[9px] font-semibold text-amber-700 dark:text-amber-300">حساس / Sensitive</span>}
+                      </span>
+                    </label>
+                  ))}
+                  {!loadingBackupTables && backupTables.length === 0 && (
+                    <p className="col-span-full py-8 text-center text-xs text-slate-500">جدولی برای پشتیبان‌گیری پیدا نشد.</p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => void downloadBackup()}
+                  disabled={downloadingBackup || loadingBackupTables || selectedBackupTables.length === 0}
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-(--theme-primary) px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4" />
+                  {downloadingBackup
+                    ? 'در حال آماده‌سازی فایل...'
+                    : allBackupTablesSelected
+                      ? 'دانلود پشتیبان کامل'
+                      : `دانلود پشتیبان ${selectedBackupTables.length} جدول`}
+                </button>
+              </EffectTabPanel>
+
+              <EffectTabPanel className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-xl bg-red-50 p-2.5 text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                    <RotateCcw className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-extrabold">بازیابی از فایل پشتیبان</h2>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">فایل JSON را بررسی کنید و بازیابی کامل یا انتخابی انجام دهید.</p>
+                  </div>
+                </div>
+
+                <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 text-center transition hover:border-(--theme-primary) hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800">
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    className="sr-only"
+                    onChange={(event) => {
+                      void inspectBackupFile(event.target.files?.[0]);
+                      event.currentTarget.value = '';
+                    }}
+                  />
+                  <FileUp className="h-5 w-5 text-(--theme-primary)" />
+                  <span className="text-xs font-bold">{inspectingBackup ? 'در حال بررسی فایل...' : 'انتخاب فایل JSON پشتیبان'}</span>
+                  <span className="max-w-full truncate text-[10px] text-slate-400" dir="ltr">{restoreFile?.name ?? 'Parspolad database backup · JSON'}</span>
+                </label>
+
+                {backupInspection && (
+                  <div className="space-y-3">
+                    <div className={`rounded-xl border p-3 text-xs leading-5 ${backupInspection.complete
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200'
+                      : 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200'}`}>
+                      <p className="font-bold">
+                        {backupInspection.complete ? 'پشتیبان کامل و سازگار' : 'فایل جزئی یا قدیمی'}
+                        <span className="ms-2 font-normal">{backupInspection.table_count} جدول</span>
+                      </p>
+                      {backupInspection.created_at && (
+                        <p className="mt-1" dir="ltr">{new Date(backupInspection.created_at).toLocaleString()}</p>
+                      )}
+                      {backupInspection.legacy && (
+                        <p className="mt-1">این فایل از فرمت قدیمی ساخته شده؛ برخی جدول‌ها ممکن است قابل بازیابی نباشند.</p>
+                      )}
+                      {!backupInspection.complete && (
+                        <p className="mt-1">
+                          {backupInspection.missing_tables.length} جدول در فایل نیست و بازیابی نمی‌شود؛ فایل فقط داده‌های موجود در خودش را جایگزین می‌کند.
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                        {selectedRestoreTables.length} از {restorableBackupTables.length} جدول قابل بازیابی انتخاب شده
+                      </p>
+                      <button
+                        type="button"
+                        disabled={restorableBackupTables.length === 0}
+                        onClick={() => setSelectedRestoreTables(allRestoreTablesSelected
+                          ? []
+                          : restorableBackupTables.map((table) => table.name))}
+                        className="text-xs font-bold text-(--theme-primary) hover:underline disabled:opacity-50"
+                      >
+                        {allRestoreTablesSelected ? 'لغو انتخاب همه' : 'انتخاب همهٔ جدول‌های قابل‌بازیابی'}
+                      </button>
+                    </div>
+
+                    <div className="grid max-h-64 gap-1 overflow-y-auto sm:grid-cols-2">
+                      {backupInspection.tables.map((table) => (
+                        <label
+                          key={table.name}
+                          className={`flex min-w-0 items-start gap-2 rounded-lg px-2.5 py-2 ${table.restorable
+                            ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/70'
+                            : 'cursor-not-allowed opacity-50'}`}
+                        >
+                          <input
+                            type="checkbox"
+                            disabled={!table.restorable}
+                            checked={selectedRestoreTables.includes(table.name)}
+                            onChange={() => setSelectedRestoreTables((current) => current.includes(table.name)
+                              ? current.filter((name) => name !== table.name)
+                              : [...current, table.name])}
+                            className="mt-1 h-4 w-4 shrink-0 accent-(--theme-primary)"
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center justify-between gap-2">
+                              <span className="truncate text-xs font-semibold">{table.label_fa}</span>
+                              <span className="shrink-0 text-[10px] tabular-nums text-slate-400">{table.row_count.toLocaleString('fa-IR')}</span>
+                            </span>
+                            <span className="mt-0.5 block truncate text-[10px] text-slate-400" dir="ltr">{table.label_en} · {table.name}</span>
+                            {!table.restorable && table.error && <span className="mt-1 block text-[10px] text-red-600">{table.error}</span>}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setRestoreDialogOpen(true)}
+                      disabled={!restoreFile || selectedRestoreTables.length === 0 || restoringBackup}
+                      className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-red-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      بازیابی {selectedRestoreTables.length} جدول انتخاب‌شده
+                    </button>
+                  </div>
+                )}
+              </EffectTabPanel>
+            </div>
+
+            <ConfirmDialog
+              open={restoreDialogOpen}
+              onClose={() => setRestoreDialogOpen(false)}
+              onConfirm={() => void restoreBackup()}
+              title="تأیید جایگزینی اطلاعات"
+              message={`اطلاعات فعلی ${selectedRestoreTables.length} جدول انتخاب‌شده به‌طور کامل جایگزین می‌شود؛ این عملیات ادغام نیست. در صورت خطا، تراکنش برمی‌گردد. پس از موفقیت همهٔ نشست‌ها باطل می‌شوند و باید دوباره وارد شوید. ادامه می‌دهید؟`}
+              confirmLabel="جایگزینی و بازیابی"
+              loading={restoringBackup}
+            />
           </div>
-          <p className="text-xs text-slate-500">
-            خروجی کامل اطلاعات سیستم (پروژه‌ها، قراردادها، تنظیمات، تم‌ها، کاربران و لاگ‌ها) را به‌صورت فایل پشتیبان دریافت کنید.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={downloadBackup}
-              style={{ backgroundColor: 'var(--theme-primary)' }}
-              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-xs font-semibold text-white"
-            >
-              <Download className="h-4 w-4" />
-              <span>دانلود نسخه پشتیبان کامل (JSON)</span>
-            </button>
-          </div>
-        </EffectTabPanel>
+        ) : (
+          <EffectTabPanel className="rounded-xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-950/20">
+            <div className="flex items-center gap-3 text-amber-900 dark:text-amber-200">
+              <ShieldAlert className="h-5 w-5" />
+              <p className="text-sm font-semibold">پشتیبان‌گیری و بازیابی فقط برای سوپرادمین فعال است.</p>
+            </div>
+          </EffectTabPanel>
+        )
       )}
     </div>
   );

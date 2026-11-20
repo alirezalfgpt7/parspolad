@@ -41,6 +41,7 @@ import { AnimatedTabsEffect, DecorativeCube, EffectAction, EffectText } from '..
 import { IconPicker } from '../../components/ui/IconPicker.tsx';
 import { DynamicLucideIcon } from '../../components/ui/LucideIconMap.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
+import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
 
 type StudioTab = 'login' | 'fonts-colors' | 'logos' | 'pages';
 
@@ -824,6 +825,90 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                         </>
                       )}
                     </div>
+                    {card.key === 'home_spotlight' && (
+                      <div className="space-y-3 rounded-xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
+                        <div>
+                          <h4 className="text-xs font-bold">متن و پس‌زمینه شاخص‌های عملکرد صفحه اصلی</h4>
+                          <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                            تصویر پیش‌فرض همان تصویرسازی صنعتی فعلی است؛ تصویر انتخابی به‌صورت لایه پس‌زمینه اضافه می‌شود.
+                          </p>
+                        </div>
+                        <div className="grid gap-2.5 sm:grid-cols-2">
+                          <TextField label="برچسب بالای شاخص‌ها (فارسی)" value={entry.performance_eyebrow_fa || ''} onChange={(v) => updatePageOverride(card.key, { performance_eyebrow_fa: v })} />
+                          <TextField label="Eyebrow (EN)" dir="ltr" value={entry.performance_eyebrow_en || ''} onChange={(v) => updatePageOverride(card.key, { performance_eyebrow_en: v })} />
+                          <TextField label="تیتر (فارسی)" value={entry.performance_title_fa || ''} onChange={(v) => updatePageOverride(card.key, { performance_title_fa: v })} />
+                          <TextField label="Title (EN)" dir="ltr" value={entry.performance_title_en || ''} onChange={(v) => updatePageOverride(card.key, { performance_title_en: v })} />
+                          <TextField label="واژه تأکیدی قرمز (فارسی)" value={entry.performance_title_accent_fa || ''} onChange={(v) => updatePageOverride(card.key, { performance_title_accent_fa: v })} />
+                          <TextField label="Highlighted word (EN)" dir="ltr" value={entry.performance_title_accent_en || ''} onChange={(v) => updatePageOverride(card.key, { performance_title_accent_en: v })} />
+                          <TextField label="توضیح (فارسی)" value={entry.performance_subtitle_fa || ''} onChange={(v) => updatePageOverride(card.key, { performance_subtitle_fa: v })} />
+                          <TextField label="Description (EN)" dir="ltr" value={entry.performance_subtitle_en || ''} onChange={(v) => updatePageOverride(card.key, { performance_subtitle_en: v })} />
+                          <TextField label="متن پایانی (فارسی)" value={entry.performance_footer_fa || ''} onChange={(v) => updatePageOverride(card.key, { performance_footer_fa: v })} />
+                          <TextField label="Footer text (EN)" dir="ltr" value={entry.performance_footer_en || ''} onChange={(v) => updatePageOverride(card.key, { performance_footer_en: v })} />
+                        </div>
+                        <MediaUrlField
+                          label="تصویر پس‌زمینه اختیاری"
+                          value={entry.performance_background_url || ''}
+                          onChange={(url) => updatePageOverride(card.key, { performance_background_url: url })}
+                          folder="pages"
+                          accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                          placeholder="/storage/pages/performance-background.jpg"
+                          hint="در صورت خالی بودن، تصویرسازی صنعتی فعلی حفظ می‌شود."
+                        />
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <ColorPicker
+                            label="رنگ لایه روی تصویر"
+                            value={entry.performance_overlay_color || '#080d17'}
+                            onChange={(color) => updatePageOverride(card.key, { performance_overlay_color: color })}
+                          />
+                          <label className="space-y-1 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
+                            <span className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                              <span>تیرگی لایه</span>
+                              <span>{entry.performance_overlay_opacity ?? 0}%</span>
+                            </span>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={entry.performance_overlay_opacity ?? 0}
+                              onChange={(event) =>
+                                updatePageOverride(card.key, {
+                                  performance_overlay_opacity: Number(event.target.value),
+                                })
+                              }
+                              className="w-full accent-(--theme-primary)"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                    {card.key === 'home_spotlight' && (
+                      <div className="space-y-3 rounded-xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
+                        <div>
+                          <h4 className="text-xs font-bold">رنگ‌بندی بخش معرفی صفحه اصلی</h4>
+                          <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                            رنگ متن و زمینهٔ بخش معرفی و رنگ تأکیدی نشان، زیرعنوان و دکمه اصلی را تنظیم کنید.
+                          </p>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          <ColorPicker
+                            label="رنگ پس‌زمینه"
+                            value={entry.section_background_color || '#0f172a'}
+                            onChange={(color) => updatePageOverride(card.key, { section_background_color: color })}
+                          />
+                          <ColorPicker
+                            label="رنگ متن"
+                            value={entry.section_text_color || '#ffffff'}
+                            onChange={(color) => updatePageOverride(card.key, { section_text_color: color })}
+                          />
+                          <ColorPicker
+                            label="رنگ تأکیدی"
+                            value={entry.section_accent_color || '#fbbf24'}
+                            onChange={(color) => updatePageOverride(card.key, { section_accent_color: color })}
+                          />
+                        </div>
+                      </div>
+                    )}
                     <MediaUrlField
                       label="لوگو / تصویر این صفحه"
                       value={entry.logo_url || ''}

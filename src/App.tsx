@@ -8,6 +8,7 @@ import { ThemeProvider } from './components/common/ThemeProvider.tsx';
 import { AdminLayout } from './components/layout/AdminLayout.tsx';
 import { PublicLayout } from './components/layout/PublicLayout.tsx';
 import { ToastContainer } from './components/ui/ToastContainer.tsx';
+import { CustomCursor } from './components/ui/CustomCursor.tsx';
 import { ScrollingTitleEffect } from './components/effects/index.ts';
 import { apiRequest } from './services/api.ts';
 
@@ -88,6 +89,7 @@ export default function App() {
       <ScrollingTitleEffect />
       <PageViewTracker />
       <ThemeProvider>
+        <CustomCursor />
         {loading && <PagePreloader fullScreen label="در حال آماده‌سازی پرتال..." />}
         <Suspense fallback={<PagePreloader fullScreen label="در حال آماده‌سازی صفحه..." />}>
           <Routes>

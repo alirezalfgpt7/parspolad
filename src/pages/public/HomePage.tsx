@@ -16,7 +16,6 @@ import {
   EffectAction,
   EffectImage,
   InfiniteBrandSlider,
-  ParticleTextEffect,
   Reveal,
 } from '../../components/effects/index.ts';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
@@ -98,6 +97,22 @@ export const HomePage: React.FC = () => {
     ...(bootstrap?.pages_config?.home_spotlight || {}),
     ...(previewPagesConfig?.home_spotlight || {}),
   };
+  const performanceText = {
+    eyebrow: language === 'fa' ? spotlightOverride.performance_eyebrow_fa : spotlightOverride.performance_eyebrow_en,
+    title: language === 'fa' ? spotlightOverride.performance_title_fa : spotlightOverride.performance_title_en,
+    titleAccent: language === 'fa' ? spotlightOverride.performance_title_accent_fa : spotlightOverride.performance_title_accent_en,
+    subtitle: language === 'fa' ? spotlightOverride.performance_subtitle_fa : spotlightOverride.performance_subtitle_en,
+    footer: language === 'fa' ? spotlightOverride.performance_footer_fa : spotlightOverride.performance_footer_en,
+  };
+  const performanceBackgroundUrl = spotlightOverride.performance_background_url || '';
+  const configuredOverlayColor = spotlightOverride.performance_overlay_color || '#080d17';
+  const performanceOverlayColor = /^#[\da-f]{6}$/i.test(configuredOverlayColor)
+    ? configuredOverlayColor
+    : '#080d17';
+  const configuredOverlayOpacity = Number(spotlightOverride.performance_overlay_opacity);
+  const performanceOverlayOpacity = Number.isFinite(configuredOverlayOpacity)
+    ? Math.min(100, Math.max(0, configuredOverlayOpacity)) / 100
+    : 0;
   const spotlightBadge =
     (language === 'fa' ? spotlightOverride.badge_fa : spotlightOverride.badge_en) ||
     (spotlight ? (language === 'fa' ? spotlight.subtitle_fa : spotlight.subtitle_en) : '');
@@ -108,15 +123,38 @@ export const HomePage: React.FC = () => {
     language === 'fa' ? spotlightOverride.subtitle_fa : spotlightOverride.subtitle_en;
   const spotlightImages = spotlight
     ? [spotlight.metadata?.image_url, spotlight.metadata?.secondary_image_url].filter(
-        (image): image is string => typeof image === 'string' && image.length > 0,
+        (image): image is string => typeof image === 'string' && image.trim().length > 0,
       )
     : [];
+  const spotlightPrimaryLink =
+    typeof spotlight?.metadata?.primary_link === 'string' ? spotlight.metadata.primary_link.trim() : '';
+  const spotlightPrimaryLabel = String(
+    spotlight?.metadata?.[language === 'fa' ? 'primary_label_fa' : 'primary_label_en'] || '',
+  ).trim();
+  const spotlightSecondaryLink =
+    typeof spotlight?.metadata?.secondary_link === 'string' ? spotlight.metadata.secondary_link.trim() : '';
+  const spotlightSecondaryLabel = String(
+    spotlight?.metadata?.[language === 'fa' ? 'secondary_label_fa' : 'secondary_label_en'] || '',
+  ).trim();
+  const getHexColor = (value: string | undefined, fallback: string): string =>
+    value && /^#[\da-f]{6}$/i.test(value) ? value : fallback;
+  const spotlightBackgroundColor = getHexColor(spotlightOverride.section_background_color, '#0f172a');
+  const spotlightTextColor = getHexColor(spotlightOverride.section_text_color, '#ffffff');
+  const spotlightAccentColor = getHexColor(spotlightOverride.section_accent_color, '#fbbf24');
+  const spotlightBackgroundUrl =
+    typeof spotlight?.metadata?.section_background_url === 'string'
+      ? spotlight.metadata.section_background_url.trim()
+      : '';
+  const configuredBackgroundOpacity = Number(spotlight?.metadata?.section_background_overlay_opacity);
+  const spotlightBackgroundOpacity = Number.isFinite(configuredBackgroundOpacity)
+    ? Math.min(100, Math.max(0, configuredBackgroundOpacity)) / 100
+    : 0.35;
   const companyTitle =
     (language === 'fa' ? bootstrap?.company?.name_fa : bootstrap?.company?.name_en) ||
     (language === 'fa' ? 'پارس پولاد آقایی' : 'PARS POOLAD AGHAEE');
 
   return (
-    <div>
+    <div className="home-page-content">
       <SeoHead
         title={(language === 'fa' ? bootstrap?.seo?.site_title : bootstrap?.seo?.site_title_en)
           || bootstrap?.seo?.site_title
@@ -124,24 +162,146 @@ export const HomePage: React.FC = () => {
         language={language}
       />
 
-      {/* KPI Counter Strip */}
-      <section className="border-b border-slate-200 bg-white py-10 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 sm:px-6 md:grid-cols-4 lg:px-8">
-          {kpis.map((k, index) => (
-            <Reveal key={k.id} delay={shouldReduceMotion ? 0 : index * 0.06}>
-              <StatCounter
-                target={k.value}
-                suffix={language === 'fa' ? k.suffix_fa : k.suffix_en}
-                label={language === 'fa' ? k.label_fa : k.label_en}
-                lang={language}
-              />
-            </Reveal>
-          ))}
+      {/* Industrial performance metrics */}
+      <section
+        className="industrial-performance home-page-snap-section"
+        dir={language === 'fa' ? 'rtl' : 'ltr'}
+        style={{
+          '--industrial-overlay-color': performanceOverlayColor,
+          '--industrial-overlay-opacity': performanceOverlayOpacity,
+        } as React.CSSProperties}
+      >
+        {performanceBackgroundUrl && (
+          <img
+            src={performanceBackgroundUrl}
+            alt=""
+            aria-hidden="true"
+            className="industrial-performance-background-image"
+            onError={(event) => {
+              console.error('Could not load the industrial KPI background image:', event.currentTarget.src);
+              event.currentTarget.hidden = true;
+            }}
+          />
+        )}
+        <div className="industrial-performance-overlay" aria-hidden="true" />
+        <div className="industrial-performance-scene" aria-hidden="true">
+          <svg
+            viewBox="0 0 1440 520"
+            preserveAspectRatio="xMidYMid slice"
+            className="industrial-scene-svg"
+          >
+            <defs>
+              <linearGradient id="industrialSteel" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#64748b" />
+                <stop offset=".5" stopColor="#1e293b" />
+                <stop offset="1" stopColor="#0f172a" />
+              </linearGradient>
+              <linearGradient id="industrialRed" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#991b1b" />
+                <stop offset=".5" stopColor="#ef4444" />
+                <stop offset="1" stopColor="#991b1b" />
+              </linearGradient>
+            </defs>
+
+            <g fill="none" stroke="url(#industrialSteel)" strokeWidth="3" opacity=".55">
+              <path d="M90 450 L190 80 L290 450 Z" />
+              <path d="M115 350 H265 M130 290 H250 M145 230 H235 M160 170 H220" />
+              <path d="M90 450 L265 350 L115 350 L250 290 L130 290 L235 230 L145 230 L220 170 L160 170 L190 80" />
+              <path d="M290 450 L115 350 L265 290 L130 230 L235 170 L160 80" />
+              <path d="M190 80 V40 M165 40 H215 M175 25 H205" />
+            </g>
+
+            <g fill="none" stroke="#64748b" strokeWidth="3" opacity=".5">
+              <path d="M400 450 V280 H470 V450 M430 280 V210 H490 V280" />
+              <path d="M460 450 V330 H530 V450 M480 330 V260 H510 V330" />
+              <path d="M550 450 V200 H610 V450 M570 200 V130 H590 V200" />
+              <path d="M650 450 V310 H720 V450 M680 310 V230 H700 V310" />
+              <path d="M780 450 V270 H840 V450 M800 270 V180 H820 V270" />
+              <path d="M900 450 V300 H980 V450 M930 300 V220 H950 V300" />
+              <path d="M1040 450 V250 H1100 V450 M1060 250 V140 H1080 V250" />
+              <path d="M1180 450 V320 H1260 V450 M1200 320 V250 H1240 V320" />
+              <path d="M360 370 H1280 M390 400 H1250 M430 430 H1230" />
+            </g>
+
+            <g fill="none" stroke="url(#industrialRed)" strokeWidth="6" opacity=".85">
+              <path d="M0 470 H180 Q220 470 220 430 V400 H400 V440 H640 V400 H820 V460 H1040 V420 H1440" />
+              <path d="M0 495 H300 V460 H550 V485 H950 V455 H1300 V485 H1440" />
+            </g>
+
+            <g stroke="#94a3b8" strokeWidth="4" fill="none" opacity=".6">
+              <path d="M1300 450 L1350 150 L1400 450 Z" />
+              <path d="M1320 330 H1380 M1330 270 H1370 M1340 210 H1360" />
+              <path d="M1300 450 L1380 330 L1320 330 L1370 270 L1330 270 L1360 210" />
+            </g>
+            <path
+              d="M1350 145 C1325 120 1345 90 1365 70 C1360 105 1395 110 1370 145 Z"
+              fill="#ef4444"
+              opacity=".7"
+            />
+            <path
+              d="M1358 145 C1350 120 1367 108 1368 95 C1382 118 1375 135 1358 145 Z"
+              fill="#fbbf24"
+            />
+            <path
+              d="M0 510 Q350 450 650 500 T1440 470"
+              fill="none"
+              stroke="#dc2626"
+              strokeWidth="2"
+              opacity=".65"
+            />
+          </svg>
+        </div>
+
+        <div className="industrial-performance-grid" aria-hidden="true" />
+        <div className="industrial-performance-glow" aria-hidden="true" />
+
+        <div className="industrial-performance-header">
+          <div className="industrial-performance-heading">
+            <span className="industrial-eyebrow">
+              <span className="industrial-eyebrow-line" />
+              {performanceText.eyebrow}
+            </span>
+            <h2>
+              {performanceText.title}
+              {performanceText.titleAccent && <> <span>{performanceText.titleAccent}</span></>}
+            </h2>
+            <p>{performanceText.subtitle}</p>
+          </div>
+
+        </div>
+
+        <div className="industrial-performance-content">
+          <div className="industrial-performance-rail" aria-hidden="true">
+            <span />
+          </div>
+          <div className="industrial-performance-stats">
+            {kpis.map((k, index) => (
+              <Reveal key={k.id} delay={shouldReduceMotion ? 0 : index * 0.12}>
+                <StatCounter
+                  target={k.value}
+                  suffix={language === 'fa' ? k.suffix_fa : k.suffix_en}
+                  label={language === 'fa' ? k.label_fa : k.label_en}
+                  lang={language}
+                  index={index}
+                />
+              </Reveal>
+            ))}
+          </div>
+        </div>
+
+        <div className="industrial-performance-footer">
+          <span className="industrial-footer-status">
+            <span className="industrial-footer-dot" />
+            {performanceText.footer}
+          </span>
+          <span className="industrial-footer-coordinates" dir="ltr">
+            35° / 51° — ENGINEERING
+          </span>
         </div>
       </section>
 
       {/* Full-cycle wellhead engineering and manufacturing route */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-(--theme-primary)">{homeText('capabilities_eyebrow')}</p>
@@ -158,85 +318,152 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="home-capability-panel">
-          <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden="true">
-            <svg viewBox="0 0 180 480" className="absolute -end-2 top-1/2 h-[110%] w-36 -translate-y-1/2 text-cyan-200/50" fill="none">
-              <g stroke="currentColor" strokeWidth="2">
-                <path d="M90 10v460M54 82h72M42 96h96M58 108h64M66 108v48h48v-48M74 156v64h32v-64M45 220h90M53 236h74M78 236v58h24v-58M58 294h64M50 308h80M84 308v92M96 308v92M62 400h56M54 414h72M70 428h44" />
-                <path d="M54 82V52h72v30M42 96V76h96v20M45 220v-26h36v26M99 220v-26h36v26M58 294v-22h-22v-40M122 294v-22h22v-40" />
-                <circle cx="34" cy="214" r="13" />
-                <circle cx="146" cy="214" r="13" />
-                <circle cx="90" cy="40" r="10" />
-                <rect x="64" y="448" width="52" height="16" rx="3" />
+        <div className="home-capability-panel home-engineering-road">
+          <div className="home-oilfield-bg" aria-hidden="true">
+            <svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid slice">
+              <g fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M100 420 L165 80 L230 420 M120 320 H210 M135 250 H195 M145 180 H185 M155 120 H175" />
+                <path d="M100 420 L230 420 M115 350 L215 350 M125 280 L205 280 M140 210 L190 210 M155 140 L175 140" />
+                <path d="M100 420 L215 350 L120 320 L195 280 L135 250 L185 210 L145 180 L175 140" />
+                <path d="M230 420 L115 350 L210 320 L125 280 L205 250 L140 210 L190 180 L155 140" />
+                <path d="M720 420 L770 170 L820 420 M735 330 H805 M745 260 H795 M755 200 H785" />
+                <path d="M720 420 L805 330 L735 330 L795 260 L745 260 L785 200" />
+                <path d="M820 420 L735 330 L805 260 L745 200" />
+                <path d="M30 440 H360 V400 H520 V440 H970 M40 460 H300 V430 H490 V460 H950" />
+                <rect x="360" y="380" width="160" height="60" rx="4" />
+                <rect x="400" y="350" width="80" height="30" />
+                <circle cx="440" cy="350" r="20" />
+                <path d="M440 330 V280 M430 280 H450 M440 280 L460 260" />
               </g>
             </svg>
           </div>
-          <div className="relative z-10 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
-            <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.18em] text-cyan-200/80" dir="ltr">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" />
-              WELLHEAD ENGINEERING FLOW
+
+          <div className="home-road-header">
+            <div className="home-road-status" dir="ltr">
+              <span className="home-road-status-dot" />
+              WELLHEAD ENGINEERING JOURNEY
             </div>
-            <div className="flex flex-wrap gap-2 text-[9px] font-semibold tracking-wider text-slate-300/80" dir="ltr">
-              <span className="rounded border border-white/10 px-2 py-1">DESIGN</span>
-              <span className="rounded border border-white/10 px-2 py-1">BUILD</span>
-              <span className="rounded border border-white/10 px-2 py-1">TEST</span>
-              <span className="rounded border border-white/10 px-2 py-1">DEPLOY</span>
+            <div className="home-road-legend" dir="ltr">
+              <span>DESIGN</span>
+              <span>BUILD</span>
+              <span>TEST</span>
+              <span>DEPLOY</span>
             </div>
           </div>
 
           <ol
             dir={language === 'fa' ? 'rtl' : 'ltr'}
-            aria-label={language === 'fa' ? 'مراحل طراحی، ساخت و نصب تجهیزات' : 'Equipment design, manufacturing and installation stages'}
-            className="home-capability-flow relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            aria-label={language === 'fa' ? 'مسیر کامل طراحی، ساخت، آزمون و نصب تجهیزات' : 'Complete engineering and manufacturing journey'}
+            className="home-capability-flow home-roadmap relative grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"
           >
+            <svg
+              className={`home-road-svg ${language === 'en' ? 'home-road-svg-ltr' : ''}`}
+              viewBox="0 0 1200 250"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <linearGradient id="roadMainGradient" x1="1200" y1="0" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#06b6d4" />
+                  <stop offset="40%" stopColor="#38bdf8" />
+                  <stop offset="68%" stopColor="#94a3b8" />
+                  <stop offset="100%" stopColor="#f97316" />
+                </linearGradient>
+                <filter id="roadNeonGlow">
+                  <feGaussianBlur stdDeviation="8" />
+                </filter>
+              </defs>
+              <path className="home-road-glow" d="M1120 90 C1030 90 990 150 900 135 S740 45 620 85 S450 155 340 105 S180 40 80 120" stroke="url(#roadMainGradient)" strokeWidth="30" filter="url(#roadNeonGlow)" />
+              <path className="home-road-main" d="M1120 90 C1030 90 990 150 900 135 S740 45 620 85 S450 155 340 105 S180 40 80 120" stroke="url(#roadMainGradient)" strokeWidth="18" />
+              <path d="M1120 90 C1030 90 990 150 900 135 S740 45 620 85 S450 155 340 105 S180 40 80 120" stroke="#10253b" strokeWidth="12" />
+              <path className="home-road-dashes" d="M1120 90 C1030 90 990 150 900 135 S740 45 620 85 S450 155 340 105 S180 40 80 120" stroke="#dbeafe" strokeWidth="1.5" strokeDasharray="8 12" />
+              <path className="home-road-connectors" d="M1050 90 V200 M750 80 V200 M450 105 V200 M150 115 V200" />
+              <circle cx="1120" cy="90" r="8" className="home-road-endpoint" />
+              <circle cx="80" cy="120" r="8" className="home-road-endpoint home-road-endpoint-finish" />
+            </svg>
+
+            <li className="home-road-start">
+              <span className="home-road-start-label">{language === 'fa' ? 'شروع مسیر' : 'START'}</span>
+            </li>
+
             {capabilityServices.map((svc, index) => {
               const stageIndex = capabilityStages.findIndex((stage) => stage.slug === svc.slug);
               const stage = capabilityStages[stageIndex === -1 ? index : stageIndex];
 
               return (
-                <li key={svc.id} className="home-capability-station relative min-w-0">
-                  <span className="home-capability-node grid place-items-center rounded-full border border-cyan-200/50 bg-slate-950 text-cyan-100 shadow-[0_0_24px_rgb(34_211_238_/_18%)]">
+                <li key={svc.id} className={`home-road-station home-road-station-${index + 1}`}>
+                  <span className="home-road-node">
                     {stage?.icon || <Factory className="h-5 w-5" />}
                   </span>
-                  <Reveal delay={shouldReduceMotion ? 0 : index * 0.06} className="h-full">
-                    <article className="home-capability-card flex h-full flex-col rounded-2xl border border-white/10 bg-slate-900/75 p-4 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-cyan-200/40 hover:bg-slate-900">
-                      <div className="mb-4 flex items-center justify-between gap-2">
-                        <span className="rounded-md bg-amber-300/10 px-2 py-1 text-[10px] font-bold text-amber-200">
+                  <Reveal delay={shouldReduceMotion ? 0 : index * 0.08} className="h-full">
+                    <article className="home-road-card">
+                      <div className="home-road-card-top">
+                        <span className="home-road-stage-label">
                           {language === 'fa' ? stage?.label_fa || `مرحله ${index + 1}` : stage?.label_en || `Stage ${index + 1}`}
                         </span>
-                        <span className="font-mono text-[11px] font-bold tracking-widest text-cyan-100/60">
+                        <span dir="ltr" className="home-road-number">
                           {String(index + 1).padStart(2, '0')} / {String(capabilityServices.length).padStart(2, '0')}
                         </span>
                       </div>
-                      <h3 className="text-sm font-extrabold leading-6 text-white">
+                      <h3 className="home-road-title">
                         {language === 'fa' ? svc.title_fa : svc.title_en}
                       </h3>
-                      <p className="mt-2 line-clamp-3 flex-1 text-xs leading-6 text-slate-300">
+                      <div className="home-road-title-line" />
+                      <p className="home-road-description">
                         {language === 'fa' ? svc.summary_fa : svc.summary_en}
                       </p>
-                      <Link
-                        to="/services"
-                        className="mt-4 inline-flex items-center gap-1.5 border-t border-white/10 pt-3 text-[11px] font-semibold text-cyan-100 transition-colors hover:text-amber-200"
-                      >
+                      <Link to="/services" className="home-road-link">
                         <span>{homeText('service_details')}</span>
-                        <ArrowIcon className="h-3.5 w-3.5" />
+                        <ArrowIcon className="h-4 w-4" />
                       </Link>
                     </article>
                   </Reveal>
                 </li>
               );
             })}
+
+            <li className="home-road-finish">
+              <span className="home-road-finish-label">{language === 'fa' ? 'پایان مسیر' : 'FINISH'}</span>
+            </li>
           </ol>
         </div>
       </section>
 
       {spotlight && (
-        <section className="border-y border-slate-200 bg-slate-900 py-16 text-white dark:border-slate-800">
-          <div className="mx-auto grid max-w-7xl items-stretch gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+        <section
+          className="home-spotlight-section home-page-snap-section relative isolate overflow-hidden border-y border-slate-200 py-16 dark:border-slate-800"
+          style={{
+            '--spotlight-background': spotlightBackgroundColor,
+            '--spotlight-text': spotlightTextColor,
+            '--spotlight-accent': spotlightAccentColor,
+            backgroundColor: spotlightBackgroundColor,
+            color: spotlightTextColor,
+          } as React.CSSProperties}
+        >
+          {spotlightBackgroundUrl && (
+            <img
+              src={spotlightBackgroundUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+              onError={(event) => {
+                console.error('Could not load the home spotlight background image:', event.currentTarget.src);
+                event.currentTarget.hidden = true;
+              }}
+            />
+          )}
+          {spotlightBackgroundUrl && (
+            <div
+              className="absolute inset-0 -z-10"
+              aria-hidden="true"
+              style={{ backgroundColor: spotlightBackgroundColor, opacity: spotlightBackgroundOpacity }}
+            />
+          )}
+          <div className="relative mx-auto grid max-w-7xl items-stretch gap-8 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
             <div className="flex flex-col justify-between gap-6 lg:col-span-6">
               <div>
                 <div className="flex items-center gap-3.5">
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-slate-950/70 p-1">
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-black/30 p-1">
                     <BrandLogo
                       placement="about"
                       overrideUrl={spotlightOverride.logo_url}
@@ -245,45 +472,36 @@ export const HomePage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-amber-400">{spotlightBadge}</p>
+                    <p className="text-xs font-semibold" style={{ color: spotlightAccentColor }}>{spotlightBadge}</p>
                     <h2 className="mt-1 text-2xl font-extrabold leading-snug sm:text-3xl" style={{ textWrap: 'balance' }}>
                       {spotlightTitle}
                     </h2>
                   </div>
                 </div>
                 {spotlightSubtitle && (
-                  <p className="mt-3 text-xs leading-relaxed text-amber-200/90">{spotlightSubtitle}</p>
+                  <p className="mt-3 text-xs leading-relaxed" style={{ color: spotlightAccentColor }}>{spotlightSubtitle}</p>
                 )}
                 <div
-                  className="prose prose-invert mt-4 max-w-none text-sm leading-relaxed text-slate-300"
+                  className="prose prose-invert mt-4 max-w-none text-sm leading-relaxed"
+                  style={{ color: spotlightTextColor }}
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? spotlight.content_fa : spotlight.content_en) }}
                 />
-                {/* Effect 079: Interactive Particle Text Wordmark */}
-                <div
-                  className="mt-4 overflow-hidden rounded-xl border border-amber-400/20 px-4 py-2"
-                  style={{ backgroundColor: '#020617', borderColor: 'rgb(251 191 36 / 0.2)' }}
-                >
-                  <ParticleTextEffect
-                    text={language === 'en' ? companyTitle : 'PARS POOLAD'}
-                    color="#fde68a"
-                    height={76}
-                  />
-                </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                {typeof spotlight.metadata?.primary_link === 'string' && (
+                {spotlightPrimaryLink && spotlightPrimaryLabel && (
                   <EffectAction
                     as={Link}
-                    to={spotlight.metadata.primary_link}
-                    className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
+                    to={spotlightPrimaryLink}
+                    style={{ backgroundColor: spotlightAccentColor, color: spotlightBackgroundColor }}
+                    className="rounded-lg px-5 py-2.5 text-xs font-semibold transition-opacity hover:opacity-90 whitespace-nowrap"
                   >
-                    {String(spotlight.metadata[language === 'fa' ? 'primary_label_fa' : 'primary_label_en'] || '')}
+                    {spotlightPrimaryLabel}
                   </EffectAction>
                 )}
-                {typeof spotlight.metadata?.secondary_link === 'string' && (
-                  <Link to={spotlight.metadata.secondary_link} className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-xs font-semibold text-white hover:bg-white/10 whitespace-nowrap">
+                {spotlightSecondaryLink && spotlightSecondaryLabel && (
+                  <Link to={spotlightSecondaryLink} style={{ borderColor: `${spotlightTextColor}55`, color: spotlightTextColor }} className="inline-flex items-center gap-2 rounded-lg border px-5 py-2.5 text-xs font-semibold hover:bg-white/10 whitespace-nowrap">
                     <PlayCircle className="h-4 w-4" />
-                    <span>{String(spotlight.metadata[language === 'fa' ? 'secondary_label_fa' : 'secondary_label_en'] || '')}</span>
+                    <span>{spotlightSecondaryLabel}</span>
                   </Link>
                 )}
               </div>
@@ -293,7 +511,7 @@ export const HomePage: React.FC = () => {
               {spotlightImages.length > 0 && (
                 <div
                   className="relative min-h-64 flex-1 overflow-hidden rounded-2xl border border-white/10"
-                  style={{ backgroundColor: '#020617' }}
+                  style={{ backgroundColor: 'rgb(2 6 23 / 45%)', borderColor: `${spotlightTextColor}33` }}
                 >
                   <CssSlideshowEffect images={spotlightImages} intervalPerSlideSeconds={5} />
                 </div>
@@ -313,7 +531,7 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Featured Projects */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-(--theme-primary)">{homeText('projects_eyebrow')}</p>
@@ -374,7 +592,7 @@ export const HomePage: React.FC = () => {
       {/* Effect 067: Infinite Brand Partners Strip */}
       {partners.length > 0 && (
         <Reveal>
-          <section className="overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
+          <section className="home-page-snap-section overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
             <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
               <p className="text-xs font-semibold text-(--theme-primary)">{homeText('partners_eyebrow')}</p>
               <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
@@ -397,7 +615,7 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Latest News & Technical Articles */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-end justify-between">
           <div>
             <p className="text-xs font-semibold text-(--theme-primary)">{homeText('news_eyebrow')}</p>
@@ -451,7 +669,7 @@ export const HomePage: React.FC = () => {
 
       {/* Mid/Bottom Conversion CTA Banner */}
       {banner && (
-        <section className="mx-auto mb-16 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <section className="home-page-snap-section mx-auto mb-16 max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-2xl bg-slate-900 px-6 py-12 text-white sm:px-12">
             <ZeroBrokenImage
               src={banner.image_url}

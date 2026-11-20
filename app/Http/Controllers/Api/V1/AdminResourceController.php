@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\PrivateDownloadUrl;
 use App\Services\PrivateMediaStorageService;
 use App\Services\MediaContentValidator;
+use App\Services\ActivityLogRetentionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -374,6 +375,26 @@ class AdminResourceController extends Controller
                 'total' => $logs->total(),
             ],
         ]);
+    }
+
+    public function pruneActivityLogs(Request $request, ActivityLogRetentionService $retention): JsonResponse
+    {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+        $deleted = $retention->pruneExpired();
+
+        return response()->json([
+            'ok' => true,
+            'deleted' => $deleted,
+            'retention_months' => $retention->retentionMonths(),
+        ]);
+    }
+
+    public function resetActivityLogs(Request $request): JsonResponse
+    {
+        abort_unless($request->user()?->hasRole('super_admin'), 403);
+        $deleted = Activity::query()->delete();
+
+        return response()->json(['ok' => true, 'deleted' => $deleted]);
     }
 
     public function exportLogs(Request $request)

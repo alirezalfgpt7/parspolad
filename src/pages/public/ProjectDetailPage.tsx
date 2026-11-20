@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Download, Lock } from 'lucide-react';
-import { apiRequest } from '../../services/api.ts';
+import { ApiError, apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Project } from '../../types/index.ts';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
@@ -14,19 +14,77 @@ export const ProjectDetailPage: React.FC = () => {
   const { language, user } = useAppStore();
   const [project, setProject] = useState<Project | null>(null);
   const [activeImage, setActiveImage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (!slug) return;
-    apiRequest<{ data: Project }>(`/projects/${slug}`)
-      .then((res) => {
-        setProject(res.data);
-        setActiveImage(res.data.cover_image);
-      })
-      .catch(() => setProject(null));
-  }, [slug]);
+    let active = true;
+    setProject(null);
+    setLoadError(null);
+    setLoading(true);
 
-  if (!project) {
+    if (!slug) {
+      setLoadError(language === 'fa' ? 'شناسه پروژه معتبر نیست.' : 'Invalid project identifier.');
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    apiRequest<Project>(`/projects/${slug}`)
+      .then((result) => {
+        if (!active) return;
+        setProject(result);
+        setActiveImage(result.cover_image);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        console.error('Could not load project details:', error);
+        setLoadError(
+          error instanceof ApiError && error.status === 404
+            ? (language === 'fa' ? 'پروژه موردنظر پیدا نشد.' : 'The requested project was not found.')
+            : (language === 'fa' ? 'دریافت اطلاعات پروژه ناموفق بود. لطفاً دوباره تلاش کنید.' : 'Could not load project details. Please try again.'),
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [slug, language, reloadKey]);
+
+  if (loading) {
     return <PagePreloader label="در حال دریافت اطلاعات پروژه..." />;
+  }
+
+  if (loadError || !project) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-20 text-center sm:px-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">
+            {loadError || (language === 'fa' ? 'پروژه در دسترس نیست.' : 'Project unavailable.')}
+          </h1>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+              className="rounded-lg bg-(--theme-primary) px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              {language === 'fa' ? 'تلاش دوباره' : 'Try again'}
+            </button>
+            <Link
+              to="/projects"
+              className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-slate-700 dark:text-slate-200"
+            >
+              {language === 'fa' ? 'بازگشت به پروژه‌ها' : 'Back to projects'}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

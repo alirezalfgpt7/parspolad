@@ -521,6 +521,24 @@ export interface PageOverrideEntry {
   cta_fa?: string;
   cta_en?: string;
   logo_url?: string;
+  performance_eyebrow_fa?: string;
+  performance_eyebrow_en?: string;
+  performance_title_fa?: string;
+  performance_title_en?: string;
+  performance_title_accent_fa?: string;
+  performance_title_accent_en?: string;
+  performance_subtitle_fa?: string;
+  performance_subtitle_en?: string;
+  performance_footer_fa?: string;
+  performance_footer_en?: string;
+  performance_background_url?: string;
+  performance_overlay_color?: string;
+  performance_overlay_opacity?: number;
+  section_background_color?: string;
+  section_text_color?: string;
+  section_accent_color?: string;
+  section_background_url?: string;
+  section_background_overlay_opacity?: number;
 }
 
 export type PagesConfigSettings = Record<string, PageOverrideEntry>;
@@ -612,4 +630,7 @@ export interface SiteSettings {
   logos?: Partial<BrandLogosSettings>;
   appearance?: Partial<AppearanceSettings>;
   pages_config?: PagesConfigSettings;
+  logs?: {
+    activity_logs_retention_months: 1 | 3 | 6 | 12;
+  };
 }
