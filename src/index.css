@@ -115,14 +115,135 @@
 
 .admin-sidebar {
   border-color: var(--theme-border);
-  background-color: var(--theme-surface);
-  color: var(--theme-text);
+  background-color: var(--theme-admin-sidebar-bg, var(--theme-surface));
+  color: var(--theme-admin-sidebar-text, var(--theme-text));
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar {
+  --theme-text: var(--theme-admin-sidebar-text);
+  --theme-text-muted: color-mix(in srgb, var(--theme-admin-sidebar-text) 72%, transparent);
+  --theme-border: color-mix(in srgb, var(--theme-admin-sidebar-text) 18%, transparent);
+}
+
+:root[data-theme-scope="admin"] .admin-topbar {
+  --theme-text-muted: color-mix(in srgb, var(--theme-admin-topbar-text) 72%, transparent);
+  --theme-border: color-mix(in srgb, var(--theme-admin-topbar-text) 18%, transparent);
+}
+
+:root[data-theme-scope="admin"] .admin-topbar,
+:root[data-theme-scope="admin"] .admin-topbar a,
+:root[data-theme-scope="admin"] .admin-topbar button,
+:root[data-theme-scope="admin"] .admin-topbar [role="menu"] {
+  color: var(--theme-admin-topbar-text);
+}
+
+:root[data-theme-scope="admin"] .theme-preset-card,
+:root[data-theme-scope="admin"] .theme-scope-tab {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme-scope="admin"] .admin-topbar .text-slate-500,
+:root[data-theme-scope="admin"] .admin-topbar .text-slate-900,
+:root[data-theme-scope="admin"] .admin-topbar .text-slate-600 {
+  color: var(--theme-admin-topbar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-topbar a,
+:root[data-theme-scope="admin"] .admin-topbar button {
+  border-color: color-mix(in srgb, var(--theme-admin-topbar-text) 22%, transparent);
+  background-color: color-mix(in srgb, var(--theme-admin-topbar-bg) 82%, white);
+}
+
+:root[data-theme-scope="admin"] .admin-topbar a:hover,
+:root[data-theme-scope="admin"] .admin-topbar button:hover {
+  background-color: color-mix(in srgb, var(--theme-admin-topbar-bg) 68%, white);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-brand-name,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-profile-name,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-copy,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-group-toggle,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-link,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-footer-action {
+  color: var(--theme-admin-sidebar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-brand-caption,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-profile-role,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-empty,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-status {
+  color: color-mix(in srgb, var(--theme-admin-sidebar-text) 72%, transparent);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-link.is-active {
+  background: var(--theme-admin-active-bg, color-mix(in srgb, var(--theme-primary) 32%, transparent));
+  color: var(--theme-admin-active-text, var(--theme-admin-sidebar-text));
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-profile,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-search,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-logo,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-avatar,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-collapse,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-footer {
+  border-color: color-mix(in srgb, var(--theme-admin-sidebar-text) 16%, transparent);
+  background: color-mix(in srgb, var(--theme-admin-sidebar-bg) 86%, white);
+  color: var(--theme-admin-sidebar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-search input {
+  color: var(--theme-admin-sidebar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-search input::placeholder,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-search {
+  color: color-mix(in srgb, var(--theme-admin-sidebar-text) 72%, transparent);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-link:hover,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-footer-action:hover {
+  background: color-mix(in srgb, var(--theme-primary) 24%, transparent);
+  color: var(--theme-admin-sidebar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-icon,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-collapse,
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-logo {
+  background: var(--theme-admin-icon-bg, color-mix(in srgb, var(--theme-primary) 18%, var(--theme-admin-sidebar-bg)));
+  color: var(--theme-admin-sidebar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-sidebar .admin-sidebar-link.is-active .admin-sidebar-icon {
+  background: color-mix(in srgb, var(--theme-primary) 48%, var(--theme-admin-sidebar-bg));
+  color: var(--theme-admin-active-text, var(--theme-admin-sidebar-text));
+}
+
+:root[data-theme-scope="admin"] .admin-topbar [class*="text-slate"] {
+  color: var(--theme-admin-topbar-text);
+}
+
+:root[data-theme-scope="admin"] .admin-topbar [role="menu"] {
+  background: var(--theme-admin-topbar-bg) !important;
+  color: var(--theme-admin-topbar-text) !important;
+  border-color: color-mix(in srgb, var(--theme-admin-topbar-text) 18%, transparent) !important;
 }
 
 .admin-topbar {
   border-color: var(--theme-border);
-  background-color: var(--theme-header-bg);
-  color: var(--theme-header-text);
+  background-color: var(--theme-admin-topbar-bg, var(--theme-header-bg));
+  color: var(--theme-admin-topbar-text, var(--theme-header-text));
+}
+
+:root[data-theme-scope="landing"] body,
+:root[data-theme-scope="site"] body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+:root[data-theme-scope="landing"] a,
+:root[data-theme-scope="site"] a {
+  accent-color: var(--theme-primary);
 }
 
 :root[data-theme-style] main :is(div, section, article, a).rounded-lg.border:not(.theme-popover):not(.theme-solid-surface),

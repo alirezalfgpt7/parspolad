@@ -77,9 +77,9 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
     <header
       className="admin-topbar relative z-40 isolate flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900"
       style={{
-        backgroundColor: 'var(--theme-header-bg)',
-        borderColor: 'var(--theme-border)',
-        color: 'var(--theme-header-text)',
+        backgroundColor: 'var(--theme-admin-topbar-bg)',
+        borderColor: 'color-mix(in srgb, var(--theme-admin-topbar-text) 18%, transparent)',
+        color: 'var(--theme-admin-topbar-text)',
       }}
     >
       <div className="flex min-w-0 items-center gap-3">

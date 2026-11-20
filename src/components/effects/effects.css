@@ -873,16 +873,24 @@
   text-align: start;
   background: var(--theme-surface);
   transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+  position: relative;
+  outline: none;
+  box-shadow: none;
+  border-radius: 1rem;
 }
 
 .theme-scope-tab:hover {
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .theme-scope-tab[aria-selected="true"] {
   border-color: var(--theme-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary) 14%, transparent);
+  border-width: 2px;
+  padding: calc(0.85rem - 1px);
+  background: color-mix(in srgb, var(--theme-primary) 8%, var(--theme-surface));
+  box-shadow: none;
 }
+
 
 .theme-scope-tab-icon {
   display: grid;
@@ -925,24 +933,46 @@
 }
 
 .theme-preset-card {
+  outline: none;
   min-width: 0;
   border: 1px solid var(--theme-border);
   border-radius: 1.1rem;
   padding: 0.65rem;
   background: var(--theme-surface);
   text-align: start;
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.theme-preset-card,
+.theme-preset-card[aria-pressed="true"],
+.theme-preset-card:focus,
+.theme-preset-card:focus-visible,
+.theme-preset-card:active {
+  border-radius: 1.1rem;
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none;
 }
 
 .theme-preset-card:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--theme-primary) 48%, var(--theme-border));
-  box-shadow: 0 12px 28px rgb(15 23 42 / 9%);
 }
 
 .theme-preset-card[aria-pressed="true"] {
-  border-color: var(--theme-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-primary) 16%, transparent);
+  border: 2px solid var(--theme-primary);
+  padding: calc(0.65rem - 1px);
+  background: color-mix(in srgb, var(--theme-primary) 4%, var(--theme-surface));
+  border-radius: 1.1rem;
+}
+
+.theme-preset-card:focus,
+.theme-preset-card:focus-visible,
+.theme-scope-tab:focus,
+.theme-scope-tab:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .theme-preset-preview {
@@ -981,8 +1011,8 @@
   width: 2.1rem;
   height: 2.1rem;
   place-items: center;
-  border-radius: 999px;
-  box-shadow: 0 8px 20px rgb(0 0 0 / 18%);
+  border-radius: 0.75rem;
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {

@@ -78,6 +78,37 @@ function applyPaletteToRoot(
   root.style.setProperty('--theme-btn-text', readableText(colors.buttonText, colors.buttonBg));
   root.style.setProperty('--theme-link', colors.link);
 
+  if (scope === 'admin') {
+    const adminSidebarBg = colors.primary;
+    const adminSidebarText = readableText('#FFFFFF', adminSidebarBg);
+    const adminTopbarBg = colors.primary;
+    const adminTopbarText = readableText('#FFFFFF', adminTopbarBg);
+    root.style.setProperty('--theme-admin-sidebar-bg', adminSidebarBg);
+    root.style.setProperty('--theme-admin-sidebar-text', adminSidebarText);
+    root.style.setProperty('--theme-admin-topbar-bg', adminTopbarBg);
+    root.style.setProperty('--theme-admin-topbar-text', adminTopbarText);
+    root.style.setProperty('--theme-admin-active-bg', `color-mix(in srgb, ${colors.primary} 28%, ${adminSidebarBg})`);
+    root.style.setProperty('--theme-admin-active-text', readableText('#FFFFFF', colors.primary));
+    root.style.setProperty('--theme-admin-icon-bg', `color-mix(in srgb, ${colors.primary} 18%, ${adminSidebarBg})`);
+    const sidebar = document.querySelector<HTMLElement>('.admin-sidebar');
+    const topbar = document.querySelector<HTMLElement>('.admin-topbar');
+    if (sidebar) {
+      sidebar.style.backgroundColor = adminSidebarBg;
+      sidebar.style.color = adminSidebarText;
+      sidebar.style.borderColor = `color-mix(in srgb, ${adminSidebarText} 18%, transparent)`;
+    }
+    if (topbar) {
+      topbar.style.backgroundColor = adminTopbarBg;
+      topbar.style.color = adminTopbarText;
+      topbar.style.borderColor = `color-mix(in srgb, ${adminTopbarText} 18%, transparent)`;
+    }
+  } else {
+    root.style.setProperty('--theme-admin-sidebar-bg', colors.surface);
+    root.style.setProperty('--theme-admin-sidebar-text', readableText(colors.text, colors.surface));
+    root.style.setProperty('--theme-admin-topbar-bg', colors.headerBg);
+    root.style.setProperty('--theme-admin-topbar-text', readableText(colors.headerText, colors.headerBg));
+  }
+
   if (mode === 'light') {
     root.style.setProperty('--theme-bg', colors.background);
     root.style.setProperty('--theme-surface', colors.surface);
@@ -87,9 +118,9 @@ function applyPaletteToRoot(
     root.style.setProperty('--theme-footer-bg', colors.footerBg);
     root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
   } else {
-    const darkBackground = paletteColor(palette.background, '#0B1120');
-    const darkSurface = paletteColor(palette.surface, '#111827');
-    const darkText = readableText(paletteColor(palette.text, '#F8FAFC'), darkSurface);
+    const darkBackground = '#0B1120';
+    const darkSurface = '#111827';
+    const darkText = '#F8FAFC';
     root.style.setProperty('--theme-bg', darkBackground);
     root.style.setProperty('--theme-surface', darkSurface);
     root.style.setProperty('--theme-text', darkText);

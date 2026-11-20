@@ -38,7 +38,7 @@ class ThemePreset extends Model
                 'button_effect' => 'shimmer',
                 'palette' => [
                     'primary' => '#B91C1C', 'secondary' => '#1E293B', 'accent' => '#D97706',
-                    'background' => '#F8FAFC', 'surface' => '#FFFFFF', 'text' => '#0F172A',
+                    'background' => '#F8FAFC', 'surface' => '#F4F4F5', 'text' => '#0F172A',
                     'headerBg' => '#FFFFFF', 'headerText' => '#0F172A',
                     'footerBg' => '#0F172A', 'footerText' => '#F8FAFC',
                     'buttonBg' => '#B91C1C', 'buttonText' => '#FFFFFF', 'link' => '#B91C1C',
@@ -86,7 +86,7 @@ class ThemePreset extends Model
                 'button_effect' => 'glow',
                 'palette' => [
                     'primary' => '#264653', 'secondary' => '#1A1F2B', 'accent' => '#E9C46A',
-                    'background' => '#FAF3E0', 'surface' => '#FFFFFF', 'text' => '#1A1F2B',
+                    'background' => '#FAF3E0', 'surface' => '#FFF4DD', 'text' => '#1A1F2B',
                     'headerBg' => '#1A1F2B', 'headerText' => '#FAF3E0',
                     'footerBg' => '#264653', 'footerText' => '#FAF3E0',
                     'buttonBg' => '#264653', 'buttonText' => '#FFFFFF', 'link' => '#2A9D8F',
@@ -102,7 +102,7 @@ class ThemePreset extends Model
                 'button_effect' => 'liquid',
                 'palette' => [
                     'primary' => '#375534', 'secondary' => '#0F2A1D', 'accent' => '#AEC3B0',
-                    'background' => '#F3F8EF', 'surface' => '#FFFFFF', 'text' => '#0F2A1D',
+                    'background' => '#F3F8EF', 'surface' => '#E8F0E4', 'text' => '#0F2A1D',
                     'headerBg' => '#0F2A1D', 'headerText' => '#F3F8EF',
                     'footerBg' => '#0F2A1D', 'footerText' => '#E3EED4',
                     'buttonBg' => '#375534', 'buttonText' => '#FFFFFF', 'link' => '#6B9071',
@@ -118,7 +118,7 @@ class ThemePreset extends Model
                 'button_effect' => 'glow',
                 'palette' => [
                     'primary' => '#2078CF', 'secondary' => '#011F65', 'accent' => '#020C47',
-                    'background' => '#F1F7FF', 'surface' => '#FFFFFF', 'text' => '#020C47',
+                    'background' => '#F1F7FF', 'surface' => '#E4EFFC', 'text' => '#020C47',
                     'headerBg' => '#011F65', 'headerText' => '#FFFFFF',
                     'footerBg' => '#000521', 'footerText' => '#FFFFFF',
                     'buttonBg' => '#2078CF', 'buttonText' => '#FFFFFF', 'link' => '#0E4EB2',
@@ -127,7 +127,7 @@ class ThemePreset extends Model
         ];
 
         foreach ($presets as $preset) {
-            self::query()->firstOrCreate(
+            self::query()->updateOrCreate(
                 ['slug' => $preset['slug']],
                 $preset,
             );

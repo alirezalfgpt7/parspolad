@@ -120,6 +120,7 @@ export const ThemeAdminPage: React.FC = () => {
     if (scope === 'landing') {
       next = {
         ...settings,
+        landing_theme_enabled: true,
         landing_palette: { ...preset.palette },
         landing_design_style: preset.design_style,
         landing_button_shape: preset.button_shape,
@@ -170,12 +171,13 @@ export const ThemeAdminPage: React.FC = () => {
         : {
             ...settings,
             active_preset_slug: preset.slug,
+            default_mode: 'light' as ThemeSettings['default_mode'],
             active_palette: { ...preset.palette },
             design_style: preset.design_style,
             button_shape: preset.button_shape,
             button_effect: preset.button_effect,
           };
-    previewSettings(next, scope);
+    previewSettings(next, scope, scope === 'site' ? 'light' : null);
     addToast('info', 'تنظیمات این بخش به تم پیش‌فرض قرمز صنعتی بازگشت.');
   };
 
@@ -199,9 +201,10 @@ export const ThemeAdminPage: React.FC = () => {
   };
 
   const handleCreatePreset = async () => {
-    if (!settings || !newPresetName.trim()) return;
+    if (!settings || !scopeValues || !newPresetName.trim()) return;
     setCreatingPreset(true);
     try {
+      const currentValues = scopeValues;
       const response = await apiRequest<{ data: ThemePreset }>('/admin/themes/presets', {
         method: 'POST',
         body: JSON.stringify({
@@ -209,10 +212,10 @@ export const ThemeAdminPage: React.FC = () => {
           name_fa: newPresetName.trim(),
           name_en: newPresetName.trim(),
           is_default: false,
-          palette: settings.active_palette,
-          design_style: settings.design_style,
-          button_shape: settings.button_shape,
-          button_effect: settings.button_effect,
+          palette: currentValues.palette,
+          design_style: currentValues.designStyle,
+          button_shape: currentValues.buttonShape,
+          button_effect: currentValues.buttonEffect,
         }),
       });
       setPresets((current) => [...current, response.data]);
