@@ -206,7 +206,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       id="admin-sidebar"
       data-mobile-open={mobileOpen}
       className={cn('admin-sidebar', mini ? 'admin-sidebar--mini' : 'admin-sidebar--wide')}
-      style={{ backgroundColor: 'var(--theme-surface)', borderColor: 'var(--theme-border)' }}
     >
       <button
         type="button"

@@ -198,30 +198,30 @@ export const ReportsLogsAdminPage: React.FC = () => {
   };
 
   const cols: Column<ActivityLog>[] = [
-    { key: 'user', header: 'کاربر', render: (l) => <span className="font-semibold">{l.user_name}</span> },
-    { key: 'action', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-(--theme-primary)">{l.action}</span> },
+    { key: 'user', header: 'کاربر', render: (l) => <span className="font-semibold text-(--theme-text)">{l.user_name}</span> },
+    { key: 'action', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-(--theme-primary-ink)">{l.action}</span> },
     { key: 'subject', header: 'بخش / موضوع', render: (l) => <span>{l.subject_type} · {l.subject_label}</span> },
     { key: 'ip', header: 'IP', render: (l) => <span className="font-mono text-xs">{l.ip_address}</span> },
-    { key: 'date', header: 'زمان', render: (l) => <span className="text-xs text-slate-500">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
+    { key: 'date', header: 'زمان', render: (l) => <span className="text-xs text-(--theme-text-muted)">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div>
-          <h1 className="text-lg font-extrabold">گزارش‌های اکسل (Import/Export) و لاگ فعالیت‌های سیستم</h1>
-          <p className="mt-1 text-xs text-slate-500">خروجی رسمی اکسل از پروژه‌ها، قراردادها و لاگ‌های امنیتی</p>
+          <h1 className="text-lg font-extrabold text-(--theme-text)">گزارش‌های اکسل (Import/Export) و لاگ فعالیت‌های سیستم</h1>
+          <p className="mt-1 text-xs text-(--theme-text-muted)">خروجی رسمی اکسل از پروژه‌ها، قراردادها و لاگ‌های امنیتی</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => exportExcel('projects')} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white">
+          <button type="button" onClick={() => exportExcel('projects')} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-800">
             <FileSpreadsheet className="h-4 w-4" />
             <span>خروجی اکسل پروژه‌ها</span>
           </button>
-          <button type="button" onClick={() => exportExcel('contracts')} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-800 px-3.5 py-2 text-xs font-semibold text-white">
+          <button type="button" onClick={() => exportExcel('contracts')} className="inline-flex items-center gap-1.5 rounded-lg border border-(--theme-border) bg-(--theme-surface-muted) px-3.5 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface)">
             <FileSpreadsheet className="h-4 w-4" />
             <span>خروجی اکسل قراردادها</span>
           </button>
-          <button type="button" onClick={() => exportExcel('logs')} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-xs font-semibold dark:border-slate-700">
+          <button type="button" onClick={() => exportExcel('logs')} className="inline-flex items-center gap-1.5 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">
             <FileSpreadsheet className="h-4 w-4" />
             <span>اکسل لاگ‌ها</span>
           </button>
@@ -245,7 +245,7 @@ export const ReportsLogsAdminPage: React.FC = () => {
               </button>
             </>
           )}
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">
             <Upload className="h-4 w-4" />
             <span>بررسی فایل اکسل پروژه‌ها</span>
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => previewImport(e.target.files?.[0])} />
@@ -254,22 +254,22 @@ export const ReportsLogsAdminPage: React.FC = () => {
       </div>
 
       {importRows.length > 0 && (
-        <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <section className="space-y-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-sm font-bold">پیش‌نمایش ورود: {importRows.length} ردیف</div>
-            <button type="button" onClick={importValidRows} disabled={importing || !importRows.some((row) => row.payload && row.errors.length === 0 && !row.imported)} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">
+            <div className="text-sm font-bold text-(--theme-text)">پیش‌نمایش ورود: {importRows.length} ردیف</div>
+            <button type="button" onClick={importValidRows} disabled={importing || !importRows.some((row) => row.payload && row.errors.length === 0 && !row.imported)} className="rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover) disabled:opacity-50">
               {importing ? 'در حال ورود...' : 'ثبت ردیف‌های معتبر'}
             </button>
           </div>
           <div className="max-h-80 overflow-auto">
             <table className="w-full text-start text-xs">
-              <thead><tr><th className="p-2">ردیف</th><th className="p-2">پروژه</th><th className="p-2">اعتبارسنجی</th></tr></thead>
+              <thead><tr><th className="p-2 text-(--theme-text-muted)">ردیف</th><th className="p-2 text-(--theme-text-muted)">پروژه</th><th className="p-2 text-(--theme-text-muted)">اعتبارسنجی</th></tr></thead>
               <tbody>
                 {importRows.map((row) => (
-                  <tr key={row.line} className="border-t border-slate-100 align-top dark:border-slate-800">
+                  <tr key={row.line} className="border-t border-(--theme-border) align-top">
                     <td className="p-2 tabular-nums">{row.line}</td>
                     <td className="p-2">{row.title}</td>
-                    <td className={`p-2 ${row.errors.length || row.importError ? 'text-red-600' : 'text-emerald-700'}`}>{[...row.errors, ...(row.importError ? [row.importError] : [])].join(' · ') || (row.imported ? 'وارد شد' : 'آماده ورود')}</td>
+                    <td className={`p-2 ${row.errors.length || row.importError ? 'text-red-600' : 'text-emerald-700 dark:text-emerald-400'}`}>{[...row.errors, ...(row.importError ? [row.importError] : [])].join(' · ') || (row.imported ? 'وارد شد' : 'آماده ورود')}</td>
                   </tr>
                 ))}
               </tbody>

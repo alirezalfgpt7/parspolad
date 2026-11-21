@@ -102,7 +102,7 @@ export const AboutPage: React.FC = () => {
       ) : (
         <div className="space-y-12">
           {/* Top Brand Spotlight Band with Animated 3D Emblem & Effect 002 Wave Horizon */}
-          <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 text-white dark:border-slate-800">
+          <div className="relative overflow-hidden rounded-3xl border border-(--theme-border) bg-slate-900 text-white">
             <div className="flex flex-wrap items-center justify-between gap-6 px-6 pt-8 pb-16 sm:px-10">
               <div className="flex items-center gap-5">
                 <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-slate-950 p-1 shadow-xl">
@@ -133,7 +133,7 @@ export const AboutPage: React.FC = () => {
           <div className="grid items-start gap-8 lg:grid-cols-12">
             <div className="space-y-5 lg:col-span-7">
               <div
-                className="prose max-w-none text-sm leading-8 text-slate-700 dark:prose-invert dark:text-slate-300"
+                className="prose max-w-none text-sm leading-8 text-(--theme-text-muted) dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? page.content_fa : page.content_en) }}
               />
               {downloads.length > 0 && (
@@ -145,17 +145,17 @@ export const AboutPage: React.FC = () => {
                       href={download.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-sm font-semibold hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+                      className="flex items-center justify-between rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 text-sm font-semibold text-(--theme-text) shadow-(--theme-card-shadow) transition hover:border-(--theme-card-border-hover) hover:shadow-(--theme-card-shadow-hover)"
                     >
                       <span>{download.label}</span>
-                      <Download className="h-4 w-4 text-(--theme-primary)" />
+                      <Download className="h-4 w-4 text-(--theme-primary-ink)" />
                     </EffectAction>
                   ))}
                 </div>
               )}
             </div>
             {imageUrl && (
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900/5 p-3 lg:col-span-5 dark:border-slate-800">
+              <div className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-surface-muted) p-3 shadow-(--theme-card-shadow) lg:col-span-5">
                 <HueFilterMedia
                   mode="hue-circle"
                   src={imageUrl}
@@ -168,7 +168,7 @@ export const AboutPage: React.FC = () => {
 
           {/* Effect 004: Overlapping Card Reveal Stack */}
           <section className="space-y-4">
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-xl font-extrabold text-(--theme-text)">
               {language === 'fa' ? 'ارکان مهندسی و تضمین کیفیت' : 'Engineering & QA Pillars'}
             </h2>
             <CardRevealStack items={pillars} />

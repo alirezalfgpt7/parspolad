@@ -156,14 +156,14 @@ export const ProjectsPage: React.FC = () => {
       ))}
 
       {/* Advanced SearchableSelect Filter Panel */}
-      <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-8 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label className="mb-1.5 block text-xs font-medium text-(--theme-text-muted)">
               جستجوی متنی (عنوان یا شماره قرارداد)
             </label>
             <div className="relative">
-              <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
               <input
                 type="text"
                 value={q}
@@ -172,7 +172,7 @@ export const ProjectsPage: React.FC = () => {
                   setPage(1);
                 }}
                 placeholder="جستجو..."
-                className="h-10.5 w-full rounded-lg border border-slate-200 bg-white pe-3 ps-9 text-sm focus:border-(--theme-primary) focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+                className="h-10.5 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) focus:border-(--theme-primary) focus:outline-none"
               />
             </div>
           </div>
@@ -203,11 +203,11 @@ export const ProjectsPage: React.FC = () => {
       {loading ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-80 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+            <div key={i} className="h-80 animate-pulse rounded-2xl bg-(--theme-surface-muted)" />
           ))}
         </div>
       ) : projects.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-12 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-12 text-center text-sm text-(--theme-text-muted) shadow-(--theme-card-shadow)">
           پروژه‌ای با فیلترهای انتخاب‌شده یافت نشد.
         </div>
       ) : (
@@ -216,9 +216,9 @@ export const ProjectsPage: React.FC = () => {
             <Link
               key={p.id}
               to={`/projects/${p.slug}`}
-              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+              className="group flex flex-col overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow) transition-all hover:-translate-y-0.5 hover:border-(--theme-card-border-hover) hover:shadow-(--theme-card-shadow-hover)"
             >
-              <div className="h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <div className="h-52 overflow-hidden bg-(--theme-surface-muted)">
                 <ZeroBrokenImage
                   src={p.cover_image}
                   alt={p.title_fa}
@@ -227,21 +227,21 @@ export const ProjectsPage: React.FC = () => {
               </div>
               <div className="flex flex-1 flex-col justify-between p-5">
                 <div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 tabular-nums">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-(--theme-text-muted) tabular-nums">
                     <span>{p.category?.name_fa}</span>
                     <span>·</span>
                     <span>{p.year}</span>
                     <span>·</span>
                     <span>{p.location_fa}</span>
                   </div>
-                  <h2 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
+                  <h2 className="mt-2 text-base font-bold text-(--theme-text) group-hover:text-(--theme-primary-ink)">
                     {language === 'fa' ? p.title_fa : p.title_en}
                   </h2>
-                  <p className="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-300">
+                  <p className="mt-2 line-clamp-2 text-xs text-(--theme-text-muted)">
                     {language === 'fa' ? p.summary_fa : p.summary_en}
                   </p>
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800">
+                <div className="mt-4 flex items-center justify-between border-t border-(--theme-border) pt-3 text-xs text-(--theme-text-muted)">
                   <span className="truncate">{p.client_name_fa}</span>
                   <span className="font-mono">{p.contract_number}</span>
                 </div>

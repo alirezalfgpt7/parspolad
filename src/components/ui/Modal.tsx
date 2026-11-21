@@ -42,7 +42,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="effect-modal-backdrop fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
       <div
         className={cn(
-          'theme-solid-surface effect-modal-panel flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900',
+          'theme-solid-surface effect-modal-panel flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) shadow-2xl',
           sizeMap[size]
         )}
         style={{ backgroundColor: 'var(--theme-surface)', backdropFilter: 'none' }}
@@ -50,12 +50,12 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h3 id={titleId} className="text-base font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+        <div className="flex items-center justify-between border-b border-(--theme-border) px-5 py-4">
+          <h3 id={titleId} className="text-base font-bold text-(--theme-text)">{title}</h3>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            className="rounded-lg p-1.5 text-(--theme-text-muted) transition-colors hover:bg-(--theme-surface-muted) hover:text-(--theme-text)"
             aria-label="بستن"
           >
             <X className="h-5 w-5" />

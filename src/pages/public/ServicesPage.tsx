@@ -76,14 +76,14 @@ export const ServicesPage: React.FC = () => {
       <section className="mb-12">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-xl font-extrabold text-(--theme-text)">
               {language === 'fa' ? 'فرآیند ارائه خدمات' : 'Our Service Process'}
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-(--theme-text-muted)">
               {language === 'fa' ? 'از نیازسنجی تا پشتیبانی، همراه پروژه شما هستیم.' : 'From initial assessment to field support, we work alongside your project.'}
             </p>
           </div>
-          <span className="rounded-full bg-(--theme-primary)/10 px-3 py-1 text-xs font-semibold text-(--theme-primary)">
+          <span className="rounded-full bg-(--theme-primary)/12 px-3 py-1 text-xs font-semibold text-(--theme-primary-ink)">
             {language === 'fa' ? '۴ گام تخصصی' : '4 steps'}
           </span>
         </div>
@@ -91,17 +91,17 @@ export const ServicesPage: React.FC = () => {
           {workflowCards.map((card) => (
             <article
               key={card.id}
-              className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:border-(--theme-primary)/40 dark:border-slate-800 dark:bg-slate-900"
+              className="relative overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) transition-colors hover:border-(--theme-card-border-hover)"
             >
               <div className="flex items-center justify-between">
-                <span className="grid h-9 w-9 place-items-center rounded-lg bg-(--theme-primary)/10 text-(--theme-primary)">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-(--theme-primary)/12 text-(--theme-primary-ink)">
                   {card.icon}
                 </span>
-                <span className="font-mono text-xs font-bold tracking-wider text-slate-400">{card.id}</span>
+                <span className="font-mono text-xs font-bold tracking-wider text-(--theme-text-muted)">{card.id}</span>
               </div>
-              <p className="mt-3 text-[11px] font-semibold text-(--theme-primary)">{card.badge}</p>
-              <h3 className="mt-1 text-sm font-bold text-slate-900 dark:text-white">{card.title}</h3>
-              <p className="mt-2 text-xs leading-6 text-slate-600 dark:text-slate-400">{card.description}</p>
+              <p className="mt-3 text-[11px] font-semibold text-(--theme-primary-ink)">{card.badge}</p>
+              <h3 className="mt-1 text-sm font-bold text-(--theme-text)">{card.title}</h3>
+              <p className="mt-2 text-xs leading-6 text-(--theme-text-muted)">{card.description}</p>
             </article>
           ))}
         </div>
@@ -110,15 +110,15 @@ export const ServicesPage: React.FC = () => {
       <section aria-busy={isLoading}>
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-xl font-extrabold text-(--theme-text)">
               {language === 'fa' ? 'خدمات تخصصی' : 'Specialized Services'}
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-(--theme-text-muted)">
               {language === 'fa' ? 'راهکارهای مهندسی و اجرایی متناسب با نیاز صنعت.' : 'Engineering and field solutions tailored to your operation.'}
             </p>
           </div>
           {!isLoading && services.length > 0 && (
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-(--theme-text-muted)">
               {language === 'fa' ? `${services.length} خدمت در این صفحه` : `${services.length} services on this page`}
             </span>
           )}
@@ -127,19 +127,19 @@ export const ServicesPage: React.FC = () => {
         {isLoading ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => (
-              <div key={index} className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-                <div className="aspect-16/10 animate-pulse bg-slate-100 dark:bg-slate-800" />
+              <div key={index} className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface)">
+                <div className="aspect-16/10 animate-pulse bg-(--theme-surface-muted)" />
                 <div className="space-y-3 p-5">
-                  <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
-                  <div className="h-3 w-full animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
-                  <div className="h-3 w-4/5 animate-pulse rounded bg-slate-100 dark:bg-slate-800" />
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-(--theme-surface-muted)" />
+                  <div className="h-3 w-full animate-pulse rounded bg-(--theme-surface-muted)" />
+                  <div className="h-3 w-4/5 animate-pulse rounded bg-(--theme-surface-muted)" />
                 </div>
               </div>
             ))}
           </div>
         ) : services.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center dark:border-slate-700 dark:bg-slate-900">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <div className="rounded-2xl border border-dashed border-(--theme-border-strong) bg-(--theme-card-surface) px-6 py-12 text-center">
+            <p className="text-sm font-semibold text-(--theme-text-muted)">
               {language === 'fa' ? 'در حال حاضر خدمتی برای نمایش ثبت نشده است.' : 'No services are available right now.'}
             </p>
           </div>
@@ -148,26 +148,26 @@ export const ServicesPage: React.FC = () => {
             {services.map((svc, idx) => (
               <article
                 key={svc.id}
-                className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
+                className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow) transition-shadow duration-300 hover:shadow-(--theme-card-shadow-hover)"
               >
                 <div className="service-flip-container group/flip">
                   <div className="service-flipper">
-                    <div className="service-flip-face service-flip-face--front bg-white dark:bg-slate-900">
-                      <div className="relative aspect-16/10 overflow-hidden bg-slate-50 p-4 dark:bg-slate-800/60">
+                    <div className="service-flip-face service-flip-face--front bg-(--theme-card-surface)">
+                      <div className="relative aspect-16/10 overflow-hidden bg-(--theme-surface-muted) p-4">
                         <ZeroBrokenImage
                           src={svc.image_url}
                           alt={language === 'fa' ? svc.title_fa : svc.title_en}
                           className="h-full w-full object-contain transition-transform duration-500 group-hover/flip:scale-105"
                         />
-                        <span className="absolute inset-s-4 top-4 rounded-full border border-white/70 bg-white/90 px-2.5 py-1 font-mono text-[11px] font-bold text-(--theme-primary) shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
+                        <span className="absolute inset-s-4 top-4 rounded-full border border-(--theme-border) bg-(--theme-surface)/92 px-2.5 py-1 font-mono text-[11px] font-bold text-(--theme-primary-ink) shadow-sm backdrop-blur-sm">
                           {String((page - 1) * 3 + idx + 1).padStart(2, '0')}
                         </span>
                       </div>
                       <div className="px-5 pb-5 pt-4">
-                        <h3 className="text-base font-bold leading-7 text-slate-900 dark:text-white">
+                        <h3 className="text-base font-bold leading-7 text-(--theme-text)">
                           {language === 'fa' ? svc.title_fa : svc.title_en}
                         </h3>
-                        <p className="service-touch-description mt-2 line-clamp-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                        <p className="service-touch-description mt-2 line-clamp-2 text-xs leading-5 text-(--theme-text-muted)">
                           {language === 'fa' ? svc.summary_fa : svc.summary_en}
                         </p>
                         <p className="sr-only">
@@ -177,20 +177,20 @@ export const ServicesPage: React.FC = () => {
                     </div>
                     <div
                       aria-hidden="true"
-                      className="service-flip-face service-flip-face--back relative bg-linear-to-br from-white via-white to-red-50/70 p-6 dark:from-slate-900 dark:via-slate-900 dark:to-red-950/30"
+                      className="service-flip-face service-flip-face--back relative bg-(--theme-surface-muted) p-6"
                     >
-                      <span className="absolute inset-e-5 top-3 font-mono text-6xl font-black text-(--theme-primary)/10">
+                      <span className="absolute inset-e-5 top-3 font-mono text-6xl font-black text-(--theme-primary)/12">
                         {String((page - 1) * 3 + idx + 1).padStart(2, '0')}
                       </span>
                       <div className="relative flex h-full flex-col">
                         <span className="mb-4 h-1 w-12 rounded-full bg-(--theme-primary)" />
-                        <h3 className="text-lg font-extrabold leading-8 text-slate-900 dark:text-white">
+                        <h3 className="text-lg font-extrabold leading-8 text-(--theme-text)">
                           {language === 'fa' ? svc.title_fa : svc.title_en}
                         </h3>
-                        <p className="mt-3 text-sm font-medium leading-7 text-slate-700 dark:text-slate-200">
+                        <p className="mt-3 text-sm font-medium leading-7 text-(--theme-text)">
                           {language === 'fa' ? svc.summary_fa : svc.summary_en}
                         </p>
-                        <p className="mt-3 text-xs leading-7 text-slate-600 dark:text-slate-400">
+                        <p className="mt-3 text-xs leading-7 text-(--theme-text-muted)">
                           {language === 'fa' ? svc.description_fa : svc.description_en}
                         </p>
                       </div>
@@ -200,13 +200,13 @@ export const ServicesPage: React.FC = () => {
                 <div className="mt-auto flex flex-col gap-2 px-5 pb-5 pt-3 sm:flex-row">
                   <Link
                     to="/rfq"
-                    className="inline-flex flex-1 items-center justify-center rounded-lg bg-(--theme-primary) px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:opacity-90"
+                    className="inline-flex flex-1 items-center justify-center rounded-xl bg-(--theme-btn-bg) px-3 py-2.5 text-xs font-semibold text-(--theme-btn-text) transition-colors hover:bg-(--theme-btn-hover)"
                   >
                     {language === 'fa' ? 'درخواست مشاوره' : 'Request a Quote'}
                   </Link>
                   <Link
                     to="/products"
-                    className="inline-flex flex-1 items-center justify-center rounded-lg border border-slate-200 px-3 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-slate-700 dark:text-slate-200"
+                    className="inline-flex flex-1 items-center justify-center rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2.5 text-xs font-semibold text-(--theme-text) transition-colors hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink)"
                   >
                     {language === 'fa' ? 'تجهیزات مرتبط' : 'Related Equipment'}
                   </Link>

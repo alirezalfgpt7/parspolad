@@ -42,6 +42,7 @@ import { IconPicker } from '../../components/ui/IconPicker.tsx';
 import { DynamicLucideIcon } from '../../components/ui/LucideIconMap.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
+import { pickReadableForeground } from '../../utils/themeContrast.ts';
 
 type StudioTab = 'login' | 'fonts-colors' | 'logos' | 'pages';
 
@@ -85,13 +86,13 @@ const TextField: React.FC<{
   onChange: (value: string) => void;
 }> = ({ label, value, dir = 'rtl', onChange }) => (
   <label className="block space-y-1">
-    <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">{label}</span>
+    <span className="text-[11px] font-semibold text-(--theme-text-muted)">{label}</span>
     <input
       type="text"
       dir={dir}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+      className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
     />
   </label>
 );
@@ -344,16 +345,16 @@ export const LoginAppearanceAdminPage: React.FC = () => {
   return (
     <div className="space-y-6 pb-10">
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-col gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-(--theme-primary)/10 px-3 py-1 text-[11px] font-bold text-(--theme-primary)">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-(--theme-primary)/12 px-3 py-1 text-[11px] font-bold text-(--theme-primary-ink)">
             <Sparkles className="h-3.5 w-3.5" />
             <span>استودیو جامع ظاهر، لوگو و احراز هویت</span>
           </span>
-          <h1 className="mt-2 text-2xl font-extrabold text-slate-900 dark:text-white">
+          <h1 className="mt-2 text-2xl font-extrabold text-(--theme-text)">
             تنظیمات لاگین و تنظیمات ظاهری
           </h1>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-(--theme-text-muted)">
             مدیریت کامل متون و آیکون‌های ورود و ثبت‌نام، رنگ‌بندی و فونت کل بخش‌ها، لوگوهای ثابت/متحرک و متون صفحات سایت
           </p>
         </div>
@@ -361,7 +362,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           <button
             type="button"
             onClick={handleResetDefaults}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2.5 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
           >
             <RotateCcw className="h-4 w-4" />
             <span>بازنشانی پیش‌فرض</span>
@@ -398,10 +399,10 @@ export const LoginAppearanceAdminPage: React.FC = () => {
         <div className="grid gap-6 xl:grid-cols-12">
           <div className="space-y-5 xl:col-span-7">
             {/* Texts */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-4 text-sm font-extrabold">متون صفحه ورود و احراز هویت دوعاملی (FA / EN)</h2>
+            <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+              <h2 className="mb-4 text-sm font-extrabold text-(--theme-text)">متون صفحه ورود و احراز هویت دوعاملی (FA / EN)</h2>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="flex items-center gap-2 rounded-lg border border-slate-200 p-3 text-xs font-medium dark:border-slate-700 sm:col-span-2">
+                <label className="flex items-center gap-2 rounded-lg border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-xs font-medium text-(--theme-text) sm:col-span-2">
                   <input
                     type="checkbox"
                     checked={siteSettings?.site.allow_registration ?? true}
@@ -443,8 +444,8 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             </section>
 
             {/* Register Texts */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-4 text-sm font-extrabold">متون فرم ثبت‌نام (کارت چرخشی پشتی / Register)</h2>
+            <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+              <h2 className="mb-4 text-sm font-extrabold text-(--theme-text)">متون فرم ثبت‌نام (کارت چرخشی پشتی / Register)</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 <TextField label="تیتر ثبت‌نام (فارسی)" value={loginCfg.register_title_fa} onChange={(v) => setLoginCfg({ ...loginCfg, register_title_fa: v })} />
                 <TextField label="Register Title (EN)" dir="ltr" value={loginCfg.register_title_en} onChange={(v) => setLoginCfg({ ...loginCfg, register_title_en: v })} />
@@ -462,8 +463,8 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             </section>
 
             {/* Icons & Visual Colors & Effect Toggles */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <h2 className="mb-4 text-sm font-extrabold">آیکون‌های لاگین، رنگ‌بندی اختصاصی و افکت‌ها</h2>
+            <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+              <h2 className="mb-4 text-sm font-extrabold text-(--theme-text)">آیکون‌های لاگین، رنگ‌بندی اختصاصی و افکت‌ها</h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <IconPicker label="آیکون برچسب امنیتی" value={loginCfg.badge_icon} onChange={(v) => setLoginCfg({ ...loginCfg, badge_icon: v })} />
                 <IconPicker label="آیکون ایمیل" value={loginCfg.email_icon} onChange={(v) => setLoginCfg({ ...loginCfg, email_icon: v })} />
@@ -475,7 +476,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                 <IconPicker label="آیکون بازگشت" value={loginCfg.back_icon} onChange={(v) => setLoginCfg({ ...loginCfg, back_icon: v })} />
               </div>
 
-              <div className="mt-5 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-5 dark:border-slate-800">
+              <div className="mt-5 grid gap-3 border-t border-(--theme-border) pt-4 sm:grid-cols-5">
                 {(
                   [
                     ['backdrop_color', 'پس‌زمینه کل صفحه'],
@@ -486,27 +487,27 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                   ] as const
                 ).map(([key, lbl]) => (
                   <label key={key} className="space-y-1 text-xs">
-                    <span className="block font-medium text-slate-600 dark:text-slate-300">{lbl}</span>
+                    <span className="block font-medium text-(--theme-text-muted)">{lbl}</span>
                     <div className="flex items-center gap-1.5">
                       <input
                         type="color"
                         value={loginCfg[key].startsWith('#') ? loginCfg[key] : '#0f172a'}
                         onChange={(e) => setLoginCfg({ ...loginCfg, [key]: e.target.value })}
-                        className="h-8 w-8 cursor-pointer rounded border border-slate-200 p-0.5"
+                        className="h-8 w-8 cursor-pointer rounded border border-(--theme-input-border) bg-(--theme-input-bg) p-0.5"
                       />
                       <input
                         type="text"
                         dir="ltr"
                         value={loginCfg[key]}
                         onChange={(e) => setLoginCfg({ ...loginCfg, [key]: e.target.value })}
-                        className="min-w-0 flex-1 rounded-lg border border-slate-200 px-2 py-1.5 font-mono text-[11px] dark:border-slate-700 dark:bg-slate-800"
+                        className="min-w-0 flex-1 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2 py-1.5 font-mono text-[11px] text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                       />
                     </div>
                   </label>
                 ))}
               </div>
 
-              <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 dark:border-slate-800">
+              <div className="mt-4 grid gap-3 border-t border-(--theme-border) pt-4 sm:grid-cols-2">
                 {(
                   [
                     ['enable_3d_flip', 'چرخش سه‌بعدی ورود / ثبت‌نام (Effect 083)'],
@@ -515,7 +516,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                     ['enable_bg_slideshow', 'اسلایدشو نرم پس‌زمینه (Effect 041)'],
                   ] as const
                 ).map(([key, lbl]) => (
-                  <label key={key} className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-slate-200 p-3 text-xs font-semibold dark:border-slate-800">
+                  <label key={key} className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-xs font-semibold text-(--theme-text)">
                     <input
                       type="checkbox"
                       checked={Boolean(loginCfg[key])}
@@ -531,21 +532,21 @@ export const LoginAppearanceAdminPage: React.FC = () => {
 
           {/* Live Preview Column */}
           <div className="space-y-4 xl:col-span-5">
-            <div className="sticky top-20 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div className="sticky top-20 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-extrabold">پیش‌نمایش زنده فرم لاگین و ثبت‌نام</span>
+                <span className="text-xs font-extrabold text-(--theme-text)">پیش‌نمایش زنده فرم لاگین و ثبت‌نام</span>
                 <div className="flex gap-1">
                   <button
                     type="button"
                     onClick={() => setPreviewFlip('login')}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${previewFlip === 'login' ? 'bg-(--theme-primary) text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${previewFlip === 'login' ? 'bg-(--theme-primary) text-(--theme-primary-foreground)' : 'bg-(--theme-surface-muted) text-(--theme-text)'}`}
                   >
                     نمای ورود
                   </button>
                   <button
                     type="button"
                     onClick={() => setPreviewFlip('register')}
-                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold ${previewFlip === 'register' ? 'bg-(--theme-primary) text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
+                    className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors ${previewFlip === 'register' ? 'bg-(--theme-primary) text-(--theme-primary-foreground)' : 'bg-(--theme-surface-muted) text-(--theme-text)'}`}
                   >
                     نمای ثبت‌نام
                   </button>
@@ -609,8 +610,11 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                       </div>
 
                       <div
-                        className="mt-3 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold text-white"
-                        style={{ backgroundColor: loginCfg.accent_color }}
+                        className="mt-3 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold"
+                        style={{
+                          backgroundColor: loginCfg.accent_color,
+                          color: pickReadableForeground(loginCfg.accent_color, '#0f172a', 4.5),
+                        }}
                       >
                         <DynamicLucideIcon name={loginCfg.submit_icon} className="h-3.5 w-3.5" />
                         <span>{loginCfg.submit_text_fa}</span>
@@ -641,8 +645,11 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                         <div className="h-8 rounded-lg border border-white/15" style={{ backgroundColor: loginCfg.input_bg_color }} />
                       </div>
                       <div
-                        className="mt-3 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold text-white"
-                        style={{ backgroundColor: loginCfg.accent_color }}
+                        className="mt-3 flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold"
+                        style={{
+                          backgroundColor: loginCfg.accent_color,
+                          color: pickReadableForeground(loginCfg.accent_color, '#0f172a', 4.5),
+                        }}
                       >
                         <DynamicLucideIcon name={loginCfg.register_icon} className="h-3.5 w-3.5" />
                         <span>{loginCfg.register_submit_fa}</span>
@@ -659,16 +666,16 @@ export const LoginAppearanceAdminPage: React.FC = () => {
       {/* TAB 2: FONTS & SECTION COLORS */}
       {tab === 'fonts-colors' && (
         <div className="space-y-6">
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Type className="h-5 w-5 text-(--theme-primary)" />
+                <Type className="h-5 w-5 text-(--theme-primary-ink)" />
                 <div>
-                  <h2 className="text-base font-extrabold">مدیریت فونت آفلاین کل بخش‌های برنامه</h2>
-                  <p className="text-xs text-slate-500">تمام ۶ خانواده فونت به‌صورت داخلی (بدون CDN) در سیستم بارگذاری شده‌اند.</p>
+                  <h2 className="text-base font-extrabold text-(--theme-text)">مدیریت فونت آفلاین کل بخش‌های برنامه</h2>
+                  <p className="text-xs text-(--theme-text-muted)">تمام ۶ خانواده فونت به‌صورت داخلی (بدون CDN) در سیستم بارگذاری شده‌اند.</p>
                 </div>
               </div>
-              <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold dark:border-slate-700">
+              <label className="flex items-center gap-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2 text-xs font-bold text-(--theme-text)">
                 <span>اندازه پایه متن: {appearanceCfg.base_font_size}px</span>
                 <input
                   type="range"
@@ -686,14 +693,14 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                 const currentKey = appearanceCfg[slot.key];
                 const fontMeta = BUNDLED_FONTS.find((f) => f.key === currentKey) || BUNDLED_FONTS[0];
                 return (
-                  <div key={slot.key} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-800/40">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <div key={slot.key} className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3.5">
+                    <label className="block text-xs font-bold text-(--theme-text)">
                       {slot.label}
                     </label>
                     <select
                       value={currentKey}
                       onChange={(e) => setAppearanceCfg({ ...appearanceCfg, [slot.key]: e.target.value as FontFamilyKey })}
-                      className="mt-1.5 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-900"
+                      className="mt-1.5 w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
                     >
                       {BUNDLED_FONTS.map((f) => (
                         <option key={f.key} value={f.key}>
@@ -702,7 +709,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                       ))}
                     </select>
                     <p
-                      className="mt-2.5 rounded-lg bg-white px-3 py-2 text-sm text-slate-800 dark:bg-slate-900 dark:text-slate-100"
+                      className="mt-2.5 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-sm text-(--theme-text)"
                       style={{ fontFamily: FONT_CSS_MAP[fontMeta.key] }}
                     >
                       {fontMeta.sample} — ۱۲۳۴۵۶۷۸۹۰
@@ -714,11 +721,11 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           </section>
 
           {themeSettings && currentScopeValues && (
-            <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+            <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-base font-extrabold">مدیریت رنگ‌بندی و زبان بصری کل بخش‌ها</h2>
-                  <p className="text-xs text-slate-500">رنگ‌های اصلی، پس‌زمینه، نوبار، فوتر و دکمه‌های هر بخش را جداگانه تنظیم کنید.</p>
+                  <h2 className="text-base font-extrabold text-(--theme-text)">مدیریت رنگ‌بندی و زبان بصری کل بخش‌ها</h2>
+                  <p className="text-xs text-(--theme-text-muted)">رنگ‌های اصلی، پس‌زمینه، نوبار، فوتر و دکمه‌های هر بخش را جداگانه تنظیم کنید.</p>
                 </div>
               </div>
               <ThemeScopeTabs
@@ -741,7 +748,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
 
       {/* TAB 3: BRAND LOGOS & ANIMATED FILES */}
       {tab === 'logos' && (
-        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
             <strong>پشتیبانی کامل از آرم و فایل‌های متحرک:</strong> برای هر بخش از سایت (نوبار، فوتر، سایدبار پنل، لاگین، ثبت‌نام، پیش‌بارگذاری، صفحه درباره ما و فاوآیکون) می‌توانید تصویر ثابت (PNG/JPG/WEBP) یا فایل متحرک (GIF، MP4، WEBM) را انتخاب کنید. لوگوی پیش‌بارگذاری و سایدبار تنظیم‌های جداگانه دارند؛ برای استفاده از یک لوگو در هر دو بخش، از دکمهٔ «استفاده از این لوگو در سایدبار هم» استفاده کنید.
           </div>
@@ -761,7 +768,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setLogosCfg({ ...logosCfg, admin_sidebar: logosCfg.preloader })}
-                    className="rounded-lg border border-(--theme-primary)/25 px-3 py-2 text-[11px] font-semibold text-(--theme-primary) hover:bg-(--theme-primary)/5"
+                    className="rounded-lg border border-(--theme-primary-ink)/30 px-3 py-2 text-[11px] font-semibold text-(--theme-primary-ink) hover:bg-(--theme-primary)/8"
                   >
                     استفاده از این لوگو در سایدبار هم
                   </button>
@@ -769,21 +776,21 @@ export const LoginAppearanceAdminPage: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/50 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-950 p-1 dark:border-slate-700">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-(--theme-border) bg-slate-950 p-1">
                 <BrandLogo placement="admin_sidebar" overrideUrl={logosCfg.admin_sidebar} alt="پیش‌نمایش لوگوی سایدبار" className="h-full w-full" />
               </div>
               <div>
-                <p className="text-xs font-bold">پیش‌نمایش لوگوی سایدبار</p>
-                <p className="mt-1 text-[11px] text-slate-500">فایل GIF یا ویدئو باید در این کادر به‌صورت متحرک دیده شود.</p>
+                <p className="text-xs font-bold text-(--theme-text)">پیش‌نمایش لوگوی سایدبار</p>
+                <p className="mt-1 text-[11px] text-(--theme-text-muted)">فایل GIF یا ویدئو باید در این کادر به‌صورت متحرک دیده شود.</p>
               </div>
             </div>
             <button
               type="button"
               onClick={handleSaveLogos}
               disabled={saving}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-primary) px-4 py-2.5 text-xs font-bold text-white disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2.5 text-xs font-bold text-(--theme-btn-text) transition-colors hover:bg-(--theme-btn-hover) disabled:opacity-60"
             >
               <Save className="h-4 w-4" />
               {saving ? 'در حال ذخیره...' : 'ذخیره و انتشار لوگوها'}
@@ -796,16 +803,16 @@ export const LoginAppearanceAdminPage: React.FC = () => {
       {tab === 'pages' && (
         <div className="space-y-6">
           {/* System Pages */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="mb-4 text-base font-extrabold">متون و لوگوی صفحات سیستمی و بخش ویژه صفحه اصلی</h2>
+          <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+            <h2 className="mb-4 text-base font-extrabold text-(--theme-text)">متون و لوگوی صفحات سیستمی و بخش ویژه صفحه اصلی</h2>
             <div className="grid gap-5 lg:grid-cols-2">
               {SYSTEM_PAGE_CARDS.map((card) => {
                 const entry = pagesConfig[card.key] || {};
                 return (
-                  <div key={card.key} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                  <div key={card.key} className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-extrabold text-(--theme-primary)">{card.label}</h3>
-                      <span className="font-mono text-[10px] text-slate-400">{card.key}</span>
+                      <h3 className="text-xs font-extrabold text-(--theme-primary-ink)">{card.label}</h3>
+                      <span className="font-mono text-[10px] text-(--theme-text-muted)">{card.key}</span>
                     </div>
                     <div className="grid gap-2.5 sm:grid-cols-2">
                       <TextField label="تیتر (فارسی)" value={entry.title_fa || ''} onChange={(v) => updatePageOverride(card.key, { title_fa: v })} />
@@ -826,10 +833,10 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                       )}
                     </div>
                     {card.key === 'home_spotlight' && (
-                      <div className="space-y-3 rounded-xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
+                      <div className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
                         <div>
-                          <h4 className="text-xs font-bold">متن و پس‌زمینه شاخص‌های عملکرد صفحه اصلی</h4>
-                          <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                          <h4 className="text-xs font-bold text-(--theme-text)">متن و پس‌زمینه شاخص‌های عملکرد صفحه اصلی</h4>
+                          <p className="mt-1 text-[11px] leading-5 text-(--theme-text-muted)">
                             تصویر پیش‌فرض همان تصویرسازی صنعتی فعلی است؛ تصویر انتخابی به‌صورت لایه پس‌زمینه اضافه می‌شود.
                           </p>
                         </div>
@@ -865,8 +872,8 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                             value={entry.performance_overlay_color || '#080d17'}
                             onChange={(color) => updatePageOverride(card.key, { performance_overlay_color: color })}
                           />
-                          <label className="space-y-1 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
-                            <span className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                          <label className="space-y-1 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2">
+                            <span className="flex items-center justify-between text-[11px] font-semibold text-(--theme-text-muted)">
                               <span>تیرگی لایه</span>
                               <span>{entry.performance_overlay_opacity ?? 0}%</span>
                             </span>
@@ -889,7 +896,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => updatePageOverride(card.key, { performance_background_color: '' })}
-                            className="text-[11px] font-semibold text-slate-500 underline-offset-2 hover:text-(--theme-primary) hover:underline"
+                            className="text-[11px] font-semibold text-(--theme-text-muted) underline-offset-2 hover:text-(--theme-primary-ink) hover:underline"
                           >
                             بازگشت به پس‌زمینهٔ صنعتی پیش‌فرض
                           </button>
@@ -897,10 +904,10 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                       </div>
                     )}
                     {card.key === 'home_spotlight' && (
-                      <div className="space-y-3 rounded-xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/50">
+                      <div className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
                         <div>
-                          <h4 className="text-xs font-bold">رنگ‌بندی بخش معرفی صفحه اصلی</h4>
-                          <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                          <h4 className="text-xs font-bold text-(--theme-text)">رنگ‌بندی بخش معرفی صفحه اصلی</h4>
+                          <p className="mt-1 text-[11px] leading-5 text-(--theme-text-muted)">
                             رنگ متن و زمینهٔ بخش معرفی و رنگ تأکیدی نشان، زیرعنوان و دکمه اصلی را تنظیم کنید.
                           </p>
                         </div>
@@ -936,8 +943,8 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           </section>
 
           {/* CMS Database Pages */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="mb-4 text-base font-extrabold">متون و لوگوی تمامی صفحات محتوایی پرتال (CMS Pages)</h2>
+          <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+            <h2 className="mb-4 text-base font-extrabold text-(--theme-text)">متون و لوگوی تمامی صفحات محتوایی پرتال (CMS Pages)</h2>
             <div className="grid gap-5 lg:grid-cols-12">
               <div className="space-y-1.5 lg:col-span-4">
                 {cmsPages.map((p) => {
@@ -949,25 +956,25 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                       onClick={() => setSelectedCmsPageId(p.id)}
                       className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-start text-xs font-bold transition-colors ${
                         active
-                          ? 'border-(--theme-primary) bg-(--theme-primary)/10 text-(--theme-primary)'
-                          : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800'
+                          ? 'border-(--theme-primary-ink) bg-(--theme-primary)/10 text-(--theme-primary-ink)'
+                          : 'border-(--theme-border) bg-(--theme-surface) text-(--theme-text) hover:bg-(--theme-surface-muted)'
                       }`}
                     >
                       <span>{p.title_fa}</span>
-                      <span className="font-mono text-[10px] opacity-70">/{p.slug}</span>
+                      <span className="font-mono text-[10px] opacity-75">/{p.slug}</span>
                     </button>
                   );
                 })}
               </div>
 
               {activeCmsPage && (
-                <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4 lg:col-span-8 dark:border-slate-800 dark:bg-slate-800/30">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-extrabold">
+                <div className="space-y-4 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4 lg:col-span-8">
+                  <div className="flex items-center justify-between border-b border-(--theme-border) pb-3">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-extrabold text-(--theme-text)">
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                       <span>ویرایش صفحه: {activeCmsPage.title_fa}</span>
                     </span>
-                    <span className="font-mono text-xs text-slate-400">slug: {activeCmsPage.slug}</span>
+                    <span className="font-mono text-xs text-(--theme-text-muted)">slug: {activeCmsPage.slug}</span>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -990,22 +997,22 @@ export const LoginAppearanceAdminPage: React.FC = () => {
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <label className="block space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">متن بدنه (فارسی)</span>
+                      <span className="text-[11px] font-semibold text-(--theme-text-muted)">متن بدنه (فارسی)</span>
                       <textarea
                         rows={4}
                         value={activeCmsPage.content_fa}
                         onChange={(e) => updateCmsPageField('content_fa', e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
                       />
                     </label>
                     <label className="block space-y-1">
-                      <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">Body Content (EN)</span>
+                      <span className="text-[11px] font-semibold text-(--theme-text-muted)">Body Content (EN)</span>
                       <textarea
                         rows={4}
                         dir="ltr"
                         value={activeCmsPage.content_en}
                         onChange={(e) => updateCmsPageField('content_en', e.target.value)}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
                       />
                     </label>
                   </div>

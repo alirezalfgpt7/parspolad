@@ -66,8 +66,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   return (
     <div className="space-y-2">
       {previewUrl && (
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white/80 p-2.5 dark:border-slate-700 dark:bg-slate-900/70">
-          <div className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex items-center gap-3 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-2.5">
+          <div className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-(--theme-border) bg-(--theme-surface-muted)">
             {isVideoMediaUrl(previewUrl) ? (
               <video
                 src={previewUrl}
@@ -80,19 +80,19 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             ) : isImagePreview(previewUrl) ? (
               <ZeroBrokenImage src={previewUrl} alt="پیش‌نمایش" className="h-full w-full object-cover" />
             ) : (
-              <FileText className="h-5 w-5 text-slate-400" />
+              <FileText className="h-5 w-5 text-(--theme-text-muted)" />
             )}
           </div>
           <div className="min-w-0 flex-1 text-xs">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+            <div className="flex items-center gap-1.5 font-semibold text-(--theme-text)">
               {isVideoMediaUrl(previewUrl) ? (
-                <Film className="h-3.5 w-3.5 text-(--theme-primary)" />
+                <Film className="h-3.5 w-3.5 text-(--theme-primary-ink)" />
               ) : (
-                <ImageIcon className="h-3.5 w-3.5 text-(--theme-primary)" />
+                <ImageIcon className="h-3.5 w-3.5 text-(--theme-primary-ink)" />
               )}
               <span>پیش‌نمایش فایل فعلی</span>
             </div>
-            <div dir="ltr" className="mt-0.5 truncate font-mono text-[11px] text-slate-500 dark:text-slate-400">
+            <div dir="ltr" className="mt-0.5 truncate font-mono text-[11px] text-(--theme-text-muted)">
               {previewUrl}
             </div>
           </div>
@@ -106,7 +106,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           handleFile(e.dataTransfer.files[0]);
         }}
         onClick={() => inputRef.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4 text-center transition-colors hover:border-(--theme-primary) hover:bg-slate-100/60 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800"
+        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-(--theme-border-strong) bg-(--theme-surface-muted) p-4 text-center transition-colors hover:border-(--theme-primary)"
       >
         <input
           ref={inputRef}
@@ -116,11 +116,11 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         {uploadedName ? (
-          <FileCheck2 className="h-5 w-5 text-emerald-600" />
+          <FileCheck2 className="h-5 w-5 text-emerald-500" />
         ) : (
-          <Upload className="h-5 w-5 text-slate-400" />
+          <Upload className="h-5 w-5 text-(--theme-text-muted)" />
         )}
-        <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+        <p className="text-xs font-medium text-(--theme-text)">
           {uploading ? <InlineLoader label="در حال آپلود و اعتبارسنجی فایل..." /> : uploadedName || label}
         </p>
       </div>

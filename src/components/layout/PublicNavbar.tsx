@@ -16,7 +16,8 @@ import {
 import type { MenuItem } from '../../types/index.ts';
 
 export const PublicNavbar: React.FC = () => {
-  const { bootstrap, language, user, colorMode, toggleColorMode, setLanguage, setSearchOpen } = useAppStore();
+  const { bootstrap, language, user, colorMode, previewMode, toggleColorMode, setLanguage, setSearchOpen } = useAppStore();
+  const effectiveColorMode = previewMode || colorMode;
   const { pathname } = useLocation();
   const [activeMegaId, setActiveMegaId] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -81,7 +82,7 @@ export const PublicNavbar: React.FC = () => {
       onMouseLeave={() => setActiveMegaId(null)}
       style={{ color: 'var(--theme-header-text)' }}
       data-scrolled={scrolled}
-      className={`public-navbar ${pathname === '/' ? 'public-navbar--landing' : ''} border-b border-slate-200/80 transition-[background-color,box-shadow,backdrop-filter] duration-300 dark:border-slate-800 ${
+      className={`public-navbar ${pathname === '/' ? 'public-navbar--landing' : ''} transition-[background-color,box-shadow,backdrop-filter] duration-300 ${
         scrolled ? 'is-scrolled shadow-lg shadow-slate-950/10' : 'shadow-none'
       }`}
     >
@@ -94,8 +95,8 @@ export const PublicNavbar: React.FC = () => {
               setMobileOpen((open) => !open);
               setExpandedMobileMenuId(null);
             }}
-            className="flex h-10 w-10 items-center justify-center text-(--theme-primary) transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--theme-primary)"
-            style={{ color: 'var(--theme-primary)' }}
+            className="flex h-10 w-10 items-center justify-center rounded-lg transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--theme-header-ink)"
+            style={{ color: 'var(--theme-header-ink)' }}
             aria-label={language === 'fa' ? 'منو' : 'Menu'}
             aria-expanded={mobileOpen}
             aria-controls="public-mobile-menu"
@@ -162,7 +163,7 @@ export const PublicNavbar: React.FC = () => {
                 <Search className="h-4 w-4" aria-hidden="true" />
               </button>
               <ThemeModeToggle
-                dark={colorMode === 'dark'}
+                dark={effectiveColorMode === 'dark'}
                 onToggle={toggleColorMode}
                 compact
                 label={language === 'fa' ? 'تغییر حالت روشن/تاریک' : 'Toggle light/dark mode'}
@@ -173,18 +174,14 @@ export const PublicNavbar: React.FC = () => {
                 className="effect-navbar-control inline-flex h-8 w-8 items-center justify-center"
                 aria-label={language === 'fa' ? 'Switch to English' : 'Change language to Persian'}
               >
-                {language === 'fa' ? (
-                  <Globe className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Globe className="h-4 w-4" aria-hidden="true" />
-                )}
+                <Globe className="h-4 w-4" aria-hidden="true" />
               </button>
             </>
           )}
           {!user && (
             <Link
               to="/login"
-              className="hidden rounded-lg px-3 py-2 text-xs font-semibold opacity-80 transition-opacity hover:opacity-100 sm:inline-flex whitespace-nowrap"
+              className="hidden rounded-lg px-3 py-2 text-xs font-semibold opacity-85 transition-opacity hover:opacity-100 sm:inline-flex whitespace-nowrap"
             >
               {language === 'fa' ? 'ورود' : 'Login'}
             </Link>
@@ -197,7 +194,7 @@ export const PublicNavbar: React.FC = () => {
       {activeMegaItem && activeMegaItem.children && (
         <div
           key={activeMegaItem.id}
-          className="effect-dropdown-enter hidden border-t border-slate-200 bg-white shadow-xl lg:block dark:border-slate-800 dark:bg-slate-900"
+          className="theme-popover effect-dropdown-enter hidden border-t border-(--theme-header-border) bg-(--theme-surface) text-(--theme-text) shadow-xl lg:block"
         >
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 lg:grid-cols-4">
             {activeMegaItem.children.map((child, index) => (
@@ -209,9 +206,9 @@ export const PublicNavbar: React.FC = () => {
                   <Link
                     to={child.url}
                     onClick={() => setActiveMegaId(null)}
-                    className="group flex items-start gap-3.5 rounded-xl border border-slate-100 p-3 transition-colors hover:border-(--theme-primary) hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/60"
+                    className="group flex items-start gap-3.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3 transition-colors hover:border-(--theme-primary) hover:bg-(--theme-surface-muted)"
                   >
-                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-(--theme-surface-muted)">
                       <ZeroBrokenImage
                         src={child.image}
                         alt={language === 'fa' ? child.title_fa : child.title_en}
@@ -219,11 +216,11 @@ export const PublicNavbar: React.FC = () => {
                       />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-slate-100">
+                      <div className="text-sm font-bold text-(--theme-text) group-hover:text-(--theme-primary-ink)">
                         {language === 'fa' ? child.title_fa : child.title_en}
                       </div>
                       {(child.description_fa || child.description_en) && (
-                        <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+                        <p className="mt-1 line-clamp-2 text-xs text-(--theme-text-muted)">
                           {language === 'fa' ? child.description_fa : child.description_en}
                         </p>
                       )}

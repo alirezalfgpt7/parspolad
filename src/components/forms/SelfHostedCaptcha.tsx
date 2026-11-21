@@ -100,7 +100,7 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
               'h-14 w-56 max-w-full rounded-lg border object-contain',
               appearance === 'glass'
                 ? 'border-white/20 bg-white/10'
-                : 'border-slate-200 bg-slate-100 dark:border-slate-700'
+                : 'border-(--theme-border) bg-(--theme-surface-muted)'
             )}
           />
         ) : (
@@ -109,7 +109,7 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
               'flex h-14 w-56 max-w-full items-center justify-center rounded-lg border text-xs',
               appearance === 'glass'
                 ? 'border-white/20 bg-white/5 text-slate-300'
-                : 'border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800'
+                : 'border-(--theme-border) bg-(--theme-surface-muted) text-(--theme-text-muted)'
             )}
           >
             {loadError || imageError
@@ -125,7 +125,7 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
             'inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors',
             appearance === 'glass'
               ? 'border-white/20 bg-white/5 text-white hover:bg-white/10'
-              : 'border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800'
+              : 'border-(--theme-border) bg-(--theme-surface) text-(--theme-text) hover:bg-(--theme-surface-muted)'
           )}
         >
           <RefreshCw className="h-4 w-4" />
@@ -145,12 +145,12 @@ export const SelfHostedCaptcha: React.FC<SelfHostedCaptchaProps> = ({
           'w-full rounded-lg border px-3 py-2 text-sm',
           appearance === 'glass'
             ? 'auth-glass-input text-white'
-            : 'border-slate-200 dark:border-slate-700 dark:bg-slate-800'
+            : 'border-(--theme-input-border) bg-(--theme-input-bg) text-(--theme-input-text) placeholder:text-(--theme-placeholder) focus:border-(--theme-primary) focus:outline-none'
         )}
       />
-      {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-xs text-red-500">{error}</p>}
       {loadError && (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-red-500">
           دریافت CAPTCHA ناموفق بود. برای تلاش دوباره «تصویر جدید» را بزنید.
         </p>
       )}

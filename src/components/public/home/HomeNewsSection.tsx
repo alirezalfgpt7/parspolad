@@ -31,7 +31,7 @@ export const HomeNewsSection: React.FC<HomeNewsSectionProps> = ({ articles, lang
           <Reveal key={article.id} delay={reducedMotion ? 0 : index * 0.055} className="h-full">
             <Link
               to={`/news/${article.slug}`}
-              className="group relative block aspect-4/3 h-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-(--theme-primary) hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+              className="group relative block aspect-4/3 h-full overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-surface-muted) shadow-(--theme-card-shadow) transition-[border-color,box-shadow] duration-300 hover:border-(--theme-card-border-hover) hover:shadow-(--theme-card-shadow-hover) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--theme-primary-ink)"
             >
               <ZeroBrokenImage
                 src={article.cover_image}

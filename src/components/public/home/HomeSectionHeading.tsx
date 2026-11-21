@@ -25,8 +25,8 @@ export const HomeSectionHeading: React.FC<HomeSectionHeadingProps> = ({
   return (
     <div className={`mb-10 flex flex-wrap items-end gap-4 ${align === 'between' ? 'justify-between' : 'justify-start'}`}>
       <div>
-        <p className="text-xs font-semibold text-(--theme-primary)">{eyebrow}</p>
-        <h2 className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white" style={{ textWrap: 'balance' }}>
+        <p className="text-xs font-semibold text-(--theme-primary-ink)">{eyebrow}</p>
+        <h2 className="mt-1.5 text-2xl font-extrabold tracking-tight text-(--theme-text) sm:text-3xl" style={{ textWrap: 'balance' }}>
           {title}
         </h2>
       </div>

@@ -9,6 +9,7 @@ import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { StatCounter } from '../../components/ui/StatCounter.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
+import { pickReadableForeground } from '../../utils/themeContrast.ts';
 import { DEFAULT_PAGES_CONFIG } from '../../utils/brandingDefaults.ts';
 import { useCmsPage } from '../../hooks/useCmsPage.ts';
 import {
@@ -319,8 +320,8 @@ export const HomePage: React.FC = () => {
       <section id="home-capabilities" className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-(--theme-primary)">{homeText('capabilities_eyebrow')}</p>
-            <h2 className="mt-1.5 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white" style={{ textWrap: 'balance' }}>
+            <p className="text-xs font-semibold text-(--theme-primary-ink)">{homeText('capabilities_eyebrow')}</p>
+            <h2 className="mt-1.5 text-2xl font-extrabold tracking-tight text-(--theme-text) sm:text-3xl" style={{ textWrap: 'balance' }}>
               {homeText('capabilities_title')}
             </h2>
           </div>
@@ -447,7 +448,7 @@ export const HomePage: React.FC = () => {
       {spotlight && (
         <section
           id="home-spotlight"
-          className="home-spotlight-section home-page-snap-section relative isolate overflow-hidden border-y border-slate-200 py-16 dark:border-slate-800"
+          className="home-spotlight-section home-page-snap-section relative isolate overflow-hidden border-y border-(--theme-border) py-16"
           style={{
             '--spotlight-background': spotlightBackgroundColor,
             '--spotlight-text': spotlightTextColor,
@@ -508,7 +509,10 @@ export const HomePage: React.FC = () => {
                   <EffectAction
                     as={Link}
                     to={spotlightPrimaryLink}
-                    style={{ backgroundColor: spotlightAccentColor, color: spotlightBackgroundColor }}
+                    style={{
+                      backgroundColor: spotlightAccentColor,
+                      color: pickReadableForeground(spotlightAccentColor, spotlightBackgroundColor, 4.5),
+                    }}
                     className="rounded-lg px-5 py-2.5 text-xs font-semibold transition-opacity hover:opacity-90 whitespace-nowrap"
                   >
                     {spotlightPrimaryLabel}
@@ -552,10 +556,10 @@ export const HomePage: React.FC = () => {
       {/* Effect 067: Infinite Brand Partners Strip */}
       {partners.length > 0 && (
         <Reveal>
-          <section id="home-partners" className="home-page-snap-section overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
+          <section id="home-partners" className="home-page-snap-section overflow-hidden border-y border-(--theme-border) bg-(--theme-surface) py-12">
             <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
-              <p className="text-xs font-semibold text-(--theme-primary)">{homeText('partners_eyebrow')}</p>
-              <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
+              <p className="text-xs font-semibold text-(--theme-primary-ink)">{homeText('partners_eyebrow')}</p>
+              <h2 className="mt-1 text-xl font-extrabold text-(--theme-text)">
                 {homeText('partners_title')}
               </h2>
             </div>

@@ -68,37 +68,37 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({
   const contentId = useId();
 
   return (
-    <section className={`overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-slate-900 ${
+    <section className={`overflow-hidden rounded-2xl border bg-(--theme-card-surface) shadow-(--theme-card-shadow) ${
       nested
-        ? 'border-slate-200/90 dark:border-slate-700'
-        : 'border-slate-200 dark:border-slate-800'
+        ? 'border-(--theme-border)'
+        : 'border-(--theme-card-border)'
     }`}>
       <button
         type="button"
         aria-expanded={!collapsed}
         aria-controls={contentId}
         onClick={() => setCollapsed((value) => !value)}
-        className="group flex w-full items-center gap-3 px-4 py-4 text-start transition-colors hover:bg-slate-50/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--theme-primary) dark:hover:bg-slate-800/60 sm:px-5"
+        className="group flex w-full items-center gap-3 px-4 py-4 text-start transition-colors hover:bg-(--theme-surface-muted) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--theme-primary) sm:px-5"
       >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary)">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/12 text-(--theme-primary-ink)">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">{title}</span>
-          <span className="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">{description}</span>
+          <span className="block text-sm font-bold text-(--theme-text)">{title}</span>
+          <span className="mt-1 block text-xs leading-5 text-(--theme-text-muted)">{description}</span>
         </span>
-        <span className="hidden shrink-0 text-[10px] font-semibold text-slate-400 sm:inline">
+        <span className="hidden shrink-0 text-[10px] font-semibold text-(--theme-text-muted) sm:inline">
           {collapsed ? 'بازکردن بخش' : 'بستن بخش'}
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}
+          className={`h-4 w-4 shrink-0 text-(--theme-text-muted) transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`}
           aria-hidden="true"
         />
       </button>
       <div
         id={contentId}
         hidden={collapsed}
-        className="border-t border-slate-100 dark:border-slate-800"
+        className="border-t border-(--theme-border)"
       >
         {children}
       </div>
@@ -428,14 +428,14 @@ export const SettingsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-linear-to-l from-white to-slate-50 p-4 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/70 sm:p-5">
+      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:p-5">
         <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-(--theme-primary)/10 text-(--theme-primary)">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-(--theme-primary)/12 text-(--theme-primary-ink)">
             <Settings2 className="h-5 w-5" />
           </span>
           <div>
-            <h1 className="text-base font-extrabold text-slate-900 dark:text-slate-100">مرکز تنظیمات</h1>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">مدیریت یکپارچهٔ پیکربندی و اطلاعات سامانه</p>
+            <h1 className="text-base font-extrabold text-(--theme-text)">مرکز تنظیمات</h1>
+            <p className="mt-1 text-xs text-(--theme-text-muted)">مدیریت یکپارچهٔ پیکربندی و اطلاعات سامانه</p>
           </div>
         </div>
         {tab !== 'backup' && tab !== 'partners' && (
@@ -443,8 +443,7 @@ export const SettingsAdminPage: React.FC = () => {
             type="button"
             onClick={saveCurrentTab}
             disabled={saving}
-            style={{ backgroundColor: 'var(--theme-primary)' }}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Save className="h-4 w-4" />
             <span>{saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}</span>
@@ -452,7 +451,7 @@ export const SettingsAdminPage: React.FC = () => {
         )}
       </header>
 
-      <nav aria-label="بخش‌های تنظیمات" className="rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-3">
+      <nav aria-label="بخش‌های تنظیمات" className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 shadow-(--theme-card-shadow) sm:p-3">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           {settingsTabs.map((item, index) => {
             const Icon = item.icon;
@@ -466,22 +465,22 @@ export const SettingsAdminPage: React.FC = () => {
               selected={selected}
               className={`group relative flex min-h-18 min-w-0 items-center gap-2.5 overflow-hidden rounded-xl border px-3 py-2.5 text-start transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary) ${
                 selected
-                  ? 'border-(--theme-primary)/30 bg-(--theme-primary)/[0.07] text-(--theme-primary) shadow-sm dark:bg-(--theme-primary)/15'
-                  : 'border-transparent bg-slate-50/70 text-slate-600 hover:border-slate-200 hover:bg-white dark:bg-slate-800/50 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'
+                  ? 'border-(--theme-primary-ink)/35 bg-(--theme-primary)/10 text-(--theme-primary-ink) shadow-sm'
+                  : 'border-transparent bg-(--theme-surface-muted) text-(--theme-text-muted) hover:border-(--theme-border) hover:bg-(--theme-surface) hover:text-(--theme-text)'
               }`}
             >
               <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors ${
-                selected ? 'bg-(--theme-primary) text-white' : 'bg-white text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400'
+                selected ? 'bg-(--theme-primary) text-(--theme-primary-foreground)' : 'bg-(--theme-surface) text-(--theme-text-muted) shadow-sm'
               }`}>
                 <Icon className="h-4 w-4" aria-hidden="true" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-xs font-bold leading-5">{item.label}</span>
                 <span className={`mt-0.5 block truncate text-[10px] leading-4 ${
-                  selected ? 'text-(--theme-primary)/75' : 'text-slate-400 dark:text-slate-500'
+                  selected ? 'text-(--theme-primary-ink)/85' : 'text-(--theme-text-muted)'
                 }`}>{item.description}</span>
               </span>
-              <span className="absolute inset-e-2 top-1.5 text-[9px] font-bold tabular-nums text-slate-300 dark:text-slate-600">
+              <span className="absolute inset-e-2 top-1.5 text-[9px] font-bold tabular-nums text-(--theme-text-muted)/60">
                 {String(index + 1).padStart(2, '0')}
               </span>
             </EffectTabButton>
@@ -498,60 +497,60 @@ export const SettingsAdminPage: React.FC = () => {
         >
         <EffectTabPanel className="grid gap-4 p-5 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium">نام فارسی شرکت</label>
-            <input value={settings.company.name_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, name_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام فارسی شرکت</label>
+            <input value={settings.company.name_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, name_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">نام انگلیسی شرکت</label>
-            <input dir="ltr" value={settings.company.name_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, name_en: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام انگلیسی شرکت</label>
+            <input dir="ltr" value={settings.company.name_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, name_en: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">شعار سازمانی</label>
-            <input value={settings.company.slogan_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, slogan_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">شعار سازمانی</label>
+            <input value={settings.company.slogan_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, slogan_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">شعار سازمانی (انگلیسی)</label>
-            <input dir="ltr" value={settings.company.slogan_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, slogan_en: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">شعار سازمانی (انگلیسی)</label>
+            <input dir="ltr" value={settings.company.slogan_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, slogan_en: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">آدرس کارخانه</label>
-            <input value={settings.company.factory_address_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, factory_address_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">آدرس کارخانه</label>
+            <input value={settings.company.factory_address_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, factory_address_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">تلفن کارخانه</label>
-            <input dir="ltr" value={settings.company.factory_phone} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, factory_phone: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">تلفن کارخانه</label>
+            <input dir="ltr" value={settings.company.factory_phone} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, factory_phone: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">آدرس دفتر مرکزی</label>
-            <input value={settings.company.office_address_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, office_address_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">آدرس دفتر مرکزی</label>
+            <input value={settings.company.office_address_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, office_address_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">تلفن دفتر مرکزی</label>
-            <input dir="ltr" value={settings.company.office_phone || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, office_phone: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">تلفن دفتر مرکزی</label>
+            <input dir="ltr" value={settings.company.office_phone || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, office_phone: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">شماره امور بازرگانی</label>
-            <input dir="ltr" value={settings.company.commercial_phone || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, commercial_phone: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">شماره امور بازرگانی</label>
+            <input dir="ltr" value={settings.company.commercial_phone || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, commercial_phone: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">متن کپی‌رایت فوتر</label>
-            <input value={settings.company.footer_note_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, footer_note_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">متن کپی‌رایت فوتر</label>
+            <input value={settings.company.footer_note_fa} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, footer_note_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">آخرین به‌روزرسانی کاتالوگ (فارسی)</label>
-            <input value={settings.company.last_updated_fa || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, last_updated_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">آخرین به‌روزرسانی کاتالوگ (فارسی)</label>
+            <input value={settings.company.last_updated_fa || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, last_updated_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">آخرین به‌روزرسانی کاتالوگ (انگلیسی)</label>
-            <input dir="ltr" value={settings.company.last_updated_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, last_updated_en: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">آخرین به‌روزرسانی کاتالوگ (انگلیسی)</label>
+            <input dir="ltr" value={settings.company.last_updated_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, last_updated_en: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">استانداردهای قابل نمایش در فوتر (فارسی)</label>
-            <input value={settings.company.standards_fa || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, standards_fa: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">استانداردهای قابل نمایش در فوتر (فارسی)</label>
+            <input value={settings.company.standards_fa || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, standards_fa: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">استانداردهای قابل نمایش در فوتر (انگلیسی)</label>
-            <input dir="ltr" value={settings.company.standards_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, standards_en: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">استانداردهای قابل نمایش در فوتر (انگلیسی)</label>
+            <input dir="ltr" value={settings.company.standards_en || ''} onChange={(e) => setSettings({ ...settings, company: { ...settings.company, standards_en: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           </div>
           <div className="sm:col-span-2">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -600,15 +599,15 @@ export const SettingsAdminPage: React.FC = () => {
               />
               <span>نمایش نوار باریک تماس و شبکه‌های اجتماعی در سربرگ سایت</span>
             </label>
-            <p className="mt-2 text-xs leading-6 text-slate-500">
+            <p className="mt-2 text-xs leading-6 text-(--theme-text-muted)">
               برای هر شبکه می‌توانید نام، لینک، آیکن و وضعیت نمایش را جداگانه تنظیم کنید.
               گزینهٔ واتساپ در فهرست آیکن‌ها موجود است.
             </p>
           </div>
 
-          <div className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-            <div className="grid items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-800/40 sm:grid-cols-[minmax(8rem,1fr)_minmax(12rem,2fr)_minmax(9rem,1fr)_auto_auto]">
-              <span className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="space-y-3 border-t border-(--theme-border) pt-4">
+            <div className="grid items-center gap-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 sm:grid-cols-[minmax(8rem,1fr)_minmax(12rem,2fr)_minmax(9rem,1fr)_auto_auto]">
+              <span className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-sm text-(--theme-text)">
                 تلفن
               </span>
               <input
@@ -620,10 +619,10 @@ export const SettingsAdminPage: React.FC = () => {
                   ...settings,
                   site: { ...settings.site, info_bar_phone: event.target.value },
                 })}
-                className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                className="min-w-0 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
               />
-              <label className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 dark:border-slate-700 dark:bg-slate-900">
-                <DynamicLucideIcon name={settings.site.info_bar_phone_icon || 'Phone'} className="h-4 w-4 shrink-0 text-(--theme-primary)" />
+              <label className="flex min-w-0 items-center gap-2 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5">
+                <DynamicLucideIcon name={settings.site.info_bar_phone_icon || 'Phone'} className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />
                 <select
                   aria-label="آیکن شماره تلفن"
                   value={settings.site.info_bar_phone_icon || 'Phone'}
@@ -631,14 +630,14 @@ export const SettingsAdminPage: React.FC = () => {
                     ...settings,
                     site: { ...settings.site, info_bar_phone_icon: event.target.value },
                   })}
-                  className="min-w-0 flex-1 bg-transparent py-2 text-xs outline-none dark:bg-slate-900"
+                  className="min-w-0 flex-1 bg-(--theme-input-bg) py-2 text-xs text-(--theme-input-text) outline-none"
                 >
                   {Object.entries(LUCIDE_ICON_REGISTRY).map(([name, entry]) => (
                     <option key={name} value={name}>{entry.label}</option>
                   ))}
                 </select>
               </label>
-              <label className="flex items-center gap-2 whitespace-nowrap text-xs">
+              <label className="flex items-center gap-2 whitespace-nowrap text-xs text-(--theme-text)">
                 <input
                   type="checkbox"
                   checked={settings.site.info_bar_phone_enabled !== false}
@@ -646,13 +645,14 @@ export const SettingsAdminPage: React.FC = () => {
                     ...settings,
                     site: { ...settings.site, info_bar_phone_enabled: event.target.checked },
                   })}
+                  className="accent-(--theme-primary)"
                 />
                 <span>نمایش</span>
               </label>
               <span aria-hidden="true" className="h-9 w-9" />
             </div>
             {(settings.site.social_links ?? []).map((link) => (
-              <div key={link.id} className="grid items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-700 dark:bg-slate-800/40 sm:grid-cols-[minmax(8rem,1fr)_minmax(12rem,2fr)_minmax(9rem,1fr)_auto_auto]">
+              <div key={link.id} className="grid items-center gap-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 sm:grid-cols-[minmax(8rem,1fr)_minmax(12rem,2fr)_minmax(9rem,1fr)_auto_auto]">
                 <input
                   aria-label="نام شبکه اجتماعی"
                   value={link.name}
@@ -666,7 +666,7 @@ export const SettingsAdminPage: React.FC = () => {
                     },
                   })}
                   placeholder="نام شبکه"
-                  className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  className="min-w-0 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                 />
                 <input
                   aria-label={`پیوند ${link.name}`}
@@ -683,10 +683,10 @@ export const SettingsAdminPage: React.FC = () => {
                     },
                   })}
                   placeholder="https://..."
-                  className="min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+                  className="min-w-0 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                 />
-                <label className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 dark:border-slate-700 dark:bg-slate-900">
-                  <DynamicLucideIcon name={link.icon} fallback="Globe" className="h-4 w-4 shrink-0 text-(--theme-primary)" />
+                <label className="flex min-w-0 items-center gap-2 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5">
+                  <DynamicLucideIcon name={link.icon} fallback="Globe" className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />
                   <select
                     aria-label={`آیکن ${link.name}`}
                     value={link.icon}
@@ -699,14 +699,14 @@ export const SettingsAdminPage: React.FC = () => {
                           : item),
                       },
                     })}
-                    className="min-w-0 flex-1 bg-transparent py-2 text-xs outline-none dark:bg-slate-900"
+                    className="min-w-0 flex-1 bg-(--theme-input-bg) py-2 text-xs text-(--theme-input-text) outline-none"
                   >
                     {Object.entries(LUCIDE_ICON_REGISTRY).map(([name, entry]) => (
                       <option key={name} value={name}>{entry.label}</option>
                     ))}
                   </select>
                 </label>
-                <label className="flex items-center gap-2 whitespace-nowrap text-xs">
+                <label className="flex items-center gap-2 whitespace-nowrap text-xs text-(--theme-text)">
                   <input
                     type="checkbox"
                     checked={link.is_active}
@@ -719,6 +719,7 @@ export const SettingsAdminPage: React.FC = () => {
                           : item),
                       },
                     })}
+                    className="accent-(--theme-primary)"
                   />
                   <span>نمایش</span>
                 </label>
@@ -755,7 +756,7 @@ export const SettingsAdminPage: React.FC = () => {
                 });
               }}
               disabled={(settings.site.social_links?.length ?? 0) >= 12}
-              className="inline-flex items-center gap-2 rounded-lg border border-dashed border-slate-300 px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-(--theme-primary) hover:text-(--theme-primary) disabled:opacity-50 dark:border-slate-700 dark:text-slate-300"
+              className="inline-flex items-center gap-2 rounded-lg border border-dashed border-(--theme-border-strong) px-3 py-2 text-xs font-semibold text-(--theme-text-muted) transition-colors hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink) disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
               افزودن شبکه اجتماعی
@@ -785,12 +786,12 @@ export const SettingsAdminPage: React.FC = () => {
         >
         <EffectTabPanel className="space-y-4 p-5">
           <div>
-            <h2 className="text-sm font-bold">مدت نگهداری لاگ‌های فعالیت</h2>
-            <p className="mt-1 text-xs leading-6 text-slate-500">
+            <h2 className="text-sm font-bold text-(--theme-text)">مدت نگهداری لاگ‌های فعالیت</h2>
+            <p className="mt-1 text-xs leading-6 text-(--theme-text-muted)">
               پاک‌سازی خودکار روزانه اجرا می‌شود و گزارش‌های قدیمی‌تر از بازه انتخابی حذف می‌شوند. اجرای زمان‌بندی‌شده نیازمند فعال بودن زمان‌بند Laravel روی سرور است.
             </p>
           </div>
-          <label className="block max-w-md space-y-1.5 text-xs font-semibold">
+          <label className="block max-w-md space-y-1.5 text-xs font-semibold text-(--theme-text)">
             <span>حفظ لاگ‌ها برای</span>
             <select
               value={settings.logs?.activity_logs_retention_months ?? 12}
@@ -802,7 +803,7 @@ export const SettingsAdminPage: React.FC = () => {
                   },
                 })
               }
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) outline-none transition focus:border-(--theme-primary)"
             >
               <option value={1}>۱ ماه</option>
               <option value={3}>۳ ماه</option>
@@ -822,22 +823,22 @@ export const SettingsAdminPage: React.FC = () => {
         >
         <EffectTabPanel className="space-y-6 p-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <input dir="ltr" placeholder="SMTP Host" value={settings.email.smtp_host} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_host: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input dir="ltr" type="number" placeholder="Port" value={settings.email.smtp_port} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_port: Number(e.target.value) } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input dir="ltr" placeholder="SMTP Username" value={settings.email.smtp_user} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_user: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input dir="ltr" type="password" placeholder="رمز عبور جدید SMTP (ذخیره رمزنگاری‌شده AES-256)" value={smtpPassPlain} onChange={(e) => setSmtpPassPlain(e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input dir="ltr" type="email" placeholder="آدرس فرستنده" value={settings.email.from_address} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, from_address: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input placeholder="نام فرستنده" value={settings.email.from_name} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, from_name: e.target.value } })} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input dir="ltr" placeholder="SMTP Host" value={settings.email.smtp_host} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_host: e.target.value } })} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+            <input dir="ltr" type="number" placeholder="Port" value={settings.email.smtp_port} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_port: Number(e.target.value) } })} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+            <input dir="ltr" placeholder="SMTP Username" value={settings.email.smtp_user} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, smtp_user: e.target.value } })} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+            <input dir="ltr" type="password" placeholder="رمز عبور جدید SMTP (ذخیره رمزنگاری‌شده AES-256)" value={smtpPassPlain} onChange={(e) => setSmtpPassPlain(e.target.value)} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+            <input dir="ltr" type="email" placeholder="آدرس فرستنده" value={settings.email.from_address} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, from_address: e.target.value } })} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+            <input placeholder="نام فرستنده" value={settings.email.from_name} onChange={(e) => setSettings({ ...settings, email: { ...settings.email, from_name: e.target.value } })} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
           </div>
-          <div className="flex flex-wrap gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-            <input dir="ltr" type="email" placeholder="آدرس دریافت‌کننده برای آزمون" value={emailTestAddress} onChange={(e) => setEmailTestAddress(e.target.value)} className="min-w-64 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <button type="button" onClick={testEmail} disabled={testingEmail || !emailTestAddress} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold disabled:opacity-50 dark:border-slate-700">
+          <div className="flex flex-wrap gap-3 border-t border-(--theme-border) pt-4">
+            <input dir="ltr" type="email" placeholder="آدرس دریافت‌کننده برای آزمون" value={emailTestAddress} onChange={(e) => setEmailTestAddress(e.target.value)} className="min-w-64 flex-1 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+            <button type="button" onClick={testEmail} disabled={testingEmail || !emailTestAddress} className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-xs font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted) disabled:opacity-50">
               {testingEmail ? 'در حال ارسال...' : 'ارسال ایمیل آزمایشی'}
             </button>
           </div>
           {templates[0] && (
-            <div className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-              <h3 className="text-sm font-bold">ادیتور اختصاصی قالب HTML ایمیل ({templates[0].name_fa})</h3>
+            <div className="space-y-3 border-t border-(--theme-border) pt-4">
+              <h3 className="text-sm font-bold text-(--theme-text)">ادیتور اختصاصی قالب HTML ایمیل ({templates[0].name_fa})</h3>
               <RichTextEditor
                 value={templates[0].body_html}
                 onChange={(html) => setTemplates((prev) => prev.map((t, i) => (i === 0 ? { ...t, body_html: html } : t)))}
@@ -851,7 +852,7 @@ export const SettingsAdminPage: React.FC = () => {
                   });
                   addToast('success', 'قالب HTML ایمیل ذخیره شد.');
                 }}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold dark:border-slate-700"
+                className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-xs font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted)"
               >
                 ذخیره قالب ایمیل
               </button>
@@ -879,15 +880,15 @@ export const SettingsAdminPage: React.FC = () => {
             onChange={(v) => setSettings({ ...settings, sms: { ...settings.sms, provider: v as SmsProvider } })}
           />
           <div>
-            <label className="mb-1 block text-xs font-medium">شماره خط ارسال‌کننده</label>
-            <input dir="ltr" value={settings.sms.sender_line} onChange={(e) => setSettings({ ...settings, sms: { ...settings.sms, sender_line: e.target.value } })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">شماره خط ارسال‌کننده</label>
+            <input dir="ltr" value={settings.sms.sender_line} onChange={(e) => setSettings({ ...settings, sms: { ...settings.sms, sender_line: e.target.value } })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-medium">کلید API جدید (رمزنگاری AES-256 در دیتابیس)</label>
-            <input dir="ltr" type="password" placeholder="API Key..." value={smsKeyPlain} onChange={(e) => setSmsKeyPlain(e.target.value)} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <label className="mb-1 block text-xs font-medium text-(--theme-text)">کلید API جدید (رمزنگاری AES-256 در دیتابیس)</label>
+            <input dir="ltr" type="password" placeholder="API Key..." value={smsKeyPlain} onChange={(e) => setSmsKeyPlain(e.target.value)} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
           </div>
-          <label className="flex items-center gap-2 text-xs font-medium">
-            <input type="checkbox" checked={settings.sms.enabled} onChange={(e) => setSettings({ ...settings, sms: { ...settings.sms, enabled: e.target.checked } })} />
+          <label className="flex items-center gap-2 text-xs font-medium text-(--theme-text)">
+            <input type="checkbox" checked={settings.sms.enabled} onChange={(e) => setSettings({ ...settings, sms: { ...settings.sms, enabled: e.target.checked } })} className="accent-(--theme-primary)" />
             <span>ارسال خودکار پیامک برای رویدادهای RFQ و ورود فعال باشد</span>
           </label>
         </EffectTabPanel>
@@ -901,21 +902,21 @@ export const SettingsAdminPage: React.FC = () => {
           icon={MapPinned}
         >
         <EffectTabPanel className="grid gap-4 p-5 sm:grid-cols-2">
-          <input value={settings.site.header_cta_text_fa || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_text_fa: e.target.value } })} placeholder="متن دکمه اصلی هدر (فارسی)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input dir="ltr" value={settings.site.header_cta_text_en || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_text_en: e.target.value } })} placeholder="Header CTA text (English)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input dir="ltr" value={settings.site.header_cta_url || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_url: e.target.value } })} placeholder="Header CTA URL" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input value={settings.seo.site_title} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, site_title: e.target.value } })} placeholder="عنوان سئو سایت (فارسی)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input dir="ltr" value={settings.seo.site_title_en || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, site_title_en: e.target.value } })} placeholder="SEO site title (English)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <textarea value={settings.seo.meta_description || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, meta_description: e.target.value } })} placeholder="توضیحات متای سایت (فارسی)" rows={3} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <textarea dir="ltr" value={settings.seo.meta_description_en || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, meta_description_en: e.target.value } })} placeholder="Meta description (English)" rows={3} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input value={settings.seo.keywords || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, keywords: e.target.value } })} placeholder="کلمات کلیدی (فارسی)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input dir="ltr" value={settings.seo.keywords_en || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, keywords_en: e.target.value } })} placeholder="SEO keywords (English)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <label className="flex flex-col gap-1 text-xs font-medium">
+          <input value={settings.site.header_cta_text_fa || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_text_fa: e.target.value } })} placeholder="متن دکمه اصلی هدر (فارسی)" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input dir="ltr" value={settings.site.header_cta_text_en || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_text_en: e.target.value } })} placeholder="Header CTA text (English)" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input dir="ltr" value={settings.site.header_cta_url || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, header_cta_url: e.target.value } })} placeholder="Header CTA URL" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input value={settings.seo.site_title} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, site_title: e.target.value } })} placeholder="عنوان سئو سایت (فارسی)" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input dir="ltr" value={settings.seo.site_title_en || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, site_title_en: e.target.value } })} placeholder="SEO site title (English)" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <textarea value={settings.seo.meta_description || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, meta_description: e.target.value } })} placeholder="توضیحات متای سایت (فارسی)" rows={3} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <textarea dir="ltr" value={settings.seo.meta_description_en || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, meta_description_en: e.target.value } })} placeholder="Meta description (English)" rows={3} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input value={settings.seo.keywords || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, keywords: e.target.value } })} placeholder="کلمات کلیدی (فارسی)" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input dir="ltr" value={settings.seo.keywords_en || ''} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, keywords_en: e.target.value } })} placeholder="SEO keywords (English)" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <label className="flex flex-col gap-1 text-xs font-medium text-(--theme-text)">
             <span>سیاست نمایه‌سازی موتورهای جستجو</span>
             <select
               value={settings.seo.robots || 'index,follow'}
               onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, robots: e.target.value as SiteSettings['seo']['robots'] } })}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) outline-none transition focus:border-(--theme-primary)"
             >
               <option value="index,follow">نمایه‌سازی و دنبال‌کردن پیوندها</option>
               <option value="noindex,follow">عدم نمایه‌سازی، دنبال‌کردن پیوندها</option>
@@ -932,15 +933,15 @@ export const SettingsAdminPage: React.FC = () => {
               placeholder="/storage/logos/logo-main.png"
             />
           </div>
-          <input type="number" step="0.0001" dir="ltr" value={settings.map.factory_lat} onChange={(e) => setSettings({ ...settings, map: { ...settings.map, factory_lat: Number(e.target.value) } })} placeholder="Lat" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input type="number" step="0.0001" dir="ltr" value={settings.map.factory_lng} onChange={(e) => setSettings({ ...settings, map: { ...settings.map, factory_lng: Number(e.target.value) } })} placeholder="Lng" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <label className="flex items-center gap-2 text-xs font-semibold text-amber-700 sm:col-span-2">
-            <input type="checkbox" checked={settings.site.maintenance_mode} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, maintenance_mode: e.target.checked } })} />
+          <input type="number" step="0.0001" dir="ltr" value={settings.map.factory_lat} onChange={(e) => setSettings({ ...settings, map: { ...settings.map, factory_lat: Number(e.target.value) } })} placeholder="Lat" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <input type="number" step="0.0001" dir="ltr" value={settings.map.factory_lng} onChange={(e) => setSettings({ ...settings, map: { ...settings.map, factory_lng: Number(e.target.value) } })} placeholder="Lng" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <label className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300 sm:col-span-2">
+            <input type="checkbox" checked={settings.site.maintenance_mode} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, maintenance_mode: e.target.checked } })} className="accent-amber-600" />
             <span>فعال‌سازی حالت نگهداری موقت سایت (Maintenance Mode) برای بازدیدکنندگان عمومی</span>
           </label>
-          <input value={settings.site.maintenance_message_fa || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, maintenance_message_fa: e.target.value } })} placeholder="پیام حالت نگهداری" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <label className="flex items-center gap-2 text-xs font-medium">
-            <input type="checkbox" checked={settings.site.allow_registration} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, allow_registration: e.target.checked } })} />
+          <input value={settings.site.maintenance_message_fa || ''} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, maintenance_message_fa: e.target.value } })} placeholder="پیام حالت نگهداری" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary)" />
+          <label className="flex items-center gap-2 text-xs font-medium text-(--theme-text)">
+            <input type="checkbox" checked={settings.site.allow_registration} onChange={(e) => setSettings({ ...settings, site: { ...settings.site, allow_registration: e.target.checked } })} className="accent-(--theme-primary)" />
             <span>اجازهٔ ثبت‌نام کاربران جدید</span>
           </label>
         </EffectTabPanel>
@@ -976,15 +977,15 @@ export const SettingsAdminPage: React.FC = () => {
               >
               <EffectTabPanel className="space-y-4 p-4 sm:p-5">
 
-                <div className="flex flex-wrap items-center justify-between gap-2 border-y border-slate-100 py-3 dark:border-slate-800">
-                  <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-y border-(--theme-border) py-3">
+                  <p className="text-xs font-semibold text-(--theme-text-muted)">
                     {loadingBackupTables ? 'در حال خواندن فهرست جدول‌ها...' : `${selectedBackupTables.length} از ${backupTables.length} جدول انتخاب شده`}
                   </p>
                   <button
                     type="button"
                     disabled={loadingBackupTables || backupTables.length === 0}
                     onClick={() => setSelectedBackupTables(allBackupTablesSelected ? [] : backupTables.map((table) => table.name))}
-                    className="text-xs font-bold text-(--theme-primary) hover:underline disabled:opacity-50"
+                    className="text-xs font-bold text-(--theme-primary-ink) hover:underline disabled:opacity-50"
                   >
                     {allBackupTablesSelected ? 'لغو انتخاب همه' : 'انتخاب همهٔ جدول‌ها'}
                   </button>
@@ -992,7 +993,7 @@ export const SettingsAdminPage: React.FC = () => {
 
                 <div className="grid max-h-72 gap-1 overflow-y-auto sm:grid-cols-2">
                   {backupTables.map((table) => (
-                    <label key={table.name} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-lg px-2.5 py-2 transition hover:bg-slate-50 dark:hover:bg-slate-800/70">
+                    <label key={table.name} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-lg px-2.5 py-2 transition hover:bg-(--theme-surface-muted)">
                       <input
                         type="checkbox"
                         checked={selectedBackupTables.includes(table.name)}
@@ -1003,16 +1004,16 @@ export const SettingsAdminPage: React.FC = () => {
                       />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2">
-                          <span className="truncate text-xs font-semibold">{table.label_fa}</span>
-                          <span className="shrink-0 text-[10px] tabular-nums text-slate-400">{table.count.toLocaleString('fa-IR')}</span>
+                          <span className="truncate text-xs font-semibold text-(--theme-text)">{table.label_fa}</span>
+                          <span className="shrink-0 text-[10px] tabular-nums text-(--theme-text-muted)">{table.count.toLocaleString('fa-IR')}</span>
                         </span>
-                        <span className="mt-0.5 block truncate text-[10px] text-slate-400" dir="ltr">{table.label_en} · {table.name}</span>
+                        <span className="mt-0.5 block truncate text-[10px] text-(--theme-text-muted)" dir="ltr">{table.label_en} · {table.name}</span>
                         {table.sensitive && <span className="mt-1 inline-block text-[9px] font-semibold text-amber-700 dark:text-amber-300">حساس / Sensitive</span>}
                       </span>
                     </label>
                   ))}
                   {!loadingBackupTables && backupTables.length === 0 && (
-                    <p className="col-span-full py-8 text-center text-xs text-slate-500">جدولی برای پشتیبان‌گیری پیدا نشد.</p>
+                    <p className="col-span-full py-8 text-center text-xs text-(--theme-text-muted)">جدولی برای پشتیبان‌گیری پیدا نشد.</p>
                   )}
                 </div>
 
@@ -1020,7 +1021,7 @@ export const SettingsAdminPage: React.FC = () => {
                   type="button"
                   onClick={() => void downloadBackup()}
                   disabled={downloadingBackup || loadingBackupTables || selectedBackupTables.length === 0}
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-(--theme-primary) px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2.5 text-sm font-bold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Download className="h-4 w-4" />
                   {downloadingBackup
@@ -1040,7 +1041,7 @@ export const SettingsAdminPage: React.FC = () => {
               >
               <EffectTabPanel className="space-y-4 p-4 sm:p-5">
 
-                <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-5 text-center transition hover:border-(--theme-primary) hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-800">
+                <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-(--theme-border-strong) bg-(--theme-surface-muted) px-4 py-5 text-center transition hover:border-(--theme-primary-ink) hover:bg-(--theme-surface)">
                   <input
                     type="file"
                     accept=".json,application/json"
@@ -1050,9 +1051,9 @@ export const SettingsAdminPage: React.FC = () => {
                       event.currentTarget.value = '';
                     }}
                   />
-                  <FileUp className="h-5 w-5 text-(--theme-primary)" />
-                  <span className="text-xs font-bold">{inspectingBackup ? 'در حال بررسی فایل...' : 'انتخاب فایل JSON پشتیبان'}</span>
-                  <span className="max-w-full truncate text-[10px] text-slate-400" dir="ltr">{restoreFile?.name ?? 'Parspolad database backup · JSON'}</span>
+                  <FileUp className="h-5 w-5 text-(--theme-primary-ink)" />
+                  <span className="text-xs font-bold text-(--theme-text)">{inspectingBackup ? 'در حال بررسی فایل...' : 'انتخاب فایل JSON پشتیبان'}</span>
+                  <span className="max-w-full truncate text-[10px] text-(--theme-text-muted)" dir="ltr">{restoreFile?.name ?? 'Parspolad database backup · JSON'}</span>
                 </label>
 
                 {backupInspection && (
@@ -1078,7 +1079,7 @@ export const SettingsAdminPage: React.FC = () => {
                     </div>
 
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      <p className="text-xs font-semibold text-(--theme-text-muted)">
                         {selectedRestoreTables.length} از {restorableBackupTables.length} جدول قابل بازیابی انتخاب شده
                       </p>
                       <button
@@ -1087,7 +1088,7 @@ export const SettingsAdminPage: React.FC = () => {
                         onClick={() => setSelectedRestoreTables(allRestoreTablesSelected
                           ? []
                           : restorableBackupTables.map((table) => table.name))}
-                        className="text-xs font-bold text-(--theme-primary) hover:underline disabled:opacity-50"
+                        className="text-xs font-bold text-(--theme-primary-ink) hover:underline disabled:opacity-50"
                       >
                         {allRestoreTablesSelected ? 'لغو انتخاب همه' : 'انتخاب همهٔ جدول‌های قابل‌بازیابی'}
                       </button>
@@ -1098,7 +1099,7 @@ export const SettingsAdminPage: React.FC = () => {
                         <label
                           key={table.name}
                           className={`flex min-w-0 items-start gap-2 rounded-lg px-2.5 py-2 ${table.restorable
-                            ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/70'
+                            ? 'cursor-pointer hover:bg-(--theme-surface-muted)'
                             : 'cursor-not-allowed opacity-50'}`}
                         >
                           <input
@@ -1112,11 +1113,11 @@ export const SettingsAdminPage: React.FC = () => {
                           />
                           <span className="min-w-0 flex-1">
                             <span className="flex items-center justify-between gap-2">
-                              <span className="truncate text-xs font-semibold">{table.label_fa}</span>
-                              <span className="shrink-0 text-[10px] tabular-nums text-slate-400">{table.row_count.toLocaleString('fa-IR')}</span>
+                              <span className="truncate text-xs font-semibold text-(--theme-text)">{table.label_fa}</span>
+                              <span className="shrink-0 text-[10px] tabular-nums text-(--theme-text-muted)">{table.row_count.toLocaleString('fa-IR')}</span>
                             </span>
-                            <span className="mt-0.5 block truncate text-[10px] text-slate-400" dir="ltr">{table.label_en} · {table.name}</span>
-                            {!table.restorable && table.error && <span className="mt-1 block text-[10px] text-red-600">{table.error}</span>}
+                            <span className="mt-0.5 block truncate text-[10px] text-(--theme-text-muted)" dir="ltr">{table.label_en} · {table.name}</span>
+                            {!table.restorable && table.error && <span className="mt-1 block text-[10px] text-red-600 dark:text-red-400">{table.error}</span>}
                           </span>
                         </label>
                       ))}

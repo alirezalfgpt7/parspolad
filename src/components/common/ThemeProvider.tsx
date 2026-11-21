@@ -6,8 +6,10 @@ import {
   DEFAULT_THEME_PALETTE,
   FONT_CSS_MAP,
 } from '../../utils/brandingDefaults.ts';
+import { resolveThemeTokens } from '../../utils/themeContrast.ts';
 import type {
   ButtonShape,
+  ColorMode,
   ThemeButtonEffect,
   ThemeDesignStyle,
   ThemePalette,
@@ -15,161 +17,132 @@ import type {
   ThemeSettings,
 } from '../../types/index.ts';
 
-function paletteColor(value: string | undefined, fallback: string): string {
-  return value && value.trim() !== '' && value.trim().toLowerCase() !== 'undefined'
-    ? value
-    : fallback;
-}
-
-function relativeLuminance(hex: string): number {
-  const normalized = hex.replace('#', '');
-  if (!/^[0-9a-f]{6}$/i.test(normalized)) return 0;
-  const channels = [0, 2, 4].map((offset) => {
-    const value = parseInt(normalized.slice(offset, offset + 2), 16) / 255;
-    return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
-  });
-  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
-}
-
-function contrastRatio(first: string, second: string): number {
-  const lighter = Math.max(relativeLuminance(first), relativeLuminance(second));
-  const darker = Math.min(relativeLuminance(first), relativeLuminance(second));
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
-function readableText(preferred: string, background: string): string {
-  if (contrastRatio(preferred, background) >= 4.5) return preferred;
-  return relativeLuminance(background) > 0.45 ? '#0F172A' : '#FFFFFF';
-}
-
-function mixHex(first: string, second: string, firstWeight: number): string {
-  const normalize = (hex: string) => /^#[0-9a-f]{6}$/i.test(hex) ? hex.slice(1) : '000000';
-  const a = normalize(first);
-  const b = normalize(second);
-  const weight = Math.min(1, Math.max(0, firstWeight));
-  const channels = [0, 2, 4].map((offset) => {
-    const firstChannel = parseInt(a.slice(offset, offset + 2), 16);
-    const secondChannel = parseInt(b.slice(offset, offset + 2), 16);
-    return Math.round(firstChannel * weight + secondChannel * (1 - weight))
-      .toString(16)
-      .padStart(2, '0');
-  });
-  return `#${channels.join('')}`;
-}
-
-function applyPaletteToRoot(
-  palette: Partial<ThemePalette>,
-  mode: 'light' | 'dark',
+export function applyPaletteToRoot(
+  palette: Partial<ThemePalette> | null | undefined,
+  mode: ColorMode,
   designStyle: ThemeDesignStyle,
   buttonShape: ButtonShape,
   buttonEffect: ThemeButtonEffect,
-  scope: ThemeScope
+  scope: ThemeScope,
 ) {
   const root = document.documentElement;
-  const colors: ThemePalette = {
-    primary: paletteColor(palette.primary, DEFAULT_THEME_PALETTE.primary),
-    secondary: paletteColor(palette.secondary, DEFAULT_THEME_PALETTE.secondary),
-    accent: paletteColor(palette.accent, DEFAULT_THEME_PALETTE.accent),
-    background: paletteColor(palette.background, DEFAULT_THEME_PALETTE.background),
-    surface: paletteColor(palette.surface, DEFAULT_THEME_PALETTE.surface),
-    text: paletteColor(palette.text, DEFAULT_THEME_PALETTE.text),
-    headerBg: paletteColor(palette.headerBg, DEFAULT_THEME_PALETTE.headerBg),
-    headerText: paletteColor(palette.headerText, DEFAULT_THEME_PALETTE.headerText),
-    footerBg: paletteColor(palette.footerBg, DEFAULT_THEME_PALETTE.footerBg),
-    footerText: paletteColor(palette.footerText, DEFAULT_THEME_PALETTE.footerText),
-    buttonBg: paletteColor(palette.buttonBg, DEFAULT_THEME_PALETTE.buttonBg),
-    buttonText: paletteColor(palette.buttonText, DEFAULT_THEME_PALETTE.buttonText),
-    link: paletteColor(palette.link, DEFAULT_THEME_PALETTE.link),
-  };
+  const tokens = resolveThemeTokens({
+    palette,
+    mode,
+    designStyle,
+    buttonShape,
+    scope,
+  });
+
   root.dataset.themeScope = scope;
   root.dataset.themeStyle = designStyle;
   root.dataset.buttonShape = buttonShape;
   root.dataset.buttonEffect = buttonEffect;
   root.dataset.colorMode = mode;
-  root.style.setProperty('--theme-primary', colors.primary);
-  root.style.setProperty('--theme-primary-hover', `color-mix(in srgb, ${colors.primary} 86%, black)`);
-  root.style.setProperty('--theme-secondary', colors.secondary);
-  root.style.setProperty('--theme-accent', colors.accent);
-  root.style.setProperty('--theme-btn-bg', colors.buttonBg);
-  root.style.setProperty('--theme-btn-text', readableText(colors.buttonText, colors.buttonBg));
-  root.style.setProperty('--theme-link', colors.link);
-  const quickNavPanel = mixHex(colors.primary, colors.headerBg, 0.42);
-  const quickNavForeground = readableText(colors.headerText, quickNavPanel);
-  root.style.setProperty('--quick-nav-foreground', quickNavForeground);
 
-  if (scope === 'admin') {
-    const adminSidebarBg = colors.primary;
-    const adminSidebarText = readableText('#FFFFFF', adminSidebarBg);
-    const adminTopbarBg = colors.primary;
-    const adminTopbarText = readableText('#FFFFFF', adminTopbarBg);
-    root.style.setProperty('--theme-admin-sidebar-bg', adminSidebarBg);
-    root.style.setProperty('--theme-admin-sidebar-text', adminSidebarText);
-    root.style.setProperty('--theme-admin-topbar-bg', adminTopbarBg);
-    root.style.setProperty('--theme-admin-topbar-text', adminTopbarText);
-    root.style.setProperty('--theme-admin-active-bg', `color-mix(in srgb, ${colors.primary} 28%, ${adminSidebarBg})`);
-    root.style.setProperty('--theme-admin-active-text', readableText('#FFFFFF', colors.primary));
-    root.style.setProperty('--theme-admin-icon-bg', `color-mix(in srgb, ${colors.primary} 18%, ${adminSidebarBg})`);
-    const sidebar = document.querySelector<HTMLElement>('.admin-sidebar');
-    const topbar = document.querySelector<HTMLElement>('.admin-topbar');
-    if (sidebar) {
-      sidebar.style.backgroundColor = adminSidebarBg;
-      sidebar.style.color = adminSidebarText;
-      sidebar.style.borderColor = `color-mix(in srgb, ${adminSidebarText} 18%, transparent)`;
-    }
-    if (topbar) {
-      topbar.style.backgroundColor = adminTopbarBg;
-      topbar.style.color = adminTopbarText;
-      topbar.style.borderColor = `color-mix(in srgb, ${adminTopbarText} 18%, transparent)`;
-    }
+  if (mode === 'dark') {
+    root.classList.add('dark');
   } else {
-    root.style.setProperty('--theme-admin-sidebar-bg', colors.surface);
-    root.style.setProperty('--theme-admin-sidebar-text', readableText(colors.text, colors.surface));
-    root.style.setProperty('--theme-admin-topbar-bg', colors.headerBg);
-    root.style.setProperty('--theme-admin-topbar-text', readableText(colors.headerText, colors.headerBg));
+    root.classList.remove('dark');
   }
 
-  if (mode === 'light') {
-    root.style.setProperty('--theme-bg', colors.background);
-    root.style.setProperty('--theme-surface', colors.surface);
-    root.style.setProperty('--theme-text', readableText(colors.text, colors.surface));
-    root.style.setProperty('--theme-header-bg', colors.headerBg);
-    root.style.setProperty('--theme-header-text', readableText(colors.headerText, colors.headerBg));
-    root.style.setProperty('--theme-footer-bg', colors.footerBg);
-    root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
-    root.style.setProperty('--mode-bg', colors.background);
-    root.style.setProperty('--mode-surface', colors.surface);
-    root.style.setProperty('--mode-text', readableText(colors.text, colors.surface));
-    root.style.setProperty('--mode-text-muted', readableText(colors.secondary, colors.surface));
-    root.style.setProperty('--mode-border', `color-mix(in srgb, ${colors.primary} 16%, ${colors.surface})`);
-    root.style.setProperty('--mode-glass-bg', `color-mix(in srgb, ${colors.headerBg} 78%, transparent)`);
-    root.style.setProperty('--mode-glass-highlight', `color-mix(in srgb, ${colors.headerText} 18%, transparent)`);
-    root.style.setProperty('--mode-glass-border', `color-mix(in srgb, ${colors.primary} 22%, transparent)`);
-    root.style.setProperty('--mode-control-shadow', `color-mix(in srgb, ${colors.primary} 16%, transparent)`);
-    root.style.setProperty('--mode-icon', readableText(colors.primary, colors.headerBg));
-    root.style.setProperty('--mode-accent', readableText(colors.primary, colors.surface));
-  } else {
-    const darkBackground = '#0B1120';
-    const darkSurface = '#111827';
-    const darkText = '#F8FAFC';
-    root.style.setProperty('--theme-bg', darkBackground);
-    root.style.setProperty('--theme-surface', darkSurface);
-    root.style.setProperty('--theme-text', darkText);
-    root.style.setProperty('--theme-header-bg', colors.headerBg);
-    root.style.setProperty('--theme-header-text', readableText(colors.headerText, colors.headerBg));
-    root.style.setProperty('--theme-footer-bg', colors.footerBg);
-    root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
-    root.style.setProperty('--mode-bg', darkBackground);
-    root.style.setProperty('--mode-surface', darkSurface);
-    root.style.setProperty('--mode-text', darkText);
-    root.style.setProperty('--mode-text-muted', readableText(colors.secondary, darkSurface));
-    root.style.setProperty('--mode-border', `color-mix(in srgb, ${colors.primary} 28%, ${darkSurface})`);
-    root.style.setProperty('--mode-glass-bg', `color-mix(in srgb, ${darkSurface} 82%, ${colors.headerBg})`);
-    root.style.setProperty('--mode-glass-highlight', `color-mix(in srgb, ${colors.headerText} 16%, transparent)`);
-    root.style.setProperty('--mode-glass-border', `color-mix(in srgb, ${colors.primary} 38%, ${darkSurface})`);
-    root.style.setProperty('--mode-control-shadow', `color-mix(in srgb, ${colors.primary} 24%, rgb(0 0 0 / 70%))`);
-    root.style.setProperty('--mode-icon', readableText(colors.primary, darkSurface));
-    root.style.setProperty('--mode-accent', readableText(colors.primary, darkSurface));
-  }
+  // Core Brand & Chromatic Ink
+  root.style.setProperty('--theme-primary', tokens.primary);
+  root.style.setProperty('--theme-primary-hover', tokens.primaryHover);
+  root.style.setProperty('--theme-primary-foreground', tokens.primaryForeground);
+  root.style.setProperty('--theme-primary-ink', tokens.primaryInk);
+  root.style.setProperty('--theme-secondary', tokens.secondary);
+  root.style.setProperty('--theme-accent', tokens.accent);
+  root.style.setProperty('--theme-accent-foreground', tokens.accentForeground);
+  root.style.setProperty('--theme-accent-ink', tokens.accentInk);
+  root.style.setProperty('--theme-link', tokens.link);
+
+  // Canvas, Surfaces & Typography
+  root.style.setProperty('--theme-bg', tokens.bg);
+  root.style.setProperty('--theme-surface', tokens.surface);
+  root.style.setProperty('--theme-surface-muted', tokens.surfaceMuted);
+  root.style.setProperty('--theme-text', tokens.text);
+  root.style.setProperty('--theme-text-muted', tokens.textMuted);
+  root.style.setProperty('--theme-border', tokens.border);
+  root.style.setProperty('--theme-border-strong', tokens.borderStrong);
+
+  // Buttons
+  root.style.setProperty('--theme-btn-bg', tokens.buttonBg);
+  root.style.setProperty('--theme-btn-hover', tokens.buttonHover);
+  root.style.setProperty('--theme-btn-text', tokens.buttonText);
+
+  // Inputs & Placeholders
+  root.style.setProperty('--theme-input-bg', tokens.inputBg);
+  root.style.setProperty('--theme-input-border', tokens.inputBorder);
+  root.style.setProperty('--theme-input-text', tokens.inputText);
+  root.style.setProperty('--theme-placeholder', tokens.placeholder);
+
+  // Header & Footer
+  root.style.setProperty('--theme-header-bg', tokens.headerBg);
+  root.style.setProperty('--theme-header-text', tokens.headerText);
+  root.style.setProperty('--theme-header-muted', tokens.headerMuted);
+  root.style.setProperty('--theme-header-border', tokens.headerBorder);
+  root.style.setProperty('--theme-header-ink', tokens.headerInk);
+  root.style.setProperty('--theme-footer-bg', tokens.footerBg);
+  root.style.setProperty('--theme-footer-text', tokens.footerText);
+  root.style.setProperty('--theme-footer-muted', tokens.footerMuted);
+  root.style.setProperty('--theme-footer-accent', tokens.footerAccent);
+  root.style.setProperty('--theme-footer-surface', tokens.footerSurface);
+  root.style.setProperty('--theme-footer-border', tokens.footerBorder);
+  root.style.setProperty('--theme-footer-logo-bg', tokens.footerLogoBg);
+
+  // Cards, Elevation & Glass Layers
+  root.style.setProperty('--theme-card-radius', tokens.cardRadius);
+  root.style.setProperty('--theme-card-surface', tokens.cardSurface);
+  root.style.setProperty('--theme-card-border', tokens.cardBorder);
+  root.style.setProperty('--theme-card-border-hover', tokens.cardBorderHover);
+  root.style.setProperty('--theme-card-shadow', tokens.cardShadow);
+  root.style.setProperty('--theme-card-shadow-hover', tokens.cardShadowHover);
+  root.style.setProperty('--theme-card-blur', tokens.cardBlur);
+  root.style.setProperty('--theme-page-glow', tokens.pageGlow);
+
+  // Mode Semantic Aliases
+  root.style.setProperty('--mode-bg', tokens.bg);
+  root.style.setProperty('--mode-surface', tokens.surface);
+  root.style.setProperty('--mode-text', tokens.text);
+  root.style.setProperty('--mode-text-muted', tokens.textMuted);
+  root.style.setProperty('--mode-border', tokens.border);
+  root.style.setProperty('--mode-glass-bg', tokens.glassBg);
+  root.style.setProperty('--mode-glass-highlight', tokens.glassHighlight);
+  root.style.setProperty('--mode-glass-border', tokens.glassBorder);
+  root.style.setProperty('--mode-control-shadow', tokens.controlShadow);
+  root.style.setProperty('--mode-icon', tokens.headerInk);
+  root.style.setProperty('--mode-accent', tokens.primaryInk);
+
+  // Admin Sidebar & Topbar Tokens
+  root.style.setProperty('--theme-admin-sidebar-bg', tokens.adminSidebarBg);
+  root.style.setProperty('--theme-admin-sidebar-text', tokens.adminSidebarText);
+  root.style.setProperty('--theme-admin-sidebar-muted', tokens.adminSidebarMuted);
+  root.style.setProperty('--theme-admin-sidebar-border', tokens.adminSidebarBorder);
+  root.style.setProperty('--theme-admin-sidebar-surface', tokens.adminSidebarSurface);
+  root.style.setProperty('--theme-admin-sidebar-control-bg', tokens.adminSidebarControlBg);
+  root.style.setProperty('--theme-admin-active-bg', tokens.adminActiveBg);
+  root.style.setProperty('--theme-admin-active-text', tokens.adminActiveText);
+  root.style.setProperty('--theme-admin-icon-bg', tokens.adminIconBg);
+  root.style.setProperty('--theme-admin-topbar-bg', tokens.adminTopbarBg);
+  root.style.setProperty('--theme-admin-topbar-text', tokens.adminTopbarText);
+  root.style.setProperty('--theme-admin-topbar-muted', tokens.adminTopbarMuted);
+  root.style.setProperty('--theme-admin-topbar-border', tokens.adminTopbarBorder);
+  root.style.setProperty('--theme-admin-topbar-control-bg', tokens.adminTopbarControlBg);
+  root.style.setProperty('--theme-admin-topbar-control-hover', tokens.adminTopbarControlHover);
+
+  // Landing Quick Nav Tokens
+  root.style.setProperty('--quick-nav-bg', tokens.quickNavBg);
+  root.style.setProperty('--quick-nav-foreground', tokens.quickNavFg);
+  root.style.setProperty('--quick-nav-muted', tokens.quickNavMuted);
+  root.style.setProperty('--quick-nav-border', tokens.quickNavBorder);
+  root.style.setProperty('--quick-nav-icon-bg', tokens.quickNavIconBg);
+  root.style.setProperty('--quick-nav-icon-fg', tokens.quickNavIconFg);
+  root.style.setProperty('--quick-nav-active-bg', tokens.quickNavActiveBg);
+  root.style.setProperty('--quick-nav-active-fg', tokens.quickNavActiveFg);
+  root.style.setProperty('--quick-nav-copy-bg', tokens.quickNavCopyBg);
+  root.style.setProperty('--quick-nav-copy-fg', tokens.quickNavCopyFg);
+  root.style.setProperty('--quick-nav-copy-muted', tokens.quickNavCopyMuted);
 }
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -182,19 +155,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     previewMode,
     previewAppearance,
   } = useAppStore();
-  const hasSavedMode = localStorage.getItem('ppa_mode') !== null;
-  const effectiveMode = previewMode || (hasSavedMode
-    ? colorMode
-    : previewTheme?.default_mode || bootstrap?.theme?.default_mode || colorMode);
 
-  useEffect(() => {
-    document.documentElement.dataset.colorMode = effectiveMode;
-    if (effectiveMode === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [effectiveMode]);
+  let hasSavedMode = false;
+  try {
+    hasSavedMode = localStorage.getItem('ppa_mode') !== null;
+  } catch {
+    hasSavedMode = false;
+  }
+
+  const effectiveMode: ColorMode = previewMode
+    || (hasSavedMode ? colorMode : previewTheme?.default_mode || bootstrap?.theme?.default_mode || colorMode);
 
   useEffect(() => {
     const theme: ThemeSettings | undefined = previewTheme || bootstrap?.theme || undefined;
@@ -227,13 +197,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         : scope === 'admin'
           ? theme.admin_button_effect || theme.button_effect
           : theme.button_effect;
+
       applyPaletteToRoot(
         palette,
         effectiveMode,
         designStyle,
         buttonShape,
         buttonEffect,
-        scope
+        scope,
+      );
+    } else {
+      applyPaletteToRoot(
+        DEFAULT_THEME_PALETTE,
+        effectiveMode,
+        'modern',
+        'rounded',
+        'shimmer',
+        scope,
       );
     }
 

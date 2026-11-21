@@ -7,6 +7,7 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { User } from '../../types/index.ts';
 import { DEFAULT_LOGIN_SETTINGS } from '../../utils/brandingDefaults.ts';
+import { pickReadableForeground } from '../../utils/themeContrast.ts';
 import { BrandLogo } from '../../components/common/BrandLogo.tsx';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { SelfHostedCaptcha } from '../../components/forms/SelfHostedCaptcha.tsx';
@@ -200,6 +201,9 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
   };
   const accentStyle: React.CSSProperties = {
     backgroundColor: loginCfg.accent_color || 'var(--theme-primary)',
+    color: loginCfg.accent_color
+      ? pickReadableForeground(loginCfg.accent_color, '#0F172A', 4.5)
+      : 'var(--theme-primary-foreground)',
   };
 
   const loginFace = (
@@ -316,7 +320,7 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
           type="submit"
           disabled={loginForm.formState.isSubmitting || (!challengeToken && !loginCaptchaKey)}
           style={accentStyle}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
         >
           {loginForm.formState.isSubmitting ? (
             <InlineLoader label={language === 'fa' ? 'در حال بررسی...' : 'Signing in...'} className="justify-center" />
@@ -443,7 +447,7 @@ const AuthShellPage: React.FC<{ initialMode: 'login' | 'register' }> = ({ initia
           type="submit"
           disabled={regForm.formState.isSubmitting || !regCaptchaKey}
           style={accentStyle}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
         >
           {regForm.formState.isSubmitting ? (
             <InlineLoader label={language === 'fa' ? 'در حال ثبت...' : 'Submitting...'} className="justify-center" />

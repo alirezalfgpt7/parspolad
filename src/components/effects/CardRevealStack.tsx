@@ -33,24 +33,24 @@ export const CardRevealStack: React.FC<CardRevealStackProps> = ({ items, classNa
         >
           <div className="flex items-center justify-between gap-2">
             {item.icon ? (
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary)">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary-ink)">
                 {item.icon}
               </div>
             ) : null}
             {item.badge && (
-              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <span className="rounded-md border border-(--theme-border) bg-(--theme-surface-muted) px-2 py-0.5 text-[10px] font-bold text-(--theme-text-muted)">
                 {item.badge}
               </span>
             )}
           </div>
-          <h3 className="mt-4 text-sm font-extrabold text-slate-900 dark:text-white">
+          <h3 className="mt-4 text-sm font-extrabold text-(--theme-text)">
             {item.title}
           </h3>
-          <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+          <p className="mt-2 text-xs leading-relaxed text-(--theme-text-muted)">
             {item.description}
           </p>
           {item.meta && (
-            <div className="mt-4 border-t border-slate-100 pt-2.5 text-[11px] font-semibold text-(--theme-primary) dark:border-slate-800">
+            <div className="mt-4 border-t border-(--theme-border) pt-2.5 text-[11px] font-semibold text-(--theme-primary-ink)">
               {item.meta}
             </div>
           )}

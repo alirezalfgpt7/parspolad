@@ -337,8 +337,8 @@ export const UsersRolesAdminPage: React.FC = () => {
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-lg font-extrabold">مدیریت کاربران سامانه</h1>
-          <button type="button" onClick={openNewUser} style={{ backgroundColor: 'var(--theme-primary)' }} className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white">
+          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت کاربران سامانه</h1>
+          <button type="button" onClick={openNewUser} className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">
             <Plus className="h-4 w-4" />
             <span>کاربر جدید</span>
           </button>
@@ -347,13 +347,13 @@ export const UsersRolesAdminPage: React.FC = () => {
         <Pagination page={page} lastPage={lastPage} onChange={setPage} />
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 text-base font-bold">
-            <Shield className="h-5 w-5 text-(--theme-primary)" />
+          <h2 className="flex items-center gap-2 text-base font-bold text-(--theme-text)">
+            <Shield className="h-5 w-5 text-(--theme-primary-ink)" />
             <span>ماتریس نقش‌ها و دسترسی‌ها (Permission Matrix)</span>
           </h2>
-          <button type="button" onClick={openNewRole} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-slate-700">
+          <button type="button" onClick={openNewRole} className="inline-flex items-center gap-1 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">
             <Plus className="h-4 w-4" />
             <span>نقش جدید</span>
           </button>
@@ -361,15 +361,15 @@ export const UsersRolesAdminPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="py-2.5 text-start font-bold">
+              <tr className="border-b border-(--theme-border)">
+                <th className="py-2.5 text-start font-bold text-(--theme-text)">
                   {language === 'fa' ? 'صفحه و دسترسی' : 'Page & permission'}
                 </th>
                 {roles.map((role) => (
-                  <th key={role.id} className="min-w-28 px-3 py-2.5 text-center font-bold">
+                  <th key={role.id} className="min-w-28 px-3 py-2.5 text-center font-bold text-(--theme-text)">
                     <span>{role.label_fa}</span>
                     {!systemRoles.includes(role.name) && (
-                      <button type="button" onClick={() => openEditRole(role)} className="ms-2 text-slate-500 hover:text-(--theme-primary)" aria-label={`ویرایش نقش ${role.label_fa}`}>
+                      <button type="button" onClick={() => openEditRole(role)} className="ms-2 text-(--theme-text-muted) hover:text-(--theme-primary-ink)" aria-label={`ویرایش نقش ${role.label_fa}`}>
                         <Pencil className="inline h-3.5 w-3.5" />
                       </button>
                     )}
@@ -382,17 +382,17 @@ export const UsersRolesAdminPage: React.FC = () => {
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-(--theme-border)">
               {permissions.map((permission) => (
                 <tr key={permission}>
                   <td className="py-2.5">
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
+                    <div className="font-semibold text-(--theme-text)">
                       {language === 'fa'
                         ? permissionNamesFa[permission] || permission
                         : permissionNamesEn[permission] || permission}
                     </div>
                     {language === 'fa' && (
-                      <div dir="ltr" className="mt-0.5 text-start font-mono text-[10px] text-slate-400">
+                      <div dir="ltr" className="mt-0.5 text-start font-mono text-[10px] text-(--theme-text-muted)">
                         {permission}
                       </div>
                     )}
@@ -421,12 +421,12 @@ export const UsersRolesAdminPage: React.FC = () => {
 
       <Modal open={userModalOpen} onClose={() => setUserModalOpen(false)} title={editingUser ? 'ویرایش کاربر' : 'ایجاد کاربر جدید'} size="md">
         <form onSubmit={saveUser} className="space-y-3">
-          <input required maxLength={120} placeholder="نام و نام خانوادگی" value={userForm.name} onChange={(event) => setUserForm({ ...userForm, name: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input required type="email" dir="ltr" placeholder="email@company.ir" value={userForm.email} onChange={(event) => setUserForm({ ...userForm, email: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input dir="ltr" maxLength={30} placeholder="شماره تماس" value={userForm.phone} onChange={(event) => setUserForm({ ...userForm, phone: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <input required maxLength={120} placeholder="نام و نام خانوادگی" value={userForm.name} onChange={(event) => setUserForm({ ...userForm, name: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <input required type="email" dir="ltr" placeholder="email@company.ir" value={userForm.email} onChange={(event) => setUserForm({ ...userForm, email: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <input dir="ltr" maxLength={30} placeholder="شماره تماس" value={userForm.phone} onChange={(event) => setUserForm({ ...userForm, phone: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           <SearchableSelect label="نقش" options={roles.map((role) => ({ value: role.name, label: role.label_fa }))} value={userForm.role} onChange={(role) => setUserForm({ ...userForm, role })} />
-          <input required={!editingUser} minLength={8} type="password" dir="ltr" autoComplete="new-password" placeholder={editingUser ? 'رمز عبور جدید (اختیاری)' : 'رمز عبور (حداقل ۸ کاراکتر)'} value={userForm.password} onChange={(event) => setUserForm({ ...userForm, password: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">
+          <input required={!editingUser} minLength={8} type="password" dir="ltr" autoComplete="new-password" placeholder={editingUser ? 'رمز عبور جدید (اختیاری)' : 'رمز عبور (حداقل ۸ کاراکتر)'} value={userForm.password} onChange={(event) => setUserForm({ ...userForm, password: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <button type="submit" className="w-full rounded-lg bg-(--theme-btn-bg) py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">
             {editingUser ? 'ذخیره تغییرات' : 'ایجاد کاربر'}
           </button>
         </form>
@@ -434,13 +434,13 @@ export const UsersRolesAdminPage: React.FC = () => {
 
       <Modal open={roleModalOpen} onClose={() => { setRoleModalOpen(false); setEditingRole(null); setRoleForm(emptyRole); }} title={editingRole ? 'ویرایش نقش' : 'ایجاد نقش جدید'} size="md">
         <form onSubmit={saveRole} className="space-y-4">
-          {!editingRole && <input required pattern="[a-z][a-z0-9_-]*" maxLength={64} placeholder="شناسه نقش مانند quality-reviewer" value={roleForm.name} onChange={(event) => setRoleForm({ ...roleForm, name: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />}
-          <input required maxLength={120} placeholder="نام فارسی نقش" value={roleForm.label_fa} onChange={(event) => setRoleForm({ ...roleForm, label_fa: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input required maxLength={120} dir="ltr" placeholder="Role label (English)" value={roleForm.label_en} onChange={(event) => setRoleForm({ ...roleForm, label_en: event.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <fieldset className="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-            <legend className="px-1 text-xs font-semibold">دسترسی‌های نقش</legend>
+          {!editingRole && <input required pattern="[a-z][a-z0-9_-]*" maxLength={64} placeholder="شناسه نقش مانند quality-reviewer" value={roleForm.name} onChange={(event) => setRoleForm({ ...roleForm, name: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />}
+          <input required maxLength={120} placeholder="نام فارسی نقش" value={roleForm.label_fa} onChange={(event) => setRoleForm({ ...roleForm, label_fa: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <input required maxLength={120} dir="ltr" placeholder="Role label (English)" value={roleForm.label_en} onChange={(event) => setRoleForm({ ...roleForm, label_en: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <fieldset className="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-(--theme-border) bg-(--theme-surface-muted) p-3">
+            <legend className="px-1 text-xs font-semibold text-(--theme-text)">دسترسی‌های نقش</legend>
             {permissions.map((permission) => (
-              <label key={permission} className="flex items-center gap-2 text-xs">
+              <label key={permission} className="flex items-center gap-2 text-xs text-(--theme-text)">
                 <input
                   type="checkbox"
                   checked={roleForm.permissions.includes(permission)}
@@ -456,7 +456,7 @@ export const UsersRolesAdminPage: React.FC = () => {
               </label>
             ))}
           </fieldset>
-          <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">{editingRole ? 'ذخیره نقش' : 'ایجاد نقش'}</button>
+          <button type="submit" className="w-full rounded-lg bg-(--theme-btn-bg) py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">{editingRole ? 'ذخیره نقش' : 'ایجاد نقش'}</button>
         </form>
       </Modal>
     </div>

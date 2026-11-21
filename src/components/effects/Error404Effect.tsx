@@ -88,9 +88,9 @@ export const Error404Effect: React.FC<Error404EffectProps> = ({
     </div>
 
     <div className="effect-404-content-box">
-      <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">{title}</h2>
+      <h2 className="text-xl font-extrabold text-(--theme-text)">{title}</h2>
       {subtitle && (
-        <p className="mt-2.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+        <p className="mt-2.5 text-sm leading-relaxed text-(--theme-text-muted)">
           {subtitle}
         </p>
       )}
@@ -99,7 +99,7 @@ export const Error404Effect: React.FC<Error404EffectProps> = ({
           as={Link}
           to={ctaTo}
           effects={['shimmer', 'glow']}
-          className="inline-flex items-center gap-2 rounded-xl bg-(--theme-primary) px-6 py-2.5 text-sm font-bold text-white shadow-md"
+          className="inline-flex items-center gap-2 rounded-xl bg-(--theme-btn-bg) px-6 py-2.5 text-sm font-bold text-(--theme-btn-text) shadow-md transition hover:bg-(--theme-btn-hover)"
         >
           <span>{ctaLabel}</span>
         </EffectAction>

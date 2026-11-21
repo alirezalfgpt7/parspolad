@@ -15,7 +15,7 @@
   border-radius: 9999px;
   border: 2px solid var(--theme-surface);
   background: var(--theme-primary);
-  color: #ffffff;
+  color: var(--theme-primary-foreground);
   box-shadow: 0 6px 16px color-mix(in srgb, var(--theme-primary) 34%, rgb(15 23 42 / 25%));
   transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1), background-color 180ms ease;
 }
@@ -38,7 +38,7 @@
   inset-block: 0.45rem;
   width: 2px;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--theme-border) 85%, var(--theme-primary));
+  background: color-mix(in srgb, var(--theme-admin-sidebar-border) 85%, var(--theme-admin-active-text));
 }
 
 .admin-sidebar-dot-link {
@@ -51,15 +51,15 @@
   width: 7px;
   height: 7px;
   border-radius: 9999px;
-  background: var(--theme-text-muted);
-  opacity: 0.65;
+  background: var(--theme-admin-sidebar-muted);
+  opacity: 0.75;
   flex-shrink: 0;
   transition: transform 180ms ease, background-color 180ms ease, opacity 180ms ease;
 }
 
 .admin-sidebar-link.is-active .admin-sidebar-dot,
 .admin-sidebar-link:hover .admin-sidebar-dot {
-  background: var(--theme-primary);
+  background: var(--theme-admin-active-text);
   opacity: 1;
   transform: scale(1.3);
 }

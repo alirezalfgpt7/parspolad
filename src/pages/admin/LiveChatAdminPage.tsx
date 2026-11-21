@@ -164,15 +164,15 @@ export const LiveChatAdminPage: React.FC = () => {
     <div className="space-y-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold">{isPersian ? 'گفتگوی آنلاین' : 'Live chat'}</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <h1 className="text-xl font-bold text-(--theme-text)">{isPersian ? 'گفتگوی آنلاین' : 'Live chat'}</h1>
+          <p className="mt-1 text-sm text-(--theme-text-muted)">
             {isPersian ? 'مشاهده و پاسخ‌گویی به گفتگوهای بازدیدکنندگان سایت' : 'View and reply to website visitor conversations'}
           </p>
         </div>
         <button
           type="button"
           onClick={() => void loadConversations()}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+          className="inline-flex items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-sm text-(--theme-text) hover:bg-(--theme-surface-muted)"
         >
           <RefreshCw className="h-4 w-4" />
           {isPersian ? 'به‌روزرسانی' : 'Refresh'}
@@ -185,9 +185,9 @@ export const LiveChatAdminPage: React.FC = () => {
         </p>
       )}
 
-      <div className="grid min-h-[min(42rem,calc(100dvh-14rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 lg:grid-cols-[21rem_minmax(0,1fr)]">
-        <aside className="flex min-h-0 flex-col border-b border-slate-200 dark:border-slate-700 lg:border-b-0 lg:border-e">
-          <div className="space-y-3 border-b border-slate-200 p-4 dark:border-slate-700">
+      <div className="grid min-h-[min(42rem,calc(100dvh-14rem))] overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow) lg:grid-cols-[21rem_minmax(0,1fr)]">
+        <aside className="flex min-h-0 flex-col border-b border-(--theme-border) lg:border-b-0 lg:border-e">
+          <div className="space-y-3 border-b border-(--theme-border) p-4">
             <div className="flex gap-2">
               {(['open', 'closed'] as const).map((status) => (
                 <button
@@ -195,28 +195,28 @@ export const LiveChatAdminPage: React.FC = () => {
                   key={status}
                   onClick={() => setStatusFilter(status)}
                   aria-pressed={statusFilter === status}
-                  className={`flex-1 rounded-lg px-3 py-2 text-xs font-semibold ${
+                  className={`flex-1 rounded-xl px-3 py-2 text-xs font-semibold transition-colors ${
                     statusFilter === status
-                      ? 'bg-(--theme-primary) text-white'
-                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      ? 'bg-(--theme-primary) text-(--theme-primary-foreground)'
+                      : 'bg-(--theme-surface-muted) text-(--theme-text-muted) hover:text-(--theme-text)'
                   }`}
                 >
                   {status === 'open' ? (isPersian ? 'باز' : 'Open') : (isPersian ? 'بسته‌شده' : 'Closed')}
                 </button>
               ))}
             </div>
-            <form onSubmit={submitSearch} className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 dark:border-slate-700">
-              <Search className="h-4 w-4 shrink-0 text-slate-400" />
+            <form onSubmit={submitSearch} className="flex items-center gap-2 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3">
+              <Search className="h-4 w-4 shrink-0 text-(--theme-text-muted)" />
               <input
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
                 placeholder={isPersian ? 'جستجوی نام...' : 'Search by name...'}
                 aria-label={isPersian ? 'جستجوی گفتگوها' : 'Search conversations'}
-                className="min-w-0 flex-1 bg-transparent py-2.5 text-sm outline-none"
+                className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none"
               />
               {searchInput && (
                 <button type="button" onClick={() => { setSearchInput(''); setSearch(''); }} aria-label={isPersian ? 'پاک کردن جستجو' : 'Clear search'}>
-                  <X className="h-4 w-4 text-slate-400" />
+                  <X className="h-4 w-4 text-(--theme-text-muted)" />
                 </button>
               )}
             </form>
@@ -224,9 +224,9 @@ export const LiveChatAdminPage: React.FC = () => {
 
           <div className="min-h-40 flex-1 overflow-y-auto">
             {loadingList && conversations.length === 0 ? (
-              <div className="grid h-32 place-items-center text-slate-400"><LoaderCircle className="h-5 w-5 animate-spin" /></div>
+              <div className="grid h-32 place-items-center text-(--theme-text-muted)"><LoaderCircle className="h-5 w-5 animate-spin" /></div>
             ) : conversations.length === 0 ? (
-              <div className="px-5 py-12 text-center text-sm text-slate-500">
+              <div className="px-5 py-12 text-center text-sm text-(--theme-text-muted)">
                 <MessageSquare className="mx-auto mb-3 h-8 w-8 opacity-40" />
                 {isPersian ? 'گفتگویی در این بخش وجود ندارد.' : 'No conversations found.'}
               </div>
@@ -235,18 +235,18 @@ export const LiveChatAdminPage: React.FC = () => {
                 type="button"
                 key={conversation.id}
                 onClick={() => setSelectedId(conversation.id)}
-                className={`block w-full border-b border-slate-100 px-4 py-3 text-start transition hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/60 ${
-                  selectedId === conversation.id ? 'bg-(--theme-primary)/5' : ''
+                className={`block w-full border-b border-(--theme-border) px-4 py-3 text-start transition hover:bg-(--theme-surface-muted) ${
+                  selectedId === conversation.id ? 'bg-(--theme-primary)/10' : ''
                 }`}
               >
                 <span className="flex items-center justify-between gap-2">
-                  <span className="truncate text-sm font-semibold">{conversation.customer_name}</span>
-                  <span className="shrink-0 text-[10px] text-slate-400">{formatDate(conversation.last_message_at || conversation.created_at)}</span>
+                  <span className="truncate text-sm font-semibold text-(--theme-text)">{conversation.customer_name}</span>
+                  <span className="shrink-0 text-[10px] text-(--theme-text-muted)">{formatDate(conversation.last_message_at || conversation.created_at)}</span>
                 </span>
                 <span className="mt-1 flex items-center justify-between gap-2">
-                  <span className="truncate text-xs text-slate-500 dark:text-slate-400">{conversation.last_message || (isPersian ? 'بدون پیام' : 'No messages')}</span>
+                  <span className="truncate text-xs text-(--theme-text-muted)">{conversation.last_message || (isPersian ? 'بدون پیام' : 'No messages')}</span>
                   {conversation.unread_by_admin > 0 && (
-                    <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-(--theme-primary) px-1 text-[10px] font-bold text-white">{conversation.unread_by_admin}</span>
+                    <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-(--theme-primary) px-1 text-[10px] font-bold text-(--theme-primary-foreground)">{conversation.unread_by_admin}</span>
                   )}
                 </span>
               </button>
@@ -256,15 +256,15 @@ export const LiveChatAdminPage: React.FC = () => {
 
         <section className="flex min-h-[24rem] min-w-0 flex-col">
           {!selectedConversation ? (
-            <div className="grid flex-1 place-items-center p-8 text-center text-sm text-slate-500">
+            <div className="grid flex-1 place-items-center p-8 text-center text-sm text-(--theme-text-muted)">
               {isPersian ? 'برای مشاهده پیام‌ها یک گفتگو را انتخاب کنید.' : 'Select a conversation to view its messages.'}
             </div>
           ) : (
             <>
-              <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-700 sm:px-5">
+              <header className="flex flex-wrap items-center justify-between gap-3 border-b border-(--theme-border) px-4 py-3 sm:px-5">
                 <div className="min-w-0">
-                  <h2 className="truncate font-bold">{selectedConversation.customer_name}</h2>
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <h2 className="truncate font-bold text-(--theme-text)">{selectedConversation.customer_name}</h2>
+                  <p className="mt-0.5 text-xs text-(--theme-text-muted)">
                     {isPersian ? 'شروع گفتگو:' : 'Started:'} {formatDate(selectedConversation.created_at, true)}
                   </p>
                 </div>
@@ -273,10 +273,10 @@ export const LiveChatAdminPage: React.FC = () => {
                     type="button"
                     onClick={() => void changeStatus()}
                     disabled={updatingStatus}
-                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-50 ${
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold disabled:opacity-50 ${
                       selectedConversation.status === 'open'
                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                        : 'bg-(--theme-surface-muted) text-(--theme-text)'
                     }`}
                   >
                     {selectedConversation.status === 'open' ? <Check className="h-4 w-4" /> : <Circle className="h-3.5 w-3.5" />}
@@ -289,7 +289,7 @@ export const LiveChatAdminPage: React.FC = () => {
                 )}
               </header>
 
-              <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50/70 p-4 dark:bg-slate-950/30 sm:p-6">
+              <div className="flex-1 space-y-4 overflow-y-auto bg-(--theme-surface-muted)/60 p-4 sm:p-6">
                 {messages.map((message) => {
                   const isVisitor = message.sender_type === 'customer';
                   const isSystem = message.sender_type === 'system';
@@ -297,20 +297,20 @@ export const LiveChatAdminPage: React.FC = () => {
                     <div key={message.id} className={`flex ${isVisitor ? 'justify-end' : 'justify-start'}`}>
                       <article className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                         isSystem
-                          ? 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                          ? 'border border-(--theme-border) bg-(--theme-surface-muted) text-(--theme-text)'
                           : isVisitor
-                            ? 'rounded-ee-sm bg-white text-slate-800 shadow-sm dark:bg-slate-800 dark:text-slate-100'
-                            : 'rounded-es-sm bg-(--theme-primary) text-white'
+                            ? 'rounded-ee-sm border border-(--theme-card-border) bg-(--theme-card-surface) text-(--theme-text) shadow-(--theme-card-shadow)'
+                            : 'rounded-es-sm bg-(--theme-primary) text-(--theme-primary-foreground)'
                       }`}>
                         <div className="mb-1.5 flex items-center justify-between gap-5">
-                          <span className="text-[11px] font-bold opacity-75">
+                          <span className="text-[11px] font-bold opacity-80">
                             {isVisitor
                               ? selectedConversation.customer_name
                               : isSystem
                                 ? (isPersian ? 'سیستم' : 'System')
                                 : message.sender_name || (isPersian ? 'پشتیبانی' : 'Support')}
                           </span>
-                          <time className="text-[10px] opacity-60">{formatDate(message.created_at)}</time>
+                          <time className="text-[10px] opacity-70">{formatDate(message.created_at)}</time>
                         </div>
                         <p className="whitespace-pre-wrap wrap-break-word text-sm leading-7">{message.body}</p>
                       </article>
@@ -320,7 +320,7 @@ export const LiveChatAdminPage: React.FC = () => {
               </div>
 
               {selectedConversation.status === 'open' && canManage ? (
-                <form onSubmit={sendReply} className="flex items-end gap-3 border-t border-slate-200 p-3 dark:border-slate-700 sm:p-4">
+                <form onSubmit={sendReply} className="flex items-end gap-3 border-t border-(--theme-border) p-3 sm:p-4">
                   <textarea
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
@@ -334,19 +334,19 @@ export const LiveChatAdminPage: React.FC = () => {
                     maxLength={2000}
                     aria-label={isPersian ? 'متن پاسخ' : 'Reply message'}
                     placeholder={isPersian ? 'پاسخ خود را بنویسید...' : 'Write your reply...'}
-                    className="max-h-36 min-h-12 flex-1 resize-y rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950"
+                    className="max-h-36 min-h-12 flex-1 resize-y rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2.5 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                   />
-                  <button type="submit" disabled={sending || !draft.trim()} className="inline-flex h-12 items-center gap-2 rounded-xl bg-(--theme-primary) px-4 text-sm font-semibold text-white disabled:opacity-50">
+                  <button type="submit" disabled={sending || !draft.trim()} className="inline-flex h-12 items-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-50">
                     <Send className="h-4 w-4" />
                     <span className="hidden sm:inline">{sending ? (isPersian ? 'در حال ارسال' : 'Sending') : (isPersian ? 'ارسال' : 'Send')}</span>
                   </button>
                 </form>
               ) : selectedConversation.status === 'closed' ? (
-                <p className="border-t border-slate-200 p-4 text-center text-xs text-slate-500 dark:border-slate-700">
+                <p className="border-t border-(--theme-border) p-4 text-center text-xs text-(--theme-text-muted)">
                   {isPersian ? 'این گفتگو بسته شده است. برای پاسخ‌گویی، آن را بازگشایی کنید.' : 'This conversation is closed. Reopen it to reply.'}
                 </p>
               ) : (
-                <p className="border-t border-slate-200 p-4 text-center text-xs text-slate-500 dark:border-slate-700">
+                <p className="border-t border-(--theme-border) p-4 text-center text-xs text-(--theme-text-muted)">
                   {isPersian ? 'دسترسی لازم برای پاسخ‌گویی به گفتگو را ندارید.' : 'You do not have permission to reply to conversations.'}
                 </p>
               )}

@@ -163,12 +163,11 @@ export const ContractsLicensesAdminPage: React.FC = () => {
     <div className="space-y-8">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-extrabold">مدیریت قراردادهای کلان</h1>
+          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت قراردادهای کلان</h1>
           <button
             type="button"
             onClick={() => setContractModal({ contract_number: '', title_fa: '', title_en: '', client_fa: '', client_en: '', amount_billion_irr: 100, start_year: 1404, status: 'active', scope_fa: '', scope_en: '', requires_auth: false })}
-            style={{ backgroundColor: 'var(--theme-primary)' }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)"
           >
             <Plus className="h-4 w-4" />
             <span>ثبت قرارداد</span>
@@ -180,12 +179,11 @@ export const ContractsLicensesAdminPage: React.FC = () => {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-extrabold">مدیریت لایسنس‌ها و گواهینامه‌های استاندارد</h2>
+          <h2 className="text-lg font-extrabold text-(--theme-text)">مدیریت لایسنس‌ها و گواهینامه‌های استاندارد</h2>
           <button
             type="button"
             onClick={() => setLicenseModal({ code: 'ISO-9001', title_fa: '', title_en: '', issuer_fa: '', issuer_en: '', issue_date: '1404/01/01', category: 'iso', image_url: '/storage/certificates/iso-9001.jpg', requires_auth: false })}
-            style={{ backgroundColor: 'var(--theme-primary)' }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)"
           >
             <Plus className="h-4 w-4" />
             <span>افزودن گواهینامه</span>
@@ -193,18 +191,18 @@ export const ContractsLicensesAdminPage: React.FC = () => {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {licenses.map((lic) => (
-            <div key={lic.id} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            <div key={lic.id} className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
               {lic.image_url && (
-                <div className="mb-3 h-28 w-full overflow-hidden rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-800">
+                <div className="mb-3 h-28 w-full overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface-muted)">
                   <ZeroBrokenImage src={lic.image_url} alt={lic.title_fa} className="h-full w-full object-cover" />
                 </div>
               )}
-              <div className="font-mono text-xs font-bold text-(--theme-primary)">{lic.code}</div>
-              <div className="mt-1 text-sm font-bold">{lic.title_fa}</div>
-              <div className="mt-1 text-xs text-slate-500">{lic.issuer_fa}</div>
+              <div className="font-mono text-xs font-bold text-(--theme-primary-ink)">{lic.code}</div>
+              <div className="mt-1 text-sm font-bold text-(--theme-text)">{lic.title_fa}</div>
+              <div className="mt-1 text-xs text-(--theme-text-muted)">{lic.issuer_fa}</div>
               <div className="mt-3 flex gap-3">
-                <button type="button" onClick={() => setLicenseModal(lic)} className="inline-flex items-center gap-1 text-xs text-slate-600 hover:underline"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
-                <button type="button" onClick={() => setDeleteTarget({ type: 'license', id: lic.id })} className="text-xs text-red-600 hover:underline">حذف گواهینامه</button>
+                <button type="button" onClick={() => setLicenseModal(lic)} className="inline-flex items-center gap-1 text-xs text-(--theme-text-muted) hover:text-(--theme-primary-ink) hover:underline"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
+                <button type="button" onClick={() => setDeleteTarget({ type: 'license', id: lic.id })} className="text-xs text-red-600 hover:underline dark:text-red-400">حذف گواهینامه</button>
               </div>
             </div>
           ))}
@@ -215,14 +213,14 @@ export const ContractsLicensesAdminPage: React.FC = () => {
       <Modal open={Boolean(contractModal)} onClose={() => setContractModal(null)} title={contractModal?.id ? 'ویرایش قرارداد' : 'ثبت قرارداد جدید'} size="md">
         {contractModal && (
           <form onSubmit={saveContract} className="space-y-3">
-            <input required placeholder="شماره قرارداد" value={contractModal.contract_number || ''} onChange={(e) => setContractModal({ ...contractModal, contract_number: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="عنوان قرارداد" value={contractModal.title_fa || ''} onChange={(e) => setContractModal({ ...contractModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="عنوان انگلیسی قرارداد" value={contractModal.title_en || ''} onChange={(e) => setContractModal({ ...contractModal, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="کارفرما" value={contractModal.client_fa || ''} onChange={(e) => setContractModal({ ...contractModal, client_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="کارفرما (انگلیسی)" value={contractModal.client_en || ''} onChange={(e) => setContractModal({ ...contractModal, client_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input type="number" placeholder="مبلغ (میلیارد ریال)" value={contractModal.amount_billion_irr || 0} onChange={(e) => setContractModal({ ...contractModal, amount_billion_irr: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required type="number" min={1348} max={1450} placeholder="سال شروع" value={contractModal.start_year || ''} onChange={(e) => setContractModal({ ...contractModal, start_year: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <select value={contractModal.status || 'active'} onChange={(e) => setContractModal({ ...contractModal, status: e.target.value as Contract['status'] })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+            <input required placeholder="شماره قرارداد" value={contractModal.contract_number || ''} onChange={(e) => setContractModal({ ...contractModal, contract_number: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="عنوان قرارداد" value={contractModal.title_fa || ''} onChange={(e) => setContractModal({ ...contractModal, title_fa: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="عنوان انگلیسی قرارداد" value={contractModal.title_en || ''} onChange={(e) => setContractModal({ ...contractModal, title_en: e.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="کارفرما" value={contractModal.client_fa || ''} onChange={(e) => setContractModal({ ...contractModal, client_fa: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="کارفرما (انگلیسی)" value={contractModal.client_en || ''} onChange={(e) => setContractModal({ ...contractModal, client_en: e.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input type="number" placeholder="مبلغ (میلیارد ریال)" value={contractModal.amount_billion_irr || 0} onChange={(e) => setContractModal({ ...contractModal, amount_billion_irr: Number(e.target.value) })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required type="number" min={1348} max={1450} placeholder="سال شروع" value={contractModal.start_year || ''} onChange={(e) => setContractModal({ ...contractModal, start_year: Number(e.target.value) })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <select value={contractModal.status || 'active'} onChange={(e) => setContractModal({ ...contractModal, status: e.target.value as Contract['status'] })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)">
               <option value="active">فعال</option><option value="completed">تکمیل‌شده</option><option value="pending">در انتظار</option><option value="archived">بایگانی</option>
             </select>
             <FileUploader
@@ -231,7 +229,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
               label="پیوست PDF قرارداد"
               onUploaded={(url) => setContractModal({ ...contractModal, document_url: url })}
             />
-            <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">ذخیره قرارداد</button>
+            <button type="submit" className="w-full rounded-xl bg-(--theme-btn-bg) py-2.5 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)">ذخیره قرارداد</button>
           </form>
         )}
       </Modal>
@@ -239,12 +237,12 @@ export const ContractsLicensesAdminPage: React.FC = () => {
       <Modal open={Boolean(licenseModal)} onClose={() => setLicenseModal(null)} title={licenseModal?.id ? 'ویرایش گواهینامه' : 'افزودن گواهینامه و استاندارد'} size="md">
         {licenseModal && (
           <form onSubmit={saveLicense} className="space-y-3">
-            <input required placeholder="کد استاندارد (مثل API 6A)" value={licenseModal.code || ''} onChange={(e) => setLicenseModal({ ...licenseModal, code: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="عنوان فارسی" value={licenseModal.title_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="عنوان انگلیسی" value={licenseModal.title_en || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="مرجع صادرکننده" value={licenseModal.issuer_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <input required placeholder="مرجع صادرکننده (انگلیسی)" value={licenseModal.issuer_en || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-            <label className="block text-xs">
+            <input required placeholder="کد استاندارد (مثل API 6A)" value={licenseModal.code || ''} onChange={(e) => setLicenseModal({ ...licenseModal, code: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="عنوان فارسی" value={licenseModal.title_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_fa: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="عنوان انگلیسی" value={licenseModal.title_en || ''} onChange={(e) => setLicenseModal({ ...licenseModal, title_en: e.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="مرجع صادرکننده" value={licenseModal.issuer_fa || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_fa: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <input required placeholder="مرجع صادرکننده (انگلیسی)" value={licenseModal.issuer_en || ''} onChange={(e) => setLicenseModal({ ...licenseModal, issuer_en: e.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <label className="block text-xs text-(--theme-text)">
               تاریخ صدور
               <PersianDatePicker
                 value={licenseModal.issue_date || ''}
@@ -264,7 +262,7 @@ export const ContractsLicensesAdminPage: React.FC = () => {
               label="تصویر یا PDF گواهینامه"
               onUploaded={(url) => setLicenseModal({ ...licenseModal, document_url: url, image_url: url.endsWith('.pdf') ? '/storage/certificates/iso-9001.jpg' : url })}
             />
-            <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="w-full rounded-lg py-2 text-xs font-semibold text-white">ثبت گواهینامه</button>
+            <button type="submit" className="w-full rounded-xl bg-(--theme-btn-bg) py-2.5 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)">ثبت گواهینامه</button>
           </form>
         )}
       </Modal>

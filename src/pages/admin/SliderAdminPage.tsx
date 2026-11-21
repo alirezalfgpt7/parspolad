@@ -254,10 +254,10 @@ export const SliderAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div>
-          <h1 className="text-lg font-extrabold">مدیریت اسلایدر صفحات (Drag & Drop + افکت‌ها)</h1>
-          <p className="mt-1 text-xs text-slate-500">
+          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت اسلایدر صفحات (Drag & Drop + افکت‌ها)</h1>
+          <p className="mt-1 text-xs text-(--theme-text-muted)">
             اسلایدر را بر اساس صفحه انتخاب کنید؛ ترتیب اسلایدها را با کشیدن کارت‌ها تغییر دهید.
           </p>
         </div>
@@ -266,21 +266,20 @@ export const SliderAdminPage: React.FC = () => {
             aria-label="انتخاب اسلایدر"
             value={selectedSliderId ?? ''}
             onChange={(event) => setSelectedSliderId(Number(event.target.value) || null)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800"
+            className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
           >
             {sliders.map((item) => (
               <option key={item.id} value={item.id}>{item.title_fa} · /{item.page_slug}</option>
             ))}
           </select>
-          <button type="button" onClick={() => setCreatingSlider((open) => !open)} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-slate-700">
+          <button type="button" onClick={() => setCreatingSlider((open) => !open)} className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">
             اسلایدر صفحه جدید
           </button>
           <button
             type="button"
             onClick={openNewSlide}
             disabled={!slider}
-            style={{ backgroundColor: 'var(--theme-primary)' }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover) disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             <span>افزودن اسلاید</span>
@@ -289,16 +288,16 @@ export const SliderAdminPage: React.FC = () => {
       </div>
 
       {creatingSlider && (
-        <form onSubmit={createSlider} className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 dark:border-slate-800 dark:bg-slate-900">
-          <input required value={newSlider.title_fa} onChange={(event) => setNewSlider({ ...newSlider, title_fa: event.target.value })} placeholder="عنوان فارسی" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input required value={newSlider.title_en} onChange={(event) => setNewSlider({ ...newSlider, title_en: event.target.value })} placeholder="عنوان انگلیسی" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input required pattern="[a-z0-9_-]+" value={newSlider.key} onChange={(event) => setNewSlider({ ...newSlider, key: event.target.value })} placeholder="کلید یکتا (مثلاً services)" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <input required pattern="[a-z0-9-]+" value={newSlider.page_slug} onChange={(event) => setNewSlider({ ...newSlider, page_slug: event.target.value })} placeholder="مسیر صفحه (مثلاً services)" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          <button type="submit" className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white sm:col-span-2">ایجاد اسلایدر</button>
+        <form onSubmit={createSlider} className="grid gap-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:grid-cols-2">
+          <input required value={newSlider.title_fa} onChange={(event) => setNewSlider({ ...newSlider, title_fa: event.target.value })} placeholder="عنوان فارسی" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <input required value={newSlider.title_en} onChange={(event) => setNewSlider({ ...newSlider, title_en: event.target.value })} placeholder="عنوان انگلیسی" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <input required pattern="[a-z0-9_-]+" value={newSlider.key} onChange={(event) => setNewSlider({ ...newSlider, key: event.target.value })} placeholder="کلید یکتا (مثلاً services)" dir="ltr" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <input required pattern="[a-z0-9-]+" value={newSlider.page_slug} onChange={(event) => setNewSlider({ ...newSlider, page_slug: event.target.value })} placeholder="مسیر صفحه (مثلاً services)" dir="ltr" className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <button type="submit" className="rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover) sm:col-span-2">ایجاد اسلایدر</button>
         </form>
       )}
 
-      {!slider && !creatingSlider && <p className="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">برای این بخش هنوز اسلایدری ایجاد نشده است.</p>}
+      {!slider && !creatingSlider && <p className="rounded-xl border border-dashed border-(--theme-border) p-6 text-center text-sm text-(--theme-text-muted)">برای این بخش هنوز اسلایدری ایجاد نشده است.</p>}
 
       <div className="space-y-3">
         {slides.map((slide, idx) => (
@@ -308,10 +307,10 @@ export const SliderAdminPage: React.FC = () => {
             onDragStart={() => setDragIdx(idx)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(idx)}
-            className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+            className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) transition-colors hover:border-(--theme-primary-ink)"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <GripVertical className="h-5 w-5 cursor-grab text-slate-400 shrink-0" />
+              <GripVertical className="h-5 w-5 cursor-grab text-(--theme-text-muted) shrink-0" />
               <div className="h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-900">
                 {slide.media_type === 'video' ? (
                   <video src={slide.desktop_media} muted className="h-full w-full object-cover" />
@@ -320,8 +319,8 @@ export const SliderAdminPage: React.FC = () => {
                 )}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-bold">{slide.title_fa}</div>
-                <div className="mt-1 text-xs text-slate-500 tabular-nums">
+                <div className="truncate text-sm font-bold text-(--theme-text)">{slide.title_fa}</div>
+                <div className="mt-1 text-xs text-(--theme-text-muted) tabular-nums">
                   افکت: {slide.effect} · ورود متن: {slide.text_animation} · مدت: {slide.duration_ms / 1000}ثانیه · {slide.is_active ? 'فعال' : 'غیرفعال'}
                 </div>
               </div>
@@ -331,7 +330,7 @@ export const SliderAdminPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setEditing(slide)}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-1.5 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
               >
                 ویرایش افکت و محتوا
               </button>
@@ -360,64 +359,64 @@ export const SliderAdminPage: React.FC = () => {
           <form onSubmit={saveSlideEdit} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">عنوان فارسی</label>
-                <input required value={editing.title_fa} onChange={(e) => setEditing({ ...editing, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">عنوان فارسی</label>
+                <input required value={editing.title_fa} onChange={(e) => setEditing({ ...editing, title_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">عنوان انگلیسی</label>
-                <input required value={editing.title_en} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-xs font-medium">زیرعنوان فارسی</label>
-                <textarea rows={2} value={editing.subtitle_fa} onChange={(e) => setEditing({ ...editing, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium">زیرعنوان انگلیسی</label>
-                <textarea rows={2} value={editing.subtitle_en} onChange={(e) => setEditing({ ...editing, subtitle_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">عنوان انگلیسی</label>
+                <input required value={editing.title_en} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">متن دکمه فارسی</label>
-                <input value={editing.cta_text_fa} onChange={(e) => setEditing({ ...editing, cta_text_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">زیرعنوان فارسی</label>
+                <textarea rows={2} value={editing.subtitle_fa} onChange={(e) => setEditing({ ...editing, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">متن دکمه انگلیسی</label>
-                <input dir="ltr" value={editing.cta_text_en} onChange={(e) => setEditing({ ...editing, cta_text_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">زیرعنوان انگلیسی</label>
+                <textarea rows={2} value={editing.subtitle_en} onChange={(e) => setEditing({ ...editing, subtitle_en: e.target.value })} dir="ltr" className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">مقصد پیشنهادی دکمه</label>
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">متن دکمه فارسی</label>
+                <input value={editing.cta_text_fa} onChange={(e) => setEditing({ ...editing, cta_text_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">متن دکمه انگلیسی</label>
+                <input dir="ltr" value={editing.cta_text_en} onChange={(e) => setEditing({ ...editing, cta_text_en: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">مقصد پیشنهادی دکمه</label>
                 <select
                   value={CTA_DESTINATIONS.some((route) => route.value === editing.cta_link) ? editing.cta_link : ''}
                   onChange={(event) => setEditing({ ...editing, cta_link: event.target.value })}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
                 >
                   <option value="">انتخاب از مسیرهای آماده</option>
                   {CTA_DESTINATIONS.map((route) => (
                     <option key={route.value} value={route.value}>{route.label} — {route.value}</option>
                   ))}
                 </select>
-                <p className="mt-1 text-[11px] text-slate-500">برای مثال، «پروژه‌ها» مسیر /projects را تنظیم می‌کند.</p>
+                <p className="mt-1 text-[11px] text-(--theme-text-muted)">برای مثال، «پروژه‌ها» مسیر /projects را تنظیم می‌کند.</p>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">مسیر داخلی سفارشی</label>
-                <input dir="ltr" value={editing.cta_link} onChange={(e) => setEditing({ ...editing, cta_link: e.target.value })} placeholder="/projects/example" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-                <p className="mt-1 text-[11px] text-slate-500">مسیر باید با / شروع شود. اگر متن دکمه خالی باشد، دکمه نمایش داده نمی‌شود.</p>
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">مسیر داخلی سفارشی</label>
+                <input dir="ltr" value={editing.cta_link} onChange={(e) => setEditing({ ...editing, cta_link: e.target.value })} placeholder="/projects/example" className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+                <p className="mt-1 text-[11px] text-(--theme-text-muted)">مسیر باید با / شروع شود. اگر متن دکمه خالی باشد، دکمه نمایش داده نمی‌شود.</p>
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">مدت نمایش (میلی‌ثانیه)</label>
-                <input type="number" min={3000} max={30000} step={500} value={editing.duration_ms} onChange={(e) => setEditing({ ...editing, duration_ms: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-                <p className="mt-1 text-[11px] text-slate-500">
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">مدت نمایش (میلی‌ثانیه)</label>
+                <input type="number" min={3000} max={30000} step={500} value={editing.duration_ms} onChange={(e) => setEditing({ ...editing, duration_ms: Number(e.target.value) })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+                <p className="mt-1 text-[11px] text-(--theme-text-muted)">
                   معادل {(editing.duration_ms / 1000).toLocaleString('fa-IR', { maximumFractionDigits: 2 })} ثانیه؛ حد مجاز ۳ تا ۳۰ ثانیه است.
                 </p>
               </div>
@@ -473,20 +472,20 @@ export const SliderAdminPage: React.FC = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">پوشش رنگی روی تصویر (Overlay)</label>
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">پوشش رنگی روی تصویر (Overlay)</label>
                 <select
                   value={OVERLAY_PRESETS.some((preset) => preset.value === editing.overlay_gradient) ? editing.overlay_gradient : ''}
                   onChange={(event) => {
                     if (event.target.value) setEditing({ ...editing, overlay_gradient: event.target.value });
                   }}
-                  className="mb-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                  className="mb-2 w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
                 >
                   <option value="">گرادیان سفارشی</option>
                   {OVERLAY_PRESETS.map((preset) => (
                     <option key={preset.value} value={preset.value}>{preset.label}</option>
                   ))}
                 </select>
-                <textarea rows={2} value={editing.overlay_gradient} onChange={(event) => setEditing({ ...editing, overlay_gradient: event.target.value })} dir="ltr" aria-label="CSS گرادیان پوشش اسلاید" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+                <textarea rows={2} value={editing.overlay_gradient} onChange={(event) => setEditing({ ...editing, overlay_gradient: event.target.value })} dir="ltr" aria-label="CSS گرادیان پوشش اسلاید" className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
             </div>
 
@@ -496,19 +495,19 @@ export const SliderAdminPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap gap-6">
-              <label className="flex items-center gap-2 text-xs font-medium">
-                <input type="checkbox" checked={editing.particles_enabled} onChange={(e) => setEditing({ ...editing, particles_enabled: e.target.checked })} />
+              <label className="flex items-center gap-2 text-xs font-medium text-(--theme-text)">
+                <input type="checkbox" checked={editing.particles_enabled} onChange={(e) => setEditing({ ...editing, particles_enabled: e.target.checked })} className="accent-(--theme-primary)" />
                 <span>افکت ذرات (Particles) روی اسلاید</span>
               </label>
-              <label className="flex items-center gap-2 text-xs font-medium">
-                <input type="checkbox" checked={editing.is_active} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} />
+              <label className="flex items-center gap-2 text-xs font-medium text-(--theme-text)">
+                <input type="checkbox" checked={editing.is_active} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} className="accent-(--theme-primary)" />
                 <span>اسلاید فعال باشد</span>
               </label>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setEditing(null)} disabled={savingSlide} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold disabled:opacity-50 dark:border-slate-700">انصراف</button>
-              <button type="submit" disabled={savingSlide} style={{ backgroundColor: 'var(--theme-primary)' }} className="inline-flex items-center gap-1.5 rounded-lg px-5 py-2 text-xs font-semibold text-white disabled:opacity-50">
+              <button type="button" onClick={() => setEditing(null)} disabled={savingSlide} className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted) disabled:opacity-50">انصراف</button>
+              <button type="submit" disabled={savingSlide} className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-5 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover) disabled:opacity-50">
                 <Save className="h-4 w-4" />
                 <span>{savingSlide ? 'در حال ذخیره...' : 'ذخیره اسلاید'}</span>
               </button>

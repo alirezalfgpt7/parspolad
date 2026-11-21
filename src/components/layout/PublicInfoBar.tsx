@@ -24,7 +24,8 @@ function safeSocialUrl(value: string | undefined): string | null {
 }
 
 export const PublicInfoBar: React.FC = () => {
-  const { bootstrap, language, colorMode, toggleColorMode, setLanguage, setSearchOpen } = useAppStore();
+  const { bootstrap, language, colorMode, previewMode, toggleColorMode, setLanguage, setSearchOpen } = useAppStore();
+  const effectiveColorMode = previewMode || colorMode;
   const company = bootstrap?.company;
   const site = bootstrap?.site;
   const showContactInfo = site?.info_bar_enabled !== false;
@@ -51,8 +52,8 @@ export const PublicInfoBar: React.FC = () => {
 
   return (
     <div
-      className="public-info-bar border-b border-slate-200/70 dark:border-slate-800/80"
-      style={{ backgroundColor: 'var(--theme-header-bg)', color: 'var(--theme-header-text)' }}
+      className="public-info-bar"
+      style={{ color: 'var(--theme-header-text)' }}
     >
       <div className="mx-auto flex min-h-9 max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-1 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-2 text-[11px]">
@@ -62,7 +63,7 @@ export const PublicInfoBar: React.FC = () => {
               className="public-info-phone inline-flex items-center gap-1.5 whitespace-nowrap opacity-95 transition-opacity hover:opacity-100"
               aria-label={language === 'fa' ? `تماس با ${phone}` : `Call ${phone}`}
             >
-              <DynamicLucideIcon name={site?.info_bar_phone_icon || 'Phone'} fallback="Phone" className="h-3 w-3 text-(--theme-primary)" />
+              <DynamicLucideIcon name={site?.info_bar_phone_icon || 'Phone'} fallback="Phone" className="h-3 w-3 text-(--theme-header-ink)" />
               <span dir="ltr">{phone}</span>
             </a>
           )}
@@ -110,7 +111,7 @@ export const PublicInfoBar: React.FC = () => {
               title="تغییر تم"
               aria-label="تغییر تم روشن و تیره"
             >
-              {colorMode === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              {effectiveColorMode === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
             <button
               type="button"
@@ -118,11 +119,7 @@ export const PublicInfoBar: React.FC = () => {
               className="effect-navbar-control inline-flex h-8 w-8 items-center justify-center"
               aria-label={language === 'fa' ? 'Switch to English' : 'Change language to Persian'}
             >
-              {language === 'fa' ? (
-                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
-              ) : (
-                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
-              )}
+              <Globe className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -89,14 +89,49 @@ interface AppState {
   removeToast: (id: string) => void;
 }
 
-const savedLang = (localStorage.getItem('ppa_lang') as Language) || 'fa';
-const savedMode = (localStorage.getItem('ppa_mode') as ColorMode) || 'light';
-const savedToken = localStorage.getItem('ppa_token');
+function applyDocumentColorMode(mode: ColorMode) {
+  if (typeof document === 'undefined') return;
+  document.documentElement.dataset.colorMode = mode;
+  if (mode === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+function readSavedColorMode(): { mode: ColorMode; hasSaved: boolean } {
+  try {
+    const raw = localStorage.getItem('ppa_mode');
+    if (raw === 'dark' || raw === 'light') {
+      return { mode: raw, hasSaved: true };
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return { mode: 'light', hasSaved: false };
+}
+
+const savedLang = (() => {
+  try {
+    return (localStorage.getItem('ppa_lang') as Language) || 'fa';
+  } catch {
+    return 'fa';
+  }
+})();
+const initialColorState = readSavedColorMode();
+applyDocumentColorMode(initialColorState.mode);
+const savedToken = (() => {
+  try {
+    return localStorage.getItem('ppa_token');
+  } catch {
+    return null;
+  }
+})();
 
 export const useAppStore = create<AppState>((set, get) => ({
   loading: true,
   language: savedLang,
-  colorMode: savedMode,
+  colorMode: initialColorState.mode,
   user: null,
   token: savedToken,
   bootstrap: null,
@@ -111,33 +146,41 @@ export const useAppStore = create<AppState>((set, get) => ({
   toasts: [],
 
   setLanguage: (lang) => {
-    localStorage.setItem('ppa_lang', lang);
+    try {
+      localStorage.setItem('ppa_lang', lang);
+    } catch {
+      // ignore storage errors
+    }
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
     set({ language: lang });
   },
 
   setColorMode: (mode) => {
-    localStorage.setItem('ppa_mode', mode);
-    document.documentElement.dataset.colorMode = mode;
-    if (mode === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      localStorage.setItem('ppa_mode', mode);
+    } catch {
+      // ignore storage errors
     }
-    set({ colorMode: mode });
+    applyDocumentColorMode(mode);
+    set({ colorMode: mode, previewMode: null });
   },
 
   toggleColorMode: () => {
-    const next = get().colorMode === 'dark' ? 'light' : 'dark';
+    const current = get().previewMode || get().colorMode;
+    const next: ColorMode = current === 'dark' ? 'light' : 'dark';
     get().setColorMode(next);
   },
 
   setAuth: (user, token) => {
-    if (token) {
-      localStorage.setItem('ppa_token', token);
-    } else {
-      localStorage.removeItem('ppa_token');
+    try {
+      if (token) {
+        localStorage.setItem('ppa_token', token);
+      } else {
+        localStorage.removeItem('ppa_token');
+      }
+    } catch {
+      // ignore storage errors
     }
     set({ user, token });
   },
@@ -148,14 +191,25 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch {
       // ignore
     }
-    localStorage.removeItem('ppa_token');
+    try {
+      localStorage.removeItem('ppa_token');
+    } catch {
+      // ignore storage errors
+    }
     set({ user: null, token: null });
   },
 
   fetchBootstrap: async () => {
     try {
       const data = await apiRequest<BootstrapPayload>('/bootstrap', { cache: 'no-store' });
-      set({ bootstrap: data, loading: false });
+      const { hasSaved } = readSavedColorMode();
+      const bootstrapMode = data?.theme?.default_mode;
+      if (!hasSaved && (bootstrapMode === 'light' || bootstrapMode === 'dark')) {
+        applyDocumentColorMode(bootstrapMode);
+        set({ bootstrap: data, colorMode: bootstrapMode, loading: false });
+      } else {
+        set({ bootstrap: data, loading: false });
+      }
     } catch {
       set({ loading: false });
     }
@@ -168,7 +222,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       const res = await apiRequest<{ user: User }>('/auth/me');
       set({ user: res.user });
     } catch {
-      localStorage.removeItem('ppa_token');
+      try {
+        localStorage.removeItem('ppa_token');
+      } catch {
+        // ignore storage errors
+      }
       set({ user: null, token: null });
     }
   },

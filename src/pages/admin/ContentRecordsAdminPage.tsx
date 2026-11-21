@@ -468,7 +468,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
       <button
         type="button"
         onClick={() => openEdit(record)}
-        className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-(--theme-primary) dark:hover:bg-slate-800"
+        className="rounded-lg p-2 text-(--theme-text-muted) transition hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
         aria-label="ویرایش رکورد"
         title="ویرایش"
       >
@@ -488,17 +488,17 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
 
   return (
     <div className="mx-auto max-w-[1600px] space-y-5">
-      <header className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <header className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
         <div className="relative flex flex-col gap-5 p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
           <div className="absolute inset-y-0 inset-s-0 w-1 bg-(--theme-primary)" aria-hidden="true" />
           <div className="flex items-start gap-4">
-            <div className="hidden rounded-2xl bg-(--theme-primary)/10 p-3 text-(--theme-primary) sm:block">
+            <div className="hidden rounded-2xl bg-(--theme-primary)/10 p-3 text-(--theme-primary-ink) sm:block">
               <Database className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-(--theme-primary)">Content workspace</p>
-              <h1 className="mt-1 text-xl font-black text-slate-900 dark:text-white sm:text-2xl">مدیریت داده‌های محتوا</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-(--theme-primary-ink)">Content workspace</p>
+              <h1 className="mt-1 text-xl font-black text-(--theme-text) sm:text-2xl">مدیریت داده‌های محتوا</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-(--theme-text-muted)">
                 بخش موردنظر را انتخاب کنید، اطلاعات همان بخش را جست‌وجو و مرتب کنید و فقط در صورت نیاز فرم افزودن یا ویرایش را باز کنید.
               </p>
             </div>
@@ -506,9 +506,9 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
 
           <div className={`grid w-full gap-3 ${lockedResource ? '' : 'sm:grid-cols-[minmax(0,1fr)_auto]'} lg:w-auto lg:min-w-104`}>
             {lockedResource && selectedResource ? (
-              <div className="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800">
-                <span className="text-sm font-bold">{selectedResource.label_fa}</span>
-                <span className="text-xs text-slate-400" dir="ltr">{selectedResource.label_en}</span>
+              <div className="flex min-h-11 items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3">
+                <span className="text-sm font-bold text-(--theme-text)">{selectedResource.label_fa}</span>
+                <span className="text-xs text-(--theme-text-muted)" dir="ltr">{selectedResource.label_en}</span>
               </div>
             ) : !lockedResource ? (
               <SearchableSelect
@@ -538,7 +538,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
               type="button"
               onClick={openCreate}
               disabled={!resource || loadingSchema || fields.length === 0}
-              className="inline-flex h-11 min-h-11 self-end items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-(--theme-primary) px-5 text-sm font-bold text-white shadow-sm transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-11 min-h-11 self-end items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-(--theme-btn-bg) px-5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
               {embedded ? `افزودن ${selectedResource?.label_fa || 'رکورد'}` : 'افزودن رکورد'}
@@ -548,13 +548,13 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
       </header>
 
       {loadingResources ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-12 text-center shadow-(--theme-card-shadow)">
           <InlineLoader label="در حال دریافت بخش‌های محتوا..." />
         </div>
       ) : resources.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center dark:border-slate-700 dark:bg-slate-900">
-          <Database className="mx-auto h-8 w-8 text-slate-400" />
-          <p className="mt-3 font-semibold">بخشی برای مدیریت در دسترس نیست.</p>
+        <div className="rounded-2xl border border-dashed border-(--theme-border-strong) bg-(--theme-card-surface) p-12 text-center shadow-(--theme-card-shadow)">
+          <Database className="mx-auto h-8 w-8 text-(--theme-text-muted)" />
+          <p className="mt-3 font-semibold text-(--theme-text)">بخشی برای مدیریت در دسترس نیست.</p>
         </div>
       ) : (
         <>
@@ -572,7 +572,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                   to={selectedResource.public_path}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1 self-start rounded-lg border border-blue-200 bg-white px-3 py-2 text-[11px] font-bold text-blue-800 transition hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-blue-900 dark:bg-slate-900 dark:text-blue-200"
+                  className="inline-flex items-center gap-1 self-start rounded-lg border border-blue-200 bg-(--theme-surface) px-3 py-2 text-[11px] font-bold text-blue-800 transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink) dark:border-blue-900 dark:text-blue-200"
                 >
                   مشاهده در سایت
                   <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
@@ -581,7 +581,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
               {selectedResource.related_admin_path && (
                 <Link
                   to={selectedResource.related_admin_path}
-                  className="inline-flex items-center gap-1 self-start rounded-lg border border-blue-200 bg-white px-3 py-2 text-[11px] font-bold text-blue-800 transition hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-blue-900 dark:bg-slate-900 dark:text-blue-200"
+                  className="inline-flex items-center gap-1 self-start rounded-lg border border-blue-200 bg-(--theme-surface) px-3 py-2 text-[11px] font-bold text-blue-800 transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink) dark:border-blue-900 dark:text-blue-200"
                 >
                   {selectedResource.key === 'articles' ? 'مدیریت دسته‌های مقالات' : 'تنظیمات عنوان و پس‌زمینه'}
                   <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
@@ -590,17 +590,17 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
               </div>
             </section>
           )}
-          <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+          <section className="flex flex-col gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="rounded-xl bg-slate-100 p-2.5 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-2.5 text-(--theme-text-muted)">
                 <Database className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-base font-extrabold text-slate-900 dark:text-white">
+                <h2 className="truncate text-base font-extrabold text-(--theme-text)">
                   {selectedResource?.label_fa}
-                  <span className="ms-2 text-xs font-medium text-slate-400" dir="ltr">{selectedResource?.label_en}</span>
+                  <span className="ms-2 text-xs font-medium text-(--theme-text-muted)" dir="ltr">{selectedResource?.label_en}</span>
                 </h2>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-(--theme-text-muted)">
                   {total.toLocaleString('fa-IR')} رکورد
                   {search ? ` · نتیجه برای «${search}»` : ' · فهرست صفحه‌بندی‌شده'}
                 </p>
@@ -609,26 +609,26 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
 
             <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
               <label className="relative min-w-0 flex-1 sm:min-w-72 lg:min-w-88">
-                <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-text-muted)" />
                 <input
                   type="search"
                   value={searchInput}
                   onChange={(event) => setSearchInput(event.target.value)}
                   placeholder="جست‌وجوی سریع در همهٔ فیلدهای متنی..."
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pe-3 ps-10 text-sm outline-none transition focus:border-(--theme-primary) focus:bg-white focus:ring-2 focus:ring-(--theme-primary)/10 dark:border-slate-700 dark:bg-slate-800 dark:focus:bg-slate-900"
+                  className="h-11 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) pe-3 ps-10 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/15"
                   aria-label="جست‌وجو در رکوردها"
                 />
               </label>
 
               <details className="group relative">
-                <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 text-sm font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted)">
                   <ListFilter className="h-4 w-4" />
                   ستون‌ها
                 </summary>
-                <div className="absolute inset-e-0 top-full z-30 mt-2 max-h-80 w-72 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-                  <p className="mb-2 text-xs font-bold text-slate-500">ستون‌های قابل نمایش</p>
+                <div className="absolute inset-e-0 top-full z-30 mt-2 max-h-80 w-72 overflow-y-auto rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow-hover)">
+                  <p className="mb-2 text-xs font-bold text-(--theme-text-muted)">ستون‌های قابل نمایش</p>
                   {sortableFields.map((field) => (
-                    <label key={field.name} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <label key={field.name} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted)">
                       <input
                         type="checkbox"
                         checked={visibleColumns.includes(field.name)}
@@ -637,7 +637,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                       />
                       <span>
                         <span className="block font-semibold">{field.label_fa}</span>
-                        <span className="mt-0.5 block text-[10px] text-slate-400" dir="ltr">{field.label_en}</span>
+                        <span className="mt-0.5 block text-[10px] text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
                       </span>
                     </label>
                   ))}
@@ -646,9 +646,9 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800 sm:px-5">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+          <section className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--theme-border) px-4 py-3 sm:px-5">
+              <div className="flex items-center gap-2 text-xs text-(--theme-text-muted)">
                 <span>نمایش</span>
                 <select
                   value={perPage}
@@ -656,14 +656,14 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                     setPerPage(Number(event.target.value));
                     setPage(1);
                   }}
-                  className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 font-semibold text-slate-700 outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2 py-1.5 font-semibold text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
                   aria-label="تعداد رکورد در هر صفحه"
                 >
                   {[20, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
                 </select>
                 <span>رکورد در هر صفحه</span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-(--theme-text-muted)">
                 {total > 0 ? `${((page - 1) * perPage + 1).toLocaleString('fa-IR')} تا ${Math.min(page * perPage, total).toLocaleString('fa-IR')} از ${total.toLocaleString('fa-IR')}` : 'رکوردی برای نمایش نیست'}
               </p>
             </div>
@@ -671,54 +671,54 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-190 border-collapse text-start text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-300">
+                  <tr className="border-b border-(--theme-border) bg-(--theme-surface-muted) text-xs text-(--theme-text-muted)">
                     <th className="w-20 px-4 py-3 text-start">
-                      <button type="button" onClick={() => setSort('id')} className="inline-flex items-center gap-1.5 hover:text-(--theme-primary)">
+                      <button type="button" onClick={() => setSort('id')} className="inline-flex items-center gap-1.5 hover:text-(--theme-primary-ink)">
                         شناسه <ArrowUpDown className="h-3.5 w-3.5" />
                       </button>
                     </th>
                     {displayedFields.map((field) => (
                       <th key={field.name} className="px-4 py-3 text-start">
-                        <button type="button" onClick={() => setSort(field.name)} className="inline-flex items-center gap-1.5 text-start hover:text-(--theme-primary)">
+                        <button type="button" onClick={() => setSort(field.name)} className="inline-flex items-center gap-1.5 text-start hover:text-(--theme-primary-ink)">
                           <span>
                             <span className="block">{field.label_fa}</span>
-                            <span className="mt-0.5 block text-[10px] font-normal text-slate-400" dir="ltr">{field.label_en}</span>
+                            <span className="mt-0.5 block text-[10px] font-normal text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
                           </span>
-                          <ArrowUpDown className={`h-3.5 w-3.5 shrink-0 ${sortBy === field.name ? 'text-(--theme-primary)' : 'opacity-40'}`} />
+                          <ArrowUpDown className={`h-3.5 w-3.5 shrink-0 ${sortBy === field.name ? 'text-(--theme-primary-ink)' : 'opacity-40'}`} />
                         </button>
                       </th>
                     ))}
                     <th className="w-36 px-4 py-3 text-center">عملیات / Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-(--theme-border)">
                   {loadingRecords ? (
                     Array.from({ length: 5 }, (_, index) => (
                       <tr key={index} className="animate-pulse">
                         <td colSpan={displayedFields.length + 2} className="px-4 py-4">
-                          <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-800" />
+                          <div className="h-4 w-2/3 rounded bg-(--theme-surface-muted)" />
                         </td>
                       </tr>
                     ))
                   ) : records.length === 0 ? (
                     <tr>
                       <td colSpan={displayedFields.length + 2} className="px-4 py-16 text-center">
-                        <Database className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600" />
-                        <p className="mt-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <Database className="mx-auto h-8 w-8 text-(--theme-text-muted)" />
+                        <p className="mt-3 text-sm font-semibold text-(--theme-text-muted)">
                           {search ? 'رکوردی با این عبارت پیدا نشد.' : 'هنوز رکوردی ثبت نشده است.'}
                         </p>
                         {!search && (
-                          <button type="button" onClick={openCreate} className="mt-3 text-xs font-bold text-(--theme-primary) hover:underline">
+                          <button type="button" onClick={openCreate} className="mt-3 text-xs font-bold text-(--theme-link) hover:underline">
                             افزودن اولین رکورد
                           </button>
                         )}
                       </td>
                     </tr>
                   ) : records.map((record) => (
-                    <tr key={record.id} className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
-                      <td className="px-4 py-3.5 font-mono text-xs text-slate-400">#{record.id}</td>
+                    <tr key={record.id} className="transition-colors hover:bg-(--theme-surface-muted)/60">
+                      <td className="px-4 py-3.5 font-mono text-xs text-(--theme-text-muted)">#{record.id}</td>
                       {displayedFields.map((field) => (
-                        <td key={field.name} className="px-4 py-3.5 text-slate-700 dark:text-slate-200">
+                        <td key={field.name} className="px-4 py-3.5 text-(--theme-text)">
                           {renderValue(record, field)}
                         </td>
                       ))}
@@ -733,27 +733,27 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
 
             <div className="space-y-3 p-3 md:hidden">
               {loadingRecords ? (
-                Array.from({ length: 4 }, (_, index) => <div key={index} className="h-24 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />)
+                Array.from({ length: 4 }, (_, index) => <div key={index} className="h-24 animate-pulse rounded-xl bg-(--theme-surface-muted)" />)
               ) : records.length === 0 ? (
-                <div className="px-3 py-12 text-center text-sm text-slate-500">
+                <div className="px-3 py-12 text-center text-sm text-(--theme-text-muted)">
                   {search ? 'رکوردی با این عبارت پیدا نشد.' : 'هنوز رکوردی ثبت نشده است.'}
                 </div>
               ) : records.map((record) => (
-                <article key={record.id} className="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+                <article key={record.id} className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                      <p className="truncate text-sm font-bold text-(--theme-text)">
                         {primaryField ? printableValue(record[primaryField.name]) : `رکورد ${record.id}`}
                       </p>
-                      <p className="mt-1 font-mono text-[10px] text-slate-400">ID: {record.id}</p>
+                      <p className="mt-1 font-mono text-[10px] text-(--theme-text-muted)">ID: {record.id}</p>
                     </div>
                     {recordActions(record)}
                   </div>
-                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-(--theme-border) pt-3">
                     {displayedFields.filter((field) => field.name !== primaryField?.name).map((field) => (
                       <div key={field.name} className="min-w-0">
-                        <dt className="truncate text-[10px] text-slate-400">{field.label_fa}</dt>
-                        <dd className="mt-1 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
+                        <dt className="truncate text-[10px] text-(--theme-text-muted)">{field.label_fa}</dt>
+                        <dd className="mt-1 truncate text-xs font-medium text-(--theme-text)">
                           {renderValue(record, field)}
                         </dd>
                       </div>
@@ -765,7 +765,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
           </section>
 
           <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-            <p className="text-xs text-slate-500">جست‌وجو و مرتب‌سازی در پایگاه‌داده انجام می‌شود؛ همهٔ رکوردها یک‌جا بارگیری نمی‌شوند.</p>
+            <p className="text-xs text-(--theme-text-muted)">جست‌وجو و مرتب‌سازی در پایگاه‌داده انجام می‌شود؛ همهٔ رکوردها یک‌جا بارگیری نمی‌شوند.</p>
             <Pagination page={page} lastPage={lastPage} onChange={setPage} />
           </div>
         </>
@@ -799,19 +799,19 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                 return (
                   <div key={field.name} className={`min-w-0 space-y-1.5 ${fullWidth ? 'sm:col-span-2' : ''}`}>
                     <label className="block space-y-1.5">
-                      <span className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                      <span className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs font-bold text-(--theme-text)">
                         <span>{field.label_fa}{field.required ? ' *' : ''}</span>
-                        <span className="font-medium text-slate-400" dir="ltr">{field.label_en}{field.required ? ' *' : ''}</span>
+                        <span className="font-medium text-(--theme-text-muted)" dir="ltr">{field.label_en}{field.required ? ' *' : ''}</span>
                       </span>
                       {field.type === 'boolean' ? (
-                        <span className="flex min-h-11 items-center gap-3 rounded-xl border border-slate-200 px-3 dark:border-slate-700">
+                        <span className="flex min-h-11 items-center gap-3 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 text-(--theme-input-text)">
                           <input type="checkbox" {...register(field.name)} className="h-4 w-4 accent-(--theme-primary)" />
                           <span className="text-sm font-medium">فعال / Active</span>
                         </span>
                       ) : field.type === 'select' ? (
                         <select
                           {...register(field.name)}
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-normal outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/10 dark:border-slate-700 dark:bg-slate-800"
+                          className="h-11 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 text-sm font-normal text-(--theme-input-text) outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/15"
                         >
                           {(!field.required || field.name === 'article_category_id') && <option value="">انتخاب کنید / Select</option>}
                           {(field.options ?? []).map((option) => (
@@ -844,7 +844,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                                 setValue(field.name, `${date}T${event.target.value}`, { shouldDirty: true, shouldValidate: true });
                               }}
                               aria-label="زمان انتشار"
-                              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-slate-700 dark:bg-slate-800"
+                              className="h-11 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 text-sm text-(--theme-input-text)"
                             />
                           )}
                         </div>
@@ -855,10 +855,10 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                           spellCheck={field.type !== 'json'}
                           {...register(field.name)}
                           placeholder={field.type === 'json' ? '{\n  \n}' : ''}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/10 dark:border-slate-700 dark:bg-slate-800"
+                          className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2.5 text-sm font-normal text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/15"
                         />
                       ) : field.type === 'color' ? (
-                        <span className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 dark:border-slate-700 dark:bg-slate-800">
+                        <span className="flex h-11 items-center gap-2 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-2">
                           <input
                             type="color"
                             value={colorInputValue}
@@ -870,7 +870,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                             type="text"
                             dir="ltr"
                             {...register(field.name)}
-                            className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
+                            className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm text-(--theme-input-text) outline-none"
                           />
                         </span>
                       ) : field.name === 'icon' && field.type === 'string' ? (
@@ -892,13 +892,13 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                         <input
                           type={field.type === 'number' ? 'number' : 'text'}
                           {...register(field.name)}
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-normal outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/10 dark:border-slate-700 dark:bg-slate-800"
+                          className="h-11 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 text-sm font-normal text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/15"
                         />
                       )}
                     </label>
 
                     {errors[field.name]?.message && (
-                      <span role="alert" className="block text-xs text-red-600">{String(errors[field.name]?.message)}</span>
+                      <span role="alert" className="block text-xs text-red-600 dark:text-red-400">{String(errors[field.name]?.message)}</span>
                     )}
                   </div>
                 );
@@ -906,14 +906,14 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
             </div>
           )}
 
-          <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-slate-100 bg-white pt-4 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:justify-end">
-            <button type="button" onClick={closeForm} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+          <div className="sticky bottom-0 flex flex-col-reverse gap-2 border-t border-(--theme-border) bg-(--theme-surface) pt-4 sm:flex-row sm:justify-end">
+            <button type="button" onClick={closeForm} className="rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 py-2.5 text-sm font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted)">
               انصراف
             </button>
             <button
               type="submit"
               disabled={isSubmitting || fields.length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-primary) px-5 py-2.5 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-5 py-2.5 text-sm font-bold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-60"
             >
               <Save className="h-4 w-4" />
               {isSubmitting ? <InlineLoader label="در حال ذخیره..." /> : formMode === 'edit' ? 'ذخیرهٔ تغییرات' : 'ثبت رکورد'}

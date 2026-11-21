@@ -16,7 +16,7 @@ interface CmsPageIntroProps {
 export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
   slug,
   className = 'mb-10',
-  titleClassName = 'text-3xl font-extrabold text-slate-900 dark:text-white',
+  titleClassName = 'text-3xl font-extrabold text-white',
   showContent = true,
 }) => {
   const { page, title, subtitle, content, metaTitle, metaDescription, language, badge, logoUrl } = useCmsPage(slug);
@@ -33,7 +33,7 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
       />
       <Breadcrumb items={[{ label: title }]} />
       <header className={className}>
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-900 text-white dark:border-slate-800">
+        <div className="relative overflow-hidden rounded-3xl border border-(--theme-border) bg-slate-900 text-white">
           <div className="flex flex-wrap items-center justify-between gap-6 px-6 pt-8 pb-16 sm:px-10">
             <div className="flex min-w-0 items-center gap-5">
               <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-slate-950 p-1 shadow-xl">
@@ -67,7 +67,7 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
         </div>
         {showContent && content && (
           <div
-            className="prose mt-5 max-w-none text-sm leading-relaxed text-slate-700 dark:prose-invert dark:text-slate-300"
+            className="prose mt-5 max-w-none text-sm leading-relaxed text-(--theme-text-muted) dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
           />
         )}

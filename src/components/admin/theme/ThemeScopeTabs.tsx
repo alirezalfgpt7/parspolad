@@ -30,11 +30,11 @@ export const ThemeScopeTabs: React.FC<ThemeScopeTabsProps> = ({ selected, onSele
       >
         <span className="theme-scope-tab-icon"><Icon className="h-4 w-4" /></span>
         <span className="min-w-0 text-start">
-          <span className="flex items-center gap-1.5 text-xs font-bold">
+          <span className="flex items-center gap-1.5 text-xs font-bold text-(--theme-text)">
             {label}
-            {selected === value && <Check className="h-3.5 w-3.5 text-(--theme-primary)" />}
+            {selected === value && <Check className="h-3.5 w-3.5 text-(--theme-primary-ink)" />}
           </span>
-          <span className="mt-1 block truncate text-[10px] text-slate-500">{description}</span>
+          <span className="mt-1 block truncate text-[10px] text-(--theme-text-muted)">{description}</span>
         </span>
       </button>
     ))}

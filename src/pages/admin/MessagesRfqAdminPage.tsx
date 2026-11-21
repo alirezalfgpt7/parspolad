@@ -98,8 +98,8 @@ export const MessagesRfqAdminPage: React.FC = () => {
       header: 'فرستنده و شرکت',
       render: (m) => (
         <div>
-          <div className="font-bold">{m.name}</div>
-          <div className="text-xs text-slate-500">{m.company || m.email} · {m.phone}</div>
+          <div className="font-bold text-(--theme-text)">{m.name}</div>
+          <div className="text-xs text-(--theme-text-muted)">{m.company || m.email} · {m.phone}</div>
         </div>
       ),
     },
@@ -108,8 +108,8 @@ export const MessagesRfqAdminPage: React.FC = () => {
       header: 'موضوع و شرح',
       render: (m) => (
         <div className="max-w-md">
-          <div className="font-semibold text-xs text-(--theme-primary)">{m.type.toUpperCase()} · {m.subject}</div>
-          <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{m.message}</p>
+          <div className="text-xs font-semibold text-(--theme-primary-ink)">{m.type.toUpperCase()} · {m.subject}</div>
+          <p className="mt-1 text-xs text-(--theme-text-muted)">{m.message}</p>
         </div>
       ),
     },
@@ -146,8 +146,8 @@ export const MessagesRfqAdminPage: React.FC = () => {
       header: 'پیگیری تیکت',
       render: (message) => message.type === 'ticket' ? (
         <div className="space-y-1">
-          <div className="font-mono text-[11px]">{message.tracking_number}</div>
-          <button type="button" onClick={() => setSelectedTicketId(message.id)} className="text-xs font-semibold text-(--theme-primary) hover:underline">
+          <div className="font-mono text-[11px] text-(--theme-text-muted)">{message.tracking_number}</div>
+          <button type="button" onClick={() => setSelectedTicketId(message.id)} className="text-xs font-semibold text-(--theme-link) hover:underline">
             مشاهده گفتگو
           </button>
         </div>
@@ -157,7 +157,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
       key: 'actions',
       header: 'عملیات',
       render: (message) => canManageMessages ? (
-        <button type="button" onClick={() => setDeleteTarget(message)} aria-label="حذف پیام" className="rounded p-1.5 text-red-600 hover:bg-red-50">
+        <button type="button" onClick={() => setDeleteTarget(message)} aria-label="حذف پیام" className="rounded-lg p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30">
           <Trash2 className="h-4 w-4" />
         </button>
       ) : null,
@@ -181,52 +181,52 @@ export const MessagesRfqAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-extrabold">مدیریت پیام‌های تماس، استعلام‌های RFQ و تیکت‌ها</h1>
-      <p className="text-xs leading-6 text-slate-500">
+      <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت پیام‌های تماس، استعلام‌های RFQ و تیکت‌ها</h1>
+      <p className="text-xs leading-6 text-(--theme-text-muted)">
         درخواست‌های همکاری و استعلام قیمت (RFQ)، پیام‌های فرم تماس و گفتگوهای پیگیری تیکت از این بخش بررسی و پاسخ داده می‌شوند.
       </p>
       <DataTable data={messages} columns={cols} pageSize={8} searchKeys={[(m) => m.name, (m) => m.subject, (m) => m.company || '']} />
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
       {ticket && (
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="font-bold">{ticket.subject}</h2>
-              <p className="mt-1 text-xs text-slate-500">{ticket.tracking_number} · {ticket.name} · {ticket.email} · {ticket.phone}</p>
+              <h2 className="font-bold text-(--theme-text)">{ticket.subject}</h2>
+              <p className="mt-1 text-xs text-(--theme-text-muted)">{ticket.tracking_number} · {ticket.name} · {ticket.email} · {ticket.phone}</p>
             </div>
-            <button type="button" onClick={() => setSelectedTicketId(null)} className="text-xs text-slate-500 hover:underline">بستن</button>
+            <button type="button" onClick={() => setSelectedTicketId(null)} className="text-xs text-(--theme-text-muted) hover:underline">بستن</button>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <select value={ticket.ticket_status ?? 'open'} onChange={(event) => updateTicket({ ticket_status: event.target.value })} disabled={!canManageMessages} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+            <select value={ticket.ticket_status ?? 'open'} onChange={(event) => updateTicket({ ticket_status: event.target.value })} disabled={!canManageMessages} className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)">
               <option value="open">باز</option><option value="in_progress">در حال بررسی</option><option value="waiting_customer">منتظر مشتری</option><option value="resolved">حل‌شده</option><option value="closed">بسته</option>
             </select>
-            <select value={ticket.priority ?? 'normal'} onChange={(event) => updateTicket({ priority: event.target.value })} disabled={!canManageMessages} className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+            <select value={ticket.priority ?? 'normal'} onChange={(event) => updateTicket({ priority: event.target.value })} disabled={!canManageMessages} className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)">
               <option value="low">کم</option><option value="normal">عادی</option><option value="high">زیاد</option><option value="urgent">فوری</option>
             </select>
             <div className="flex gap-2">
-              <input type="number" min="1" value={assigneeIdText} disabled={!canManageMessages} onChange={(event) => setAssigneeIdText(event.target.value)} placeholder="شناسه مسئول" className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-              <button type="button" disabled={!canManageMessages} onClick={() => updateTicket({ assignee_id: assigneeIdText ? Number(assigneeIdText) : null })} className="rounded-lg border border-slate-200 px-3 py-2 text-xs disabled:opacity-50 dark:border-slate-700">ثبت مسئول</button>
+              <input type="number" min="1" value={assigneeIdText} disabled={!canManageMessages} onChange={(event) => setAssigneeIdText(event.target.value)} placeholder="شناسه مسئول" className="min-w-0 flex-1 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+              <button type="button" disabled={!canManageMessages} onClick={() => updateTicket({ assignee_id: assigneeIdText ? Number(assigneeIdText) : null })} className="rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted) disabled:opacity-50">ثبت مسئول</button>
             </div>
           </div>
           <div className="max-h-80 space-y-3 overflow-auto">
             {ticket.ticket_messages?.map((message) => (
-              <article key={message.id} className={`rounded-lg p-3 text-sm ${message.is_internal ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-slate-50 dark:bg-slate-800'}`}>
-                <div className="mb-1 flex justify-between text-xs text-slate-500"><span>{message.author_name}{message.is_internal ? ' · داخلی' : ''}</span><time>{new Date(message.created_at).toLocaleString('fa-IR')}</time></div>
+              <article key={message.id} className={`rounded-xl p-3 text-sm ${message.is_internal ? 'border border-amber-300/60 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100' : 'border border-(--theme-border) bg-(--theme-surface-muted) text-(--theme-text)'}`}>
+                <div className="mb-1 flex justify-between text-xs text-(--theme-text-muted)"><span>{message.author_name}{message.is_internal ? ' · داخلی' : ''}</span><time>{new Date(message.created_at).toLocaleString('fa-IR')}</time></div>
                 <p className="whitespace-pre-wrap">{message.body}</p>
               </article>
             ))}
           </div>
           {canManageMessages && (
             <div className="space-y-2">
-              <textarea value={ticketReply} onChange={(event) => setTicketReply(event.target.value)} rows={3} placeholder="پاسخ یا یادداشت داخلی" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-              <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={internalReply} onChange={(event) => setInternalReply(event.target.checked)} />یادداشت داخلی (برای مشتری نمایش داده نشود)</label>
-              <button type="button" onClick={sendTicketReply} disabled={!ticketReply.trim()} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">ثبت پاسخ</button>
+              <textarea value={ticketReply} onChange={(event) => setTicketReply(event.target.value)} rows={3} placeholder="پاسخ یا یادداشت داخلی" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+              <label className="flex items-center gap-2 text-xs text-(--theme-text)"><input type="checkbox" checked={internalReply} onChange={(event) => setInternalReply(event.target.checked)} className="accent-(--theme-primary)" />یادداشت داخلی (برای مشتری نمایش داده نشود)</label>
+              <button type="button" onClick={sendTicketReply} disabled={!ticketReply.trim()} className="rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-50">ثبت پاسخ</button>
             </div>
           )}
           {ticket.ticket_history?.length > 0 && (
-            <details className="text-xs">
+            <details className="text-xs text-(--theme-text)">
               <summary className="cursor-pointer font-semibold">تاریخچه تغییرات</summary>
-              <ul className="mt-2 space-y-1 text-slate-500">{ticket.ticket_history.map((event) => <li key={event.id}>{event.action} · {new Date(event.created_at).toLocaleString('fa-IR')}</li>)}</ul>
+              <ul className="mt-2 space-y-1 text-(--theme-text-muted)">{ticket.ticket_history.map((event) => <li key={event.id}>{event.action} · {new Date(event.created_at).toLocaleString('fa-IR')}</li>)}</ul>
             </details>
           )}
         </section>

@@ -47,19 +47,19 @@ export const FaqPage: React.FC = () => {
       <CmsPageIntro slug="faq" className="mb-6" />
       <div className="space-y-3">
         {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : faqs.length === 0 ? (
-          <p className="text-sm text-slate-500">سوال متداولی ثبت نشده است.</p>
+          <p className="text-sm text-(--theme-text-muted)">سوال متداولی ثبت نشده است.</p>
         ) : faqs.map((item) => (
-          <div key={item.id} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div key={item.id} className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
             <button
               type="button"
               onClick={() => setOpenIdx(openIdx === item.id ? null : item.id)}
-              className="flex w-full items-center justify-between gap-4 p-4 text-start text-sm font-bold"
+              className="flex w-full items-center justify-between gap-4 p-4 text-start text-sm font-bold text-(--theme-text)"
             >
               <span>{language === 'fa' ? item.question_fa : item.question_en || item.question_fa}</span>
               <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${openIdx === item.id ? 'rotate-180' : ''}`} />
             </button>
             {openIdx === item.id && (
-              <div className="border-t border-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
+              <div className="border-t border-(--theme-border) px-4 py-3 text-xs leading-relaxed text-(--theme-text-muted)">
                 {language === 'fa' ? item.answer_fa : item.answer_en || item.answer_fa}
               </div>
             )}
@@ -76,8 +76,8 @@ export const LegalPage: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <CmsPageIntro slug="legal" className="mb-6" showContent={false} />
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-        <div className="prose max-w-none text-sm leading-8 dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+      <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow) sm:p-8">
+        <div className="prose max-w-none text-sm leading-8 text-(--theme-text-muted) dark:prose-invert" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
       </div>
     </div>
   );
@@ -96,16 +96,16 @@ export const SitemapPage: React.FC = () => {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <CmsPageIntro slug="sitemap" className="mb-6" />
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow) sm:p-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold">نقشه سایت (HTML & XML Sitemap)</h2>
-          <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="text-xs font-semibold text-(--theme-primary) hover:underline">
+          <h2 className="text-xl font-extrabold text-(--theme-text)">نقشه سایت (HTML & XML Sitemap)</h2>
+          <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="text-xs font-semibold text-(--theme-link) hover:underline">
             مشاهده sitemap.xml
           </a>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {links.map((link) => (
-            <Link key={link.path} to={link.path} className="rounded-lg border border-slate-100 px-4 py-3 text-sm font-medium hover:border-(--theme-primary) dark:border-slate-800">
+            <Link key={link.path} to={link.path} className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-4 py-3 text-sm font-medium text-(--theme-text) transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink)">
               {language === 'fa' ? link.title_fa : link.title_en}
             </Link>
           ))}
@@ -136,7 +136,7 @@ export const MaintenancePage: React.FC = () => {
       <Win11BootSpinnerEffect className="my-2 text-amber-400" />
       <h1 className="mt-4 text-2xl font-extrabold">{title}</h1>
       <p className="mt-2 max-w-md text-sm text-slate-300">{subtitle}</p>
-      <Link to="/login" className="mt-6 rounded-lg bg-(--theme-primary) px-5 py-2 text-xs font-semibold text-white">
+      <Link to="/login" className="mt-6 rounded-xl bg-(--theme-btn-bg) px-5 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)">
         {language === 'fa' ? 'ورود مدیران سیستم' : 'Admin Sign In'}
       </Link>
     </div>
@@ -164,7 +164,7 @@ export const ErrorPage: React.FC<{ code: 403 | 404 | 500 }> = ({ code }) => {
       ctaLabel={ctaLabel}
       logoElement={
         cfg.logo_url ? (
-          <div className="h-14 w-14 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="h-14 w-14 overflow-hidden rounded-2xl border border-(--theme-border) bg-(--theme-surface) p-1.5 shadow-sm">
             <BrandLogo overrideUrl={cfg.logo_url} alt={title} className="h-full w-full" />
           </div>
         ) : undefined

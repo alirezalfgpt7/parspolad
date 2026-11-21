@@ -39,29 +39,29 @@ export const OrgChartPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setSelectedDeptId(department.id)}
-          className={`flex min-h-full w-full flex-col justify-between rounded-xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
+          className={`flex min-h-full w-full flex-col justify-between rounded-2xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
             isSelected
-              ? 'border-(--theme-primary) bg-red-50/40 dark:bg-red-950/20'
-              : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950'
+              ? 'border-(--theme-primary) bg-(--theme-primary)/10 shadow-(--theme-card-shadow)'
+              : 'border-(--theme-card-border) bg-(--theme-surface-muted) hover:border-(--theme-card-border-hover)'
           }`}
         >
           <div>
             <span className="inline-block h-1.5 w-8 rounded-full" style={{ backgroundColor: department.color }} />
-            <h3 className="mt-2 text-xs font-bold text-slate-900 dark:text-white">
+            <h3 className="mt-2 text-xs font-bold text-(--theme-text)">
               {language === 'fa' ? department.name_fa : department.name_en}
             </h3>
-            <p className="mt-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+            <p className="mt-1 text-xs font-medium text-(--theme-text-muted)">
               {language === 'fa' ? department.head_name_fa : department.head_name_en}
             </p>
-            <p className="text-[11px] text-slate-400">{department.head_title_fa}</p>
+            <p className="text-[11px] text-(--theme-text-muted)">{department.head_title_fa}</p>
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-500 tabular-nums">
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-(--theme-text-muted) tabular-nums">
             <Users className="h-3.5 w-3.5" />
             <span>{department.member_count} نفر</span>
           </div>
         </button>
         {nestedDepartments.length > 0 && (
-          <div className="mt-3 space-y-3 border-s-2 border-slate-200 ps-3 dark:border-slate-700">
+          <div className="mt-3 space-y-3 border-s-2 border-(--theme-border) ps-3">
             {nestedDepartments.map((nested) => renderDepartment(nested, nextAncestors))}
           </div>
         )}
@@ -74,26 +74,26 @@ export const OrgChartPage: React.FC = () => {
       <CmsPageIntro slug="org-chart" />
 
       {/* Interactive Org Tree */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow) sm:p-8">
         {root && (
           <div className="flex flex-col items-center">
             <button
               type="button"
               onClick={() => setSelectedDeptId(root.id)}
               style={{ borderColor: selectedDeptId === root.id ? root.color : undefined }}
-              className="w-full max-w-xs rounded-xl border-2 border-slate-200 bg-slate-50 p-4 text-center transition-all hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+              className="w-full max-w-xs rounded-2xl border-2 border-(--theme-border) bg-(--theme-surface-muted) p-4 text-center transition-all hover:border-(--theme-primary-ink)"
             >
-              <div className="text-xs font-bold" style={{ color: root.color }}>
+              <div className="text-xs font-bold text-(--theme-primary-ink)">
                 {language === 'fa' ? root.name_fa : root.name_en}
               </div>
-              <div className="mt-1 text-base font-extrabold text-slate-900 dark:text-white">
+              <div className="mt-1 text-base font-extrabold text-(--theme-text)">
                 {language === 'fa' ? root.head_name_fa : root.head_name_en}
               </div>
-              <div className="text-xs text-slate-500">{root.head_title_fa}</div>
+              <div className="text-xs text-(--theme-text-muted)">{root.head_title_fa}</div>
             </button>
 
-            <div className="h-8 w-px bg-slate-300 dark:bg-slate-700" />
-            <div className="h-px w-full max-w-5xl bg-slate-300 dark:bg-slate-700" />
+            <div className="h-8 w-px bg-(--theme-border-strong)" />
+            <div className="h-px w-full max-w-5xl bg-(--theme-border-strong)" />
 
             <div className="mt-6 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
               {children.map((department) => renderDepartment(department))}
@@ -105,7 +105,7 @@ export const OrgChartPage: React.FC = () => {
       {/* Effect 046: Department Heads Showcase */}
       {departments.length > 0 && (
         <div className="mt-10">
-          <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="mb-4 text-lg font-bold text-(--theme-text)">
             {language === 'fa' ? 'مدیران واحدهای تخصصی' : 'Department Heads'}
           </h2>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -139,7 +139,7 @@ export const OrgChartPage: React.FC = () => {
       {/* Selected Department & Key Team (Effect 066: Sliding Profile Cards) */}
       <div className="mt-12">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold text-(--theme-text)">
             {selectedDeptId && activeDept
               ? `${language === 'fa' ? 'اعضای کلیدی واحد' : 'Team Members'}: ${language === 'fa' ? activeDept.name_fa : activeDept.name_en}`
               : (language === 'fa' ? 'مدیران و کارشناسان کلیدی شرکت' : 'Key Specialists & Engineers')}
@@ -148,7 +148,7 @@ export const OrgChartPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setSelectedDeptId(null)}
-              className="text-xs font-semibold text-(--theme-primary) hover:underline"
+              className="text-xs font-semibold text-(--theme-primary-ink) hover:underline"
             >
               {language === 'fa' ? 'نمایش همه واحدها' : 'Show All'}
             </button>

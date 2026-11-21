@@ -84,43 +84,43 @@ export const FaqAdminPage: React.FC = () => {
 
   return (
     <div className="grid gap-6 xl:grid-cols-2">
-      <form onSubmit={handleSubmit(save)} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="text-lg font-extrabold">{editing ? 'ویرایش سوال متداول' : 'افزودن سوال متداول'}</h1>
+      <form onSubmit={handleSubmit(save)} className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+        <h1 className="text-lg font-extrabold text-(--theme-text)">{editing ? 'ویرایش سوال متداول' : 'افزودن سوال متداول'}</h1>
         <label className="block space-y-1">
-          <input maxLength={500} {...register('question_fa')} placeholder="پرسش" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          {errors.question_fa && <span role="alert" className="text-xs text-red-600">{errors.question_fa.message}</span>}
+          <input maxLength={500} {...register('question_fa')} placeholder="پرسش" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+          {errors.question_fa && <span role="alert" className="text-xs text-red-600 dark:text-red-400">{errors.question_fa.message}</span>}
         </label>
         <label className="block space-y-1">
-          <textarea maxLength={10000} rows={6} {...register('answer_fa')} placeholder="پاسخ" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-          {errors.answer_fa && <span role="alert" className="text-xs text-red-600">{errors.answer_fa.message}</span>}
+          <textarea maxLength={10000} rows={6} {...register('answer_fa')} placeholder="پاسخ" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+          {errors.answer_fa && <span role="alert" className="text-xs text-red-600 dark:text-red-400">{errors.answer_fa.message}</span>}
         </label>
-        <div className="flex flex-wrap items-center gap-4">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('is_active')} />فعال</label>
+        <div className="flex flex-wrap items-center gap-4 text-(--theme-text)">
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" {...register('is_active')} className="accent-(--theme-primary)" />فعال</label>
           <label className="flex items-center gap-2 text-sm">ترتیب
-            <input type="number" min={0} {...register('sort_order', { valueAsNumber: true })} className="w-24 rounded-lg border border-slate-200 px-2 py-1 dark:border-slate-700 dark:bg-slate-800" />
+            <input type="number" min={0} {...register('sort_order', { valueAsNumber: true })} className="w-24 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-2 py-1 text-(--theme-input-text)" />
           </label>
-          {errors.sort_order && <span role="alert" className="text-xs text-red-600">{errors.sort_order.message}</span>}
+          {errors.sort_order && <span role="alert" className="text-xs text-red-600 dark:text-red-400">{errors.sort_order.message}</span>}
         </div>
         <div className="flex gap-2">
-          <button disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-lg bg-(--theme-primary) px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"><Save className="h-4 w-4" />ذخیره</button>
-          {editing && <button type="button" onClick={() => { setEditing(null); reset(emptyFaq); }} className="rounded-lg border px-4 py-2 text-sm">انصراف</button>}
+          <button disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-60"><Save className="h-4 w-4" />ذخیره</button>
+          {editing && <button type="button" onClick={() => { setEditing(null); reset(emptyFaq); }} className="rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-sm text-(--theme-text) hover:bg-(--theme-surface-muted)">انصراف</button>}
         </div>
       </form>
 
       <div className="space-y-3">
         {items.map((item) => (
-          <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <article key={item.id} className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
             <div className="flex items-start justify-between gap-3">
-              <div><h2 className="font-bold">{item.question_fa}</h2><p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{item.answer_fa}</p></div>
-              <span className="shrink-0 text-xs text-slate-500">{item.is_active ? 'فعال' : 'غیرفعال'} · {item.sort_order}</span>
+              <div><h2 className="font-bold text-(--theme-text)">{item.question_fa}</h2><p className="mt-2 text-sm text-(--theme-text-muted)">{item.answer_fa}</p></div>
+              <span className="shrink-0 text-xs text-(--theme-text-muted)">{item.is_active ? 'فعال' : 'غیرفعال'} · {item.sort_order}</span>
             </div>
             <div className="mt-3 flex gap-2">
-              <button type="button" onClick={() => { setEditing(item.id); reset({ question_fa: item.question_fa, answer_fa: item.answer_fa, sort_order: item.sort_order, is_active: item.is_active }); }} className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
-              <button type="button" onClick={() => setDeleting(item)} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-700"><Trash2 className="h-3.5 w-3.5" />حذف</button>
+              <button type="button" onClick={() => { setEditing(item.id); reset({ question_fa: item.question_fa, answer_fa: item.answer_fa, sort_order: item.sort_order, is_active: item.is_active }); }} className="inline-flex items-center gap-1 rounded-xl border border-(--theme-border) px-3 py-1.5 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted)"><Pencil className="h-3.5 w-3.5" />ویرایش</button>
+              <button type="button" onClick={() => setDeleting(item)} className="inline-flex items-center gap-1 rounded-xl border border-red-200 px-3 py-1.5 text-xs text-red-700 dark:border-red-900 dark:text-red-400"><Trash2 className="h-3.5 w-3.5" />حذف</button>
             </div>
           </article>
         ))}
-        {items.length === 0 && <p className="text-sm text-slate-500">سوالی برای نمایش وجود ندارد.</p>}
+        {items.length === 0 && <p className="text-sm text-(--theme-text-muted)">سوالی برای نمایش وجود ندارد.</p>}
       </div>
       <Pagination page={page} lastPage={lastPage} onChange={setPage} />
       <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} onConfirm={remove} message="این سوال نرم حذف می‌شود و از سایت عمومی نمایش داده نخواهد شد. ادامه می‌دهید؟" />

@@ -135,13 +135,13 @@ export const MegaMenuAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div>
-          <h1 className="text-lg font-extrabold">مدیریت مگا منو و منوهای هدر/فوتر</h1>
-          <p className="mt-1 text-xs text-slate-500">تعریف آیتم‌های منو و زیرمنوهای تصویری مگا منو</p>
+          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت مگا منو و منوهای هدر/فوتر</h1>
+          <p className="mt-1 text-xs text-(--theme-text-muted)">تعریف آیتم‌های منو و زیرمنوهای تصویری مگا منو</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <div role="group" aria-label="انتخاب منوی اصلی" className="flex flex-wrap gap-1 rounded-2xl border border-slate-200 bg-slate-100 p-1.5 dark:border-slate-700 dark:bg-slate-950/60">
+          <div role="group" aria-label="انتخاب منوی اصلی" className="flex flex-wrap gap-1 rounded-2xl border border-(--theme-border) bg-(--theme-surface-muted) p-1.5">
             {menus.map((m) => {
               const isSelected = selectedMenuId === m.id;
               const MenuIcon = m.key === 'header' ? PanelTop : PanelBottom;
@@ -153,36 +153,36 @@ export const MegaMenuAdminPage: React.FC = () => {
                   onClick={() => setSelectedMenuId(m.id)}
                   className={`flex min-w-40 items-center gap-2.5 rounded-xl border px-3 py-2 text-start transition-all ${
                     isSelected
-                      ? 'border-white bg-white text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white'
-                      : 'border-transparent text-slate-600 hover:bg-white/70 dark:text-slate-400 dark:hover:bg-slate-800/70'
+                      ? 'border-(--theme-card-border) bg-(--theme-surface) text-(--theme-text) shadow-sm'
+                      : 'border-transparent text-(--theme-text-muted) hover:bg-(--theme-surface)/70 hover:text-(--theme-text)'
                   }`}
                 >
                   <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${
                     isSelected
-                      ? 'bg-(--theme-primary) text-white shadow-sm'
-                      : 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                      ? 'bg-(--theme-primary) text-(--theme-primary-foreground) shadow-sm'
+                      : 'border border-(--theme-border) bg-(--theme-surface) text-(--theme-text-muted)'
                   }`}>
                     <MenuIcon className="h-4 w-4" />
                   </span>
                   <span className="min-w-0">
                     <span className="block truncate text-xs font-bold">{m.title_fa}</span>
-                    <span className={`mt-0.5 block text-[10px] ${isSelected ? 'text-(--theme-primary)' : 'text-slate-500 dark:text-slate-500'}`}>
+                    <span className={`mt-0.5 block text-[10px] ${isSelected ? 'text-(--theme-primary-ink)' : 'text-(--theme-text-muted)'}`}>
                       {m.key === 'header' ? 'منوی سربرگ سایت' : 'منوی پابرگ سایت'}
                     </span>
                   </span>
                   <span className={`ms-auto h-2 w-2 shrink-0 rounded-full ${
-                    isSelected ? 'bg-(--theme-primary)' : 'bg-slate-300 dark:bg-slate-700'
+                    isSelected ? 'bg-(--theme-primary)' : 'bg-(--theme-border-strong)'
                   }`} />
                 </button>
               );
             })}
           </div>
-          <div aria-hidden="true" className="hidden h-10 w-px bg-slate-200 sm:block dark:bg-slate-700" />
+          <div aria-hidden="true" className="hidden h-10 w-px bg-(--theme-border) sm:block" />
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={addRootItem}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs font-semibold text-(--theme-text) transition-colors hover:bg-(--theme-surface-muted)"
             >
               <Plus className="h-4 w-4" />
               <span>آیتم اصلی جدید</span>
@@ -190,7 +190,7 @@ export const MegaMenuAdminPage: React.FC = () => {
             <button
               type="button"
               onClick={saveMenu}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700"
             >
               <Save className="h-4 w-4" />
               <span>ذخیره منو</span>
@@ -205,7 +205,7 @@ export const MegaMenuAdminPage: React.FC = () => {
             const accent = menuItemAccents[idx % menuItemAccents.length];
             const isCollapsed = !expandedItems.has(item.id);
             return (
-            <div key={item.id} className={`overflow-hidden rounded-xl border border-slate-200 border-s-4 ${accent.border} bg-white dark:border-slate-800 dark:bg-slate-900`}>
+            <div key={item.id} className={`overflow-hidden rounded-2xl border border-(--theme-card-border) border-s-4 ${accent.border} bg-(--theme-card-surface) shadow-(--theme-card-shadow)`}>
               <button
                 type="button"
                 aria-label={`${isCollapsed ? 'بازکردن' : 'بستن'} ${item.title_fa || `آیتم اصلی ${idx + 1}`}`}
@@ -216,25 +216,25 @@ export const MegaMenuAdminPage: React.FC = () => {
                 <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${accent.badge}`}>
                   {String(idx + 1).padStart(2, '0')}
                 </span>
-                <DynamicLucideIcon name={item.icon || undefined} fallback="Layers" className="h-4 w-4 shrink-0 text-(--theme-primary)" />
-                <span className="truncate text-xs font-bold text-slate-800 dark:text-slate-100">
+                <DynamicLucideIcon name={item.icon || undefined} fallback="Layers" className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />
+                <span className="truncate text-xs font-bold text-(--theme-text)">
                   {item.title_fa || `آیتم اصلی ${idx + 1}`}
                 </span>
-                <span className="ms-auto shrink-0 text-[10px] font-medium text-slate-500 dark:text-slate-400">آیتم منوی اصلی</span>
-                <ChevronDown className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
+                <span className="ms-auto shrink-0 text-[10px] font-medium text-(--theme-text-muted)">آیتم منوی اصلی</span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-(--theme-text-muted) transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
               </button>
               <div hidden={isCollapsed} className={isCollapsed ? 'hidden' : 'space-y-4 p-5'}>
                 <div className="grid gap-3 sm:grid-cols-5">
-                <input value={item.title_fa} onChange={(e) => updateItem(idx, { title_fa: e.target.value })} placeholder="عنوان فارسی" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-                <input dir="ltr" value={item.title_en} onChange={(e) => updateItem(idx, { title_en: e.target.value })} placeholder="English Title" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-                <input dir="ltr" value={item.url} onChange={(e) => updateItem(idx, { url: e.target.value })} placeholder="/url" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-                <label className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-200 px-2.5 dark:border-slate-700">
-                  <DynamicLucideIcon name={item.icon || undefined} fallback="Layers" className="h-4 w-4 shrink-0 text-(--theme-primary)" />
+                <input value={item.title_fa} onChange={(e) => updateItem(idx, { title_fa: e.target.value })} placeholder="عنوان فارسی" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+                <input dir="ltr" value={item.title_en} onChange={(e) => updateItem(idx, { title_en: e.target.value })} placeholder="English Title" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+                <input dir="ltr" value={item.url} onChange={(e) => updateItem(idx, { url: e.target.value })} placeholder="/url" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+                <label className="flex min-w-0 items-center gap-2 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5">
+                  <DynamicLucideIcon name={item.icon || undefined} fallback="Layers" className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />
                   <select
                     aria-label={`آیکن ${item.title_fa}`}
                     value={item.icon || ''}
                     onChange={(event) => updateItem(idx, { icon: event.target.value || null })}
-                    className="min-w-0 flex-1 bg-transparent py-2 text-xs outline-none dark:bg-slate-800"
+                    className="min-w-0 flex-1 bg-transparent py-2 text-xs text-(--theme-input-text) outline-none"
                   >
                     <option value="">بدون آیکن</option>
                     {Object.entries(LUCIDE_ICON_REGISTRY).map(([name, entry]) => (
@@ -243,11 +243,11 @@ export const MegaMenuAdminPage: React.FC = () => {
                   </select>
                 </label>
                 <div className="flex items-center justify-end gap-2">
-                  <button type="button" onClick={() => setDeleteTarget({ type: 'root', index: idx })} aria-label="حذف آیتم اصلی" className="rounded-lg p-2 text-red-600 hover:bg-red-50">
+                  <button type="button" onClick={() => setDeleteTarget({ type: 'root', index: idx })} aria-label="حذف آیتم اصلی" className="rounded-xl p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30">
                     <Trash2 className="h-4 w-4" />
                   </button>
                   {currentMenu.key === 'header' && (
-                    <button type="button" onClick={() => addChild(idx)} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold dark:border-slate-700">
+                    <button type="button" onClick={() => addChild(idx)} className="inline-flex items-center gap-1 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">
                       <Plus className="h-3.5 w-3.5" />
                       <span>زیرمنو تصویری</span>
                     </button>
@@ -256,9 +256,9 @@ export const MegaMenuAdminPage: React.FC = () => {
               </div>
 
                 {item.children && item.children.length > 0 && (
-                  <div className="grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 dark:border-slate-800">
+                  <div className="grid gap-3 border-t border-(--theme-border) pt-4 sm:grid-cols-2">
                     {item.children.map((ch, cIdx) => (
-                    <div key={ch.id} className="space-y-2 rounded-lg border border-slate-100 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40">
+                    <div key={ch.id} className="space-y-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3">
                       <div className="flex items-center justify-between gap-2">
                         <input
                           value={ch.title_fa}
@@ -266,12 +266,12 @@ export const MegaMenuAdminPage: React.FC = () => {
                             const nextChildren = item.children!.map((c, j) => (j === cIdx ? { ...c, title_fa: e.target.value } : c));
                             updateItem(idx, { children: nextChildren });
                           }}
-                          className="flex-1 rounded border border-slate-200 px-2.5 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                          className="flex-1 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-1.5 text-xs text-(--theme-input-text)"
                         />
                         <button
                           type="button"
                           onClick={() => setDeleteTarget({ type: 'child', parentIndex: idx, childIndex: cIdx })}
-                          className="text-red-600 p-1"
+                          className="p-1 text-red-600 dark:text-red-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -285,9 +285,9 @@ export const MegaMenuAdminPage: React.FC = () => {
                           updateItem(idx, { children: nextChildren });
                         }}
                         placeholder="/projects?category=slug"
-                        className="w-full rounded border border-slate-200 px-2.5 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-1.5 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                       />
-                      <p dir="ltr" className="text-[11px] text-slate-500">برای نمایش پروژه‌های یک دسته: /projects?category=slug</p>
+                      <p dir="ltr" className="text-[11px] text-(--theme-text-muted)">برای نمایش پروژه‌های یک دسته: /projects?category=slug</p>
                       <input
                         dir="ltr"
                         aria-label={`عنوان انگلیسی ${ch.title_fa}`}
@@ -297,7 +297,7 @@ export const MegaMenuAdminPage: React.FC = () => {
                           updateItem(idx, { children: nextChildren });
                         }}
                         placeholder="English title"
-                        className="w-full rounded border border-slate-200 px-2.5 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-1.5 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                       />
                       <textarea
                         aria-label={`توضیح کوتاه ${ch.title_fa}`}
@@ -308,7 +308,7 @@ export const MegaMenuAdminPage: React.FC = () => {
                         }}
                         placeholder="توضیح کوتاه فارسی"
                         rows={2}
-                        className="w-full rounded border border-slate-200 px-2.5 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-1.5 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                       />
                       <textarea
                         aria-label={`توضیح کوتاه انگلیسی ${ch.title_fa}`}
@@ -319,7 +319,7 @@ export const MegaMenuAdminPage: React.FC = () => {
                         }}
                         placeholder="Short English description"
                         rows={2}
-                        className="w-full rounded border border-slate-200 px-2.5 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-1.5 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                       />
                       <FileUploader
                         folder="menus"

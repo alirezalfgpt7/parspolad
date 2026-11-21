@@ -147,10 +147,10 @@ export const ProjectsAdminPage: React.FC = () => {
       sortValue: (p) => p.title_fa,
       render: (p) => (
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-12 shrink-0 overflow-hidden rounded-md bg-slate-100 dark:bg-slate-800">
+          <div className="h-9 w-12 shrink-0 overflow-hidden rounded-md bg-(--theme-surface-muted)">
             <ZeroBrokenImage src={p.cover_image} alt={p.title_fa} className="h-full w-full object-cover" />
           </div>
-          <span className="font-semibold">{p.title_fa}</span>
+          <span className="font-semibold text-(--theme-text)">{p.title_fa}</span>
         </div>
       ),
     },
@@ -162,7 +162,7 @@ export const ProjectsAdminPage: React.FC = () => {
       header: 'عملیات',
       render: (p) => (
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setEditing(p)} className="rounded p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"><Pencil className="h-4 w-4" /></button>
+          <button type="button" onClick={() => setEditing(p)} className="rounded p-1.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-text)"><Pencil className="h-4 w-4" /></button>
           <button type="button" onClick={() => setDeleteId(p.id)} className="rounded p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"><Trash2 className="h-4 w-4" /></button>
         </div>
       ),
@@ -172,20 +172,19 @@ export const ProjectsAdminPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-extrabold">مدیریت پروژه‌ها و دسته‌بندی‌های فنی</h1>
+        <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت پروژه‌ها و دسته‌بندی‌های فنی</h1>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setCatModal({ name_fa: '', name_en: '', slug: `cat-${Date.now()}`, icon: 'Layers', color: '#B91C1C' })}
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold dark:border-slate-700 dark:bg-slate-900"
+            className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
           >
             + دسته فنی جدید
           </button>
           <button
             type="button"
             onClick={() => setEditing({ slug: `proj-${Date.now()}`, title_fa: '', title_en: '', category_id: categories[0]?.id || 1, client_name_fa: '', client_name_en: '', contract_number: '', contract_type_fa: 'ساخت و تولید', contract_type_en: 'Manufacturing', location_fa: 'اهواز', location_en: 'Ahvaz', year: 1404, status: 'in_progress', summary_fa: '', summary_en: '', description_fa: '', description_en: '', cover_image: '/storage/hero/hero-rig.jpg', is_featured: true })}
-            style={{ backgroundColor: 'var(--theme-primary)' }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)"
           >
             <Plus className="h-4 w-4" />
             <span>پروژه جدید</span>
@@ -196,12 +195,12 @@ export const ProjectsAdminPage: React.FC = () => {
       {/* Category Chips with Color */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {categories.map((c) => (
-          <div key={c.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900">
+          <div key={c.id} className="flex items-center justify-between rounded-xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3.5 shadow-(--theme-card-shadow)">
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="h-3.5 w-3.5 rounded shrink-0" style={{ backgroundColor: c.color }} />
-              <span className="truncate text-xs font-bold">{c.name_fa}</span>
+              <span className="truncate text-xs font-bold text-(--theme-text)">{c.name_fa}</span>
             </div>
-            <button type="button" onClick={() => setCatModal(c)} className="text-xs text-(--theme-primary) hover:underline shrink-0">ویرایش</button>
+            <button type="button" onClick={() => setCatModal(c)} className="text-xs font-semibold text-(--theme-primary-ink) hover:underline shrink-0">ویرایش</button>
           </div>
         ))}
       </div>
@@ -214,17 +213,17 @@ export const ProjectsAdminPage: React.FC = () => {
           <form onSubmit={saveProject} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">عنوان فارسی پروژه</label>
-                <input required value={editing.title_fa || ''} onChange={(e) => setEditing({ ...editing, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">عنوان فارسی پروژه</label>
+                <input required value={editing.title_fa || ''} onChange={(e) => setEditing({ ...editing, title_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">عنوان انگلیسی</label>
-                <input required dir="ltr" value={editing.title_en || ''} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">عنوان انگلیسی</label>
+                <input required dir="ltr" value={editing.title_en || ''} onChange={(e) => setEditing({ ...editing, title_en: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">شناسهٔ لینک پروژه (slug)</label>
-                <input dir="ltr" value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-                <p dir="ltr" className="mt-1 text-xs text-slate-500">/projects/{editing.slug || ':slug'}</p>
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">شناسهٔ لینک پروژه (slug)</label>
+                <input dir="ltr" value={editing.slug || ''} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+                <p dir="ltr" className="mt-1 text-xs text-(--theme-text-muted)">/projects/{editing.slug || ':slug'}</p>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -235,26 +234,26 @@ export const ProjectsAdminPage: React.FC = () => {
                 onChange={(v) => setEditing({ ...editing, category_id: Number(v) })}
               />
               <div>
-                <label className="mb-1 block text-xs font-medium">کارفرما</label>
-                <input required value={editing.client_name_fa || ''} onChange={(e) => setEditing({ ...editing, client_name_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">کارفرما</label>
+                <input required value={editing.client_name_fa || ''} onChange={(e) => setEditing({ ...editing, client_name_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">کارفرما (انگلیسی)</label>
-                <input required dir="ltr" value={editing.client_name_en || ''} onChange={(e) => setEditing({ ...editing, client_name_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">کارفرما (انگلیسی)</label>
+                <input required dir="ltr" value={editing.client_name_en || ''} onChange={(e) => setEditing({ ...editing, client_name_en: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">شماره قرارداد</label>
-                <input required dir="ltr" value={editing.contract_number || ''} onChange={(e) => setEditing({ ...editing, contract_number: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">شماره قرارداد</label>
+                <input required dir="ltr" value={editing.contract_number || ''} onChange={(e) => setEditing({ ...editing, contract_number: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-medium">سال اجرا</label>
-                <input type="number" value={editing.year || 1404} onChange={(e) => setEditing({ ...editing, year: Number(e.target.value) })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">سال اجرا</label>
+                <input type="number" value={editing.year || 1404} onChange={(e) => setEditing({ ...editing, year: Number(e.target.value) })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">موقعیت جغرافیایی</label>
-                <input value={editing.location_fa || ''} onChange={(e) => setEditing({ ...editing, location_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">موقعیت جغرافیایی</label>
+                <input value={editing.location_fa || ''} onChange={(e) => setEditing({ ...editing, location_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
               </div>
               <SearchableSelect
                 label="وضعیت"
@@ -264,8 +263,8 @@ export const ProjectsAdminPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium">خلاصه و شرح فنی</label>
-              <textarea rows={3} value={editing.summary_fa || ''} onChange={(e) => setEditing({ ...editing, summary_fa: e.target.value, description_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">خلاصه و شرح فنی</label>
+              <textarea rows={3} value={editing.summary_fa || ''} onChange={(e) => setEditing({ ...editing, summary_fa: e.target.value, description_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
             </div>
             <MediaUrlField
               label="تصویر کاور یا مدرک فنی پروژه"
@@ -275,8 +274,8 @@ export const ProjectsAdminPage: React.FC = () => {
               placeholder="/storage/hero/hero-rig.jpg"
             />
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold dark:border-slate-700">انصراف</button>
-              <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="rounded-lg px-5 py-2 text-xs font-semibold text-white">ذخیره پروژه</button>
+              <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">انصراف</button>
+              <button type="submit" className="rounded-lg bg-(--theme-btn-bg) px-5 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">ذخیره پروژه</button>
             </div>
           </form>
         )}
@@ -286,22 +285,22 @@ export const ProjectsAdminPage: React.FC = () => {
         {catModal && (
           <form onSubmit={saveCategory} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium">نام فارسی دسته</label>
-              <input required value={catModal.name_fa || ''} onChange={(e) => setCatModal({ ...catModal, name_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام فارسی دسته</label>
+              <input required value={catModal.name_fa || ''} onChange={(e) => setCatModal({ ...catModal, name_fa: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium">نام انگلیسی</label>
-              <input dir="ltr" value={catModal.name_en || ''} onChange={(e) => setCatModal({ ...catModal, name_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام انگلیسی</label>
+              <input dir="ltr" value={catModal.name_en || ''} onChange={(e) => setCatModal({ ...catModal, name_en: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium">شناسهٔ لینک دسته (slug)</label>
-              <input dir="ltr" required value={catModal.slug || ''} onChange={(e) => setCatModal({ ...catModal, slug: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-              <p dir="ltr" className="mt-1 text-xs text-slate-500">/projects?category={catModal.slug || '<slug>'}</p>
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">شناسهٔ لینک دسته (slug)</label>
+              <input dir="ltr" required value={catModal.slug || ''} onChange={(e) => setCatModal({ ...catModal, slug: e.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+              <p dir="ltr" className="mt-1 text-xs text-(--theme-text-muted)">/projects?category={catModal.slug || '<slug>'}</p>
             </div>
             <ColorPicker label="رنگ دسته فنی" value={catModal.color || '#B91C1C'} onChange={(c) => setCatModal({ ...catModal, color: c })} />
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={() => setCatModal(null)} className="rounded-lg border border-slate-200 px-4 py-2 text-xs dark:border-slate-700">انصراف</button>
-              <button type="submit" style={{ backgroundColor: 'var(--theme-primary)' }} className="rounded-lg px-4 py-2 text-xs font-semibold text-white">ذخیره</button>
+              <button type="button" onClick={() => setCatModal(null)} className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted)">انصراف</button>
+              <button type="submit" className="rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">ذخیره</button>
             </div>
           </form>
         )}

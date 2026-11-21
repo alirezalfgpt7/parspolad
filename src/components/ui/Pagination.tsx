@@ -24,13 +24,13 @@ export const Pagination: React.FC<PaginationProps> = ({ page, lastPage, onChange
         type="button"
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) transition-colors hover:bg-(--theme-surface-muted) disabled:opacity-40"
         aria-label="صفحه قبل"
       >
         <ChevronRight className="h-4 w-4" />
       </button>
       {pages.map((p) => p === 'left-ellipsis' || p === 'right-ellipsis' ? (
-        <span key={p} className="px-1 text-slate-500" aria-hidden="true">…</span>
+        <span key={p} className="px-1 text-(--theme-text-muted)" aria-hidden="true">…</span>
       ) : (
         <button
           key={p}
@@ -40,8 +40,8 @@ export const Pagination: React.FC<PaginationProps> = ({ page, lastPage, onChange
           className={cn(
             'flex h-9 min-w-9 items-center justify-center rounded-lg border px-2.5 text-sm font-medium transition-colors',
             p === page
-              ? 'border-(--theme-primary) bg-(--theme-primary) text-white'
-              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
+              ? 'border-(--theme-primary) bg-(--theme-primary) text-(--theme-primary-foreground)'
+              : 'border-(--theme-border) bg-(--theme-surface) text-(--theme-text) hover:bg-(--theme-surface-muted)'
           )}
         >
           {p}
@@ -51,7 +51,7 @@ export const Pagination: React.FC<PaginationProps> = ({ page, lastPage, onChange
         type="button"
         disabled={page >= lastPage}
         onClick={() => onChange(page + 1)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) transition-colors hover:bg-(--theme-surface-muted) disabled:opacity-40"
         aria-label="صفحه بعد"
       >
         <ChevronLeft className="h-4 w-4" />

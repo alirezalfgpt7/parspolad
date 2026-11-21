@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeftRight, Bell, Globe, Home, LogOut, Moon, Sun, UserCircle } from 'lucide-react';
 import type { ColorMode, Language, User } from '../../types/index.ts';
+import { useAppStore } from '../../store/useAppStore.ts';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { AnimatedHamburger } from '../effects/index.ts';
 import type { AdminNavItem } from './AdminSidebar.tsx';
@@ -48,6 +49,8 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
   onToggleDock,
   onLogout,
 }) => {
+  const previewMode = useAppStore((state) => state.previewMode);
+  const effectiveColorMode = previewMode || colorMode;
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -75,28 +78,23 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
 
   return (
     <header
-      className="admin-topbar relative z-40 isolate flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900"
-      style={{
-        backgroundColor: 'var(--theme-admin-topbar-bg)',
-        borderColor: 'color-mix(in srgb, var(--theme-admin-topbar-text) 18%, transparent)',
-        color: 'var(--theme-admin-topbar-text)',
-      }}
+      className="admin-topbar relative z-40 isolate flex h-16 shrink-0 items-center justify-between gap-4 border-b px-4 sm:px-6"
     >
       <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
           onClick={onToggleMobileSidebar}
-          className="rounded-lg border border-slate-200 p-2 lg:hidden dark:border-slate-700"
+          className="admin-topbar-control rounded-lg p-2 lg:hidden"
           aria-label={language === 'fa' ? 'منو' : 'Menu'}
           aria-expanded={mobileSidebarOpen}
           aria-controls="admin-sidebar"
         >
           <AnimatedHamburger open={mobileSidebarOpen} />
         </button>
-        <div className="flex items-center gap-2 truncate text-xs text-slate-500">
+        <div className="admin-topbar-muted flex items-center gap-2 truncate text-xs">
           <span>پارس پولاد</span>
           <span>/</span>
-          <span className="truncate font-semibold text-slate-900 dark:text-white">
+          <span className="truncate font-semibold" style={{ color: 'var(--theme-admin-topbar-text)' }}>
             {language === 'fa' ? currentItem.label_fa : currentItem.label_en}
           </span>
         </div>
@@ -105,7 +103,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
       <div className="flex shrink-0 items-center gap-2">
         <Link
           to="/"
-          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="admin-topbar-control rounded-lg p-2"
           title={language === 'fa' ? 'وب‌سایت' : 'Website'}
           aria-label={language === 'fa' ? 'رفتن به وب‌سایت' : 'Go to website'}
         >
@@ -114,7 +112,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
         <button
           type="button"
           onClick={onToggleDock}
-          className="hidden rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 lg:inline-flex dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="admin-topbar-control hidden rounded-lg p-2 lg:inline-flex"
           title={dockOpposite
             ? (language === 'fa' ? 'بازگشت سایدبار به جای پیش‌فرض' : 'Restore sidebar position')
             : (language === 'fa' ? 'انتقال سایدبار به سمت دیگر' : 'Move sidebar to the other side')}
@@ -127,23 +125,23 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
         <button
           type="button"
           onClick={toggleColorMode}
-          className="effect-theme-toggle rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="admin-topbar-control effect-theme-toggle rounded-lg p-2"
           title={language === 'fa' ? 'تغییر تم' : 'Toggle theme'}
           aria-label={language === 'fa' ? 'تغییر تم روشن و تیره' : 'Toggle light and dark mode'}
         >
-          {colorMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {effectiveColorMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
         <button
           type="button"
           onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
-          className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium dark:border-slate-700"
+          className="admin-topbar-control inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium"
         >
           <Globe className="h-3.5 w-3.5" />
           <span>{language === 'fa' ? 'EN' : 'FA'}</span>
         </button>
         <Link
           to="/admin/notifications"
-          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="admin-topbar-control rounded-lg p-2"
           title={language === 'fa' ? 'اعلان‌ها' : 'Notifications'}
           aria-label={language === 'fa' ? 'اعلان‌ها' : 'Notifications'}
         >
@@ -153,7 +151,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
           <button
             type="button"
             onClick={() => setUserMenuOpen((open) => !open)}
-            className="flex items-center gap-2 rounded-lg border border-slate-200 px-2.5 py-1.5 text-start text-xs font-medium hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            className="admin-topbar-control flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-start text-xs font-medium"
             aria-haspopup="menu"
             aria-expanded={userMenuOpen}
             aria-controls="admin-user-menu"
@@ -165,21 +163,20 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
             />
             <span className="hidden max-w-36 sm:flex sm:flex-col">
               <span className="truncate">{user?.name}</span>
-              <span className="truncate text-[10px] font-normal text-slate-500">{roleLabel}</span>
+              <span className="admin-topbar-muted truncate text-[10px] font-normal">{roleLabel}</span>
             </span>
           </button>
           {userMenuOpen && (
             <div
               id="admin-user-menu"
               role="menu"
-              className="theme-popover absolute inset-e-0 top-full z-50 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-              style={{ backgroundColor: 'var(--theme-surface)' }}
+              className="theme-popover absolute inset-e-0 top-full z-50 mt-2 w-52 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-1.5 text-(--theme-text) shadow-xl"
             >
               <Link
                 to="/admin/profile"
                 role="menuitem"
                 onClick={() => setUserMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-(--theme-text) transition hover:bg-(--theme-surface-muted)"
               >
                 <UserCircle className="h-4 w-4" />
                 {language === 'fa' ? 'پروفایل' : 'Profile'}
@@ -191,7 +188,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
                   setUserMenuOpen(false);
                   onLogout();
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-500/10 dark:text-red-400"
               >
                 <LogOut className="h-4 w-4" />
                 {language === 'fa' ? 'خروج از حساب' : 'Sign out'}

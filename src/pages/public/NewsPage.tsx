@@ -171,12 +171,12 @@ export const NewsPage: React.FC = () => {
           language={language}
         />
         <Breadcrumb items={[{ label: 'اخبار و مقالات', to: '/news' }, { label: single.title_fa }]} />
-        <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-          <div className="h-72 bg-slate-100 dark:bg-slate-800">
+        <article className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
+          <div className="h-72 bg-(--theme-surface-muted)">
             <ZeroBrokenImage src={single.cover_image} alt={single.title_fa} className="h-full w-full object-cover" />
           </div>
           <div className="p-6 sm:p-8">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 tabular-nums">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-(--theme-text-muted) tabular-nums">
               <span>{language === 'fa' ? single.category_fa : single.category_en}</span>
               <span>·</span>
               <span>{single.published_at}</span>
@@ -185,35 +185,35 @@ export const NewsPage: React.FC = () => {
               <span>·</span>
               <span>زمان مطالعه: {single.read_minutes} دقیقه</span>
             </div>
-            <h1 className="mt-3 text-2xl font-extrabold text-slate-900 dark:text-white">
+            <h1 className="mt-3 text-2xl font-extrabold text-(--theme-text)">
               {language === 'fa' ? single.title_fa : single.title_en}
             </h1>
             <div
-              className="prose mt-6 max-w-none text-sm leading-8 text-slate-700 dark:prose-invert dark:text-slate-300"
+              className="prose mt-6 max-w-none text-sm leading-8 text-(--theme-text-muted) dark:prose-invert"
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(language === 'fa' ? single.content_fa : single.content_en) }}
             />
-            <section className="mt-10 border-t border-slate-200 pt-8 dark:border-slate-800">
-              <h2 className="text-lg font-bold">دیدگاه‌ها</h2>
-              <p className="mt-1 text-xs text-slate-500">دیدگاه‌ها پس از بررسی مدیر نمایش داده می‌شوند.</p>
+            <section className="mt-10 border-t border-(--theme-border) pt-8">
+              <h2 className="text-lg font-bold text-(--theme-text)">دیدگاه‌ها</h2>
+              <p className="mt-1 text-xs text-(--theme-text-muted)">دیدگاه‌ها پس از بررسی مدیر نمایش داده می‌شوند.</p>
               {commentsLoading ? (
-                <div className="mt-5 text-sm text-slate-500"><InlineLoader label="در حال بارگذاری دیدگاه‌ها..." /></div>
+                <div className="mt-5 text-sm text-(--theme-text-muted)"><InlineLoader label="در حال بارگذاری دیدگاه‌ها..." /></div>
               ) : commentsError ? (
                 <p role="alert" className="mt-5 text-sm text-red-600">{commentsError}</p>
               ) : comments.length === 0 ? (
-                <p className="mt-5 text-sm text-slate-500">هنوز دیدگاهی برای این مقاله ثبت نشده است.</p>
+                <p className="mt-5 text-sm text-(--theme-text-muted)">هنوز دیدگاهی برای این مقاله ثبت نشده است.</p>
               ) : (
-                <div className="relative mt-6 space-y-5 before:absolute before:inset-y-4 before:right-3 before:w-px before:bg-slate-200 dark:before:bg-slate-700">
+                <div className="relative mt-6 space-y-5 before:absolute before:inset-y-4 before:right-3 before:w-px before:bg-(--theme-border)">
                   {comments.map((comment) => (
                     <div key={comment.id} className="relative pe-10">
-                      <span aria-hidden="true" className="absolute right-0 top-5 z-10 h-6 w-6 rounded-full border-4 border-white bg-(--theme-primary) shadow-sm dark:border-slate-900" />
-                      <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+                      <span aria-hidden="true" className="absolute right-0 top-5 z-10 h-6 w-6 rounded-full border-4 border-(--theme-surface) bg-(--theme-primary) shadow-sm" />
+                      <article className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:p-5">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <h3 className="text-sm font-bold">{comment.author_name}</h3>
-                          <time className="text-[11px] text-slate-500">
+                          <h3 className="text-sm font-bold text-(--theme-text)">{comment.author_name}</h3>
+                          <time className="text-[11px] text-(--theme-text-muted)">
                             {new Date(comment.created_at).toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US')}
                           </time>
                         </div>
-                        <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
+                        <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-(--theme-text-muted)">
                           {comment.body}
                         </p>
                         <button
@@ -222,20 +222,20 @@ export const NewsPage: React.FC = () => {
                             setReplyTo(comment);
                             document.getElementById('comment-body')?.focus();
                           }}
-                          className="mt-3 text-xs font-bold text-(--theme-primary) hover:underline"
+                          className="mt-3 text-xs font-bold text-(--theme-primary-ink) hover:underline"
                         >
                           پاسخ به این دیدگاه
                         </button>
                       </article>
                       {comment.replies?.map((reply) => (
-                        <article key={reply.id} className="ms-5 mt-3 rounded-2xl border border-(--theme-primary)/15 bg-(--theme-primary)/5 p-4 sm:ms-8">
+                        <article key={reply.id} className="ms-5 mt-3 rounded-2xl border border-(--theme-primary)/20 bg-(--theme-primary)/8 p-4 sm:ms-8">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <h4 className="text-xs font-bold">{reply.author_name}</h4>
-                            <time className="text-[11px] text-slate-500">
+                            <h4 className="text-xs font-bold text-(--theme-text)">{reply.author_name}</h4>
+                            <time className="text-[11px] text-(--theme-text-muted)">
                               {new Date(reply.created_at).toLocaleDateString(language === 'fa' ? 'fa-IR' : 'en-US')}
                             </time>
                           </div>
-                          <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700 dark:text-slate-300">
+                          <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-(--theme-text-muted)">
                             {reply.body}
                           </p>
                         </article>
@@ -248,37 +248,37 @@ export const NewsPage: React.FC = () => {
                 <Pagination page={commentsPage} lastPage={commentsLastPage} onChange={setCommentsPage} />
               )}
 
-              <form onSubmit={handleSubmit(submitComment)} className="relative mt-8 space-y-4 rounded-xl border border-slate-200 p-4 dark:border-slate-800 sm:p-5">
+              <form onSubmit={handleSubmit(submitComment)} className="relative mt-8 space-y-4 rounded-2xl border border-(--theme-border) bg-(--theme-surface-muted) p-4 sm:p-5">
                 <PublicHoneypotField registration={register('website')} />
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-sm font-bold">{replyTo ? `پاسخ به ${replyTo.author_name}` : 'ثبت دیدگاه'}</h3>
-                    <p className="mt-1 text-[11px] text-slate-500">دیدگاه یا پاسخ شما پس از تأیید مدیر نمایش داده می‌شود.</p>
+                    <h3 className="text-sm font-bold text-(--theme-text)">{replyTo ? `پاسخ به ${replyTo.author_name}` : 'ثبت دیدگاه'}</h3>
+                    <p className="mt-1 text-[11px] text-(--theme-text-muted)">دیدگاه یا پاسخ شما پس از تأیید مدیر نمایش داده می‌شود.</p>
                   </div>
                   {replyTo && (
-                    <button type="button" onClick={() => setReplyTo(null)} className="text-xs font-semibold text-slate-500 hover:text-(--theme-primary)">
+                    <button type="button" onClick={() => setReplyTo(null)} className="text-xs font-semibold text-(--theme-text-muted) hover:text-(--theme-primary-ink)">
                       لغو پاسخ
                     </button>
                   )}
                 </div>
                 <div>
-                  <label htmlFor="comment-author" className="mb-1 block text-xs font-medium">نام شما</label>
+                  <label htmlFor="comment-author" className="mb-1 block text-xs font-medium text-(--theme-text)">نام شما</label>
                   <input
                     {...register('author_name')}
                     id="comment-author"
                     maxLength={120}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                    className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                   />
                   {errors.author_name && <p className="mt-1 text-xs text-red-600">{errors.author_name.message}</p>}
                 </div>
                 <div>
-                  <label htmlFor="comment-body" className="mb-1 block text-xs font-medium">متن دیدگاه</label>
+                  <label htmlFor="comment-body" className="mb-1 block text-xs font-medium text-(--theme-text)">متن دیدگاه</label>
                   <textarea
                     {...register('body')}
                     id="comment-body"
                     rows={4}
                     maxLength={2000}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                    className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                   />
                   {errors.body && <p className="mt-1 text-xs text-red-600">{errors.body.message}</p>}
                 </div>
@@ -292,13 +292,13 @@ export const NewsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting || !captchaKey}
-                  className="rounded-lg bg-(--theme-primary) px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                  className="rounded-xl bg-(--theme-btn-bg) px-5 py-2.5 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-60"
                 >
                   {isSubmitting ? 'در حال ارسال...' : replyTo ? 'ارسال پاسخ' : 'ارسال دیدگاه'}
                 </button>
               </form>
             </section>
-            <Link to="/news" className="mt-8 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-primary) hover:underline">
+            <Link to="/news" className="mt-8 inline-flex items-center gap-1.5 text-xs font-semibold text-(--theme-link) hover:underline">
               <ArrowRight className="h-3.5 w-3.5" />
               <span>بازگشت به فهرست مقالات</span>
             </Link>
@@ -316,13 +316,13 @@ export const NewsPage: React.FC = () => {
           <Link
             key={art.id}
             to={`/news/${art.slug}`}
-            className="group overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+            className="group overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow) transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-(--theme-card-border-hover) hover:shadow-(--theme-card-shadow-hover)"
           >
-            <div className="h-48 overflow-hidden bg-slate-100 dark:bg-slate-800">
+            <div className="h-48 overflow-hidden bg-(--theme-surface-muted)">
               <ZeroBrokenImage src={art.cover_image} alt={art.title_fa} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
             </div>
             <div className="p-5">
-              <div className="flex items-center gap-2 text-xs text-slate-500 tabular-nums">
+              <div className="flex items-center gap-2 text-xs text-(--theme-text-muted) tabular-nums">
                 <span>{language === 'fa' ? art.category_fa : art.category_en}</span>
                 <span>·</span>
                 <span>{art.published_at}</span>
@@ -333,10 +333,10 @@ export const NewsPage: React.FC = () => {
                   </>
                 )}
               </div>
-              <h2 className="mt-2 text-base font-bold text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
+              <h2 className="mt-2 text-base font-bold text-(--theme-text) group-hover:text-(--theme-primary-ink)">
                 {language === 'fa' ? art.title_fa : art.title_en}
               </h2>
-              <p className="mt-2 line-clamp-3 text-xs text-slate-600 dark:text-slate-300">
+              <p className="mt-2 line-clamp-3 text-xs text-(--theme-text-muted)">
                 {language === 'fa' ? art.excerpt_fa : art.excerpt_en}
               </p>
             </div>

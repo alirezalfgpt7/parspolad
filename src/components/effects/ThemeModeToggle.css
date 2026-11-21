@@ -20,9 +20,15 @@
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
   box-shadow:
-    inset 0 1px rgb(255 255 255 / 32%),
-    0 5px 14px rgb(15 23 42 / 10%);
-  transition: background-color 240ms ease, border-color 240ms ease, transform 220ms ease;
+    inset 0 1px var(--mode-glass-highlight),
+    var(--mode-control-shadow);
+  transition: background-color 240ms ease, border-color 240ms ease, transform 220ms ease, box-shadow 220ms ease;
+}
+
+.effect-theme-switch:hover .effect-theme-pill,
+.effect-theme-switch:focus-visible .effect-theme-pill {
+  border-color: var(--theme-header-ink);
+  transform: translateY(-1px);
 }
 
 .effect-theme-knob {
@@ -34,10 +40,10 @@
   width: 22px;
   height: 22px;
   border-radius: 7px;
-  background: rgb(255 255 255 / 10%);
+  background: color-mix(in srgb, var(--theme-header-ink) 12%, transparent);
   color: var(--mode-accent);
   transition: color 240ms ease, background-color 240ms ease;
-  box-shadow: inset 0 1px rgb(255 255 255 / 24%);
+  box-shadow: inset 0 1px var(--mode-glass-highlight);
 }
 
 [dir="rtl"] .effect-theme-switch[data-dark="true"] .effect-theme-knob {

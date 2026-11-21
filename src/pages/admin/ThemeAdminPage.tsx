@@ -9,9 +9,10 @@ import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ThemePreset, ThemeScope, ThemeSettings } from '../../types/index.ts';
+import { ensureContrastAgainst, pickReadableForeground } from '../../utils/themeContrast.ts';
 
 export const ThemeAdminPage: React.FC = () => {
-  const { fetchBootstrap, setPreviewTheme, addToast } = useAppStore();
+  const { fetchBootstrap, setPreviewTheme, setColorMode, addToast } = useAppStore();
   const [settings, setSettings] = useState<ThemeSettings | null>(null);
   const [presets, setPresets] = useState<ThemePreset[]>([]);
   const [scope, setScope] = useState<ThemeScope>('admin');
@@ -177,6 +178,9 @@ export const ThemeAdminPage: React.FC = () => {
             button_shape: preset.button_shape,
             button_effect: preset.button_effect,
           };
+    if (scope === 'site') {
+      setColorMode('light');
+    }
     previewSettings(next, scope, scope === 'site' ? 'light' : null);
     addToast('info', 'تنظیمات این بخش به تم پیش‌فرض قرمز صنعتی بازگشت.');
   };
@@ -250,19 +254,24 @@ export const ThemeAdminPage: React.FC = () => {
 
       <section className="theme-editor-section">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary)">
+          <div className="flex items-center gap-2.5">
+            <span
+              className="grid h-9 w-9 place-items-center rounded-xl text-(--theme-primary-ink)"
+              style={{ backgroundColor: 'color-mix(in srgb, var(--theme-primary) 12%, transparent)' }}
+            >
               <SwatchBook className="h-4 w-4" />
             </span>
             <div>
-              <h2 className="text-sm font-bold">کتابچهٔ تم‌های آماده</h2>
-              <p className="mt-1 text-[11px] text-slate-500">یک ترکیب انتخاب کنید؛ پیش‌نمایش آن روی محدودهٔ فعال اعمال می‌شود.</p>
+              <h2 className="text-sm font-bold text-(--theme-text)">کتابچهٔ تم‌های آماده</h2>
+              <p className="mt-1 text-[11px] text-(--theme-text-muted)">
+                یک ترکیب انتخاب کنید؛ پیش‌نمایش آن روی محدودهٔ فعال اعمال می‌شود.
+              </p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleResetScopeDefaults}
-            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 text-xs font-bold text-(--theme-text) transition hover:border-(--theme-primary) hover:text-(--theme-primary-ink)"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             بازگشت به پیش‌فرض قرمز صنعتی
@@ -279,6 +288,17 @@ export const ThemeAdminPage: React.FC = () => {
                 : settings.admin_palette.primary === preset.palette.primary
                   && settings.admin_palette.secondary === preset.palette.secondary;
 
+            const miniHeaderBar = ensureContrastAgainst(preset.palette.headerText, [preset.palette.headerBg], 4.5);
+            const miniCardText = ensureContrastAgainst(preset.palette.text, [preset.palette.surface], 4.5);
+            const miniPrimaryInk = ensureContrastAgainst(preset.palette.primary, [preset.palette.surface, preset.palette.background], 3.2);
+            const swatchColors = [
+              preset.palette.primary,
+              preset.palette.secondary,
+              preset.palette.accent,
+              preset.palette.background,
+              preset.palette.surface,
+            ];
+
             return (
               <button
                 key={preset.slug}
@@ -287,24 +307,93 @@ export const ThemeAdminPage: React.FC = () => {
                 onClick={() => handleSelectPreset(preset.slug)}
                 className="theme-preset-card"
               >
-                <span className="theme-preset-preview" style={{ background: preset.palette.secondary }} aria-hidden="true">
-                  {[preset.palette.primary, preset.palette.secondary, preset.palette.accent, preset.palette.background, preset.palette.surface].map((color, index) => (
-                    <span key={color + index} style={{ backgroundColor: color }} />
-                  ))}
+                <span
+                  className="theme-preset-preview"
+                  style={{ backgroundColor: preset.palette.background }}
+                  aria-hidden="true"
+                >
+                  <span
+                    className="theme-preset-mini-header"
+                    style={{ backgroundColor: preset.palette.headerBg }}
+                  >
+                    <span className="theme-preset-mini-brand">
+                      <span
+                        className="theme-preset-mini-mark"
+                        style={{ backgroundColor: preset.palette.primary }}
+                      />
+                      <span
+                        className="theme-preset-mini-bar"
+                        style={{ backgroundColor: miniHeaderBar }}
+                      />
+                    </span>
+                  </span>
+
+                  <span
+                    className="theme-preset-mini-body"
+                    style={{ backgroundColor: preset.palette.background }}
+                  >
+                    <span
+                      className="theme-preset-mini-card"
+                      style={{ backgroundColor: preset.palette.surface }}
+                    >
+                      <span className="theme-preset-mini-lines">
+                        <span
+                          className="theme-preset-mini-title"
+                          style={{ backgroundColor: miniCardText }}
+                        />
+                        <span
+                          className="theme-preset-mini-sub"
+                          style={{ backgroundColor: miniCardText }}
+                        />
+                      </span>
+                      <span className="theme-preset-mini-footer">
+                        <span
+                          className="theme-preset-mini-cta"
+                          style={{ backgroundColor: preset.palette.buttonBg }}
+                        />
+                        <span
+                          className="theme-preset-mini-mark"
+                          style={{ backgroundColor: preset.palette.accent }}
+                        />
+                      </span>
+                    </span>
+
+                    <span className="theme-preset-swatches">
+                      {swatchColors.map((color, index) => (
+                        <span
+                          key={`${preset.slug}-${color}-${index}`}
+                          className="theme-preset-swatch"
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </span>
+                  </span>
+
                   <span
                     className="theme-preset-icon"
-                    style={{ backgroundColor: preset.palette.surface, color: preset.palette.primary }}
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: preset.palette.primary,
+                            color: pickReadableForeground(preset.palette.primary, '#FFFFFF'),
+                            borderColor: 'transparent',
+                          }
+                        : {
+                            backgroundColor: preset.palette.surface,
+                            color: miniPrimaryInk,
+                          }
+                    }
                   >
-                    {isActive ? <Check className="h-4 w-4" /> : <Palette className="h-4 w-4" />}
+                    {isActive ? <Check className="h-3.5 w-3.5" /> : <Palette className="h-3.5 w-3.5" />}
                   </span>
                 </span>
                 <span className="mt-3 flex items-start justify-between gap-2 text-start">
                   <span className="min-w-0">
-                    <span className="block truncate text-xs font-bold">{preset.name_fa}</span>
-                    <span className="mt-1 block truncate text-[10px] text-slate-400" dir="ltr">{preset.name_en}</span>
+                    <span className="block truncate text-xs font-bold text-(--theme-text)">{preset.name_fa}</span>
+                    <span className="mt-1 block truncate text-[10px] text-(--theme-text-muted)" dir="ltr">{preset.name_en}</span>
                   </span>
                   {preset.is_default && (
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                    <span className="shrink-0 rounded-lg bg-emerald-500/15 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:text-emerald-300">
                       پیش‌فرض
                     </span>
                   )}
@@ -327,8 +416,8 @@ export const ThemeAdminPage: React.FC = () => {
             className="mt-1 h-4 w-4 accent-(--theme-primary)"
           />
           <span>
-            <span className="block text-xs font-bold">فعال‌سازی تم مستقل لندینگ</span>
-            <span className="mt-1 block text-[11px] leading-5 text-slate-500">
+            <span className="block text-xs font-bold text-(--theme-text)">فعال‌سازی تم مستقل لندینگ</span>
+            <span className="mt-1 block text-[11px] leading-5 text-(--theme-text-muted)">
               با خاموش‌کردن این گزینه، صفحهٔ اصلی از تم صفحات عمومی استفاده می‌کند.
             </span>
           </span>
@@ -364,21 +453,21 @@ export const ThemeAdminPage: React.FC = () => {
               onChange={handleSelectPreset}
             />
             <div className="flex items-end gap-2">
-              <label className="min-w-0 flex-1 text-xs font-medium">
+              <label className="min-w-0 flex-1 text-xs font-medium text-(--theme-text)">
                 ذخیرهٔ ترکیب فعلی
                 <input
                   type="text"
                   value={newPresetName}
                   onChange={(event) => setNewPresetName(event.target.value)}
                   placeholder="نام تم آماده"
-                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs dark:border-slate-700 dark:bg-slate-900"
+                  className="mt-1.5 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2.5 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
                 />
               </label>
               <button
                 type="button"
                 disabled={!newPresetName.trim() || creatingPreset}
                 onClick={handleCreatePreset}
-                className="theme-secondary-action inline-flex h-10.5 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+                className="theme-secondary-action inline-flex h-10.5 shrink-0 items-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 text-xs font-semibold text-(--theme-text) transition hover:border-(--theme-primary) hover:text-(--theme-primary-ink) disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Plus className="h-4 w-4" />
                 <span>{creatingPreset ? 'در حال ذخیره' : 'ذخیره'}</span>
@@ -393,11 +482,13 @@ export const ThemeAdminPage: React.FC = () => {
             ]}
             value={settings.default_mode}
             onChange={(value) => {
+              const mode = value as ThemeSettings['default_mode'];
               const next = {
                 ...settings,
-                default_mode: value as ThemeSettings['default_mode'],
+                default_mode: mode,
               };
-              previewSettings(next, scope, next.default_mode);
+              setColorMode(mode);
+              previewSettings(next, scope, mode);
             }}
           />
         </section>

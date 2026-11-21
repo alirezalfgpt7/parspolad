@@ -14,7 +14,7 @@ export const EffectNavLink: React.FC<LinkProps> = ({ className, children, ...pro
   <Link
     {...props}
     className={cn(
-      'effect-nav-link relative inline-flex items-center gap-1 py-1 text-sm font-medium transition-colors hover:text-(--theme-primary) whitespace-nowrap shrink-0',
+      'effect-nav-link relative inline-flex items-center gap-1 py-1 text-sm font-medium transition-colors hover:text-(--theme-header-ink) whitespace-nowrap shrink-0',
       className
     )}
   >

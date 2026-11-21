@@ -98,13 +98,13 @@ export const DashboardPage: React.FC = () => {
             <Link
               key={c.label}
               to={c.to}
-              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
+              className="flex items-center justify-between rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) transition-all hover:border-(--theme-card-border-hover) hover:shadow-(--theme-card-shadow-hover)"
             >
               <div>
-                <p className="text-xs text-slate-500">{c.label}</p>
-                <p className="mt-1.5 text-xl font-extrabold text-slate-900 dark:text-white">{c.val}</p>
+                <p className="text-xs text-(--theme-text-muted)">{c.label}</p>
+                <p className="mt-1.5 text-xl font-extrabold text-(--theme-text)">{c.val}</p>
               </div>
-              <div className="rounded-lg bg-red-50 p-2.5 text-(--theme-primary) dark:bg-red-950/40">
+              <div className="rounded-xl bg-(--theme-primary)/10 p-2.5 text-(--theme-primary-ink)">
                 <Icon className="h-5 w-5" />
               </div>
             </Link>
@@ -112,18 +112,18 @@ export const DashboardPage: React.FC = () => {
         })}
       </div>
 
-      <section className="space-y-5 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <section className="space-y-5 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-sm font-bold">آمار بازدید وب‌سایت</h2>
-            <p className="mt-1 text-xs text-slate-500">آمار به‌صورت تجمیعی ثبت می‌شود و شناسه یا IP بازدیدکنندگان ذخیره نمی‌شود.</p>
+            <h2 className="text-sm font-bold text-(--theme-text)">آمار بازدید وب‌سایت</h2>
+            <p className="mt-1 text-xs text-(--theme-text-muted)">آمار به‌صورت تجمیعی ثبت می‌شود و شناسه یا IP بازدیدکنندگان ذخیره نمی‌شود.</p>
           </div>
           <div className="flex flex-wrap items-end gap-3">
-            <label className="w-40 text-xs">
+            <label className="w-40 text-xs text-(--theme-text)">
               از تاریخ
               <PersianDatePicker value={rangeFrom} onChange={setRangeFrom} className="mt-1" />
             </label>
-            <label className="w-40 text-xs">
+            <label className="w-40 text-xs text-(--theme-text)">
               تا تاریخ
               <PersianDatePicker value={rangeTo} onChange={setRangeTo} className="mt-1" />
             </label>
@@ -131,31 +131,31 @@ export const DashboardPage: React.FC = () => {
               type="button"
               onClick={() => loadAnalytics(rangeFrom, rangeTo)}
               disabled={analyticsLoading}
-              className="rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+              className="rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-60"
             >
               {analyticsLoading ? <InlineLoader label="در حال دریافت..." /> : 'اعمال بازه'}
             </button>
           </div>
         </div>
 
-        {analyticsError && <p role="alert" className="text-xs text-red-600">{analyticsError}</p>}
+        {analyticsError && <p role="alert" className="text-xs text-red-600 dark:text-red-400">{analyticsError}</p>}
 
         {analytics && (
           <>
-            <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-800/60">
-              <p className="text-xs text-slate-500">بازدید در بازه انتخاب‌شده</p>
-              <p className="mt-1 text-2xl font-extrabold tabular-nums">{analytics.range.total.toLocaleString('fa-IR')}</p>
-              <p className="mt-1 text-[11px] text-slate-500">
+            <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+              <p className="text-xs text-(--theme-text-muted)">بازدید در بازه انتخاب‌شده</p>
+              <p className="mt-1 text-2xl font-extrabold tabular-nums text-(--theme-text)">{analytics.range.total.toLocaleString('fa-IR')}</p>
+              <p className="mt-1 text-[11px] text-(--theme-text-muted)">
                 {gregorianToJalali(analytics.range.from)} تا {gregorianToJalali(analytics.range.to)}
               </p>
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
-                <h3 className="mb-3 text-xs font-semibold">بازدید روزانه · ۱۴ روز اخیر</h3>
+                <h3 className="mb-3 text-xs font-semibold text-(--theme-text)">بازدید روزانه · ۱۴ روز اخیر</h3>
                 <AnalyticsBars points={buildDailySeries(analytics.daily, 14)} />
               </div>
               <div>
-                <h3 className="mb-3 text-xs font-semibold">بازدید ماهانه · ۱۲ ماه اخیر</h3>
+                <h3 className="mb-3 text-xs font-semibold text-(--theme-text)">بازدید ماهانه · ۱۲ ماه اخیر</h3>
                 <AnalyticsBars points={buildMonthlySeries(analytics.monthly, 12)} />
               </div>
             </div>
@@ -164,45 +164,45 @@ export const DashboardPage: React.FC = () => {
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="mb-4 text-sm font-bold">تعداد پروژه‌ها به تفکیک دسته فنی</h2>
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+          <h2 className="mb-4 text-sm font-bold text-(--theme-text)">تعداد پروژه‌ها به تفکیک دسته فنی</h2>
           <CategoryBarChart data={data.charts.byCategory} />
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="mb-4 text-sm font-bold">نمودار روند اجرای پروژه‌ها در سال‌ها</h2>
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+          <h2 className="mb-4 text-sm font-bold text-(--theme-text)">نمودار روند اجرای پروژه‌ها در سال‌ها</h2>
           <YearlyTrendChart data={data.charts.byYear} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold">پیام‌ها و RFQهای اخیر</h2>
-            <Link to="/admin/messages" className="text-xs text-(--theme-primary) hover:underline">همه</Link>
+            <h2 className="text-sm font-bold text-(--theme-text)">پیام‌ها و RFQهای اخیر</h2>
+            <Link to="/admin/messages" className="text-xs font-semibold text-(--theme-link) hover:underline">همه</Link>
           </div>
           <div className="space-y-3">
             {data.recent_messages.map((m) => (
-              <div key={m.id} className="border-b border-slate-100 pb-2.5 text-xs last:border-0 dark:border-slate-800">
-                <div className="font-semibold text-slate-900 dark:text-white">{m.subject}</div>
-                <div className="mt-0.5 text-slate-500">{m.name} · {m.type.toUpperCase()}</div>
+              <div key={m.id} className="border-b border-(--theme-border) pb-2.5 text-xs last:border-0">
+                <div className="font-semibold text-(--theme-text)">{m.subject}</div>
+                <div className="mt-0.5 text-(--theme-text-muted)">{m.name} · {m.type.toUpperCase()}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-1.5 text-sm font-bold">
-              <ShieldCheck className="h-4 w-4 text-(--theme-primary)" />
+            <h2 className="flex items-center gap-1.5 text-sm font-bold text-(--theme-text)">
+              <ShieldCheck className="h-4 w-4 text-(--theme-primary-ink)" />
               <span>لاگ‌های اخیر سیستم</span>
             </h2>
-            <Link to="/admin/reports" className="text-xs text-(--theme-primary) hover:underline">مشاهده</Link>
+            <Link to="/admin/reports" className="text-xs font-semibold text-(--theme-link) hover:underline">مشاهده</Link>
           </div>
           <div className="space-y-2.5">
             {data.recent_logs.map((l) => (
-              <div key={l.id} className="border-b border-slate-100 pb-2 text-xs last:border-0 dark:border-slate-800">
-                <div className="font-medium text-slate-800 dark:text-slate-200">{l.subject_label}</div>
-                <div className="mt-0.5 flex justify-between text-[11px] text-slate-400">
+              <div key={l.id} className="border-b border-(--theme-border) pb-2 text-xs last:border-0">
+                <div className="font-medium text-(--theme-text)">{l.subject_label}</div>
+                <div className="mt-0.5 flex justify-between text-[11px] text-(--theme-text-muted)">
                   <span>{l.user_name}</span>
                   <span className="font-mono">{l.action}</span>
                 </div>
@@ -211,19 +211,19 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-1.5 text-sm font-bold">
+            <h2 className="flex items-center gap-1.5 text-sm font-bold text-(--theme-text)">
               <Bell className="h-4 w-4 text-amber-500" />
               <span>اعلان‌های اخیر</span>
             </h2>
-            <Link to="/admin/notifications" className="text-xs text-(--theme-primary) hover:underline">مرکز اعلان‌ها</Link>
+            <Link to="/admin/notifications" className="text-xs font-semibold text-(--theme-link) hover:underline">مرکز اعلان‌ها</Link>
           </div>
           <div className="space-y-3">
             {data.notifications.map((n) => (
-              <div key={n.id} className="border-b border-slate-100 pb-2.5 text-xs last:border-0 dark:border-slate-800">
-                <div className="font-semibold text-slate-900 dark:text-white">{n.title_fa}</div>
-                <p className="mt-0.5 text-slate-500">{n.body_fa}</p>
+              <div key={n.id} className="border-b border-(--theme-border) pb-2.5 text-xs last:border-0">
+                <div className="font-semibold text-(--theme-text)">{n.title_fa}</div>
+                <p className="mt-0.5 text-(--theme-text-muted)">{n.body_fa}</p>
               </div>
             ))}
           </div>
@@ -284,21 +284,21 @@ const AnalyticsBars: React.FC<{ points: AnalyticsBarPoint[] }> = ({ points }) =>
     <div
       role="img"
       aria-label="نمودار تعداد بازدید"
-      className="flex h-36 items-end gap-1 border-b border-slate-200 dark:border-slate-700"
+      className="flex h-36 items-end gap-1 border-b border-(--theme-border)"
     >
       {points.map((point) => (
         <div key={point.key} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-          <span className="h-3 text-[9px] tabular-nums leading-3 text-slate-500">
+          <span className="h-3 text-[9px] tabular-nums leading-3 text-(--theme-text-muted)">
             {point.value.toLocaleString('fa-IR')}
           </span>
           <div className="flex h-24 w-full items-end justify-center">
             <div
               title={`${point.label}: ${point.value}`}
-              className="effect-chart-column w-3 max-w-full rounded-t bg-(--theme-primary) opacity-80 transition-[height] duration-300"
+              className="effect-chart-column w-3 max-w-full rounded-t bg-(--theme-primary) opacity-85 transition-[height] duration-300"
               style={{ height: `${point.value === 0 ? 3 : Math.max(6, (point.value / maxValue) * 100)}%` }}
             />
           </div>
-          <span className="h-3 text-[9px] leading-3 text-slate-500">{point.label}</span>
+          <span className="h-3 text-[9px] leading-3 text-(--theme-text-muted)">{point.label}</span>
         </div>
       ))}
     </div>

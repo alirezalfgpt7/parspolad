@@ -86,11 +86,11 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <EffectProfileCard className="mx-auto max-w-2xl rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-      <h1 className="mb-5 text-lg font-extrabold">پروفایل کاربری، آواتار و احراز هویت دو مرحله‌ای (2FA)</h1>
+    <EffectProfileCard className="mx-auto max-w-2xl rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow)">
+      <h1 className="mb-5 text-lg font-extrabold text-(--theme-text)">پروفایل کاربری، آواتار و احراز هویت دو مرحله‌ای (2FA)</h1>
       <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
         <div className="flex items-center gap-4">
-          <EffectProfileAvatar src={avatar} alt={name} className="h-16 w-16 rounded-full border border-slate-200 object-cover" />
+          <EffectProfileAvatar src={avatar} alt={name} className="h-16 w-16 rounded-full border border-(--theme-border) object-cover" />
           <div className="flex-1">
             <FileUploader
               folder="avatars"
@@ -102,31 +102,31 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">نام و نام خانوادگی</label>
-          <input {...register('name')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام و نام خانوادگی</label>
+          <input {...register('name')} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           {errors.name && <p role="alert" className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">شماره تماس</label>
-          <input dir="ltr" {...register('phone')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+          <label className="mb-1 block text-xs font-medium text-(--theme-text)">شماره تماس</label>
+          <input dir="ltr" {...register('phone')} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
           {errors.phone && <p role="alert" className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
         </div>
-        <label className="flex items-center gap-2.5 rounded-lg border border-slate-200 p-3 text-xs font-semibold dark:border-slate-700">
-          <input type="checkbox" {...register('two_factor_enabled')} />
-          <ShieldCheck className="h-4 w-4 text-(--theme-primary)" />
+        <label className="flex items-center gap-2.5 rounded-lg border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-xs font-semibold text-(--theme-text)">
+          <input type="checkbox" {...register('two_factor_enabled')} className="accent-(--theme-primary)" />
+          <ShieldCheck className="h-4 w-4 text-(--theme-primary-ink)" />
           <span>فعال‌سازی احراز هویت دو مرحله‌ای (2FA) هنگام ورود</span>
         </label>
-        <div className="grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 dark:border-slate-800">
+        <div className="grid gap-3 border-t border-(--theme-border) pt-4 sm:grid-cols-2">
           <label className="space-y-1">
-            <input type="password" dir="ltr" placeholder="رمز عبور فعلی (در صورت تغییر)" {...register('current_password')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input type="password" dir="ltr" placeholder="رمز عبور فعلی (در صورت تغییر)" {...register('current_password')} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
             {errors.current_password && <span role="alert" className="block text-xs text-red-600">{errors.current_password.message}</span>}
           </label>
           <label className="space-y-1">
-            <input type="password" dir="ltr" placeholder="رمز عبور جدید" {...register('new_password')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <input type="password" dir="ltr" placeholder="رمز عبور جدید" {...register('new_password')} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
             {errors.new_password && <span role="alert" className="block text-xs text-red-600">{errors.new_password.message}</span>}
           </label>
         </div>
-        <button type="submit" disabled={isSubmitting} style={{ backgroundColor: 'var(--theme-primary)' }} className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-60">
+        <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-lg bg-(--theme-btn-bg) px-5 py-2.5 text-xs font-semibold text-(--theme-btn-text) transition-colors hover:bg-(--theme-btn-hover) disabled:opacity-60">
           <Save className="h-4 w-4" />
           <span>ذخیره پروفایل</span>
         </button>
@@ -163,19 +163,19 @@ export const NotificationsPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <h1 className="flex items-center gap-2 text-lg font-extrabold">
-        <Bell className="h-5 w-5 text-(--theme-primary)" />
+      <h1 className="flex items-center gap-2 text-lg font-extrabold text-(--theme-text)">
+        <Bell className="h-5 w-5 text-(--theme-primary-ink)" />
         <span>مرکز اعلان‌ها (Notification Center)</span>
       </h1>
-      <p className="text-xs leading-6 text-slate-500">
+      <p className="text-xs leading-6 text-(--theme-text-muted)">
         اعلان‌های داخل پنل را اینجا می‌بینید و می‌توانید وضعیت خوانده‌شدنشان را مدیریت کنید؛ این بخش تنظیمات ارسال ایمیل یا پیامک نیست.
       </p>
       {items.map((n) => (
-        <div key={n.id} className="flex items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <div key={n.id} className="flex items-start justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
           <div>
-            <div className="text-sm font-bold">{n.title_fa}</div>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{n.body_fa}</p>
-            <div className="mt-2 text-[11px] text-slate-400">{n.channel} · {new Date(n.created_at).toLocaleString('fa-IR')}</div>
+            <div className="text-sm font-bold text-(--theme-text)">{n.title_fa}</div>
+            <p className="mt-1 text-xs text-(--theme-text-muted)">{n.body_fa}</p>
+            <div className="mt-2 text-[11px] text-(--theme-text-muted)">{n.channel} · {new Date(n.created_at).toLocaleString('fa-IR')}</div>
           </div>
           {!n.is_read && (
             <button
@@ -188,7 +188,7 @@ export const NotificationsPage: React.FC = () => {
                   addToast('error', error instanceof Error ? error.message : 'علامت‌گذاری اعلان ناموفق بود.');
                 }
               }}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50 dark:border-slate-700"
+              className="inline-flex items-center gap-1 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-1.5 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
             >
               <Check className="h-3.5 w-3.5 text-emerald-600" />
               <span>خوانده شد</span>

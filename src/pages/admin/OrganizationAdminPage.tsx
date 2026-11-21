@@ -58,7 +58,7 @@ const emptyMember: TeamForm = {
   sort_order: '0',
 };
 
-const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800';
+const inputClass = 'w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)';
 
 export const OrganizationAdminPage: React.FC = () => {
   const addToast = useAppStore((state) => state.addToast);
@@ -215,18 +215,18 @@ export const OrganizationAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <section className="space-y-5 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <section className="space-y-5 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-lg font-extrabold">ساختار سازمانی، مدیران و کارکنان</h1>
-            <p className="mt-1 text-xs leading-6 text-slate-500">
+            <h1 className="text-lg font-extrabold text-(--theme-text)">ساختار سازمانی، مدیران و کارکنان</h1>
+            <p className="mt-1 text-xs leading-6 text-(--theme-text-muted)">
               واحدها و زیرمجموعه‌ها را تعریف کنید و با ترتیب نمایش، چیدمان نمودار عمومی را تنظیم کنید.
             </p>
           </div>
           <button
             type="button"
             onClick={openNewDepartment}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-primary) px-4 py-2 text-xs font-semibold text-white"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)"
           >
             <Plus className="h-4 w-4" />
             افزودن واحد
@@ -235,17 +235,17 @@ export const OrganizationAdminPage: React.FC = () => {
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {departments.map((department) => (
-            <article key={department.id} className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+            <article key={department.id} className="rounded-xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: department.color }} />
-                    <h2 className="truncate text-sm font-bold">{department.name_fa}</h2>
+                    <h2 className="truncate text-sm font-bold text-(--theme-text)">{department.name_fa}</h2>
                   </div>
-                  <p className="mt-1 text-[11px] text-slate-500" dir="ltr">{department.name_en}</p>
+                  <p className="mt-1 text-[11px] text-(--theme-text-muted)" dir="ltr">{department.name_en}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <button type="button" onClick={() => openEditDepartment(department)} className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-(--theme-primary) dark:hover:bg-slate-800" aria-label={`ویرایش ${department.name_fa}`}>
+                  <button type="button" onClick={() => openEditDepartment(department)} className="rounded-md p-1.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)" aria-label={`ویرایش ${department.name_fa}`}>
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button type="button" onClick={() => void deleteDepartment(department)} className="rounded-md p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label={`حذف ${department.name_fa}`}>
@@ -253,10 +253,10 @@ export const OrganizationAdminPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-              <div className="mt-4 border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
-                <p className="font-semibold">{department.head_name_fa}</p>
-                <p className="mt-1 text-slate-500">{department.head_title_fa}</p>
-                <p className="mt-2 text-[11px] text-slate-400">
+              <div className="mt-4 border-t border-(--theme-border) pt-3 text-xs">
+                <p className="font-semibold text-(--theme-text)">{department.head_name_fa}</p>
+                <p className="mt-1 text-(--theme-text-muted)">{department.head_title_fa}</p>
+                <p className="mt-2 text-[11px] text-(--theme-text-muted)">
                   {department.parent_id
                     ? `زیرمجموعهٔ ${departments.find((parent) => parent.id === department.parent_id)?.name_fa || 'واحد دیگر'}`
                     : 'واحد اصلی'}
@@ -267,7 +267,7 @@ export const OrganizationAdminPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => openNewMember(department.id)}
-                className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-(--theme-primary) hover:underline"
+                className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-(--theme-primary-ink) hover:underline"
               >
                 <Plus className="h-3.5 w-3.5" />
                 افزودن مدیر یا کارمند
@@ -277,48 +277,48 @@ export const OrganizationAdminPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold">مدیران و کارکنان ({team.length})</h2>
-            <p className="mt-1 text-xs text-slate-500">ویرایش اطلاعات، عکس، واحد سازمانی و ترتیب نمایش کارت‌ها.</p>
+            <h2 className="text-base font-bold text-(--theme-text)">مدیران و کارکنان ({team.length})</h2>
+            <p className="mt-1 text-xs text-(--theme-text-muted)">ویرایش اطلاعات، عکس، واحد سازمانی و ترتیب نمایش کارت‌ها.</p>
           </div>
           <button
             type="button"
             onClick={() => openNewMember()}
             disabled={departments.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold disabled:opacity-50 dark:border-slate-700"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted) disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
             افزودن عضو
           </button>
         </div>
         {team.length === 0 ? (
-          <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-800/50">
+          <p className="rounded-xl bg-(--theme-surface-muted) p-4 text-sm text-(--theme-text-muted)">
             هنوز مدیری یا کارمندی ثبت نشده است.
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {team.map((member) => (
-              <article key={member.id} className="flex items-start gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+              <article key={member.id} className="flex items-start gap-3 rounded-xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow)">
                 {member.avatar_url ? (
                   <img src={member.avatar_url} alt={member.name_fa} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
                 ) : (
-                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/10 text-sm font-bold text-(--theme-primary)">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/12 text-sm font-bold text-(--theme-primary-ink)">
                     {member.name_fa.slice(0, 1)}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-bold">{member.name_fa}</h3>
-                  <p className="mt-1 truncate text-xs text-slate-500">{member.role_fa}</p>
-                  <p className="mt-1 truncate text-[11px] text-slate-400">
+                  <h3 className="truncate text-sm font-bold text-(--theme-text)">{member.name_fa}</h3>
+                  <p className="mt-1 truncate text-xs text-(--theme-text-muted)">{member.role_fa}</p>
+                  <p className="mt-1 truncate text-[11px] text-(--theme-text-muted)">
                     {departments.find((department) => department.id === member.department_id)?.name_fa || 'بدون واحد'}
                     {' · ترتیب '}
                     {member.sort_order ?? 0}
                   </p>
                 </div>
                 <div className="flex shrink-0">
-                  <button type="button" onClick={() => openEditMember(member)} className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-(--theme-primary) dark:hover:bg-slate-800" aria-label={`ویرایش ${member.name_fa}`}>
+                  <button type="button" onClick={() => openEditMember(member)} className="rounded-md p-1.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)" aria-label={`ویرایش ${member.name_fa}`}>
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button type="button" onClick={() => void deleteMember(member)} className="rounded-md p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label={`حذف ${member.name_fa}`}>
@@ -375,7 +375,7 @@ export const OrganizationAdminPage: React.FC = () => {
           </label>
           <label className="space-y-1 text-xs font-semibold">
             <span>رنگ واحد</span>
-            <input type="color" value={departmentForm.color} onChange={(event) => setDepartmentForm({ ...departmentForm, color: event.target.value })} className="h-10 w-full rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800" />
+            <input type="color" value={departmentForm.color} onChange={(event) => setDepartmentForm({ ...departmentForm, color: event.target.value })} className="h-10 w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) p-1" />
           </label>
           <label className="space-y-1 text-xs font-semibold">
             <span>تعداد پرسنل</span>
@@ -385,7 +385,7 @@ export const OrganizationAdminPage: React.FC = () => {
             <span>ترتیب نمایش (عدد کمتر، بالاتر)</span>
             <input type="number" min="0" value={departmentForm.sort_order} onChange={(event) => setDepartmentForm({ ...departmentForm, sort_order: event.target.value })} className={inputClass} />
           </label>
-          <button type="submit" disabled={saving} className="mt-2 rounded-lg bg-(--theme-primary) px-4 py-2.5 text-xs font-semibold text-white disabled:opacity-60 sm:col-span-2">
+          <button type="submit" disabled={saving} className="mt-2 rounded-lg bg-(--theme-btn-bg) px-4 py-2.5 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover) disabled:opacity-60 sm:col-span-2">
             {saving ? 'در حال ذخیره...' : 'ذخیره واحد سازمانی'}
           </button>
         </form>
@@ -441,7 +441,7 @@ export const OrganizationAdminPage: React.FC = () => {
             <span>ترتیب نمایش کارت (عدد کمتر، بالاتر)</span>
             <input type="number" min="0" value={memberForm.sort_order} onChange={(event) => setMemberForm({ ...memberForm, sort_order: event.target.value })} className={inputClass} />
           </label>
-          <button type="submit" disabled={saving || departments.length === 0} className="mt-2 rounded-lg bg-(--theme-primary) px-4 py-2.5 text-xs font-semibold text-white disabled:opacity-60 sm:col-span-2">
+          <button type="submit" disabled={saving || departments.length === 0} className="mt-2 rounded-lg bg-(--theme-btn-bg) px-4 py-2.5 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover) disabled:opacity-60 sm:col-span-2">
             {saving ? 'در حال ذخیره...' : 'ذخیره اطلاعات'}
           </button>
         </form>

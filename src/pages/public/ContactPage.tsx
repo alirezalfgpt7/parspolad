@@ -101,27 +101,27 @@ const TicketLookupPanel: React.FC = () => {
   };
 
   return (
-    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-      <h2 className="text-lg font-bold">پیگیری و پاسخ به تیکت</h2>
+    <section className="mt-8 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow)">
+      <h2 className="text-lg font-bold text-(--theme-text)">پیگیری و پاسخ به تیکت</h2>
       <form onSubmit={lookup.handleSubmit(findTicket)} className="mt-4 grid gap-3 sm:grid-cols-3">
-        <input {...lookup.register('tracking_number')} placeholder="شماره پیگیری مانند PPA-12345678" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-        <input {...lookup.register('email')} type="email" placeholder="ایمیل ثبت‌شده" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-        <input {...lookup.register('phone')} placeholder="شماره تماس ثبت‌شده" dir="ltr" className="rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
-        <button type="submit" disabled={lookup.formState.isSubmitting} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-sm font-semibold text-white sm:col-span-3">
+        <input {...lookup.register('tracking_number')} placeholder="شماره پیگیری مانند PPA-12345678" dir="ltr" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+        <input {...lookup.register('email')} type="email" placeholder="ایمیل ثبت‌شده" dir="ltr" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+        <input {...lookup.register('phone')} placeholder="شماره تماس ثبت‌شده" dir="ltr" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+        <button type="submit" disabled={lookup.formState.isSubmitting} className="rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) sm:col-span-3">
           {lookup.formState.isSubmitting ? 'در حال جستجو...' : 'نمایش گفتگو'}
         </button>
       </form>
 
       {ticket && (
         <div className="mt-6 space-y-4">
-          <div className="flex flex-wrap justify-between gap-2 border-b border-slate-100 pb-3 text-sm dark:border-slate-800">
+          <div className="flex flex-wrap justify-between gap-2 border-b border-(--theme-border) pb-3 text-sm text-(--theme-text)">
             <strong>{ticket.subject}</strong>
             <span>کد {ticket.tracking_number} · وضعیت: {ticket.status}</span>
           </div>
           <div className="space-y-3">
             {ticket.messages.map((message, index) => (
-              <article key={`${message.created_at}-${index}`} className="rounded-lg bg-slate-50 p-3 text-sm dark:bg-slate-800">
-                <div className="mb-1 flex justify-between text-xs text-slate-500">
+              <article key={`${message.created_at}-${index}`} className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-sm text-(--theme-text)">
+                <div className="mb-1 flex justify-between text-xs text-(--theme-text-muted)">
                   <span>{message.author_type === 'customer' ? 'شما' : message.author_name}</span>
                   <time>{new Date(message.created_at).toLocaleString('fa-IR')}</time>
                 </div>
@@ -131,7 +131,7 @@ const TicketLookupPanel: React.FC = () => {
           </div>
           <form onSubmit={reply.handleSubmit(sendReply)} className="space-y-3">
             <PublicHoneypotField registration={reply.register('website')} />
-            <textarea {...reply.register('message')} rows={3} placeholder="پاسخ شما..." className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+            <textarea {...reply.register('message')} rows={3} placeholder="پاسخ شما..." className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
             {reply.formState.errors.message && <p className="text-xs text-red-600">{reply.formState.errors.message.message}</p>}
             <SelfHostedCaptcha
               registration={reply.register('captcha')}
@@ -144,7 +144,7 @@ const TicketLookupPanel: React.FC = () => {
               }}
               error={reply.formState.errors.captcha?.message}
             />
-            <button type="submit" disabled={reply.formState.isSubmitting || !captchaKey} className="rounded-lg bg-(--theme-primary) px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+            <button type="submit" disabled={reply.formState.isSubmitting || !captchaKey} className="rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-50">
               ارسال پاسخ
             </button>
           </form>
@@ -253,8 +253,8 @@ export const ContactPage: React.FC = () => {
 
       <div className="grid gap-8 lg:grid-cols-12">
         {/* Form */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:col-span-6 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">ارسال پیام و مکاتبه</h2>
+        <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow) sm:p-8 lg:col-span-6">
+          <h2 className="text-lg font-bold text-(--theme-text)">ارسال پیام و مکاتبه</h2>
           {submitted && (
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
               {trackingNumber
@@ -266,46 +266,46 @@ export const ContactPage: React.FC = () => {
             <PublicHoneypotField registration={register('website')} />
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">نام و نام خانوادگی</label>
-                <input {...register('name')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام و نام خانوادگی</label>
+                <input {...register('name')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">نام شرکت / سازمان</label>
-                <input {...register('company')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام شرکت / سازمان</label>
+                <input {...register('company')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">ایمیل</label>
-                <input {...register('email')} type="email" dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">ایمیل</label>
+                <input {...register('email')} type="email" dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">شماره تماس</label>
-                <input {...register('phone')} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">شماره تماس</label>
+                <input {...register('phone')} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium">نوع درخواست</label>
-              <select value={messageType} onChange={(event) => setMessageType(event.target.value as 'contact' | 'ticket')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">نوع درخواست</label>
+              <select value={messageType} onChange={(event) => setMessageType(event.target.value as 'contact' | 'ticket')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)">
                 <option value="contact">پیام عمومی</option>
                 <option value="ticket">ثبت تیکت قابل پیگیری</option>
               </select>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium">موضوع</label>
-              <input {...register('subject')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">موضوع</label>
+              <input {...register('subject')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
               {errors.subject && <p className="mt-1 text-xs text-red-600">{errors.subject.message}</p>}
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium">شرح پیام</label>
-              <textarea {...register('message')} rows={4} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">شرح پیام</label>
+              <textarea {...register('message')} rows={4} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
               {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message.message}</p>}
             </div>
 
@@ -332,9 +332,9 @@ export const ContactPage: React.FC = () => {
         {/* Map & Details */}
         <div className="space-y-6 lg:col-span-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 text-xs space-y-2 dark:border-slate-800 dark:bg-slate-900">
-              <div className="font-bold text-sm text-(--theme-primary)">کارخانه تولیدی</div>
-              <p className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
+            <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 text-xs text-(--theme-text) shadow-(--theme-card-shadow) space-y-2">
+              <div className="font-bold text-sm text-(--theme-primary-ink)">کارخانه تولیدی</div>
+              <p className="flex items-start gap-2 text-(--theme-text-muted)">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{company?.factory_address_fa}</span>
               </p>
@@ -342,9 +342,9 @@ export const ContactPage: React.FC = () => {
               <p className="flex items-center gap-2"><Mail className="h-3.5 w-3.5" /><span>{company?.factory_email}</span></p>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-5 text-xs space-y-2 dark:border-slate-800 dark:bg-slate-900">
-              <div className="font-bold text-sm text-amber-600">دفتر مرکزی و بازرگانی</div>
-              <p className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
+            <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 text-xs text-(--theme-text) shadow-(--theme-card-shadow) space-y-2">
+              <div className="font-bold text-sm text-(--theme-accent-ink)">دفتر مرکزی و بازرگانی</div>
+              <p className="flex items-start gap-2 text-(--theme-text-muted)">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>{company?.office_address_fa}</span>
               </p>
@@ -353,7 +353,7 @@ export const ContactPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
             <div ref={mapRef} className="h-85 w-full" />
           </div>
         </div>

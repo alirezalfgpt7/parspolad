@@ -84,20 +84,20 @@ export const RfqPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <CmsPageIntro slug="rfq" className="mb-6" titleClassName="text-2xl font-extrabold text-slate-900 dark:text-white" />
+      <CmsPageIntro slug="rfq" className="mb-6" titleClassName="text-2xl font-extrabold text-white" />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow) sm:p-8">
         {done ? (
           <div className="py-10 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
-            <h2 className="mt-3 text-lg font-bold">درخواست استعلام شما ثبت گردید</h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <h2 className="mt-3 text-lg font-bold text-(--theme-text)">درخواست استعلام شما ثبت گردید</h2>
+            <p className="mt-1 text-xs text-(--theme-text-muted)">
               واحد بازرگانی و مهندسی فروش پارس پولاد آقایی در کوتاه‌ترین زمان با شما تماس می‌گیرد.
             </p>
             <button
               type="button"
               onClick={() => setDone(false)}
-              className="mt-5 rounded-lg bg-(--theme-primary) px-5 py-2 text-xs font-semibold text-white"
+              className="mt-5 rounded-xl bg-(--theme-btn-bg) px-5 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)"
             >
               ثبت استعلام جدید
             </button>
@@ -114,39 +114,39 @@ export const RfqPage: React.FC = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">نام و سمت متقاضی</label>
-                <input {...register('name')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام و سمت متقاضی</label>
+                <input {...register('name')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">نام شرکت / کارفرما</label>
-                <input {...register('company')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام شرکت / کارفرما</label>
+                <input {...register('company')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.company && <p className="mt-1 text-xs text-red-600">{errors.company.message}</p>}
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs font-medium">ایمیل سازمانی</label>
-                <input {...register('email')} type="email" dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">ایمیل سازمانی</label>
+                <input {...register('email')} type="email" dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium">تلفن تماس</label>
-                <input {...register('phone')} dir="ltr" className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+                <label className="mb-1 block text-xs font-medium text-(--theme-text)">تلفن تماس</label>
+                <input {...register('phone')} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p>}
               </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium">عنوان پروژه / شماره مناقصه / تجهیز درخواستی</label>
-              <input {...register('subject')} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">عنوان پروژه / شماره مناقصه / تجهیز درخواستی</label>
+              <input {...register('subject')} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
               {errors.subject && <p className="mt-1 text-xs text-red-600">{errors.subject.message}</p>}
             </div>
 
             <div>
-              <label className="mb-1 block text-xs font-medium">مشخصات فنی (سایز جداری، فشار کاری PSI، گرید متالورژی، استاندارد مورد نیاز و تعداد)</label>
-              <textarea {...register('message')} rows={5} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800" />
+              <label className="mb-1 block text-xs font-medium text-(--theme-text)">مشخصات فنی (سایز جداری، فشار کاری PSI، گرید متالورژی، استاندارد مورد نیاز و تعداد)</label>
+              <textarea {...register('message')} rows={5} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
               {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message.message}</p>}
             </div>
 
@@ -162,7 +162,7 @@ export const RfqPage: React.FC = () => {
               type="submit"
               disabled={isSubmitting || !captchaKey}
               style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
-              className="rounded-lg px-6 py-2.5 text-sm font-semibold shadow-xs disabled:opacity-60"
+              className="rounded-xl px-6 py-2.5 text-sm font-semibold shadow-xs transition hover:bg-(--theme-btn-hover) disabled:opacity-60"
             >
               {isSubmitting ? 'در حال ثبت...' : 'ارسال رسمی درخواست استعلام'}
             </button>

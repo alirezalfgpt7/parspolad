@@ -75,11 +75,11 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
   const isImage = /\.(png|jpe?g|webp|gif|svg|ico)(\?.*)?$/i.test(value);
 
   return (
-    <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+    <div className="space-y-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{label}</span>
+        <span className="text-xs font-bold text-(--theme-text)">{label}</span>
         {isAnimated && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
             <Sparkles className="h-3 w-3" />
             فایل متحرک
           </span>
@@ -87,9 +87,9 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xs dark:border-slate-700 dark:bg-slate-950">
+        <div className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface) p-1.5 shadow-xs">
           {!value ? (
-            <span className="text-[10px] text-slate-400">بدون تصویر</span>
+            <span className="text-[10px] text-(--theme-text-muted)">بدون تصویر</span>
           ) : isVideo ? (
             <video
               key={value}
@@ -107,7 +107,7 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
               className="h-full w-full rounded-lg object-contain"
             />
           ) : (
-            <FileText className="h-7 w-7 text-slate-400" aria-hidden="true" />
+            <FileText className="h-7 w-7 text-(--theme-text-muted)" aria-hidden="true" />
           )}
         </div>
 
@@ -119,14 +119,14 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-900"
+              className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-1.5 font-mono text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
             />
             {value && (
               <button
                 type="button"
                 onClick={() => onChange('')}
                 title="پاک کردن"
-                className="rounded-lg border border-slate-200 p-1.5 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:border-slate-700 dark:hover:bg-red-950/40"
+                className="rounded-lg border border-(--theme-border) bg-(--theme-surface) p-1.5 text-(--theme-text-muted) hover:bg-red-500/10 hover:text-red-500"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -137,17 +137,17 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
             <button
               type="button"
               onClick={() => setUploadOpen((o) => !o)}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-2.5 py-1 text-[11px] font-semibold text-(--theme-text) hover:border-(--theme-primary)"
             >
-              <UploadCloud className="h-3.5 w-3.5 text-(--theme-primary)" />
+              <UploadCloud className="h-3.5 w-3.5 text-(--theme-primary-ink)" />
               <span>آپلود جدید</span>
             </button>
             <button
               type="button"
               onClick={openLibrary}
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+              className="inline-flex items-center gap-1 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-2.5 py-1 text-[11px] font-semibold text-(--theme-text) hover:border-(--theme-primary)"
             >
-              <FolderOpen className="h-3.5 w-3.5 text-amber-500" />
+              <FolderOpen className="h-3.5 w-3.5 text-(--theme-accent-ink)" />
               <span>کتابخانه رسانه</span>
             </button>
             {showAnimatedPresets && BUILTIN_BRAND_MEDIA_PRESETS.slice(0, 3).map((preset) => (
@@ -155,13 +155,13 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
                 key={preset.url}
                 type="button"
                 onClick={() => onChange(preset.url)}
-                className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+                className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-2 py-1 text-[10px] font-medium text-(--theme-text) hover:border-(--theme-primary)"
               >
                 {preset.label}
               </button>
             ))}
           </div>
-          {hint && <p className="text-[11px] text-slate-500 dark:text-slate-400">{hint}</p>}
+          {hint && <p className="text-[11px] text-(--theme-text-muted)">{hint}</p>}
         </div>
       </div>
 
@@ -190,7 +190,8 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
                   onChange(preset.url);
                   setLibraryOpen(false);
                 }}
-                className="rounded-lg border border-(--theme-primary)/30 bg-(--theme-primary)/5 px-3 py-1.5 text-xs font-semibold text-(--theme-primary) hover:bg-(--theme-primary)/15"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--theme-primary) 8%, transparent)' }}
+                className="rounded-lg border border-(--theme-primary)/30 px-3 py-1.5 text-xs font-semibold text-(--theme-primary-ink) transition hover:opacity-85"
               >
                 {preset.label}
               </button>
@@ -198,11 +199,11 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
           </div>
 
           {loadingLibrary ? (
-            <p className="py-8 text-center text-xs text-slate-500">در حال بارگذاری رسانه...</p>
+            <p className="py-8 text-center text-xs text-(--theme-text-muted)">در حال بارگذاری رسانه...</p>
           ) : (
             <>
               {mediaItems.filter(matchesAccept).length === 0 ? (
-                <p className="py-8 text-center text-xs text-slate-500">در این صفحه رسانهٔ سازگار پیدا نشد؛ صفحه‌های دیگر را بررسی یا فایل را آپلود کنید.</p>
+                <p className="py-8 text-center text-xs text-(--theme-text-muted)">در این صفحه رسانهٔ سازگار پیدا نشد؛ صفحه‌های دیگر را بررسی یا فایل را آپلود کنید.</p>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {mediaItems
@@ -215,18 +216,18 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
                       onChange(item.url);
                       setLibraryOpen(false);
                     }}
-                    className="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 text-start hover:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+                    className="group overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-2 text-start transition hover:border-(--theme-primary)"
                   >
-                    <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-slate-900">
+                    <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-(--theme-surface)">
                       {isVideoMediaUrl(item.url) || item.mime_type.startsWith('video/') ? (
                         <video src={item.url} muted loop autoPlay playsInline className="h-full w-full object-contain" />
                       ) : item.mime_type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg|ico)(\?.*)?$/i.test(item.url) ? (
                         <ZeroBrokenImage src={item.url} alt={item.name} className="h-full w-full object-contain" />
                       ) : (
-                        <FileText className="h-7 w-7 text-slate-400" aria-hidden="true" />
+                        <FileText className="h-7 w-7 text-(--theme-text-muted)" aria-hidden="true" />
                       )}
                     </div>
-                    <div className="mt-1.5 truncate text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+                    <div className="mt-1.5 truncate text-[11px] font-semibold text-(--theme-text)">
                       {item.name}
                     </div>
                   </button>

@@ -72,7 +72,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}>
       {label && (
-        <label className="mb-1.5 block text-xs font-medium text-slate-700 dark:text-slate-300">
+        <label className="mb-1.5 block text-xs font-medium text-(--theme-text)">
           {label}
         </label>
       )}
@@ -81,11 +81,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'flex min-h-10.5 w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary) dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100',
+          'flex min-h-10.5 w-full items-center justify-between gap-2 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) transition-colors hover:border-(--theme-border-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary)',
           disabled && 'cursor-not-allowed opacity-60'
         )}
       >
-        <span className={cn('truncate', !selected && 'text-slate-400')}>
+        <span className={cn('truncate', !selected && 'text-(--theme-placeholder)')}>
           {selected ? selected.label : placeholder}
         </span>
         <span className="flex items-center gap-1 shrink-0">
@@ -103,36 +103,35 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   onChange('');
                 }
               }}
-              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+              className="rounded p-0.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-text)"
               aria-label="پاک کردن"
             >
               <X className="h-3.5 w-3.5" />
             </span>
           )}
-          <ChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform', open && 'rotate-180')} />
+          <ChevronDown className={cn('h-4 w-4 text-(--theme-text-muted) transition-transform', open && 'rotate-180')} />
         </span>
       </button>
 
       {open && (
         <div
-          className="theme-popover absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
-          style={{ backgroundColor: 'var(--theme-surface)' }}
+          className="theme-popover absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) shadow-lg"
         >
           {/* Mandatory Search Box on the First Row */}
-          <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-800/60">
-            <Search className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2 border-b border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2">
+            <Search className="h-4 w-4 shrink-0 text-(--theme-placeholder)" />
             <input
               ref={searchRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-slate-100"
+              className="w-full bg-transparent text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) focus:outline-none"
             />
           </div>
           <ul className="max-h-60 overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <li className="px-3 py-3 text-center text-xs text-slate-500">
+              <li className="px-3 py-3 text-center text-xs text-(--theme-text-muted)">
                 موردی یافت نشد
               </li>
             ) : (
@@ -147,19 +146,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         setOpen(false);
                       }}
                       className={cn(
-                        'flex w-full items-center justify-between gap-2 px-3 py-2 text-start text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-800',
-                        isSelected && 'bg-slate-50 font-semibold text-(--theme-primary) dark:bg-slate-800/70'
+                        'flex w-full items-center justify-between gap-2 px-3 py-2 text-start text-sm text-(--theme-text) transition-colors hover:bg-(--theme-surface-muted)',
+                        isSelected && 'bg-(--theme-surface-muted) font-semibold text-(--theme-primary-ink)'
                       )}
                     >
                       <span className="truncate">
                         {opt.label}
                         {opt.sublabel && (
-                          <span className="ms-2 text-xs font-normal text-slate-400">
+                          <span className="ms-2 text-xs font-normal text-(--theme-text-muted)">
                             {opt.sublabel}
                           </span>
                         )}
                       </span>
-                      {isSelected && <Check className="h-4 w-4 shrink-0 text-(--theme-primary)" />}
+                      {isSelected && <Check className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />}
                     </button>
                   </li>
                 );

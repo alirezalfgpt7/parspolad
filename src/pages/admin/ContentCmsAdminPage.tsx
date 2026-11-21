@@ -71,22 +71,22 @@ export const ContentCmsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <header className="rounded-2xl border border-slate-200 bg-linear-to-l from-white to-slate-50 p-5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/70 sm:p-6">
+      <header className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) sm:p-6">
         <div className="flex items-start gap-3">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary)">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary-ink)">
             <LayoutGrid className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--theme-primary)">Website content</p>
-            <h1 className="mt-1 text-lg font-black text-slate-900 dark:text-white">مدیریت محتوای سایت</h1>
-            <p className="mt-1.5 max-w-3xl text-xs leading-6 text-slate-500 dark:text-slate-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--theme-primary-ink)">Website content</p>
+            <h1 className="mt-1 text-lg font-black text-(--theme-text)">مدیریت محتوای سایت</h1>
+            <p className="mt-1.5 max-w-3xl text-xs leading-6 text-(--theme-text-muted)">
               از اینجا محتوای صفحات و بخش‌های اصلی سایت را مدیریت کنید. خدمات، محصولات، خبرها، بنرها و شاخص‌ها اکنون فهرست کامل، جست‌وجو، افزودن، ویرایش و حذف دارند.
             </p>
           </div>
         </div>
       </header>
 
-      <nav aria-label="بخش‌های محتوای سایت" className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:grid-cols-3 xl:grid-cols-6">
+      <nav aria-label="بخش‌های محتوای سایت" className="grid grid-cols-2 gap-2 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 shadow-(--theme-card-shadow) md:grid-cols-3 xl:grid-cols-6">
         {tabs.map((t) => {
           const Icon = t.icon;
           const selected = tab === t.key;
@@ -98,16 +98,16 @@ export const ContentCmsAdminPage: React.FC = () => {
             aria-pressed={selected}
             className={`flex min-h-20 min-w-0 items-start gap-2 rounded-xl border p-2.5 text-start transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary) ${
               selected
-                ? 'border-(--theme-primary)/30 bg-(--theme-primary)/[0.07] text-(--theme-primary) dark:bg-(--theme-primary)/15'
-                : 'border-transparent bg-slate-50/70 text-slate-600 hover:border-slate-200 hover:bg-white dark:bg-slate-800/50 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'
+                ? 'border-(--theme-primary)/35 bg-(--theme-primary)/10 text-(--theme-primary-ink)'
+                : 'border-transparent bg-(--theme-surface-muted) text-(--theme-text-muted) hover:border-(--theme-border) hover:bg-(--theme-surface) hover:text-(--theme-text)'
             }`}
           >
-            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${selected ? 'bg-(--theme-primary) text-white' : 'bg-white text-slate-500 shadow-sm dark:bg-slate-900'}`}>
+            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${selected ? 'bg-(--theme-primary) text-(--theme-primary-foreground)' : 'border border-(--theme-border) bg-(--theme-surface) text-(--theme-text-muted)'}`}>
               <Icon className="h-4 w-4" aria-hidden="true" />
             </span>
             <span className="min-w-0">
               <span className="block text-[11px] font-bold leading-5">{t.label}</span>
-              <span className="mt-0.5 block text-[9px] leading-4 text-slate-400 dark:text-slate-500">{t.description}</span>
+              <span className="mt-0.5 block text-[9px] leading-4 text-(--theme-text-muted)">{t.description}</span>
             </span>
           </button>
           );
@@ -126,26 +126,28 @@ export const ContentCmsAdminPage: React.FC = () => {
                 key={p.id}
                 type="button"
                 onClick={() => setEditPage(p)}
-                className={`block w-full rounded-xl border p-3.5 text-start text-xs font-bold ${
-                  editPage?.id === p.id ? 'border-(--theme-primary) bg-red-50/40 dark:bg-red-950/30' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'
+                className={`block w-full rounded-xl border p-3.5 text-start text-xs font-bold transition-colors ${
+                  editPage?.id === p.id
+                    ? 'border-(--theme-primary) bg-(--theme-primary)/10 text-(--theme-primary-ink)'
+                    : 'border-(--theme-card-border) bg-(--theme-card-surface) text-(--theme-text) hover:border-(--theme-card-border-hover)'
                 }`}
               >
                 <span className="block truncate">{p.title_fa}</span>
-                <span className="mt-1 block truncate font-mono text-[10px] font-normal text-slate-400" dir="ltr">/{p.slug}</span>
+                <span className="mt-1 block truncate font-mono text-[10px] font-normal text-(--theme-text-muted)" dir="ltr">/{p.slug}</span>
               </button>
             ))}
             <Link
               to="/admin/content-records?resource=pages"
-              className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 transition hover:border-(--theme-primary) hover:text-(--theme-primary) dark:border-slate-700 dark:text-slate-300"
+              className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-(--theme-border-strong) px-3 py-2.5 text-center text-[11px] font-bold text-(--theme-text-muted) transition hover:border-(--theme-primary) hover:text-(--theme-primary-ink)"
             >
               <Plus className="h-4 w-4" />
               افزودن، حذف یا مدیریت همهٔ صفحات
             </Link>
           </div>
           {editPage && (
-            <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 lg:col-span-9 dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
-                <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+            <div className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) lg:col-span-9">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2">
+                <p className="text-[11px] leading-5 text-(--theme-text-muted)">
                   این رکورد محتوای معرفی مسیر موجود را تعیین می‌کند؛ ساخت رکورد جدید به‌تنهایی مسیر یا صفحهٔ تازه‌ای در سایت ایجاد نمی‌کند.
                 </p>
                 {publicPagePaths[editPage.slug] && (
@@ -153,34 +155,34 @@ export const ContentCmsAdminPage: React.FC = () => {
                     to={publicPagePaths[editPage.slug]}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex shrink-0 items-center gap-1 text-[11px] font-bold text-(--theme-primary) hover:underline"
+                    className="inline-flex shrink-0 items-center gap-1 text-[11px] font-bold text-(--theme-link) hover:underline"
                   >
                     مشاهدهٔ صفحهٔ عمومی <ArrowUpRight className="h-3 w-3" />
                   </Link>
                 )}
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1.5 text-xs font-semibold">
+                <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
                   عنوان سربرگ معرفی (فارسی)
-                  <input value={editPage.title_fa} onChange={(e) => setEditPage({ ...editPage, title_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold dark:border-slate-700 dark:bg-slate-800" />
+                  <input value={editPage.title_fa} onChange={(e) => setEditPage({ ...editPage, title_fa: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm font-bold text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 </label>
-                <label className="space-y-1.5 text-xs font-semibold">
+                <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
                   Page intro title (English)
-                  <input dir="ltr" value={editPage.title_en} onChange={(e) => setEditPage({ ...editPage, title_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold dark:border-slate-700 dark:bg-slate-800" />
+                  <input dir="ltr" value={editPage.title_en} onChange={(e) => setEditPage({ ...editPage, title_en: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm font-bold text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 </label>
-                <label className="space-y-1.5 text-xs font-semibold">
+                <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
                   توضیح کوتاه سربرگ (فارسی)
-                  <input value={editPage.subtitle_fa || ''} onChange={(e) => setEditPage({ ...editPage, subtitle_fa: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+                  <input value={editPage.subtitle_fa || ''} onChange={(e) => setEditPage({ ...editPage, subtitle_fa: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 </label>
-                <label className="space-y-1.5 text-xs font-semibold">
+                <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
                   Page intro subtitle (English)
-                  <input dir="ltr" value={editPage.subtitle_en || ''} onChange={(e) => setEditPage({ ...editPage, subtitle_en: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-800" />
+                  <input dir="ltr" value={editPage.subtitle_en || ''} onChange={(e) => setEditPage({ ...editPage, subtitle_en: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 </label>
               </div>
               {isHomeSpotlight && (
-                <div className="space-y-2 rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-[11px] leading-5 text-slate-600 dark:text-slate-300">
+                <div className="space-y-2 rounded-xl border border-amber-500/25 bg-amber-500/5 p-3 text-[11px] leading-5 text-(--theme-text-muted)">
                   عنوان/نشان و لوگوی بخش ویژه در تنظیمات ظاهر است؛ تصاویر، توضیحات و دکمه‌های همین اسلاید در این فرم ویرایش می‌شوند.
-                  <Link to="/admin/login-appearance" className="inline-flex items-center gap-1 font-bold text-(--theme-primary) hover:underline">
+                  <Link to="/admin/login-appearance" className="inline-flex items-center gap-1 font-bold text-(--theme-link) hover:underline">
                     تنظیمات ظاهر و هدرهای صفحه <ArrowUpRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -194,8 +196,8 @@ export const ContentCmsAdminPage: React.FC = () => {
                 placeholder="/storage/hero/hero-banner.jpg"
               />
               {isHomeSpotlight && (
-                <div className="space-y-4 rounded-xl border border-slate-200 p-4 dark:border-slate-700">
-                  <h3 className="text-sm font-bold">محتوای بخش ویژه صفحه اصلی</h3>
+                <div className="space-y-4 rounded-xl border border-(--theme-border) p-4">
+                  <h3 className="text-sm font-bold text-(--theme-text)">محتوای بخش ویژه صفحه اصلی</h3>
                   <div className="grid gap-3 lg:grid-cols-2">
                     <MediaUrlField
                       label="تصویر اسلاید اول"
@@ -224,13 +226,13 @@ export const ContentCmsAdminPage: React.FC = () => {
                       ['secondary_label_en', 'متن دکمه دوم (انگلیسی)'],
                     ] as const).map(([key, label]) => (
                       <label key={key} className="block space-y-1">
-                        <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">{label}</span>
+                        <span className="text-[11px] font-semibold text-(--theme-text-muted)">{label}</span>
                         <input
                           type="text"
                           dir={key.endsWith('_en') || key.endsWith('_link') ? 'ltr' : 'rtl'}
                           value={getPageMetadataText(key)}
                           onChange={(event) => updatePageMetadata(key, event.target.value)}
-                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs outline-none focus:border-(--theme-primary) dark:border-slate-700 dark:bg-slate-800"
+                          className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
                         />
                       </label>
                     ))}
@@ -244,8 +246,8 @@ export const ContentCmsAdminPage: React.FC = () => {
                     placeholder="/storage/hero/home-spotlight-background.jpg"
                     hint="در صورت خالی بودن، رنگ پس‌زمینه انتخاب‌شده نمایش داده می‌شود."
                   />
-                  <label className="block space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-                    <span className="flex items-center justify-between text-[11px] font-semibold">
+                  <label className="block space-y-1 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3">
+                    <span className="flex items-center justify-between text-[11px] font-semibold text-(--theme-text)">
                       <span>تیرگی روی تصویر پس‌زمینه</span>
                       <span>{getPageMetadataText('section_background_overlay_opacity') || '35'}%</span>
                     </span>
@@ -295,8 +297,7 @@ export const ContentCmsAdminPage: React.FC = () => {
                     setSavingPage(false);
                   }
                 }}
-                style={{ backgroundColor: 'var(--theme-primary)' }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-60"
               >
                 <Save className="h-4 w-4" />
                 <span>{savingPage ? 'در حال ذخیره...' : 'ذخیره تغییرات صفحه'}</span>
