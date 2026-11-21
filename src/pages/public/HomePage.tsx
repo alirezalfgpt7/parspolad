@@ -19,6 +19,8 @@ import {
   Reveal,
 } from '../../components/effects/index.ts';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
+import { HomeProjectsSection } from '../../components/public/home/HomeProjectsSection.tsx';
+import { HomeNewsSection } from '../../components/public/home/HomeNewsSection.tsx';
 import './HomePage.css';
 
 export const HomePage: React.FC = () => {
@@ -158,16 +160,22 @@ export const HomePage: React.FC = () => {
     (language === 'fa' ? 'پارس پولاد آقایی' : 'PARS POOLAD AGHAEE');
 
   return (
-    <div className="home-page-content">
+    <div id="home-top" className="home-page-content">
       <SeoHead
         title={(language === 'fa' ? bootstrap?.seo?.site_title : bootstrap?.seo?.site_title_en)
           || bootstrap?.seo?.site_title
           || ''}
+        description={
+          language === 'fa'
+            ? bootstrap?.seo?.meta_description
+            : bootstrap?.seo?.meta_description_en
+        }
         language={language}
       />
 
       {/* Industrial performance metrics */}
       <section
+        id="home-performance"
         className={`industrial-performance home-page-snap-section${performanceBackgroundColor ? ' industrial-performance--custom-background' : ''}`}
         dir={language === 'fa' ? 'rtl' : 'ltr'}
         style={{
@@ -308,7 +316,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* Full-cycle wellhead engineering and manufacturing route */}
-      <section className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section id="home-capabilities" className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-(--theme-primary)">{homeText('capabilities_eyebrow')}</p>
@@ -438,6 +446,7 @@ export const HomePage: React.FC = () => {
 
       {spotlight && (
         <section
+          id="home-spotlight"
           className="home-spotlight-section home-page-snap-section relative isolate overflow-hidden border-y border-slate-200 py-16 dark:border-slate-800"
           style={{
             '--spotlight-background': spotlightBackgroundColor,
@@ -538,68 +547,12 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Featured Projects */}
-      <section className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold text-(--theme-primary)">{homeText('projects_eyebrow')}</p>
-            <h2 className="mt-1.5 text-2xl font-extrabold text-slate-900 sm:text-3xl dark:text-white">
-              {homeText('projects_title')}
-            </h2>
-          </div>
-          <Link
-            to="/projects"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-(--theme-link) hover:underline whitespace-nowrap"
-          >
-            <span>{homeText('projects_all')}</span>
-            <ArrowIcon className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featuredProjects.slice(0, 6).map((p, index) => (
-            <Reveal key={p.id} delay={shouldReduceMotion ? 0 : index * 0.045} className="h-full">
-              <Link
-                to={`/projects/${p.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-0.5 hover:border-(--theme-primary) dark:border-slate-800 dark:bg-slate-900"
-              >
-                <div className="h-52 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                  <EffectImage
-                    src={p.cover_image}
-                    alt={language === 'fa' ? p.title_fa : p.title_en}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col justify-between p-5">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
-                      <span>{p.category?.name_fa}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{p.year}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>{p.status === 'completed' ? homeText('project_completed') : homeText('project_in_progress')}</span>
-                    </div>
-                    <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 group-hover:text-(--theme-primary) dark:text-white">
-                      {language === 'fa' ? p.title_fa : p.title_en}
-                    </h3>
-                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                      {language === 'fa' ? p.summary_fa : p.summary_en}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800">
-                    <span className="truncate">{language === 'fa' ? p.client_name_fa : p.client_name_en}</span>
-                    <span className="font-mono shrink-0">{p.contract_number}</span>
-                  </div>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <HomeProjectsSection projects={featuredProjects} language={language} text={homeText} />
 
       {/* Effect 067: Infinite Brand Partners Strip */}
       {partners.length > 0 && (
         <Reveal>
-          <section className="home-page-snap-section overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
+          <section id="home-partners" className="home-page-snap-section overflow-hidden border-y border-slate-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-900">
             <div className="mx-auto mb-8 max-w-7xl px-4 text-center sm:px-6">
               <p className="text-xs font-semibold text-(--theme-primary)">{homeText('partners_eyebrow')}</p>
               <h2 className="mt-1 text-xl font-extrabold text-slate-900 dark:text-white">
@@ -622,57 +575,7 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Latest News & Technical Articles */}
-      <section className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-end justify-between">
-          <div>
-            <p className="text-xs font-semibold text-(--theme-primary)">{homeText('news_eyebrow')}</p>
-            <h2 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">
-              {homeText('news_title')}
-            </h2>
-          </div>
-          <Link to="/news" className="text-sm font-semibold text-(--theme-link) hover:underline">
-            {homeText('articles_all')}
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {articles.map((art, index) => (
-            <Reveal key={art.id} delay={shouldReduceMotion ? 0 : index * 0.055} className="h-full">
-              <Link
-                to={`/news/${art.slug}`}
-                className="group relative block aspect-4/3 h-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm transition-[border-color,box-shadow] duration-300 hover:border-(--theme-primary) hover:shadow-xl hover:shadow-slate-900/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--theme-primary) dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-black/30"
-              >
-                <ZeroBrokenImage
-                  src={art.cover_image}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
-                />
-                <div className="absolute inset-0 flex translate-y-0 flex-col justify-end bg-slate-950/60 p-5 text-white backdrop-blur-sm transition-transform duration-500 ease-out md:translate-y-full md:group-hover:translate-y-0 md:group-focus-visible:translate-y-0 motion-reduce:transition-none">
-                  <div className="mb-auto flex items-center gap-2 text-xs text-white/80 tabular-nums">
-                    <span>{language === 'fa' ? art.category_fa : art.category_en}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{art.published_at}</span>
-                  </div>
-                  <div>
-                    <h3 className="line-clamp-2 text-lg font-bold leading-7">
-                      {language === 'fa' ? art.title_fa : art.title_en}
-                    </h3>
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/80">
-                      {language === 'fa' ? art.excerpt_fa : art.excerpt_en}
-                    </p>
-                    <span
-                      className="mt-4 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-lg"
-                      style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
-                    >
-                      {language === 'fa' ? 'خواندن مقاله' : 'Read article'}
-                      <ArrowIcon className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
-      </section>
+      <HomeNewsSection articles={articles} language={language} text={homeText} />
 
       {/* Mid/Bottom Conversion CTA Banner */}
       {banners.map((banner) => (

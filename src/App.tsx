@@ -79,6 +79,7 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+    document.documentElement.dataset.colorMode = colorMode;
     if (colorMode === 'dark') document.documentElement.classList.add('dark');
     fetchBootstrap();
     fetchMe();

@@ -42,6 +42,21 @@ function readableText(preferred: string, background: string): string {
   return relativeLuminance(background) > 0.45 ? '#0F172A' : '#FFFFFF';
 }
 
+function mixHex(first: string, second: string, firstWeight: number): string {
+  const normalize = (hex: string) => /^#[0-9a-f]{6}$/i.test(hex) ? hex.slice(1) : '000000';
+  const a = normalize(first);
+  const b = normalize(second);
+  const weight = Math.min(1, Math.max(0, firstWeight));
+  const channels = [0, 2, 4].map((offset) => {
+    const firstChannel = parseInt(a.slice(offset, offset + 2), 16);
+    const secondChannel = parseInt(b.slice(offset, offset + 2), 16);
+    return Math.round(firstChannel * weight + secondChannel * (1 - weight))
+      .toString(16)
+      .padStart(2, '0');
+  });
+  return `#${channels.join('')}`;
+}
+
 function applyPaletteToRoot(
   palette: Partial<ThemePalette>,
   mode: 'light' | 'dark',
@@ -70,6 +85,7 @@ function applyPaletteToRoot(
   root.dataset.themeStyle = designStyle;
   root.dataset.buttonShape = buttonShape;
   root.dataset.buttonEffect = buttonEffect;
+  root.dataset.colorMode = mode;
   root.style.setProperty('--theme-primary', colors.primary);
   root.style.setProperty('--theme-primary-hover', `color-mix(in srgb, ${colors.primary} 86%, black)`);
   root.style.setProperty('--theme-secondary', colors.secondary);
@@ -77,6 +93,9 @@ function applyPaletteToRoot(
   root.style.setProperty('--theme-btn-bg', colors.buttonBg);
   root.style.setProperty('--theme-btn-text', readableText(colors.buttonText, colors.buttonBg));
   root.style.setProperty('--theme-link', colors.link);
+  const quickNavPanel = mixHex(colors.primary, colors.headerBg, 0.42);
+  const quickNavForeground = readableText(colors.headerText, quickNavPanel);
+  root.style.setProperty('--quick-nav-foreground', quickNavForeground);
 
   if (scope === 'admin') {
     const adminSidebarBg = colors.primary;
@@ -117,6 +136,17 @@ function applyPaletteToRoot(
     root.style.setProperty('--theme-header-text', readableText(colors.headerText, colors.headerBg));
     root.style.setProperty('--theme-footer-bg', colors.footerBg);
     root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
+    root.style.setProperty('--mode-bg', colors.background);
+    root.style.setProperty('--mode-surface', colors.surface);
+    root.style.setProperty('--mode-text', readableText(colors.text, colors.surface));
+    root.style.setProperty('--mode-text-muted', readableText(colors.secondary, colors.surface));
+    root.style.setProperty('--mode-border', `color-mix(in srgb, ${colors.primary} 16%, ${colors.surface})`);
+    root.style.setProperty('--mode-glass-bg', `color-mix(in srgb, ${colors.headerBg} 78%, transparent)`);
+    root.style.setProperty('--mode-glass-highlight', `color-mix(in srgb, ${colors.headerText} 18%, transparent)`);
+    root.style.setProperty('--mode-glass-border', `color-mix(in srgb, ${colors.primary} 22%, transparent)`);
+    root.style.setProperty('--mode-control-shadow', `color-mix(in srgb, ${colors.primary} 16%, transparent)`);
+    root.style.setProperty('--mode-icon', readableText(colors.primary, colors.headerBg));
+    root.style.setProperty('--mode-accent', readableText(colors.primary, colors.surface));
   } else {
     const darkBackground = '#0B1120';
     const darkSurface = '#111827';
@@ -128,6 +158,17 @@ function applyPaletteToRoot(
     root.style.setProperty('--theme-header-text', readableText(colors.headerText, colors.headerBg));
     root.style.setProperty('--theme-footer-bg', colors.footerBg);
     root.style.setProperty('--theme-footer-text', readableText(colors.footerText, colors.footerBg));
+    root.style.setProperty('--mode-bg', darkBackground);
+    root.style.setProperty('--mode-surface', darkSurface);
+    root.style.setProperty('--mode-text', darkText);
+    root.style.setProperty('--mode-text-muted', readableText(colors.secondary, darkSurface));
+    root.style.setProperty('--mode-border', `color-mix(in srgb, ${colors.primary} 28%, ${darkSurface})`);
+    root.style.setProperty('--mode-glass-bg', `color-mix(in srgb, ${darkSurface} 82%, ${colors.headerBg})`);
+    root.style.setProperty('--mode-glass-highlight', `color-mix(in srgb, ${colors.headerText} 16%, transparent)`);
+    root.style.setProperty('--mode-glass-border', `color-mix(in srgb, ${colors.primary} 38%, ${darkSurface})`);
+    root.style.setProperty('--mode-control-shadow', `color-mix(in srgb, ${colors.primary} 24%, rgb(0 0 0 / 70%))`);
+    root.style.setProperty('--mode-icon', readableText(colors.primary, darkSurface));
+    root.style.setProperty('--mode-accent', readableText(colors.primary, darkSurface));
   }
 }
 
@@ -147,6 +188,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     : previewTheme?.default_mode || bootstrap?.theme?.default_mode || colorMode);
 
   useEffect(() => {
+    document.documentElement.dataset.colorMode = effectiveMode;
     if (effectiveMode === 'dark') {
       document.documentElement.classList.add('dark');
     } else {

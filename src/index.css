@@ -60,6 +60,135 @@
   --theme-card-border: var(--theme-border);
   --theme-card-blur: none;
   --theme-page-glow: none;
+  --mode-bg: var(--theme-bg);
+  --mode-surface: var(--theme-surface);
+  --mode-text: var(--theme-text);
+  --mode-text-muted: var(--theme-text-muted);
+  --mode-border: color-mix(in srgb, var(--theme-primary) 16%, var(--theme-border));
+  --mode-glass-bg: color-mix(in srgb, var(--theme-header-bg) 78%, transparent);
+  --mode-glass-highlight: color-mix(in srgb, var(--theme-header-text) 18%, transparent);
+  --mode-glass-border: color-mix(in srgb, var(--theme-primary) 22%, transparent);
+  --mode-control-shadow: color-mix(in srgb, var(--theme-primary) 16%, transparent);
+  --mode-icon: var(--theme-primary);
+  --mode-accent: var(--theme-primary);
+  --quick-nav-foreground: #0F172A;
+}
+
+:root[data-color-mode="dark"] {
+  --mode-bg: #0B1120;
+  --mode-surface: #111827;
+  --mode-text: #F8FAFC;
+  --mode-text-muted: var(--theme-text-muted);
+  --mode-border: color-mix(in srgb, var(--theme-primary) 28%, #111827);
+  --mode-glass-bg: color-mix(in srgb, #111827 82%, var(--theme-header-bg));
+  --mode-glass-highlight: color-mix(in srgb, var(--theme-header-text) 16%, transparent);
+  --mode-glass-border: color-mix(in srgb, var(--theme-primary) 38%, #111827);
+  --mode-control-shadow: color-mix(in srgb, var(--theme-primary) 24%, rgb(0 0 0 / 70%));
+  --mode-icon: var(--theme-primary);
+  --mode-accent: var(--theme-primary);
+  --quick-nav-foreground: #FFFFFF;
+}
+
+.public-header-shell {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  isolation: isolate;
+  overflow: visible;
+  align-self: flex-start;
+  width: 100%;
+}
+
+.public-header-shell > div {
+  width: 100%;
+}
+
+.public-navbar {
+  position: relative;
+  z-index: 2;
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-header-text) 24%, transparent);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--theme-header-text) 12%, transparent),
+      transparent 34%
+    ),
+    color-mix(in srgb, var(--theme-header-bg) 48%, transparent);
+  box-shadow:
+    0 12px 34px color-mix(in srgb, var(--theme-primary) 16%, transparent),
+    inset 0 1px color-mix(in srgb, var(--theme-header-text) 22%, transparent);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+}
+
+.public-navbar--landing {
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-header-text) 28%, transparent);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--theme-header-text) 14%, transparent),
+      transparent 32%,
+      color-mix(in srgb, var(--theme-primary) 14%, transparent) 100%
+    ),
+    color-mix(in srgb, var(--theme-header-bg) 46%, transparent);
+  box-shadow:
+    0 10px 35px color-mix(in srgb, var(--theme-primary) 16%, transparent),
+    inset 0 1px color-mix(in srgb, var(--theme-header-text) 18%, transparent);
+  backdrop-filter: saturate(175%) blur(22px);
+  -webkit-backdrop-filter: saturate(175%) blur(22px);
+}
+
+.public-navbar--landing.is-scrolled {
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--theme-header-text) 12%, transparent),
+      transparent 38%
+    ),
+    color-mix(in srgb, var(--theme-header-bg) 56%, transparent);
+  box-shadow:
+    0 12px 38px color-mix(in srgb, var(--theme-primary) 22%, transparent),
+    inset 0 1px color-mix(in srgb, var(--theme-header-text) 22%, transparent);
+}
+
+.public-info-bar {
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-header-text) 24%, transparent);
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, var(--theme-header-text) 14%, transparent),
+      transparent 38%
+    ),
+    color-mix(in srgb, var(--theme-header-bg) 48%, transparent);
+  box-shadow: inset 0 1px color-mix(in srgb, var(--theme-header-text) 12%, transparent);
+  backdrop-filter: saturate(175%) blur(18px);
+  -webkit-backdrop-filter: saturate(175%) blur(18px);
+}
+
+.public-info-bar .public-info-phone,
+.public-info-bar .public-info-social {
+  color: color-mix(in srgb, var(--theme-header-text) 96%, white);
+}
+
+.public-info-bar .public-info-phone svg,
+.public-info-bar .public-info-social svg {
+  color: #f59e0b;
+}
+
+html {
+  scroll-padding-top: 9.5rem;
+  scroll-behavior: smooth;
+}
+
+.home-page-snap-section {
+  scroll-margin-top: 9.5rem;
+}
+
+@media (max-width: 1023px) {
+  html,
+  .home-page-snap-section {
+    scroll-padding-top: 7.5rem;
+  }
 }
 
 :root[data-theme-style="industrial"] {

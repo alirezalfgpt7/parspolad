@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { ChevronDown, Globe, Search, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
@@ -79,13 +79,10 @@ export const PublicNavbar: React.FC = () => {
     <>
     <header
       onMouseLeave={() => setActiveMegaId(null)}
-      style={{
-        backgroundColor: 'var(--theme-header-bg)',
-        color: 'var(--theme-header-text)',
-      }}
+      style={{ color: 'var(--theme-header-text)' }}
       data-scrolled={scrolled}
-      className={`sticky top-0 z-40 border-b border-slate-200/80 backdrop-blur-md transition-shadow duration-300 dark:border-slate-800 ${
-        scrolled ? 'shadow-lg shadow-slate-950/5' : 'shadow-none'
+      className={`public-navbar ${pathname === '/' ? 'public-navbar--landing' : ''} border-b border-slate-200/80 transition-[background-color,box-shadow,backdrop-filter] duration-300 dark:border-slate-800 ${
+        scrolled ? 'is-scrolled shadow-lg shadow-slate-950/10' : 'shadow-none'
       }`}
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6 xl:gap-8 lg:px-8">
@@ -159,7 +156,7 @@ export const PublicNavbar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="effect-navbar-control inline-flex h-9 min-w-9 items-center justify-center lg:hidden"
+                className="effect-navbar-control inline-flex h-8 w-8 items-center justify-center lg:hidden"
                 aria-label={language === 'fa' ? 'جستجو' : 'Search'}
               >
                 <Search className="h-4 w-4" aria-hidden="true" />
@@ -173,19 +170,13 @@ export const PublicNavbar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
-                className="effect-navbar-control inline-flex h-9 min-w-9 items-center justify-center gap-1 px-2 text-[10px] font-bold"
+                className="effect-navbar-control inline-flex h-8 w-8 items-center justify-center"
                 aria-label={language === 'fa' ? 'Switch to English' : 'Change language to Persian'}
               >
                 {language === 'fa' ? (
-                  <>
-                    <span aria-hidden="true">🇬🇧</span>
-                    <span>EN</span>
-                  </>
+                  <Globe className="h-4 w-4" aria-hidden="true" />
                 ) : (
-                  <>
-                    <span aria-hidden="true">🇮🇷</span>
-                    <span>FA</span>
-                  </>
+                  <Globe className="h-4 w-4" aria-hidden="true" />
                 )}
               </button>
             </>
@@ -259,10 +250,7 @@ export const PublicNavbar: React.FC = () => {
         <aside
           id="public-mobile-menu"
           className="effect-mobile-menu"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--theme-header-bg) 96%, transparent)',
-            color: 'var(--theme-header-text)',
-          }}
+          style={{ color: 'var(--theme-header-text)' }}
           data-open={mobileOpen}
           aria-hidden={!mobileOpen}
           inert={!mobileOpen}

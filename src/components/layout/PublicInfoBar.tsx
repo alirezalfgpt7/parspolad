@@ -1,5 +1,5 @@
 import React from 'react';
-import { Moon, Search, Sun } from 'lucide-react';
+import { Globe, Moon, Search, Sun } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ExpandingSearchEffect } from '../effects/index.ts';
 import { DynamicLucideIcon } from '../ui/LucideIconMap.tsx';
@@ -51,7 +51,7 @@ export const PublicInfoBar: React.FC = () => {
 
   return (
     <div
-      className="border-b border-slate-200/70 dark:border-slate-800/80"
+      className="public-info-bar border-b border-slate-200/70 dark:border-slate-800/80"
       style={{ backgroundColor: 'var(--theme-header-bg)', color: 'var(--theme-header-text)' }}
     >
       <div className="mx-auto flex min-h-9 max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-1 sm:px-6 lg:px-8">
@@ -59,7 +59,7 @@ export const PublicInfoBar: React.FC = () => {
           {phoneHref && (
             <a
               href={`tel:${phoneHref}`}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap opacity-85 transition-opacity hover:opacity-100"
+              className="public-info-phone inline-flex items-center gap-1.5 whitespace-nowrap opacity-95 transition-opacity hover:opacity-100"
               aria-label={language === 'fa' ? `تماس با ${phone}` : `Call ${phone}`}
             >
               <DynamicLucideIcon name={site?.info_bar_phone_icon || 'Phone'} fallback="Phone" className="h-3 w-3 text-(--theme-primary)" />
@@ -79,7 +79,7 @@ export const PublicInfoBar: React.FC = () => {
                   rel="noopener noreferrer"
                   aria-label={name}
                   title={name}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full opacity-75 transition-all hover:text-(--theme-primary) hover:opacity-100"
+                  className="public-info-social inline-flex h-7 w-7 items-center justify-center rounded-full opacity-90 transition-all hover:opacity-100"
                 >
                   <DynamicLucideIcon name={icon} fallback="Globe" className="h-3.5 w-3.5" />
                 </a>
@@ -106,28 +106,22 @@ export const PublicInfoBar: React.FC = () => {
             <button
               type="button"
               onClick={toggleColorMode}
-              className="effect-theme-toggle rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="effect-navbar-control effect-theme-toggle inline-flex h-8 w-8 items-center justify-center"
               title="تغییر تم"
               aria-label="تغییر تم روشن و تیره"
             >
-              {colorMode === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {colorMode === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>
             <button
               type="button"
               onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
-              className="effect-navbar-control inline-flex h-7 min-w-7 items-center justify-center gap-1 px-1.5 text-[9px] font-bold"
+              className="effect-navbar-control inline-flex h-8 w-8 items-center justify-center"
               aria-label={language === 'fa' ? 'Switch to English' : 'Change language to Persian'}
             >
               {language === 'fa' ? (
-                <>
-                  <span aria-hidden="true">🇬🇧</span>
-                  <span>EN</span>
-                </>
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
               ) : (
-                <>
-                  <span aria-hidden="true">🇮🇷</span>
-                  <span>FA</span>
-                </>
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
               )}
             </button>
           </div>

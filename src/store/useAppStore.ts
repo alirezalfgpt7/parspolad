@@ -119,6 +119,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setColorMode: (mode) => {
     localStorage.setItem('ppa_mode', mode);
+    document.documentElement.dataset.colorMode = mode;
     if (mode === 'dark') {
       document.documentElement.classList.add('dark');
     } else {

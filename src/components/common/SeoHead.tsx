@@ -128,12 +128,27 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     }
     schema.textContent = JSON.stringify({
       '@context': 'https://schema.org',
-      '@type': 'WebPage',
-      name: fullTitle,
-      description: pageDescription,
-      url: pageUrl,
-      inLanguage: language === 'fa' ? 'fa-IR' : 'en-US',
-      ...(absoluteImage ? { primaryImageOfPage: absoluteImage } : {}),
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': `${window.location.origin}/#organization`,
+          name: brand,
+          url: window.location.origin,
+          ...(absoluteImage ? { logo: absoluteImage } : {}),
+          ...(company?.office_email ? { email: company.office_email } : {}),
+          ...(company?.office_phone ? { telephone: company.office_phone } : {}),
+        },
+        {
+          '@type': 'WebPage',
+          '@id': `${pageUrl}#webpage`,
+          name: fullTitle,
+          description: pageDescription,
+          url: pageUrl,
+          inLanguage: language === 'fa' ? 'fa-IR' : 'en-US',
+          isPartOf: { '@id': `${window.location.origin}/#organization` },
+          ...(absoluteImage ? { primaryImageOfPage: absoluteImage } : {}),
+        },
+      ],
     }).replace(/</g, '\\u003c');
   }, [
     title,
