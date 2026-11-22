@@ -5,7 +5,10 @@ import { ThemeAdminPage } from '../../pages/admin/ThemeAdminPage.tsx';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ThemePreset, ThemeSettings } from '../../types/index.ts';
-import { DEFAULT_THEME_PALETTE } from '../../utils/brandingDefaults.ts';
+import {
+  DEFAULT_LANDING_HEADER_SETTINGS,
+  DEFAULT_THEME_PALETTE,
+} from '../../utils/brandingDefaults.ts';
 import { ThemeProvider } from './ThemeProvider.tsx';
 
 vi.mock('../../services/api.ts', () => ({
@@ -26,6 +29,7 @@ function makeThemeSettings(defaultMode: 'light' | 'dark' = 'light'): ThemeSettin
     landing_design_style: 'modern',
     landing_button_shape: 'rounded',
     landing_button_effect: 'shimmer',
+    landing_header_settings: { ...DEFAULT_LANDING_HEADER_SETTINGS },
     landing_palette: { ...DEFAULT_THEME_PALETTE },
     admin_design_style: 'modern',
     admin_button_shape: 'rounded',
@@ -86,6 +90,58 @@ describe('ThemeProvider & Theme Studio behavior', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(true);
     expect(document.documentElement.dataset.colorMode).toBe('dark');
     expect(document.documentElement.style.getPropertyValue('--theme-bg')).not.toBe('');
+  });
+
+  it('keeps a landing-scope preview out of the admin panel while updating header preview tokens', () => {
+    const savedTheme = makeThemeSettings();
+    savedTheme.admin_palette = { ...DEFAULT_THEME_PALETTE, primary: '#0F4C81' };
+    const pendingTheme = makeThemeSettings();
+    pendingTheme.landing_palette = { ...DEFAULT_THEME_PALETTE, headerBg: '#123456' };
+
+    useAppStore.setState({
+      bootstrap: { theme: savedTheme } as never,
+      previewTheme: pendingTheme,
+      previewScope: 'landing',
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/admin/themes']}>
+        <ThemeProvider>
+          <div>Admin Theme Editor</div>
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    expect(document.documentElement.dataset.themeScope).toBe('admin');
+    expect(document.documentElement.style.getPropertyValue('--theme-primary')).toBe('#0F4C81');
+    expect(document.documentElement.style.getPropertyValue('--landing-header-bg')).toBe('#123456');
+  });
+
+  it('previews landing header controls without changing the admin theme', async () => {
+    const savedTheme = makeThemeSettings();
+    savedTheme.admin_palette = { ...DEFAULT_THEME_PALETTE, primary: '#0F4C81' };
+    mockedApiRequest.mockResolvedValueOnce({
+      settings: savedTheme,
+      presets: [],
+    });
+
+    useAppStore.setState({ bootstrap: { theme: savedTheme } as never });
+    render(
+      <MemoryRouter initialEntries={['/admin/themes']}>
+        <ThemeProvider>
+          <ThemeAdminPage />
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /لندینگ/ }));
+    fireEvent.change(screen.getByRole('slider', { name: 'گردی گوشه‌های هدر' }), {
+      target: { value: '27' },
+    });
+
+    expect(useAppStore.getState().previewTheme?.landing_header_settings.radius).toBe(27);
+    expect(document.documentElement.dataset.themeScope).toBe('admin');
+    expect(document.documentElement.style.getPropertyValue('--theme-primary')).toBe('#0F4C81');
   });
 
   it('toggles colorMode cleanly between dark and light even when previewMode was active', () => {

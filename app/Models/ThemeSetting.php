@@ -18,6 +18,7 @@ class ThemeSetting extends Model
         'landing_design_style',
         'landing_button_shape',
         'landing_button_effect',
+        'landing_header_settings',
         'admin_palette',
         'admin_design_style',
         'admin_button_shape',
@@ -30,6 +31,7 @@ class ThemeSetting extends Model
             'active_palette' => 'array',
             'landing_theme_enabled' => 'boolean',
             'landing_palette' => 'array',
+            'landing_header_settings' => 'array',
             'admin_palette' => 'array',
         ];
     }

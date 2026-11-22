@@ -62,6 +62,12 @@
   --theme-header-muted: #475569;
   --theme-header-border: #E2E8F0;
   --theme-header-ink: #B91C1C;
+  --landing-header-bg: #FFFFFF;
+  --landing-header-text: #0F172A;
+  --landing-header-ink: #991B1B;
+  --landing-header-border: #CBD5E1;
+  --landing-header-radius: 18px;
+  --landing-header-blur: 20px;
 
   --theme-footer-bg: #0F172A;
   --theme-footer-text: #F8FAFC;
@@ -178,6 +184,46 @@
   width: 100%;
 }
 
+.public-header-shell--landing {
+  --theme-header-bg: var(--landing-header-bg);
+  --theme-header-text: var(--landing-header-text);
+  --theme-header-ink: var(--landing-header-ink);
+  --theme-header-border: var(--landing-header-border);
+  border-radius: var(--landing-header-radius);
+}
+
+.public-header-shell--landing::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border: 1px solid var(--landing-header-border);
+  border-radius: inherit;
+  background: var(--landing-header-bg);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--landing-header-bg) 16%, rgb(2 6 23 / 18%));
+  content: "";
+  pointer-events: none;
+}
+
+.public-header-shell--landing > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-landing-header-style="glass"] .public-header-shell--landing::before {
+  background: color-mix(in srgb, var(--landing-header-bg) 88%, transparent);
+  backdrop-filter: saturate(175%) blur(var(--landing-header-blur));
+  -webkit-backdrop-filter: saturate(175%) blur(var(--landing-header-blur));
+}
+
+.public-header-shell--landing .public-info-bar,
+.public-header-shell--landing .public-navbar--landing,
+.public-header-shell--landing .public-navbar--landing.is-scrolled {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 .public-navbar {
   position: relative;
   z-index: 2;
@@ -261,7 +307,7 @@ textarea::placeholder {
 }
 
 /* Exclude non-action UI cards, scope tabs, circular toggles & icon controls from pill override */
-:root[data-button-shape] button:not(.theme-preset-card):not(.theme-scope-tab):not(.theme-style-option):not(.theme-shape-option):not(.theme-effect-option):not(.effect-navbar-control):not(.effect-mobile-menu-close):not(.effect-mobile-menu-link):not(.admin-sidebar-collapse-straddle):not(.admin-sidebar-collapse):not(.admin-sidebar-group-toggle):not(.admin-sidebar-footer-action):not(.home-quick-nav-tab):not(.theme-card-btn):not([class*="rounded-full"]),
+:root[data-button-shape] button:not(.theme-preset-card):not(.theme-scope-tab):not(.theme-style-option):not(.theme-shape-option):not(.theme-effect-option):not(.effect-navbar-control):not(.effect-mobile-menu-close):not(.effect-mobile-menu-link):not(.admin-sidebar-collapse-straddle):not(.admin-sidebar-collapse):not(.admin-sidebar-group-toggle):not(.admin-sidebar-footer-action):not(.home-quick-nav-tab):not(.theme-card-btn):not(.org-chart-node):not([class*="rounded-full"]),
 :root[data-button-shape] .theme-action,
 :root[data-button-shape] a[class*="bg-(--theme-primary)"],
 :root[data-button-shape] a[class*="bg-(--theme-btn-bg)"] {
@@ -269,14 +315,40 @@ textarea::placeholder {
 }
 
 .admin-shell {
+  --admin-sidebar-overlap: 7rem;
   background-color: var(--theme-bg);
   color: var(--theme-text);
 }
 
-.admin-sidebar {
-  border-color: var(--theme-admin-sidebar-border);
-  background-color: var(--theme-admin-sidebar-bg);
+.admin-shell[data-sidebar-mini="true"] {
+  --admin-sidebar-overlap: 2.5rem;
+}
+
+.admin-shell .admin-sidebar {
+  border-color: color-mix(in srgb, var(--theme-admin-sidebar-text) 28%, transparent);
+  margin-inline-end: calc(-1 * var(--admin-sidebar-overlap));
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--theme-admin-sidebar-text) 12%, transparent),
+      transparent 42%
+    ),
+    color-mix(in srgb, var(--theme-admin-sidebar-bg) 86%, transparent);
   color: var(--theme-admin-sidebar-text);
+  backdrop-filter: blur(24px) saturate(165%);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  box-shadow:
+    0 16px 42px rgb(15 23 42 / 14%),
+    0 2px 8px rgb(15 23 42 / 6%),
+    inset 0 1px color-mix(in srgb, var(--theme-admin-sidebar-text) 20%, transparent);
+}
+
+.admin-shell[data-sidebar-dock="opposite"] .admin-sidebar {
+  margin-inline-end: calc(-1 * var(--admin-sidebar-overlap));
+}
+
+.org-chart-node {
+  border-radius: var(--theme-card-radius, 1rem);
 }
 
 .admin-sidebar .admin-sidebar-brand-name,
@@ -354,6 +426,18 @@ textarea::placeholder {
   color: var(--theme-admin-topbar-text);
 }
 
+.admin-shell[data-sidebar-dock="default"] .admin-topbar {
+  margin-inline-start: var(--admin-sidebar-overlap);
+  border-start-start-radius: 1.375rem;
+  border-end-start-radius: 1.375rem;
+}
+
+.admin-shell[data-sidebar-dock="opposite"] .admin-topbar {
+  margin-inline-end: var(--admin-sidebar-overlap);
+  border-start-end-radius: 1.375rem;
+  border-end-end-radius: 1.375rem;
+}
+
 .admin-topbar .admin-topbar-muted {
   color: var(--theme-admin-topbar-muted);
 }
@@ -374,6 +458,28 @@ textarea::placeholder {
   color: var(--theme-text);
   border-color: var(--theme-border);
   box-shadow: var(--theme-card-shadow-hover);
+}
+
+@media (max-width: 1023px) {
+  .admin-shell {
+    --admin-sidebar-overlap: 0;
+  }
+
+  .admin-shell .admin-sidebar {
+    margin-inline-end: 0;
+  }
+
+  .admin-shell .admin-topbar {
+    margin-inline: 0;
+  }
+
+  .admin-shell[data-sidebar-dock="opposite"] .admin-sidebar {
+    margin-inline-end: 0;
+  }
+
+  .admin-shell .admin-topbar {
+    border-radius: 0;
+  }
 }
 
 :root[data-theme-scope="landing"] body,
@@ -410,7 +516,7 @@ textarea::placeholder {
   transform: translateY(-2px);
 }
 
-:root[data-theme-style="glass"] header:not(.admin-topbar) {
+:root[data-theme-style="glass"] header:not(.admin-topbar):not(.public-navbar--landing) {
   background-color: color-mix(in srgb, var(--theme-header-bg) 86%, transparent) !important;
   backdrop-filter: blur(18px);
 }
@@ -423,7 +529,7 @@ textarea::placeholder {
   backdrop-filter: none;
 }
 
-:root[data-theme-style="modern"] header:not(.admin-topbar) {
+:root[data-theme-style="modern"] header:not(.admin-topbar):not(.public-navbar--landing) {
   box-shadow: 0 8px 24px color-mix(in srgb, var(--theme-primary) 7%, rgb(15 23 42 / 5%));
 }
 

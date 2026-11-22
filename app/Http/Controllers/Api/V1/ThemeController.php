@@ -27,7 +27,7 @@ class ThemeController extends Controller
         $validated = $request->validated();
         $current = (new ThemeSettingResource($theme))->toArray($request);
 
-        foreach (['active_palette', 'landing_palette', 'admin_palette'] as $key) {
+        foreach (['active_palette', 'landing_palette', 'admin_palette', 'landing_header_settings'] as $key) {
             if (isset($validated[$key])) {
                 $validated[$key] = array_replace($current[$key], $validated[$key]);
             }

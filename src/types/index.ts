@@ -50,6 +50,14 @@ export type ThemeDesignStyle = 'industrial' | 'modern' | 'glass';
 export type ButtonShape = 'rounded' | 'pill' | 'square';
 export type ThemeButtonEffect = 'shimmer' | 'liquid' | 'glow' | 'plain';
 export type ThemeScope = 'site' | 'landing' | 'admin';
+export type LandingHeaderMode = 'glass' | 'solid';
+
+export interface LandingHeaderSettings {
+  border_color: string;
+  mode: LandingHeaderMode;
+  radius: number;
+  blur: number;
+}
 
 export interface ThemePreset {
   id: number;
@@ -75,6 +83,7 @@ export interface ThemeSettings {
   landing_design_style: ThemeDesignStyle;
   landing_button_shape: ButtonShape;
   landing_button_effect: ThemeButtonEffect;
+  landing_header_settings: LandingHeaderSettings;
   admin_palette: ThemePalette;
   admin_design_style: ThemeDesignStyle;
   admin_button_shape: ButtonShape;

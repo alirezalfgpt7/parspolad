@@ -7,6 +7,7 @@ use App\Exports\ContractsExport;
 use App\Exports\ProjectsExport;
 use App\Enums\SlideEffectEnum;
 use App\Enums\SlideTextAnimationEnum;
+use App\Enums\ProjectStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminContent\StoreAdminContentRecordRequest;
 use App\Http\Requests\AdminContent\UpdateAdminContentRecordRequest;
@@ -266,6 +267,21 @@ class AdminContentController extends Controller
                 'color' => $category->color,
                 'count' => $category->projects_count,
             ]);
+        $projectCountsByStatus = Project::query()
+            ->selectRaw('status, COUNT(*) AS count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+        $byStatus = collect(ProjectStatusEnum::cases())
+            ->map(fn (ProjectStatusEnum $status): array => [
+                'name' => $status->labelFa(),
+                'color' => match ($status) {
+                    ProjectStatusEnum::COMPLETED => '#16A34A',
+                    ProjectStatusEnum::IN_PROGRESS => '#2563EB',
+                    ProjectStatusEnum::PLANNED => '#D97706',
+                    ProjectStatusEnum::CONTRACTED => 'var(--theme-primary)',
+                },
+                'count' => (int) ($projectCountsByStatus[$status->value] ?? 0),
+            ]);
 
         $recentMessages = ContactMessage::query()->latest()->limit(5)->get();
         $recentLogs = Activity::query()->latest()->limit(8)->get()->map(fn (Activity $activity): array => [
@@ -281,12 +297,11 @@ class AdminContentController extends Controller
             'stats' => [
                 'projects_count' => Project::query()->count(),
                 'contracts_count' => Contract::query()->count(),
-                'contracts_total_billion_irr' => Contract::query()->sum('amount_billion_irr'),
                 'licenses_count' => License::query()->count(),
                 'new_messages_count' => ContactMessage::query()->where('status', 'new')->count(),
                 'users_count' => User::query()->count(),
             ],
-            'charts' => ['byCategory' => $byCategory, 'byYear' => []],
+            'charts' => ['byCategory' => $byCategory, 'byStatus' => $byStatus],
             'recent_messages' => $recentMessages,
             'recent_logs' => $recentLogs,
             'notifications' => Notification::query()->latest()->limit(6)->get(),

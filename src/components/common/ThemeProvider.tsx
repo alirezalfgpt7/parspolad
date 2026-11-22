@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore.ts';
 import {
+  DEFAULT_LANDING_HEADER_SETTINGS,
   DEFAULT_APPEARANCE_SETTINGS,
   DEFAULT_THEME_PALETTE,
   FONT_CSS_MAP,
 } from '../../utils/brandingDefaults.ts';
-import { resolveThemeTokens } from '../../utils/themeContrast.ts';
+import { ensureContrastAgainst, resolveThemeTokens } from '../../utils/themeContrast.ts';
 import type {
   ButtonShape,
   ColorMode,
@@ -155,6 +156,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     previewMode,
     previewAppearance,
   } = useAppStore();
+  const candidateTheme: ThemeSettings | undefined = previewTheme || bootstrap?.theme || undefined;
+  const isLanding = location.pathname === '/';
+  const routeScope: ThemeScope = isLanding && (candidateTheme?.landing_theme_enabled ?? true)
+    ? 'landing'
+    : location.pathname.startsWith('/admin')
+      ? 'admin'
+      : 'site';
+  const previewMatchesRoute = Boolean(
+    previewTheme && (!previewScope || previewScope === routeScope),
+  );
+  const theme = previewMatchesRoute ? previewTheme : bootstrap?.theme || undefined;
+  const scope = previewMatchesRoute ? previewScope || routeScope : routeScope;
 
   let hasSavedMode = false;
   try {
@@ -163,19 +176,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hasSavedMode = false;
   }
 
-  const effectiveMode: ColorMode = previewMode
-    || (hasSavedMode ? colorMode : previewTheme?.default_mode || bootstrap?.theme?.default_mode || colorMode);
+  const effectiveMode: ColorMode = previewMatchesRoute && previewMode
+    ? previewMode
+    : hasSavedMode
+      ? colorMode
+      : theme?.default_mode || colorMode;
 
   useEffect(() => {
-    const theme: ThemeSettings | undefined = previewTheme || bootstrap?.theme || undefined;
-    const isLanding = location.pathname === '/';
-    const routeScope: ThemeScope = isLanding && (theme?.landing_theme_enabled ?? true)
-      ? 'landing'
-      : location.pathname.startsWith('/admin')
-        ? 'admin'
-        : 'site';
-    const scope = previewScope || routeScope;
-
     if (theme) {
       const palette = scope === 'landing'
         ? theme.landing_palette
@@ -217,12 +224,35 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       );
     }
 
+    const headerSettings = {
+      ...DEFAULT_LANDING_HEADER_SETTINGS,
+      ...candidateTheme?.landing_header_settings,
+    };
+    const headerBackground = candidateTheme?.landing_palette.headerBg || DEFAULT_THEME_PALETTE.headerBg;
+    const headerText = ensureContrastAgainst(
+      candidateTheme?.landing_palette.headerText || DEFAULT_THEME_PALETTE.headerText,
+      [headerBackground],
+      4.5,
+    );
+    const headerInk = ensureContrastAgainst(
+      candidateTheme?.landing_palette.primary || DEFAULT_THEME_PALETTE.primary,
+      [headerBackground],
+      3,
+    );
+    const root = document.documentElement;
+    root.dataset.landingHeaderStyle = headerSettings.mode;
+    root.style.setProperty('--landing-header-bg', headerBackground);
+    root.style.setProperty('--landing-header-text', headerText);
+    root.style.setProperty('--landing-header-ink', headerInk);
+    root.style.setProperty('--landing-header-border', headerSettings.border_color);
+    root.style.setProperty('--landing-header-radius', `${headerSettings.radius}px`);
+    root.style.setProperty('--landing-header-blur', `${headerSettings.blur}px`);
+
     const appearance = {
       ...DEFAULT_APPEARANCE_SETTINGS,
       ...(bootstrap?.appearance || {}),
       ...(previewAppearance || {}),
     };
-    const root = document.documentElement;
     const activeBodyKey = isLanding
       ? appearance.font_landing
       : location.pathname.startsWith('/admin')
@@ -250,6 +280,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     root.style.setProperty('--font-size-base', `${clampedSize}px`);
   }, [
     bootstrap,
+    candidateTheme,
     location.pathname,
     effectiveMode,
     previewTheme,

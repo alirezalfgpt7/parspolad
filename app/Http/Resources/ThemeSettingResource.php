@@ -7,6 +7,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ThemeSettingResource extends JsonResource
 {
+    private const DEFAULT_LANDING_HEADER_SETTINGS = [
+        'border_color' => '#E2E8F0',
+        'mode' => 'glass',
+        'radius' => 18,
+        'blur' => 20,
+    ];
+
     private const DEFAULT_PALETTE = [
         'primary' => '#B91C1C',
         'secondary' => '#1E293B',
@@ -41,6 +48,10 @@ class ThemeSettingResource extends JsonResource
             'landing_design_style' => $this->landing_design_style ?? $this->design_style,
             'landing_button_shape' => $this->landing_button_shape ?? $this->button_shape,
             'landing_button_effect' => $this->landing_button_effect ?? $this->button_effect ?? 'shimmer',
+            'landing_header_settings' => array_replace(
+                self::DEFAULT_LANDING_HEADER_SETTINGS,
+                $this->landing_header_settings ?? [],
+            ),
             'admin_palette' => $adminPalette,
             'admin_design_style' => $this->admin_design_style ?? $this->design_style,
             'admin_button_shape' => $this->admin_button_shape ?? $this->button_shape,

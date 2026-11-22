@@ -12,7 +12,7 @@ interface QuickNavItem {
 
 const items: QuickNavItem[] = [
   {
-    id: 'home-top',
+    id: 'home-slider',
     labelFa: 'خانه',
     labelEn: 'Home',
     icon: <House strokeWidth={1.8} />,
@@ -59,6 +59,16 @@ export const HomeQuickNav: React.FC = () => {
   const language = useAppStore((state) => state.language);
   const isFa = language === 'fa';
   const [activeId, setActiveId] = useState(items[0].id);
+  const scrollToSection = (section: HTMLElement) => {
+    const headerHeight = document
+      .querySelector<HTMLElement>('.public-header-shell')
+      ?.getBoundingClientRect().height ?? 0;
+    const top = section.getBoundingClientRect().top + window.scrollY - headerHeight;
+    window.scrollTo({
+      top: Math.max(0, top),
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  };
 
   useEffect(() => {
     const sections = items
@@ -87,10 +97,8 @@ export const HomeQuickNav: React.FC = () => {
 
     setActiveId(hashId);
     const frame = window.requestAnimationFrame(() => {
-      document.getElementById(hashId)?.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
+      const section = document.getElementById(hashId);
+      if (section) scrollToSection(section);
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -102,10 +110,7 @@ export const HomeQuickNav: React.FC = () => {
     event.preventDefault();
     window.history.pushState(null, '', `#${id}`);
     setActiveId(id);
-    section.scrollIntoView({
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-      block: 'start',
-    });
+    scrollToSection(section);
   };
 
   return (

@@ -3,12 +3,14 @@ import { Check, Palette, Plus, RotateCcw, Save, SwatchBook } from 'lucide-react'
 import { ThemeScopeEditor, type ThemeScopeValues } from '../../components/admin/theme/ThemeScopeEditor.tsx';
 import { ThemeScopeTabs } from '../../components/admin/theme/ThemeScopeTabs.tsx';
 import { ThemeStudioHero } from '../../components/admin/theme/ThemeStudioHero.tsx';
+import { LandingHeaderSettingsEditor } from '../../components/admin/theme/LandingHeaderSettingsEditor.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { EffectAction } from '../../components/effects/EffectAction.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { ThemePreset, ThemeScope, ThemeSettings } from '../../types/index.ts';
+import type { LandingHeaderSettings, ThemePreset, ThemeScope, ThemeSettings } from '../../types/index.ts';
+import { DEFAULT_LANDING_HEADER_SETTINGS } from '../../utils/brandingDefaults.ts';
 import { ensureContrastAgainst, pickReadableForeground } from '../../utils/themeContrast.ts';
 
 export const ThemeAdminPage: React.FC = () => {
@@ -160,6 +162,7 @@ export const ThemeAdminPage: React.FC = () => {
           landing_design_style: preset.design_style,
           landing_button_shape: preset.button_shape,
           landing_button_effect: preset.button_effect,
+          landing_header_settings: { ...DEFAULT_LANDING_HEADER_SETTINGS },
         }
       : scope === 'admin'
         ? {
@@ -442,6 +445,19 @@ export const ThemeAdminPage: React.FC = () => {
         values={scopeValues}
         onChange={updateScope}
       />
+
+      {scope === 'landing' && (
+        <LandingHeaderSettingsEditor
+          settings={settings.landing_header_settings}
+          palette={settings.landing_palette}
+          onChange={(landing_header_settings: LandingHeaderSettings) => {
+            previewSettings({ ...settings, landing_header_settings }, 'landing');
+          }}
+          onPaletteChange={(landing_palette) => {
+            previewSettings({ ...settings, landing_palette }, 'landing');
+          }}
+        />
+      )}
 
       {scope === 'site' && (
         <section className="theme-editor-section grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">

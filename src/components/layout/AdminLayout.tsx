@@ -42,6 +42,7 @@ export const AdminLayout: React.FC = () => {
     <div
       className="admin-shell flex h-dvh min-h-0 overflow-hidden"
       data-sidebar-dock={dockOpposite ? 'opposite' : 'default'}
+      data-sidebar-mini={mini}
       style={{ backgroundColor: 'var(--theme-bg)', color: 'var(--theme-text)' }}
     >
       {mobileOpen && (

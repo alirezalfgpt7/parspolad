@@ -28,17 +28,25 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="public-header-shell">
+      <div className={`public-header-shell${pathname === '/' ? ' public-header-shell--landing' : ''}`}>
         {pathname === '/' && <PublicInfoBar />}
         <PublicNavbar />
       </div>
-      {pageSlider && (
-        <div className={pathname === '/' ? 'home-page-snap-section' : undefined}>
+      {pathname === '/' ? (
+        <div id="home-slider" className="home-page-snap-section">
+          {pageSlider && (
+            <Suspense fallback={null}>
+              <HeroSlider slides={pageSlider.slides} />
+            </Suspense>
+          )}
+        </div>
+      ) : pageSlider ? (
+        <div>
           <Suspense fallback={null}>
             <HeroSlider slides={pageSlider.slides} />
           </Suspense>
         </div>
-      )}
+      ) : null}
       <main className="flex-1">
         <PageTransition>
           <Outlet />

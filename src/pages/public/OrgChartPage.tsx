@@ -39,7 +39,7 @@ export const OrgChartPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setSelectedDeptId(department.id)}
-          className={`flex min-h-full w-full flex-col justify-between rounded-2xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
+          className={`org-chart-node flex min-h-full w-full flex-col justify-between rounded-2xl border p-4 text-start transition-all hover:-translate-y-0.5 ${
             isSelected
               ? 'border-(--theme-primary) bg-(--theme-primary)/10 shadow-(--theme-card-shadow)'
               : 'border-(--theme-card-border) bg-(--theme-surface-muted) hover:border-(--theme-card-border-hover)'
@@ -81,7 +81,7 @@ export const OrgChartPage: React.FC = () => {
               type="button"
               onClick={() => setSelectedDeptId(root.id)}
               style={{ borderColor: selectedDeptId === root.id ? root.color : undefined }}
-              className="w-full max-w-xs rounded-2xl border-2 border-(--theme-border) bg-(--theme-surface-muted) p-4 text-center transition-all hover:border-(--theme-primary-ink)"
+              className="org-chart-node w-full max-w-xs rounded-2xl border-2 border-(--theme-border) bg-(--theme-surface-muted) p-4 text-center transition-all hover:border-(--theme-primary-ink)"
             >
               <div className="text-xs font-bold text-(--theme-primary-ink)">
                 {language === 'fa' ? root.name_fa : root.name_en}

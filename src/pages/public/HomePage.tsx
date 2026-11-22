@@ -161,7 +161,7 @@ export const HomePage: React.FC = () => {
     (language === 'fa' ? 'پارس پولاد آقایی' : 'PARS POOLAD AGHAEE');
 
   return (
-    <div id="home-top" className="home-page-content">
+    <div className="home-page-content">
       <SeoHead
         title={(language === 'fa' ? bootstrap?.seo?.site_title : bootstrap?.seo?.site_title_en)
           || bootstrap?.seo?.site_title

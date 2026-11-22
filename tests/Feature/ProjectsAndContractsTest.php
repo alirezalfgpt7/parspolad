@@ -1,6 +1,7 @@
 <?php
 
 use Database\Seeders\DatabaseSeeder;
+use App\Enums\ProjectStatusEnum;
 use App\Models\Article;
 use App\Models\Banner;
 use App\Models\Department;
@@ -78,6 +79,25 @@ it('paginates the administrative project list', function (): void {
     ->assertJsonCount(1, 'data')
     ->assertJsonPath('meta.per_page', 1)
     ->assertJsonPath('meta.current_page', 1);
+});
+
+it('returns live project status totals without contract value on the dashboard', function (): void {
+    Project::factory()->count(2)->create(['status' => ProjectStatusEnum::IN_PROGRESS->value]);
+
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()
+        ->json('token');
+    $response = $this->withToken($token)->getJson('/api/v1/admin/dashboard')
+        ->assertOk()
+        ->assertJsonMissingPath('stats.contracts_total_billion_irr');
+
+    foreach (ProjectStatusEnum::cases() as $index => $status) {
+        $response->assertJsonPath("charts.byStatus.{$index}.name", $status->labelFa())
+            ->assertJsonPath(
+                "charts.byStatus.{$index}.count",
+                Project::query()->where('status', $status->value)->count(),
+            );
+    }
 });
 
 it('paginates public catalog, services, FAQs and news and returns complete product filter options', function (): void {

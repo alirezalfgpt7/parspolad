@@ -30,6 +30,7 @@ it('returns public bootstrap payload with active industrial crimson theme', func
         ->assertJsonPath('theme_settings.button_shape', 'rounded')
         ->assertJsonPath('theme_settings.landing_design_style', 'glass')
         ->assertJsonPath('theme_settings.admin_design_style', 'industrial')
+        ->assertJsonPath('theme_settings.landing_header_settings.mode', 'glass')
         ->assertJsonPath('theme_settings.admin_palette.surface', '#FFFFFF')
         ->assertJsonPath('theme.admin_palette.headerBg', '#FFFFFF')
         ->assertJsonStructure([
@@ -77,6 +78,12 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
         'landing_design_style' => 'industrial',
         'landing_button_shape' => 'square',
         'landing_button_effect' => 'glow',
+        'landing_header_settings' => [
+            'border_color' => '#CBD5E1',
+            'mode' => 'solid',
+            'radius' => 24,
+            'blur' => 12,
+        ],
         'admin_palette' => [
             'primary' => '#0F4C81',
             'secondary' => '#1E293B',
@@ -94,10 +101,18 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
         ->assertJsonPath('button_effect', 'liquid')
         ->assertJsonPath('landing_design_style', 'industrial')
         ->assertJsonPath('landing_button_shape', 'square')
+        ->assertJsonPath('landing_header_settings.mode', 'solid')
+        ->assertJsonPath('landing_header_settings.radius', 24)
         ->assertJsonPath('admin_design_style', 'modern')
         ->assertJsonPath('admin_palette.primary', '#0F4C81')
         ->assertJsonPath('admin_palette.surface', '#FFFFFF')
         ->assertJsonPath('active_palette.headerBg', '#FFFFFF');
+
+    $invalidHeaderSettings = $updateTheme->json();
+    $invalidHeaderSettings['landing_header_settings']['radius'] = 999;
+    $this->withToken($token)->putJson('/api/v1/admin/themes', $invalidHeaderSettings)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('landing_header_settings.radius');
 });
 
 it('requires a valid server-side captcha for login', function (): void {

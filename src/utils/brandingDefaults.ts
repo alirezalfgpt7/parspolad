@@ -3,6 +3,7 @@ import type {
   BrandLogosSettings,
   FontFamilyKey,
   LoginPageSettings,
+  LandingHeaderSettings,
   PagesConfigSettings,
   ThemePalette,
 } from '../types/index.ts';
@@ -21,6 +22,13 @@ export const DEFAULT_THEME_PALETTE: ThemePalette = {
   buttonBg: '#B91C1C',
   buttonText: '#FFFFFF',
   link: '#B91C1C',
+};
+
+export const DEFAULT_LANDING_HEADER_SETTINGS: LandingHeaderSettings = {
+  border_color: '#E2E8F0',
+  mode: 'glass',
+  radius: 18,
+  blur: 20,
 };
 
 export interface FontOption {

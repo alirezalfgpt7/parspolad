@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Award, Bell, FileSpreadsheet, FolderKanban, MessageSquare, ShieldCheck } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import type { ActivityLog, ContactMessage, NotificationItem } from '../../types/index.ts';
-import { CategoryBarChart, YearlyTrendChart } from '../../components/charts/IndustrialCharts.tsx';
+import { CategoryBarChart } from '../../components/charts/IndustrialCharts.tsx';
 import { PersianDatePicker, gregorianToJalali, jalaliToGregorian } from '../../components/ui/PersianDatePicker.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
@@ -28,14 +28,13 @@ interface DashboardData {
   stats: {
     projects_count: number;
     contracts_count: number;
-    contracts_total_billion_irr: number;
     licenses_count: number;
     new_messages_count: number;
     users_count: number;
   };
   charts: {
     byCategory: Array<{ name: string; color: string; count: number }>;
-    byYear: Array<{ year: string; count: number }>;
+    byStatus: Array<{ name: string; color: string; count: number }>;
   };
   recent_messages: ContactMessage[];
   recent_logs: ActivityLog[];
@@ -84,7 +83,7 @@ export const DashboardPage: React.FC = () => {
 
   const cards = [
     { label: 'پروژه‌های ثبت‌شده', val: data.stats.projects_count, icon: FolderKanban, to: '/admin/projects' },
-    { label: 'قراردادهای فعال و تکمیلی', val: `${data.stats.contracts_count} (${data.stats.contracts_total_billion_irr} میلیارد ریال)`, icon: FileSpreadsheet, to: '/admin/contracts-licenses' },
+    { label: 'قراردادهای ثبت‌شده', val: data.stats.contracts_count, icon: FileSpreadsheet, to: '/admin/contracts-licenses' },
     { label: 'گواهینامه‌ها و استانداردها', val: data.stats.licenses_count, icon: Award, to: '/admin/contracts-licenses' },
     { label: 'پیام‌ها و RFQ جدید', val: data.stats.new_messages_count, icon: MessageSquare, to: '/admin/messages' },
   ];
@@ -169,8 +168,8 @@ export const DashboardPage: React.FC = () => {
           <CategoryBarChart data={data.charts.byCategory} />
         </div>
         <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-          <h2 className="mb-4 text-sm font-bold text-(--theme-text)">نمودار روند اجرای پروژه‌ها در سال‌ها</h2>
-          <YearlyTrendChart data={data.charts.byYear} />
+          <h2 className="mb-4 text-sm font-bold text-(--theme-text)">وضعیت فعلی پروژه‌ها</h2>
+          <CategoryBarChart data={data.charts.byStatus} />
         </div>
       </div>
 
