@@ -74,8 +74,17 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::get('/dashboard', [AdminContentController::class, 'dashboard'])->middleware('permission:dashboard.view');
             Route::get('/analytics', [VisitAnalyticsController::class, 'analytics'])->middleware('permission:analytics.view');
             Route::get('/projects', [ProjectController::class, 'adminIndex'])->middleware('permission:projects.view');
+            Route::get('/projects/{project}', [ProjectController::class, 'adminShow'])
+                ->whereNumber('project')
+                ->middleware('permission:projects.view');
             Route::get('/contracts', [ContractController::class, 'adminIndex'])->middleware('permission:contracts.view');
+            Route::get('/contracts/{contract}', [ContractController::class, 'adminShow'])
+                ->whereNumber('contract')
+                ->middleware('permission:contracts.view');
             Route::get('/licenses', [LicenseController::class, 'adminIndex'])->middleware('permission:licenses.view');
+            Route::get('/licenses/{license}', [LicenseController::class, 'adminShow'])
+                ->whereNumber('license')
+                ->middleware('permission:licenses.view');
             Route::get('/themes', [ThemeController::class, 'show'])->middleware('permission:themes.manage');
             Route::put('/themes', [ThemeController::class, 'update']);
             Route::get('/sliders', [AdminContentController::class, 'sliders'])->middleware('permission:slider.manage');

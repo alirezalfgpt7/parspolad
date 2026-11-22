@@ -33,7 +33,8 @@ const LoginPage = lazy(() => import('./pages/auth/AuthPages.tsx').then((module) 
 const RegisterPage = lazy(() => import('./pages/auth/AuthPages.tsx').then((module) => ({ default: module.RegisterPage })));
 const ContentCmsAdminPage = lazy(() => import('./pages/admin/ContentCmsAdminPage.tsx').then((module) => ({ default: module.ContentCmsAdminPage })));
 const ArticleCommentsAdminPage = lazy(() => import('./pages/admin/ArticleCommentsAdminPage.tsx').then((module) => ({ default: module.ArticleCommentsAdminPage })));
-const ContractsLicensesAdminPage = lazy(() => import('./pages/admin/ContractsLicensesAdminPage.tsx').then((module) => ({ default: module.ContractsLicensesAdminPage })));
+const ContractsAdminPage = lazy(() => import('./pages/admin/ContractsAdminPage.tsx').then((module) => ({ default: module.ContractsAdminPage })));
+const LicensesAdminPage = lazy(() => import('./pages/admin/LicensesAdminPage.tsx').then((module) => ({ default: module.LicensesAdminPage })));
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage.tsx').then((module) => ({ default: module.DashboardPage })));
 const MediaLibraryPage = lazy(() => import('./pages/admin/MediaLibraryPage.tsx').then((module) => ({ default: module.MediaLibraryPage })));
 const MegaMenuAdminPage = lazy(() => import('./pages/admin/MegaMenuAdminPage.tsx').then((module) => ({ default: module.MegaMenuAdminPage })));
@@ -128,7 +129,9 @@ export default function App() {
             >
               <Route index element={<DashboardPage />} />
               <Route path="projects" element={<ProjectsAdminPage />} />
-              <Route path="contracts-licenses" element={<ContractsLicensesAdminPage />} />
+              <Route path="contracts" element={<ContractsAdminPage />} />
+              <Route path="licenses" element={<LicensesAdminPage />} />
+              <Route path="contracts-licenses" element={<Navigate to="/admin/contracts" replace />} />
               <Route path="slider" element={<SliderAdminPage />} />
               <Route path="themes" element={<ThemeAdminPage />} />
               <Route path="login-appearance" element={<LoginAppearanceAdminPage />} />

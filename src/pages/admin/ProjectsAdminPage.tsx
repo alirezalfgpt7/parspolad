@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Project, ProjectCategory, ProjectStatus } from '../../types/index.ts';
@@ -43,41 +43,178 @@ const categoryFormSchema = z.object({
   description_fa: z.string().nullish(),
 });
 
+interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+}
+
+type ProjectListRow = Pick<
+  Project,
+  'id' | 'slug' | 'title_fa' | 'category_id' | 'category' | 'client_name_fa' |
+  'contract_number' | 'year' | 'status' | 'cover_image'
+>;
+
+const PROJECT_PAGE_SIZES = [10, 20, 50] as const;
+const CATEGORY_PAGE_SIZE = 8;
+
 export const ProjectsAdminPage: React.FC = () => {
   const { addToast, fetchBootstrap } = useAppStore();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectListRow[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [projectTotal, setProjectTotal] = useState(0);
+  const [perPage, setPerPage] = useState<number>(PROJECT_PAGE_SIZES[0]);
+  const [projectSearch, setProjectSearch] = useState('');
+  const [appliedProjectSearch, setAppliedProjectSearch] = useState('');
+  const [projectRefresh, setProjectRefresh] = useState(0);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<ProjectCategory[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<ProjectCategory[]>([]);
+  const [categorySelectSearch, setCategorySelectSearch] = useState('');
+  const [appliedCategorySelectSearch, setAppliedCategorySelectSearch] = useState('');
+  const [categoryOptionsLoading, setCategoryOptionsLoading] = useState(false);
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [categoryLastPage, setCategoryLastPage] = useState(1);
+  const [categoryTotal, setCategoryTotal] = useState(0);
+  const [categorySearch, setCategorySearch] = useState('');
+  const [appliedCategorySearch, setAppliedCategorySearch] = useState('');
+  const [categoryRefresh, setCategoryRefresh] = useState(0);
+  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [editing, setEditing] = useState<Partial<Project> | null>(null);
+  const [editingLoading, setEditingLoading] = useState(false);
   const [catModal, setCatModal] = useState<Partial<ProjectCategory> | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deletingProject, setDeletingProject] = useState(false);
-
-  const load = async (targetPage = page) => {
-    setLoading(true);
-    const [pr, ct] = await Promise.all([
-      apiRequest<{ data: Project[]; meta: { last_page: number } }>(`/admin/projects?page=${targetPage}&per_page=8`),
-      apiRequest<{ data: ProjectCategory[] }>('/admin/categories'),
-    ]);
-    if (targetPage > pr.meta.last_page) {
-      setPage(Math.max(1, pr.meta.last_page));
-      setLoading(false);
-      return;
-    }
-    setProjects(pr.data);
-    setLastPage(pr.meta.last_page);
-    setCategories(ct.data);
-    setLoading(false);
-  };
+  const projectEditRequest = useRef(0);
 
   useEffect(() => {
-    load(page).catch((error: unknown) => {
-      setLoading(false);
-      addToast('error', error instanceof Error ? error.message : 'بارگذاری پروژه‌ها ناموفق بود.');
+    const timer = window.setTimeout(() => setAppliedProjectSearch(projectSearch.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [projectSearch]);
+
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams({ page: String(page), per_page: String(perPage) });
+    if (appliedProjectSearch) params.set('q', appliedProjectSearch);
+
+    setLoading(true);
+    apiRequest<PaginatedResponse<ProjectListRow>>(`/admin/projects?${params.toString()}`)
+      .then((response) => {
+        if (!active) return;
+        if (page > response.meta.last_page) {
+          setPage(Math.max(1, response.meta.last_page));
+          return;
+        }
+        setProjects(response.data);
+        setLastPage(response.meta.last_page);
+        setProjectTotal(response.meta.total);
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'بارگذاری پروژه‌ها ناموفق بود.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [page, perPage, appliedProjectSearch, projectRefresh, addToast]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAppliedCategorySearch(categorySearch.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [categorySearch]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAppliedCategorySelectSearch(categorySelectSearch.trim()), 250);
+    return () => window.clearTimeout(timer);
+  }, [categorySelectSearch]);
+
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams({
+      page: String(categoryPage),
+      per_page: String(CATEGORY_PAGE_SIZE),
     });
-  }, [page]);
+    if (appliedCategorySearch) params.set('search', appliedCategorySearch);
+
+    setCategoryLoading(true);
+    apiRequest<PaginatedResponse<ProjectCategory>>(`/admin/categories?${params.toString()}`)
+      .then((response) => {
+        if (!active) return;
+        if (categoryPage > response.meta.last_page) {
+          setCategoryPage(Math.max(1, response.meta.last_page));
+          return;
+        }
+        setCategories(response.data);
+        setCategoryLastPage(response.meta.last_page);
+        setCategoryTotal(response.meta.total);
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'بارگذاری دسته‌بندی‌ها ناموفق بود.');
+      })
+      .finally(() => {
+        if (active) setCategoryLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [categoryPage, appliedCategorySearch, categoryRefresh, addToast]);
+
+  useEffect(() => {
+    let active = true;
+    const params = new URLSearchParams({ page: '1', per_page: '30' });
+    if (appliedCategorySelectSearch) params.set('search', appliedCategorySelectSearch);
+
+    setCategoryOptionsLoading(true);
+    apiRequest<PaginatedResponse<ProjectCategory>>(`/admin/categories?${params.toString()}`)
+      .then((response) => {
+        if (active) setCategoryOptions(response.data);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setCategoryOptions([]);
+          addToast('error', error instanceof Error ? error.message : 'بارگذاری گزینه‌های دسته‌بندی ناموفق بود.');
+        }
+      })
+      .finally(() => {
+        if (active) setCategoryOptionsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [appliedCategorySelectSearch, categoryRefresh, addToast]);
+
+  const openProjectEditor = async (project: ProjectListRow) => {
+    const requestId = ++projectEditRequest.current;
+    setEditing(null);
+    setEditingLoading(true);
+    try {
+      const response = await apiRequest<{ data: Project }>(`/admin/projects/${project.id}`);
+      if (projectEditRequest.current === requestId) setEditing(response.data);
+    } catch (error) {
+      if (projectEditRequest.current === requestId) {
+        addToast('error', error instanceof Error ? error.message : 'بارگذاری جزئیات پروژه ناموفق بود.');
+      }
+    } finally {
+      if (projectEditRequest.current === requestId) setEditingLoading(false);
+    }
+  };
+
+  const closeProjectEditor = () => {
+    projectEditRequest.current += 1;
+    setEditing(null);
+    setEditingLoading(false);
+  };
 
   const saveProject = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +231,7 @@ export const ProjectsAdminPage: React.FC = () => {
         await apiRequest('/admin/projects', { method: 'POST', body: JSON.stringify({ ...editing, ...parsed.data, images: [parsed.data.cover_image], videos: [], documents: [], standards: ['API 6A', 'ISO 9001'] }) });
       }
       setEditing(null);
-      await load();
+      setProjectRefresh((current) => current + 1);
       addToast('success', 'پروژه ذخیره شد.');
     } catch (err) {
       addToast('error', err instanceof Error ? err.message : 'خطا در ذخیره');
@@ -116,7 +253,7 @@ export const ProjectsAdminPage: React.FC = () => {
         await apiRequest('/admin/categories', { method: 'POST', body: JSON.stringify(parsed.data) });
       }
       setCatModal(null);
-      await load();
+      setCategoryRefresh((current) => current + 1);
       await fetchBootstrap();
       addToast('success', 'دسته‌بندی فنی ذخیره شد.');
     } catch (error) {
@@ -131,7 +268,7 @@ export const ProjectsAdminPage: React.FC = () => {
     try {
       await apiRequest(`/admin/projects/${deleteId}`, { method: 'DELETE' });
       setDeleteId(null);
-      await load();
+      setProjectRefresh((current) => current + 1);
       addToast('success', 'پروژه حذف شد.');
     } catch (error) {
       addToast('error', error instanceof Error ? error.message : 'حذف پروژه ناموفق بود.');
@@ -140,11 +277,11 @@ export const ProjectsAdminPage: React.FC = () => {
     }
   };
 
-  const cols: Column<Project>[] = [
+  const cols: Column<ProjectListRow>[] = [
     {
       key: 'title',
       header: 'عنوان پروژه',
-      sortValue: (p) => p.title_fa,
+      className: 'min-w-[220px]',
       render: (p) => (
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-12 shrink-0 overflow-hidden rounded-md bg-(--theme-surface-muted)">
@@ -154,36 +291,49 @@ export const ProjectsAdminPage: React.FC = () => {
         </div>
       ),
     },
-    { key: 'client', header: 'کارفرما', render: (p) => <span>{p.client_name_fa}</span> },
-    { key: 'contract', header: 'شماره قرارداد', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
-    { key: 'year', header: 'سال', sortValue: (p) => p.year, render: (p) => <span>{p.year}</span> },
+    {
+      key: 'category',
+      header: 'دسته فنی',
+      className: 'min-w-[140px]',
+      render: (p) => p.category ? (
+        <span className="inline-flex max-w-48 items-center gap-2 rounded-full border border-(--theme-border) bg-(--theme-surface-muted) px-2.5 py-1 text-xs font-medium text-(--theme-text)">
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: p.category.color }} />
+          <span className="truncate">{p.category.name_fa}</span>
+        </span>
+      ) : <span className="text-(--theme-text-muted)">بدون دسته</span>,
+    },
+    { key: 'client', header: 'کارفرما', className: 'hidden md:table-cell', render: (p) => <span>{p.client_name_fa}</span> },
+    { key: 'contract', header: 'شماره قرارداد', className: 'hidden lg:table-cell', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
+    { key: 'year', header: 'سال', className: 'hidden sm:table-cell', render: (p) => <span>{p.year}</span> },
     {
       key: 'actions',
       header: 'عملیات',
+      className: 'whitespace-nowrap',
       render: (p) => (
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setEditing(p)} className="rounded p-1.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-text)"><Pencil className="h-4 w-4" /></button>
-          <button type="button" onClick={() => setDeleteId(p.id)} className="rounded p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"><Trash2 className="h-4 w-4" /></button>
+          <button type="button" onClick={() => openProjectEditor(p)} className="rounded p-1.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-text)" aria-label={`ویرایش ${p.title_fa}`}><Pencil className="h-4 w-4" /></button>
+          <button type="button" onClick={() => setDeleteId(p.id)} className="rounded p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40" aria-label={`حذف ${p.title_fa}`}><Trash2 className="h-4 w-4" /></button>
         </div>
       ),
     },
   ];
 
+  const projectCategoryOptions = [
+    ...(editing?.category ? [editing.category] : []),
+    ...categoryOptions.filter((category) => category.id !== editing?.category?.id),
+  ].map((category) => ({ value: String(category.id), label: category.name_fa }));
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت پروژه‌ها و دسته‌بندی‌های فنی</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت پروژه‌ها و دسته‌بندی‌های فنی</h1>
+          <p className="mt-1 text-xs text-(--theme-text-muted)">پروژه‌ها و دسته‌های فنی را جست‌وجو، مشاهده و مدیریت کنید.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => setCatModal({ name_fa: '', name_en: '', slug: `cat-${Date.now()}`, icon: 'Layers', color: '#B91C1C' })}
-            className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
-          >
-            + دسته فنی جدید
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditing({ slug: `proj-${Date.now()}`, title_fa: '', title_en: '', category_id: categories[0]?.id || 1, client_name_fa: '', client_name_en: '', contract_number: '', contract_type_fa: 'ساخت و تولید', contract_type_en: 'Manufacturing', location_fa: 'اهواز', location_en: 'Ahvaz', year: 1404, status: 'in_progress', summary_fa: '', summary_en: '', description_fa: '', description_en: '', cover_image: '/storage/hero/hero-rig.jpg', is_featured: true })}
+            onClick={() => setEditing({ slug: `proj-${Date.now()}`, title_fa: '', title_en: '', category_id: categoryOptions[0]?.id || categories[0]?.id || 0, client_name_fa: '', client_name_en: '', contract_number: '', contract_type_fa: 'ساخت و تولید', contract_type_en: 'Manufacturing', location_fa: 'اهواز', location_en: 'Ahvaz', year: 1404, status: 'in_progress', summary_fa: '', summary_en: '', description_fa: '', description_en: '', cover_image: '/storage/hero/hero-rig.jpg', is_featured: true })}
             className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)"
           >
             <Plus className="h-4 w-4" />
@@ -192,24 +342,128 @@ export const ProjectsAdminPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Category Chips with Color */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {categories.map((c) => (
-          <div key={c.id} className="flex items-center justify-between rounded-xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3.5 shadow-(--theme-card-shadow)">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="h-3.5 w-3.5 rounded shrink-0" style={{ backgroundColor: c.color }} />
-              <span className="truncate text-xs font-bold text-(--theme-text)">{c.name_fa}</span>
+      <section className="overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface) shadow-(--theme-card-shadow)">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <button
+            type="button"
+            aria-label={categoriesExpanded ? 'بستن فهرست دسته‌بندی‌های فنی' : 'نمایش فهرست دسته‌بندی‌های فنی'}
+            aria-expanded={categoriesExpanded}
+            aria-controls="project-category-manager"
+            onClick={() => setCategoriesExpanded((expanded) => !expanded)}
+            className="flex min-w-0 flex-1 items-center gap-2 text-start"
+          >
+            <ChevronDown className={`h-4 w-4 shrink-0 text-(--theme-text-muted) transition-transform ${categoriesExpanded ? 'rotate-180' : ''}`} />
+            <span className="font-bold text-(--theme-text)">دسته‌بندی‌های فنی</span>
+            <span className="rounded-full bg-(--theme-surface-muted) px-2 py-0.5 text-xs text-(--theme-text-muted)">{categoryTotal}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCatModal({ name_fa: '', name_en: '', slug: `cat-${Date.now()}`, icon: 'Layers', color: '#B91C1C' })}
+            className="inline-flex items-center gap-1 rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-xs font-semibold text-(--theme-text) transition-colors hover:bg-(--theme-surface-muted)"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            دسته فنی جدید
+          </button>
+        </div>
+        {categoriesExpanded && (
+          <div id="project-category-manager" className="space-y-4 border-t border-(--theme-border) p-4">
+            <div className="relative max-w-md">
+              <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
+              <input
+                type="search"
+                value={categorySearch}
+                onChange={(event) => {
+                  setCategorySearch(event.target.value);
+                  setCategoryPage(1);
+                }}
+                placeholder="جست‌وجوی دسته فنی..."
+                aria-label="جست‌وجوی دسته‌بندی فنی"
+                className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) py-2 pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition-colors focus:border-(--theme-primary)"
+              />
             </div>
-            <button type="button" onClick={() => setCatModal(c)} className="text-xs font-semibold text-(--theme-primary-ink) hover:underline shrink-0">ویرایش</button>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {categoryLoading ? (
+                Array.from({ length: 4 }, (_, index) => (
+                  <div key={index} className="h-[68px] animate-pulse rounded-lg border border-(--theme-border) bg-(--theme-surface-muted)" />
+                ))
+              ) : categories.length ? categories.map((category) => (
+                <div key={category.id} className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-(--theme-border) bg-(--theme-surface) p-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: category.color }} />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-(--theme-text)">{category.name_fa}</p>
+                      <p dir="ltr" className="truncate text-[10px] text-(--theme-text-muted)">{category.slug}</p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setCatModal(category)} className="shrink-0 rounded p-1.5 text-(--theme-primary-ink) transition-colors hover:bg-(--theme-surface-muted)" aria-label={`ویرایش دسته ${category.name_fa}`}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )) : (
+                <p className="col-span-full py-4 text-center text-sm text-(--theme-text-muted)">
+                  {appliedCategorySearch ? 'دسته‌ای با این جست‌وجو پیدا نشد.' : 'هنوز دسته‌بندی فنی ثبت نشده است.'}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col items-center justify-between gap-2 border-t border-(--theme-border) pt-3 sm:flex-row">
+              <p className="text-xs text-(--theme-text-muted)">
+                نمایش {categories.length ? (categoryPage - 1) * CATEGORY_PAGE_SIZE + 1 : 0} تا {Math.min(categoryPage * CATEGORY_PAGE_SIZE, categoryTotal)} از {categoryTotal} دسته
+              </p>
+              <Pagination page={categoryPage} lastPage={categoryLastPage} onChange={setCategoryPage} />
+            </div>
           </div>
-        ))}
-      </div>
+        )}
+      </section>
 
-      <DataTable data={projects} columns={cols} pageSize={8} loading={loading} searchKeys={[(p) => p.title_fa, (p) => p.client_name_fa, (p) => p.contract_number]} />
-      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      <section className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
+            <input
+              type="search"
+              value={projectSearch}
+              onChange={(event) => {
+                setProjectSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="جست‌وجوی عنوان، دسته، کارفرما یا قرارداد..."
+              aria-label="جست‌وجوی پروژه‌ها"
+              className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) py-2 pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition-colors focus:border-(--theme-primary)"
+            />
+          </div>
+          <label className="flex shrink-0 items-center gap-2 text-xs text-(--theme-text-muted)">
+            تعداد در هر صفحه
+            <select
+              value={perPage}
+              onChange={(event) => {
+                setPerPage(Number(event.target.value));
+                setPage(1);
+              }}
+              aria-label="تعداد پروژه در هر صفحه"
+              className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-2 text-sm text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
+            >
+              {PROJECT_PAGE_SIZES.map((size) => <option key={size} value={size}>{size}</option>)}
+            </select>
+          </label>
+        </div>
+        <DataTable data={projects} columns={cols} pageSize={perPage} loading={loading} emptyText={appliedProjectSearch ? 'پروژه‌ای با این جست‌وجو پیدا نشد.' : 'هنوز پروژه‌ای ثبت نشده است.'} />
+        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
+          <p className="text-xs text-(--theme-text-muted)">
+            نمایش {projectTotal ? (page - 1) * perPage + 1 : 0} تا {Math.min(page * perPage, projectTotal)} از {projectTotal} پروژه
+          </p>
+          <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+        </div>
+      </section>
 
-      <Modal open={Boolean(editing)} onClose={() => setEditing(null)} title={editing?.id ? 'ویرایش پروژه' : 'افزودن پروژه جدید'} size="lg">
-        {editing && (
+      <Modal
+        open={Boolean(editing) || editingLoading}
+        onClose={closeProjectEditor}
+        title={editingLoading ? 'بارگذاری پروژه' : editing?.id ? 'ویرایش پروژه' : 'افزودن پروژه جدید'}
+        size="lg"
+      >
+        {editingLoading ? (
+          <div className="py-12 text-center text-sm text-(--theme-text-muted)" role="status">در حال بارگذاری جزئیات پروژه...</div>
+        ) : editing && (
           <form onSubmit={saveProject} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
@@ -229,9 +483,19 @@ export const ProjectsAdminPage: React.FC = () => {
             <div className="grid gap-4 sm:grid-cols-3">
               <SearchableSelect
                 label="دسته فنی"
-                options={categories.map((c) => ({ value: String(c.id), label: c.name_fa }))}
+                options={projectCategoryOptions}
                 value={String(editing.category_id || '')}
-                onChange={(v) => setEditing({ ...editing, category_id: Number(v) })}
+                onChange={(v) => {
+                  const selectedCategory = categoryOptions.find((category) => category.id === Number(v));
+                  setEditing({
+                    ...editing,
+                    category_id: Number(v),
+                    ...(selectedCategory ? { category: selectedCategory } : {}),
+                  });
+                }}
+                serverSearch
+                onSearchChange={setCategorySelectSearch}
+                searchLoading={categoryOptionsLoading}
               />
               <div>
                 <label className="mb-1 block text-xs font-medium text-(--theme-text)">کارفرما</label>

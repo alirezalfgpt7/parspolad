@@ -189,7 +189,7 @@
   --theme-header-text: var(--landing-header-text);
   --theme-header-ink: var(--landing-header-ink);
   --theme-header-border: var(--landing-header-border);
-  border-radius: var(--landing-header-radius);
+  border-radius: 0;
 }
 
 .public-header-shell--landing::before {
@@ -210,7 +210,7 @@
 }
 
 :root[data-landing-header-style="glass"] .public-header-shell--landing::before {
-  background: color-mix(in srgb, var(--landing-header-bg) 88%, transparent);
+  background: color-mix(in srgb, var(--landing-header-bg) 72%, transparent);
   backdrop-filter: saturate(175%) blur(var(--landing-header-blur));
   -webkit-backdrop-filter: saturate(175%) blur(var(--landing-header-blur));
 }
@@ -315,13 +315,13 @@ textarea::placeholder {
 }
 
 .admin-shell {
-  --admin-sidebar-overlap: 7rem;
+  --admin-sidebar-overlap: 0;
   background-color: var(--theme-bg);
   color: var(--theme-text);
 }
 
 .admin-shell[data-sidebar-mini="true"] {
-  --admin-sidebar-overlap: 2.5rem;
+  --admin-sidebar-overlap: 0;
 }
 
 .admin-shell .admin-sidebar {

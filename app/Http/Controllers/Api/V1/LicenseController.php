@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\License\StoreLicenseRequest;
+use App\Http\Resources\AdminLicenseListResource;
 use App\Http\Resources\LicenseResource;
 use App\Models\License;
 use App\Services\PrivateMediaStorageService;
@@ -24,11 +25,36 @@ class LicenseController extends Controller
 
     public function adminIndex(Request $request): AnonymousResourceCollection
     {
-        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+        $filters = $request->validate([
+            'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'sort_by' => ['sometimes', 'in:code,title_fa,issuer_fa,issue_date,category'],
+            'sort_dir' => ['sometimes', 'in:asc,desc'],
+        ]);
+        $query = License::query();
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $query->where(fn ($sub) => $sub
+                ->where('code', 'like', "%{$search}%")
+                ->orWhere('title_fa', 'like', "%{$search}%")
+                ->orWhere('title_en', 'like', "%{$search}%")
+                ->orWhere('issuer_fa', 'like', "%{$search}%")
+                ->orWhere('issuer_en', 'like', "%{$search}%"));
+        }
 
-        return LicenseResource::collection(
-            License::query()->orderBy('id')->paginate($perPage)->withQueryString(),
+        return AdminLicenseListResource::collection(
+            $query
+                ->orderBy($filters['sort_by'] ?? 'issue_date', $filters['sort_dir'] ?? 'desc')
+                ->orderByDesc('id')
+                ->paginate((int) ($filters['per_page'] ?? 10))
+                ->withQueryString(),
         );
+    }
+
+    public function adminShow(License $license): LicenseResource
+    {
+        return new LicenseResource($license);
     }
 
     public function store(StoreLicenseRequest $request, PrivateMediaStorageService $storage): JsonResponse

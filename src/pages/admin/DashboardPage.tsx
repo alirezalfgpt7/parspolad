@@ -83,8 +83,8 @@ export const DashboardPage: React.FC = () => {
 
   const cards = [
     { label: 'پروژه‌های ثبت‌شده', val: data.stats.projects_count, icon: FolderKanban, to: '/admin/projects' },
-    { label: 'قراردادهای ثبت‌شده', val: data.stats.contracts_count, icon: FileSpreadsheet, to: '/admin/contracts-licenses' },
-    { label: 'گواهینامه‌ها و استانداردها', val: data.stats.licenses_count, icon: Award, to: '/admin/contracts-licenses' },
+    { label: 'قراردادهای ثبت‌شده', val: data.stats.contracts_count, icon: FileSpreadsheet, to: '/admin/contracts' },
+    { label: 'گواهینامه‌ها و استانداردها', val: data.stats.licenses_count, icon: Award, to: '/admin/licenses' },
     { label: 'پیام‌ها و RFQ جدید', val: data.stats.new_messages_count, icon: MessageSquare, to: '/admin/messages' },
   ];
 

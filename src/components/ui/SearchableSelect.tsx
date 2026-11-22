@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronDown, Search, X } from 'lucide-react';
+import { Check, ChevronDown, LoaderCircle, Search, X } from 'lucide-react';
 import { cn } from '../../utils/i18n.ts';
 
 export interface SelectOption {
@@ -18,6 +18,9 @@ interface SearchableSelectProps {
   allowClear?: boolean;
   className?: string;
   disabled?: boolean;
+  serverSearch?: boolean;
+  onSearchChange?: (query: string) => void;
+  searchLoading?: boolean;
 }
 
 export const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -30,6 +33,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   allowClear = false,
   className,
   disabled = false,
+  serverSearch = false,
+  onSearchChange,
+  searchLoading = false,
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -42,6 +48,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   );
 
   const filtered = useMemo(() => {
+    if (serverSearch) return options;
     const q = query.trim().toLowerCase();
     if (!q) return options;
     return options.filter(
@@ -49,7 +56,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         o.label.toLowerCase().includes(q) ||
         (o.sublabel && o.sublabel.toLowerCase().includes(q))
     );
-  }, [options, query]);
+  }, [options, query, serverSearch]);
 
   useEffect(() => {
     const onOutside = (e: MouseEvent) => {
@@ -64,10 +71,12 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   useEffect(() => {
     if (open) {
       setTimeout(() => searchRef.current?.focus(), 20);
+      onSearchChange?.('');
     } else {
       setQuery('');
+      onSearchChange?.('');
     }
-  }, [open]);
+  }, [open, onSearchChange]);
 
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}>
@@ -119,18 +128,27 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         >
           {/* Mandatory Search Box on the First Row */}
           <div className="flex items-center gap-2 border-b border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2">
-            <Search className="h-4 w-4 shrink-0 text-(--theme-placeholder)" />
+            {searchLoading
+              ? <LoaderCircle className="h-4 w-4 shrink-0 animate-spin text-(--theme-placeholder)" />
+              : <Search className="h-4 w-4 shrink-0 text-(--theme-placeholder)" />}
             <input
               ref={searchRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                onSearchChange?.(e.target.value);
+              }}
               placeholder={searchPlaceholder}
               className="w-full bg-transparent text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) focus:outline-none"
             />
           </div>
           <ul className="max-h-60 overflow-y-auto py-1">
-            {filtered.length === 0 ? (
+            {searchLoading ? (
+              <li className="px-3 py-3 text-center text-xs text-(--theme-text-muted)" role="status">
+                در حال جست‌وجو...
+              </li>
+            ) : filtered.length === 0 ? (
               <li className="px-3 py-3 text-center text-xs text-(--theme-text-muted)">
                 موردی یافت نشد
               </li>

@@ -264,12 +264,9 @@
 .effect-navbar-control {
   border: 1px solid var(--mode-glass-border);
   border-radius: 10px;
-  background:
-    linear-gradient(145deg, var(--mode-glass-highlight), transparent 70%),
-    var(--mode-glass-bg);
-  color: var(--theme-header-text);
+  background: var(--mode-glass-bg);
+  color: var(--mode-text);
   box-shadow:
-    inset 0 1px var(--mode-glass-highlight),
     0 5px 14px var(--mode-control-shadow);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -285,14 +282,11 @@
 .effect-navbar-control:hover,
 .effect-navbar-control:focus-visible {
   outline: none;
-  border-color: var(--theme-header-text);
-  background:
-    linear-gradient(145deg, var(--mode-glass-highlight), transparent 70%),
-    var(--mode-glass-bg);
-  color: var(--theme-header-text);
+  border-color: var(--mode-text);
+  background: var(--mode-glass-bg);
+  color: var(--mode-text);
   transform: translateY(-1px);
   box-shadow:
-    inset 0 1px rgb(255 255 255 / 38%),
     0 8px 18px color-mix(in srgb, var(--theme-primary) 18%, transparent);
 }
 

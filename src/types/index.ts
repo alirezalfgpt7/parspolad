@@ -204,7 +204,7 @@ export interface Contract {
   client_en: string;
   amount_billion_irr: number;
   start_year: number;
-  end_year?: number;
+  end_year?: number | null;
   status: ContractStatus;
   scope_fa: string;
   scope_en: string;
@@ -220,7 +220,7 @@ export interface License {
   issuer_fa: string;
   issuer_en: string;
   issue_date: string;
-  expiry_date?: string;
+  expiry_date?: string | null;
   category: 'iso' | 'api' | 'knowledge_based' | 'association';
   image_url: string;
   document_url?: string;

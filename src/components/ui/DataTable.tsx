@@ -6,6 +6,7 @@ export interface Column<T> {
   key: string;
   header: string;
   align?: 'start' | 'end' | 'center';
+  className?: string;
   sortValue?: (row: T) => string | number;
   render: (row: T) => React.ReactNode;
 }
@@ -65,24 +66,26 @@ export function DataTable<T>({
 
   return (
     <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) shadow-(--theme-card-shadow)">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--theme-border) p-4">
-        {searchKeys?.length ? (
-          <div className="relative min-w-[240px] flex-1 max-w-sm">
-            <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setPage(1);
-              }}
-              placeholder={searchPlaceholder}
-              className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) py-2 pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) focus:border-(--theme-primary) focus:outline-none"
-            />
-          </div>
-        ) : <div />}
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-      </div>
+      {(searchKeys?.length || actions) && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--theme-border) p-4">
+          {searchKeys?.length ? (
+            <div className="relative min-w-[240px] flex-1 max-w-sm">
+              <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder={searchPlaceholder}
+                className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) py-2 pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) focus:border-(--theme-primary) focus:outline-none"
+              />
+            </div>
+          ) : null}
+          {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        </div>
+      )}
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm tabular-nums">
@@ -91,7 +94,7 @@ export function DataTable<T>({
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-${col.align || 'start'} whitespace-nowrap`}
+                  className={`px-4 py-3 text-${col.align || 'start'} whitespace-nowrap ${col.className || ''}`}
                 >
                   {col.sortValue ? (
                     <button
@@ -139,7 +142,7 @@ export function DataTable<T>({
                   className="transition-colors hover:bg-(--theme-surface-muted)"
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className={`px-4 py-3 text-${col.align || 'start'}`}>
+                    <td key={col.key} className={`px-4 py-3 text-${col.align || 'start'} ${col.className || ''}`}>
                       {col.render(row)}
                     </td>
                   ))}

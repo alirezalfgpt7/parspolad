@@ -81,6 +81,39 @@ it('paginates the administrative project list', function (): void {
     ->assertJsonPath('meta.current_page', 1);
 });
 
+it('searches administrative projects by category and returns a lean paginated row', function (): void {
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
+    $category = ProjectCategory::query()->create([
+        'slug' => 'admin-search-category',
+        'name_fa' => 'دسته فنی ویژه جست‌وجو',
+        'name_en' => 'Unique search category',
+        'icon' => 'Layers',
+        'color' => '#123456',
+    ]);
+    $project = Project::factory()->create([
+        'category_id' => $category->id,
+        'title_fa' => 'پروژه با شرح طولانی',
+        'description_fa' => str_repeat('شرح فنی ', 100),
+    ]);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/admin/projects?q='.urlencode($category->name_fa).'&per_page=1')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $project->id)
+        ->assertJsonPath('data.0.category.name_fa', $category->name_fa)
+        ->assertJsonPath('meta.per_page', 1)
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonMissingPath('data.0.description_fa');
+
+    $this->withToken($token)
+        ->getJson('/api/v1/admin/projects/'.$project->id)
+        ->assertOk()
+        ->assertJsonPath('data.id', $project->id)
+        ->assertJsonPath('data.description_fa', $project->description_fa);
+});
+
 it('returns live project status totals without contract value on the dashboard', function (): void {
     Project::factory()->count(2)->create(['status' => ProjectStatusEnum::IN_PROGRESS->value]);
 

@@ -6,6 +6,7 @@ use App\Exports\ProjectsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
+use App\Http\Resources\AdminProjectListResource;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Models\ProjectCategory;
@@ -115,11 +116,41 @@ class ProjectController extends Controller
 
     public function adminIndex(Request $request): AnonymousResourceCollection
     {
-        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+        $filters = $request->validate([
+            'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'category_id' => ['sometimes', 'nullable', 'integer', 'exists:project_categories,id'],
+            'per_page' => ['sometimes', 'integer', 'between:1,100'],
+        ]);
+        $query = Project::query()->with('category:id,slug,name_fa,name_en,icon,color');
 
-        return ProjectResource::collection(
-            Project::query()->with('category')->orderByDesc('year')->paginate($perPage)->withQueryString(),
+        if (! empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        }
+
+        if (($search = trim((string) ($filters['q'] ?? ''))) !== '') {
+            $query->where(function ($searchQuery) use ($search): void {
+                $searchQuery
+                    ->where('title_fa', 'like', "%{$search}%")
+                    ->orWhere('title_en', 'like', "%{$search}%")
+                    ->orWhere('client_name_fa', 'like', "%{$search}%")
+                    ->orWhere('client_name_en', 'like', "%{$search}%")
+                    ->orWhere('contract_number', 'like', "%{$search}%")
+                    ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery
+                        ->where('name_fa', 'like', "%{$search}%")
+                        ->orWhere('name_en', 'like', "%{$search}%"));
+            });
+        }
+
+        $perPage = $filters['per_page'] ?? 10;
+
+        return AdminProjectListResource::collection(
+            $query->orderByDesc('year')->orderByDesc('id')->paginate($perPage)->withQueryString(),
         );
+    }
+
+    public function adminShow(Project $project): ProjectResource
+    {
+        return new ProjectResource($project->load('category'));
     }
 
     public function show(string $slug): JsonResponse

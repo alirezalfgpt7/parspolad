@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Exports\ContractsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contract\StoreContractRequest;
+use App\Http\Resources\AdminContractListResource;
 use App\Http\Resources\ContractResource;
 use App\Models\Contract;
 use App\Services\PrivateMediaStorageService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ContractController extends Controller
@@ -26,11 +27,36 @@ class ContractController extends Controller
 
     public function adminIndex(Request $request): AnonymousResourceCollection
     {
-        $perPage = min(max($request->integer('per_page', 8), 1), 100);
+        $filters = $request->validate([
+            'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'sort_by' => ['sometimes', 'in:start_year,contract_number,title_fa,client_fa,amount_billion_irr,status'],
+            'sort_dir' => ['sometimes', 'in:asc,desc'],
+        ]);
+        $query = Contract::query();
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $query->where(fn ($sub) => $sub
+                ->where('contract_number', 'like', "%{$search}%")
+                ->orWhere('title_fa', 'like', "%{$search}%")
+                ->orWhere('title_en', 'like', "%{$search}%")
+                ->orWhere('client_fa', 'like', "%{$search}%")
+                ->orWhere('client_en', 'like', "%{$search}%"));
+        }
 
-        return ContractResource::collection(
-            Contract::query()->orderByDesc('start_year')->paginate($perPage)->withQueryString(),
+        return AdminContractListResource::collection(
+            $query
+                ->orderBy($filters['sort_by'] ?? 'start_year', $filters['sort_dir'] ?? 'desc')
+                ->orderByDesc('id')
+                ->paginate((int) ($filters['per_page'] ?? 10))
+                ->withQueryString(),
         );
+    }
+
+    public function adminShow(Contract $contract): ContractResource
+    {
+        return new ContractResource($contract);
     }
 
     public function store(StoreContractRequest $request, PrivateMediaStorageService $storage): JsonResponse
