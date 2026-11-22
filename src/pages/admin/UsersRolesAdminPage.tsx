@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pencil, Plus, Shield, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Shield, Trash2, Users } from 'lucide-react';
 import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -7,6 +7,7 @@ import type { Role, User } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 interface UserForm {
   name: string;
@@ -26,7 +27,7 @@ interface RoleForm {
 const emptyUser: UserForm = { name: '', email: '', phone: '', role: '', password: '' };
 const emptyRole: RoleForm = { name: '', label_fa: '', label_en: '', permissions: [] };
 const systemRoles = ['super-admin', 'admin', 'editor', 'project_manager', 'client', 'content-manager', 'operator', 'user'];
-const USER_PAGE_SIZES = [10, 20, 50] as const;
+const USER_PAGE_SIZES = [5, 10, 20, 50] as const;
 const isSuperAdminRole = (role?: string): boolean => ['super-admin', 'super_admin'].includes(role ?? '');
 const userFormSchema = z.object({
   name: z.string().trim().min(1, 'نام کاربر الزامی است.').max(120),
@@ -48,7 +49,7 @@ export const UsersRolesAdminPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [userTotal, setUserTotal] = useState(0);
-  const [perPage, setPerPage] = useState<number>(USER_PAGE_SIZES[0]);
+  const [perPage, setPerPage] = useState<number>(10);
   const [userSearch, setUserSearch] = useState('');
   const [appliedUserSearch, setAppliedUserSearch] = useState('');
   const [userSortBy, setUserSortBy] = useState('name');
@@ -289,9 +290,10 @@ export const UsersRolesAdminPage: React.FC = () => {
 
   const userCols: Column<User>[] = [
     { key: 'name', sortKey: 'name', header: 'نام کاربر', render: (user) => <span className="font-bold">{user.name}</span> },
-    { key: 'email', sortKey: 'email', header: 'ایمیل', render: (user) => <span dir="ltr" className="text-xs">{user.email}</span> },
+    { key: 'email', sortKey: 'email', hideable: true, header: 'ایمیل', render: (user) => <span dir="ltr" className="text-xs">{user.email}</span> },
     {
       key: 'role',
+      hideable: true,
       header: 'نقش کاربری',
       render: (user) => (
         <div className="w-44">
@@ -314,6 +316,7 @@ export const UsersRolesAdminPage: React.FC = () => {
     },
     {
       key: 'active',
+      hideable: true,
       header: 'وضعیت',
       render: (user) => (
         <button
@@ -358,6 +361,11 @@ export const UsersRolesAdminPage: React.FC = () => {
   ];
 
   const permissionRows = permissions.map((permission) => ({ permission }));
+  const permissionSearchKeys = [
+    (row: { permission: string }) => row.permission,
+    (row: { permission: string }) => permissionNamesFa[row.permission] || '',
+    (row: { permission: string }) => permissionNamesEn[row.permission] || '',
+  ];
   const permissionColumns: Column<{ permission: string }>[] = [
     {
       key: 'permission',
@@ -380,6 +388,8 @@ export const UsersRolesAdminPage: React.FC = () => {
     },
     ...roles.map((role): Column<{ permission: string }> => ({
       key: `role-${role.id}`,
+      hideable: true,
+      visibilityLabel: role.label_fa,
       header: (
         <div className="min-w-28">
           <span>{role.label_fa}</span>
@@ -416,13 +426,18 @@ export const UsersRolesAdminPage: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت کاربران سامانه</h1>
-          <button type="button" onClick={openNewUser} className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">
-            <Plus className="h-4 w-4" />
-            <span>کاربر جدید</span>
-          </button>
-        </div>
+        <AdminPageHeader
+          icon={Users}
+          eyebrow="User management"
+          title="مدیریت کاربران سامانه"
+          description="حساب‌های کاربری، نقش‌ها و دسترسی‌های سامانه را مدیریت کنید."
+          actions={(
+            <button type="button" onClick={openNewUser} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-sm font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">
+              <Plus className="h-4 w-4" />
+              <span>کاربر جدید</span>
+            </button>
+          )}
+        />
         <DataTable
           data={users}
           columns={userCols}
@@ -469,21 +484,36 @@ export const UsersRolesAdminPage: React.FC = () => {
         <DataTable
           data={permissionRows}
           columns={permissionColumns}
+          searchKeys={permissionSearchKeys}
+          searchPlaceholder="جست‌وجوی عنوان یا شناسهٔ دسترسی..."
+          searchLabel="جست‌وجوی دسترسی‌ها"
           rowKey={(row) => row.permission}
           tableLabel="ماتریس نقش‌ها و دسترسی‌ها"
-          pageSize={Math.max(permissionRows.length, 1)}
-          pageSizeOptions={[]}
+          pageSize={10}
+          pageSizeOptions={USER_PAGE_SIZES}
           emptyText="دسترسی‌ای برای نمایش وجود ندارد."
         />
       </div>
 
       <Modal open={userModalOpen} onClose={() => setUserModalOpen(false)} title={editingUser ? 'ویرایش کاربر' : 'ایجاد کاربر جدید'} size="md">
         <form onSubmit={saveUser} className="space-y-3">
-          <input required maxLength={120} placeholder="نام و نام خانوادگی" value={userForm.name} onChange={(event) => setUserForm({ ...userForm, name: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
-          <input required type="email" dir="ltr" placeholder="email@company.ir" value={userForm.email} onChange={(event) => setUserForm({ ...userForm, email: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
-          <input dir="ltr" maxLength={30} placeholder="شماره تماس" value={userForm.phone} onChange={(event) => setUserForm({ ...userForm, phone: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+            <span className="block">نام و نام خانوادگی *</span>
+            <input required maxLength={120} placeholder="نام و نام خانوادگی" value={userForm.name} onChange={(event) => setUserForm({ ...userForm, name: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          </label>
+          <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+            <span className="block">ایمیل *</span>
+            <input required type="email" dir="ltr" placeholder="email@company.ir" value={userForm.email} onChange={(event) => setUserForm({ ...userForm, email: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          </label>
+          <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+            <span className="block">شماره تماس (اختیاری)</span>
+            <input dir="ltr" maxLength={30} placeholder="شماره تماس" value={userForm.phone} onChange={(event) => setUserForm({ ...userForm, phone: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          </label>
           <SearchableSelect label="نقش" options={roles.map((role) => ({ value: role.name, label: role.label_fa }))} value={userForm.role} onChange={(role) => setUserForm({ ...userForm, role })} />
-          <input required={!editingUser} minLength={8} type="password" dir="ltr" autoComplete="new-password" placeholder={editingUser ? 'رمز عبور جدید (اختیاری)' : 'رمز عبور (حداقل ۸ کاراکتر)'} value={userForm.password} onChange={(event) => setUserForm({ ...userForm, password: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+            <span className="block">{editingUser ? 'رمز عبور جدید (اختیاری)' : 'رمز عبور *'}</span>
+            <input required={!editingUser} minLength={8} type="password" dir="ltr" autoComplete="new-password" placeholder={editingUser ? 'حداقل ۸ کاراکتر' : 'حداقل ۸ کاراکتر'} value={userForm.password} onChange={(event) => setUserForm({ ...userForm, password: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          </label>
           <button type="submit" className="w-full rounded-lg bg-(--theme-btn-bg) py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">
             {editingUser ? 'ذخیره تغییرات' : 'ایجاد کاربر'}
           </button>
@@ -492,9 +522,20 @@ export const UsersRolesAdminPage: React.FC = () => {
 
       <Modal open={roleModalOpen} onClose={() => { setRoleModalOpen(false); setEditingRole(null); setRoleForm(emptyRole); }} title={editingRole ? 'ویرایش نقش' : 'ایجاد نقش جدید'} size="md">
         <form onSubmit={saveRole} className="space-y-4">
-          {!editingRole && <input required pattern="[a-z][a-z0-9_-]*" maxLength={64} placeholder="شناسه نقش مانند quality-reviewer" value={roleForm.name} onChange={(event) => setRoleForm({ ...roleForm, name: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />}
-          <input required maxLength={120} placeholder="نام فارسی نقش" value={roleForm.label_fa} onChange={(event) => setRoleForm({ ...roleForm, label_fa: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
-          <input required maxLength={120} dir="ltr" placeholder="Role label (English)" value={roleForm.label_en} onChange={(event) => setRoleForm({ ...roleForm, label_en: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          {!editingRole && (
+            <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+              <span className="block">شناسه نقش *</span>
+              <input required pattern="[a-z][a-z0-9_-]*" maxLength={64} dir="ltr" placeholder="quality-reviewer" value={roleForm.name} onChange={(event) => setRoleForm({ ...roleForm, name: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+            </label>
+          )}
+          <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+            <span className="block">نام فارسی نقش *</span>
+            <input required maxLength={120} placeholder="نام فارسی نقش" value={roleForm.label_fa} onChange={(event) => setRoleForm({ ...roleForm, label_fa: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          </label>
+          <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+            <span className="block">نام انگلیسی نقش *</span>
+            <input required maxLength={120} dir="ltr" placeholder="Role label" value={roleForm.label_en} onChange={(event) => setRoleForm({ ...roleForm, label_en: event.target.value })} className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)" />
+          </label>
           <fieldset className="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-(--theme-border) bg-(--theme-surface-muted) p-3">
             <legend className="px-1 text-xs font-semibold text-(--theme-text)">دسترسی‌های نقش</legend>
             {permissions.map((permission) => (

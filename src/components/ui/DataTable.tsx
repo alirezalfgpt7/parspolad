@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Columns3, Search } from 'lucide-react';
 import { Pagination } from './Pagination.tsx';
 
 export type TableSortDirection = 'asc' | 'desc';
@@ -9,6 +9,8 @@ export interface Column<T> {
   header: React.ReactNode;
   align?: 'start' | 'end' | 'center';
   className?: string;
+  hideable?: boolean;
+  visibilityLabel?: string;
   sortKey?: string;
   sortValue?: (row: T) => string | number;
   render: (row: T) => React.ReactNode;
@@ -39,9 +41,11 @@ interface DataTableProps<T> {
   mobileRenderer?: (row: T) => React.ReactNode;
   tableLabel?: string;
   showCount?: boolean;
+  visibleColumnKeys?: string[];
+  onVisibleColumnKeysChange?: (keys: string[]) => void;
 }
 
-const DEFAULT_PAGE_SIZES = [10, 20, 50] as const;
+const DEFAULT_PAGE_SIZES = [5, 10, 20, 50] as const;
 
 export function DataTable<T>({
   data,
@@ -68,18 +72,28 @@ export function DataTable<T>({
   mobileRenderer,
   tableLabel,
   showCount = true,
+  visibleColumnKeys,
+  onVisibleColumnKeysChange,
 }: DataTableProps<T>) {
   const [uncontrolledSearch, setUncontrolledSearch] = useState('');
   const [uncontrolledSortBy, setUncontrolledSortBy] = useState<string | null>(null);
   const [uncontrolledSortDirection, setUncontrolledSortDirection] = useState<TableSortDirection>('asc');
   const [uncontrolledPage, setUncontrolledPage] = useState(1);
   const [uncontrolledPageSize, setUncontrolledPageSize] = useState(pageSize);
+  const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>([]);
   const isRemote = Boolean(onPageChange);
   const query = onSearchChange ? (searchValue ?? '') : uncontrolledSearch;
   const activeSortBy = onSortChange ? sortBy ?? null : uncontrolledSortBy;
   const activeSortDirection = onSortChange ? sortDirection ?? 'asc' : uncontrolledSortDirection;
   const activePage = onPageChange ? currentPage ?? 1 : uncontrolledPage;
   const activePageSize = onPageSizeChange ? pageSize : uncontrolledPageSize;
+  const hideableColumns = columns.filter((column) => column.hideable);
+  const displayedColumns = columns.filter((column) => (
+    !column.hideable
+    || (onVisibleColumnKeysChange
+      ? visibleColumnKeys?.includes(column.key) ?? true
+      : !hiddenColumnKeys.includes(column.key))
+  ));
 
   const filtered = useMemo(() => {
     let rows = data;
@@ -116,7 +130,8 @@ export function DataTable<T>({
   const firstRow = totalRows === 0 ? 0 : (safePage - 1) * activePageSize + 1;
   const lastRow = Math.min(safePage * activePageSize, totalRows);
   const hasSearch = Boolean(onSearchChange || searchKeys?.length);
-  const hasToolbar = hasSearch || Boolean(actions) || pageSizeOptions.length > 0;
+  const hasColumnChooser = hideableColumns.length > 0;
+  const hasToolbar = hasSearch || Boolean(actions) || pageSizeOptions.length > 0 || hasColumnChooser;
 
   const handlePageChange = (nextPage: number) => {
     if (onPageChange) onPageChange(nextPage);
@@ -141,12 +156,28 @@ export function DataTable<T>({
     setUncontrolledPage(1);
   };
 
+  const toggleColumn = (columnKey: string) => {
+    if (onVisibleColumnKeysChange) {
+      const currentVisibleKeys = visibleColumnKeys ?? hideableColumns.map((column) => column.key);
+      onVisibleColumnKeysChange(
+        currentVisibleKeys.includes(columnKey)
+          ? currentVisibleKeys.filter((key) => key !== columnKey)
+          : [...currentVisibleKeys, columnKey],
+      );
+      return;
+    }
+
+    setHiddenColumnKeys((current) => current.includes(columnKey)
+      ? current.filter((key) => key !== columnKey)
+      : [...current, columnKey]);
+  };
+
   const renderTable = (rows: T[], responsive = false) => (
-    <div className={responsive ? 'hidden overflow-x-auto md:block' : 'overflow-x-auto'}>
+    <div className={responsive ? 'hidden overflow-x-auto rounded-t-2xl md:block' : 'overflow-x-auto rounded-t-2xl'}>
       <table aria-label={tableLabel} className="w-full border-collapse text-start text-sm tabular-nums">
         <thead>
           <tr className="border-b border-(--theme-border) bg-(--theme-surface-muted) text-xs font-semibold text-(--theme-text-muted)">
-            {columns.map((column) => {
+            {displayedColumns.map((column) => {
               const sortKey = column.sortKey ?? column.key;
               const sortable = onSortChange ? Boolean(column.sortKey || column.sortValue) : Boolean(column.sortValue);
               const sorted = activeSortBy === sortKey;
@@ -180,7 +211,7 @@ export function DataTable<T>({
           {loading ? (
             Array.from({ length: Math.min(activePageSize, 5) }, (_, index) => (
               <tr key={index} className="animate-pulse">
-                {columns.map((column) => (
+                {displayedColumns.map((column) => (
                   <td key={column.key} className="px-4 py-3.5">
                     <div className="h-4 w-3/4 rounded bg-(--theme-surface-muted)" />
                   </td>
@@ -189,7 +220,7 @@ export function DataTable<T>({
             ))
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-12 text-center text-sm text-(--theme-text-muted)">
+              <td colSpan={displayedColumns.length} className="px-4 py-12 text-center text-sm text-(--theme-text-muted)">
                 {emptyText}
               </td>
             </tr>
@@ -198,7 +229,7 @@ export function DataTable<T>({
               key={rowKey ? rowKey(row) : index}
               className="transition-colors duration-150 hover:bg-(--theme-surface-muted)/70"
             >
-              {columns.map((column) => (
+              {displayedColumns.map((column) => (
                 <td key={column.key} className={`px-4 py-3.5 text-${column.align || 'start'} ${column.className || ''}`}>
                   {column.render(row)}
                 </td>
@@ -211,7 +242,7 @@ export function DataTable<T>({
   );
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) text-(--theme-text) shadow-(--theme-card-shadow)">
+    <section className="relative rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) text-(--theme-text) shadow-(--theme-card-shadow)">
       {hasToolbar && (
         <div className="flex flex-col gap-3 border-b border-(--theme-border) p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-5">
           <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
@@ -245,12 +276,37 @@ export function DataTable<T>({
                     else setUncontrolledPageSize(nextPageSize);
                     handlePageChange(1);
                   }}
-                  className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-2 font-semibold text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
+                  className="min-w-16 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-2 font-semibold text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
                   aria-label="تعداد ردیف در هر صفحه"
                 >
                   {pageSizeOptions.map((size) => <option key={size} value={size}>{size}</option>)}
                 </select>
               </label>
+            )}
+            {hasColumnChooser && (
+              <details className="relative shrink-0">
+                <summary className="flex h-10.5 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 text-xs font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted) [&::-webkit-details-marker]:hidden">
+                  <Columns3 className="h-4 w-4" aria-hidden="true" />
+                  <span>ستون‌ها</span>
+                </summary>
+                <div className="theme-popover absolute inset-s-0 top-full z-50 mt-2 max-h-80 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 text-(--theme-text) shadow-xl">
+                  <p className="px-2 py-1.5 text-xs font-bold text-(--theme-text-muted)">ستون‌های قابل نمایش</p>
+                  {hideableColumns.map((column) => {
+                    const checked = displayedColumns.some((item) => item.key === column.key);
+                    return (
+                      <label key={column.key} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-xs transition hover:bg-(--theme-surface-muted)">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleColumn(column.key)}
+                          className="h-4 w-4 shrink-0 accent-(--theme-primary)"
+                        />
+                        <span className="min-w-0">{column.visibilityLabel ?? column.header}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </details>
             )}
           </div>
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

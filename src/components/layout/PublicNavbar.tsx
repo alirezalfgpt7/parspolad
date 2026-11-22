@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown, Globe, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, Globe, Search, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { BrandLogo } from '../common/BrandLogo.tsx';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
@@ -20,6 +20,7 @@ export const PublicNavbar: React.FC = () => {
   const effectiveColorMode = previewMode || colorMode;
   const { pathname } = useLocation();
   const [activeMegaId, setActiveMegaId] = useState<number | null>(null);
+  const [activeMegaChildId, setActiveMegaChildId] = useState<number | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedMobileMenuId, setExpandedMobileMenuId] = useState<number | null>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -75,11 +76,16 @@ export const PublicNavbar: React.FC = () => {
   };
 
   const activeMegaItem = navItems.find((i) => i.id === activeMegaId && i.children?.length);
+  const activeMegaChild = activeMegaItem?.children?.find((child) => child.id === activeMegaChildId);
+  const activeMegaImage = activeMegaChild?.image?.trim();
 
   return (
     <>
     <header
-      onMouseLeave={() => setActiveMegaId(null)}
+      onMouseLeave={() => {
+        setActiveMegaId(null);
+        setActiveMegaChildId(null);
+      }}
       style={{ color: 'var(--theme-header-text)' }}
       data-scrolled={scrolled}
       className={`public-navbar ${pathname === '/' ? 'public-navbar--landing' : ''} transition-[background-color,box-shadow,backdrop-filter] duration-300 ${
@@ -127,11 +133,18 @@ export const PublicNavbar: React.FC = () => {
             return (
               <div
                 key={item.id}
-                onMouseEnter={() => setActiveMegaId(hasChildren ? item.id : null)}
+                onMouseEnter={() => {
+                  setActiveMegaId(hasChildren ? item.id : null);
+                  setActiveMegaChildId(null);
+                }}
                 className="relative py-4"
               >
                 <EffectNavLink
                   to={item.url}
+                  onFocus={() => {
+                    setActiveMegaId(hasChildren ? item.id : null);
+                    setActiveMegaChildId(null);
+                  }}
                   aria-current={pathname === item.url ? 'page' : undefined}
                   className="!gap-1.5 !py-1 !text-[13px]"
                 >
@@ -194,40 +207,73 @@ export const PublicNavbar: React.FC = () => {
       {activeMegaItem && activeMegaItem.children && (
         <div
           key={activeMegaItem.id}
-          className="theme-popover effect-dropdown-enter hidden border-t border-(--theme-header-border) bg-(--theme-surface) text-(--theme-text) shadow-xl lg:block"
+          style={{
+            backgroundColor: 'color-mix(in srgb, color-mix(in srgb, var(--theme-surface) 78%, white 22%) 94%, transparent)',
+            backdropFilter: 'saturate(170%) blur(16px)',
+            WebkitBackdropFilter: 'saturate(170%) blur(16px)',
+          }}
+          className="theme-popover effect-dropdown-enter absolute left-1/2 top-full z-50 hidden w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 overflow-hidden rounded-b-2xl border-x border-y border-(--theme-header-border) text-(--theme-text) shadow-xl lg:block"
         >
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-8 py-6 sm:grid-cols-2 lg:grid-cols-4">
-            {activeMegaItem.children.map((child, index) => (
-              <div
-                key={child.id}
-                className="effect-dropdown-item"
-                style={{ animationDelay: `${index * 35}ms` }}
-              >
+          <div className="mx-auto grid max-w-5xl gap-3 px-3 py-3 sm:px-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-4">
+            <nav
+              aria-label={language === 'fa' ? `زیرمنوهای ${activeMegaItem.title_fa}` : `${activeMegaItem.title_en} submenu`}
+              className="grid max-h-52 content-center gap-0.5 overflow-y-auto overscroll-contain pe-1"
+            >
+              {activeMegaItem.children.map((child, index) => {
+                  const isPreviewed = activeMegaChild?.id === child.id;
+                  return (
                   <Link
+                    key={child.id}
                     to={child.url}
                     onClick={() => setActiveMegaId(null)}
-                    className="group flex items-start gap-3.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3 transition-colors hover:border-(--theme-primary) hover:bg-(--theme-surface-muted)"
+                    onMouseEnter={() => setActiveMegaChildId(child.id)}
+                    onFocus={() => setActiveMegaChildId(child.id)}
+                    aria-current={pathname === child.url ? 'page' : undefined}
+                    className={`effect-dropdown-item group flex min-h-9 items-center gap-2 rounded-lg px-2.5 py-1.5 transition-colors ${
+                      isPreviewed
+                        ? 'bg-(--theme-surface-muted) text-(--theme-primary-ink)'
+                        : 'text-(--theme-text) hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)'
+                    }`}
+                    style={{ animationDelay: `${index * 35}ms` }}
                   >
-                    <div className="h-16 w-20 shrink-0 overflow-hidden rounded-lg bg-(--theme-surface-muted)">
-                      <ZeroBrokenImage
-                        src={child.image}
-                        alt={language === 'fa' ? child.title_fa : child.title_en}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-sm font-bold text-(--theme-text) group-hover:text-(--theme-primary-ink)">
-                        {language === 'fa' ? child.title_fa : child.title_en}
-                      </div>
-                      {(child.description_fa || child.description_en) && (
-                        <p className="mt-1 line-clamp-2 text-xs text-(--theme-text-muted)">
-                          {language === 'fa' ? child.description_fa : child.description_en}
-                        </p>
-                      )}
-                    </div>
+                    <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-[10px] font-bold ${
+                      isPreviewed ? 'bg-(--theme-primary) text-(--theme-primary-foreground)' : 'bg-(--theme-surface)/60 text-(--theme-text-muted)'
+                    }`}>
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                      {language === 'fa' ? child.title_fa : child.title_en}
+                    </span>
+                    <ChevronLeft className={`h-3.5 w-3.5 shrink-0 transition-opacity ${isPreviewed ? 'opacity-100' : 'opacity-45'}`} aria-hidden="true" />
                   </Link>
+                  );
+              })}
+            </nav>
+            <div className="flex min-w-0 items-center justify-center gap-3 py-1">
+              <ZeroBrokenImage
+                key={activeMegaImage || 'brand-preview'}
+                src={activeMegaImage || '/storage/logos/preloader.gif'}
+                alt={activeMegaChild ? (language === 'fa' ? activeMegaChild.title_fa : activeMegaChild.title_en) : menuBrandName}
+                loading="lazy"
+                className={`h-20 w-28 shrink-0 rounded-lg ${activeMegaImage ? 'object-cover' : 'object-contain'}`}
+              />
+              <div className="min-w-0">
+                {activeMegaChild ? (
+                  <>
+                    <h2 className="truncate text-xs font-bold text-(--theme-text)">
+                      {language === 'fa' ? activeMegaChild.title_fa : activeMegaChild.title_en}
+                    </h2>
+                    {(activeMegaChild.description_fa || activeMegaChild.description_en) && (
+                      <p className="mt-1 line-clamp-3 text-[11px] leading-4 text-(--theme-text-muted)">
+                        {language === 'fa' ? activeMegaChild.description_fa : activeMegaChild.description_en}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs font-semibold text-(--theme-text-muted)">{menuBrandName}</span>
+                )}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}

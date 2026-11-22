@@ -84,6 +84,18 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
             'radius' => 24,
             'blur' => 12,
         ],
+        'public_page_title_settings' => [
+            'background_color' => '#0F172A',
+            'title_color' => '#FFFFFF',
+            'subtitle_color' => '#CBD5E1',
+            'border_color' => '#334155',
+            'wave_color' => '#DC2626',
+            'icon_name' => 'Globe',
+            'icon_color' => '#F8FAFC',
+            'icon_background_color' => '#1E293B',
+            'radius' => 32,
+            'wave_enabled' => true,
+        ],
         'admin_palette' => [
             'primary' => '#0F4C81',
             'secondary' => '#1E293B',
@@ -103,6 +115,8 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
         ->assertJsonPath('landing_button_shape', 'square')
         ->assertJsonPath('landing_header_settings.mode', 'solid')
         ->assertJsonPath('landing_header_settings.radius', 24)
+        ->assertJsonPath('public_page_title_settings.wave_color', '#DC2626')
+        ->assertJsonPath('public_page_title_settings.radius', 32)
         ->assertJsonPath('admin_design_style', 'modern')
         ->assertJsonPath('admin_palette.primary', '#0F4C81')
         ->assertJsonPath('admin_palette.surface', '#FFFFFF')
@@ -113,6 +127,12 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
     $this->withToken($token)->putJson('/api/v1/admin/themes', $invalidHeaderSettings)
         ->assertUnprocessable()
         ->assertJsonValidationErrors('landing_header_settings.radius');
+
+    $invalidPageTitleSettings = $updateTheme->json();
+    $invalidPageTitleSettings['public_page_title_settings']['radius'] = 999;
+    $this->withToken($token)->putJson('/api/v1/admin/themes', $invalidPageTitleSettings)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('public_page_title_settings.radius');
 });
 
 it('requires a valid server-side captcha for login', function (): void {

@@ -158,14 +158,16 @@ export const RfqPage: React.FC = () => {
               error={errors.captcha?.message}
             />
 
-            <button
-              type="submit"
-              disabled={isSubmitting || !captchaKey}
-              style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
-              className="rounded-xl px-6 py-2.5 text-sm font-semibold shadow-xs transition hover:bg-(--theme-btn-hover) disabled:opacity-60"
-            >
-              {isSubmitting ? 'در حال ثبت...' : 'ارسال رسمی درخواست استعلام'}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmitting || !captchaKey}
+                style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
+                className="w-full rounded-xl px-6 py-2.5 text-sm font-semibold shadow-xs transition hover:bg-(--theme-btn-hover) disabled:opacity-60 sm:w-auto"
+              >
+                {isSubmitting ? 'در حال ثبت...' : 'ارسال رسمی درخواست استعلام'}
+              </button>
+            </div>
           </form>
         )}
       </div>

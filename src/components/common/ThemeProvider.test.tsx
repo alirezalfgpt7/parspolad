@@ -7,6 +7,7 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { ThemePreset, ThemeSettings } from '../../types/index.ts';
 import {
   DEFAULT_LANDING_HEADER_SETTINGS,
+  DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS,
   DEFAULT_THEME_PALETTE,
 } from '../../utils/brandingDefaults.ts';
 import { ThemeProvider } from './ThemeProvider.tsx';
@@ -30,6 +31,7 @@ function makeThemeSettings(defaultMode: 'light' | 'dark' = 'light'): ThemeSettin
     landing_button_shape: 'rounded',
     landing_button_effect: 'shimmer',
     landing_header_settings: { ...DEFAULT_LANDING_HEADER_SETTINGS },
+    public_page_title_settings: { ...DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS },
     landing_palette: { ...DEFAULT_THEME_PALETTE },
     admin_design_style: 'modern',
     admin_button_shape: 'rounded',
@@ -142,6 +144,30 @@ describe('ThemeProvider & Theme Studio behavior', () => {
     expect(useAppStore.getState().previewTheme?.landing_header_settings.radius).toBe(27);
     expect(document.documentElement.dataset.themeScope).toBe('admin');
     expect(document.documentElement.style.getPropertyValue('--theme-primary')).toBe('#0F4C81');
+  });
+
+  it('previews public page title settings in the public pages scope', async () => {
+    const savedTheme = makeThemeSettings();
+    mockedApiRequest.mockResolvedValueOnce({
+      settings: savedTheme,
+      presets: [],
+    });
+
+    useAppStore.setState({ bootstrap: { theme: savedTheme } as never });
+    render(
+      <MemoryRouter initialEntries={['/admin/themes']}>
+        <ThemeProvider>
+          <ThemeAdminPage />
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /صفحات عمومی/ }));
+    fireEvent.change(screen.getByRole('slider', { name: 'گردی گوشه‌های سربرگ صفحات عمومی' }), {
+      target: { value: '36' },
+    });
+
+    expect(useAppStore.getState().previewTheme?.public_page_title_settings.radius).toBe(36);
   });
 
   it('toggles colorMode cleanly between dark and light even when previewMode was active', () => {

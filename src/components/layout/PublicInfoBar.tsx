@@ -3,6 +3,7 @@ import { Globe, Moon, Search, Sun } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ExpandingSearchEffect } from '../effects/index.ts';
 import { DynamicLucideIcon } from '../ui/LucideIconMap.tsx';
+import { PersianClockBadge } from '../common/PersianClockBadge.tsx';
 
 const socialNetworks = [
   { key: 'instagram_url', name: 'Instagram', icon: 'Instagram' },
@@ -90,6 +91,7 @@ export const PublicInfoBar: React.FC = () => {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <div className="flex items-center gap-1.5">
+            <PersianClockBadge className="text-(--theme-header-text)" />
             <div className="hidden lg:block">
               <ExpandingSearchEffect
                 placeholder={language === 'fa' ? 'جستجو در سایت...' : 'Search site...'}

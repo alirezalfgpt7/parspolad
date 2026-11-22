@@ -9,6 +9,7 @@ import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 const contractFormSchema = z.object({
   contract_number: z.string().trim().min(1, 'شماره قرارداد الزامی است.').max(120),
@@ -34,7 +35,7 @@ type ContractListRow = Pick<
   Contract,
   'id' | 'contract_number' | 'title_fa' | 'client_fa' | 'amount_billion_irr' | 'start_year' | 'end_year' | 'status'
 >;
-const PAGE_SIZES = [10, 20, 50] as const;
+const PAGE_SIZES = [5, 10, 20, 50] as const;
 
 const statusLabels: Record<Contract['status'], string> = {
   active: 'فعال',
@@ -49,7 +50,7 @@ export const ContractsAdminPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [perPage, setPerPage] = useState<number>(PAGE_SIZES[0]);
+  const [perPage, setPerPage] = useState<number>(10);
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [sortBy, setSortBy] = useState('start_year');
@@ -164,12 +165,13 @@ export const ContractsAdminPage: React.FC = () => {
   const columns: Column<ContractListRow>[] = [
     { key: 'number', sortKey: 'contract_number', header: 'شماره قرارداد', className: 'min-w-[140px]', render: (row) => <span dir="ltr" className="font-mono text-xs">{row.contract_number}</span> },
     { key: 'title', sortKey: 'title_fa', header: 'عنوان قرارداد', className: 'min-w-[180px]', render: (row) => <span className="font-semibold">{row.title_fa}</span> },
-    { key: 'client', sortKey: 'client_fa', header: 'کارفرما', className: 'hidden md:table-cell min-w-[140px]', render: (row) => row.client_fa },
-    { key: 'amount', sortKey: 'amount_billion_irr', header: 'مبلغ (میلیارد ریال)', className: 'hidden lg:table-cell whitespace-nowrap', render: (row) => Number(row.amount_billion_irr).toLocaleString('fa-IR') },
-    { key: 'years', sortKey: 'start_year', header: 'مدت قرارداد', className: 'whitespace-nowrap', render: (row) => `${row.start_year}${row.end_year ? ` تا ${row.end_year}` : ' به بعد'}` },
+    { key: 'client', sortKey: 'client_fa', hideable: true, header: 'کارفرما', className: 'hidden md:table-cell min-w-[140px]', render: (row) => row.client_fa },
+    { key: 'amount', sortKey: 'amount_billion_irr', hideable: true, header: 'مبلغ (میلیارد ریال)', className: 'hidden lg:table-cell whitespace-nowrap', render: (row) => Number(row.amount_billion_irr).toLocaleString('fa-IR') },
+    { key: 'years', sortKey: 'start_year', hideable: true, header: 'مدت قرارداد', className: 'whitespace-nowrap', render: (row) => `${row.start_year}${row.end_year ? ` تا ${row.end_year}` : ' به بعد'}` },
     {
       key: 'status',
       sortKey: 'status',
+      hideable: true,
       header: 'وضعیت',
       className: 'hidden sm:table-cell whitespace-nowrap',
       render: (row) => <span className="rounded-full bg-(--theme-surface-muted) px-2.5 py-1 text-xs">{statusLabels[row.status]}</span>,
@@ -193,38 +195,34 @@ export const ContractsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-5 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div className="flex min-w-0 items-start gap-4">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-(--theme-primary)/10 text-(--theme-primary-ink)">
-            <FileSpreadsheet className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--theme-primary-ink)">Contracts workspace</p>
-            <h1 className="mt-1 text-lg font-black text-(--theme-text) sm:text-xl">مدیریت قراردادها</h1>
-            <p className="mt-1.5 max-w-2xl text-xs leading-6 text-(--theme-text-muted)">جست‌وجو، مرتب‌سازی و مدیریت قراردادها با بارگذاری صفحه‌ای.</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setContractModal({
-            contract_number: '',
-            title_fa: '',
-            title_en: '',
-            client_fa: '',
-            client_en: '',
-            amount_billion_irr: 0,
-            start_year: 1404,
-            status: 'active',
-            scope_fa: '',
-            scope_en: '',
-            requires_auth: false,
-          })}
-          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-5 py-2.5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover)"
-        >
-          <Plus className="h-4 w-4" />
-          ثبت قرارداد
-        </button>
-      </header>
+      <AdminPageHeader
+        icon={FileSpreadsheet}
+        eyebrow="Contracts workspace"
+        title="مدیریت قراردادها"
+        description="جست‌وجو، مرتب‌سازی و مدیریت قراردادها با بارگذاری صفحه‌ای."
+        actions={(
+          <button
+            type="button"
+            onClick={() => setContractModal({
+              contract_number: '',
+              title_fa: '',
+              title_en: '',
+              client_fa: '',
+              client_en: '',
+              amount_billion_irr: 0,
+              start_year: 1404,
+              status: 'active',
+              scope_fa: '',
+              scope_en: '',
+              requires_auth: false,
+            })}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-5 py-2.5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover)"
+          >
+            <Plus className="h-4 w-4" />
+            ثبت قرارداد
+          </button>
+        )}
+      />
 
       <DataTable
         data={contracts}
@@ -262,29 +260,54 @@ export const ContractsAdminPage: React.FC = () => {
       <Modal open={Boolean(contractModal) || editorLoading} onClose={closeEditor} title={editorLoading ? 'بارگذاری قرارداد' : contractModal?.id ? 'ویرایش قرارداد' : 'ثبت قرارداد جدید'} size="md">
         {editorLoading ? <InlineLoader label="در حال دریافت جزئیات قرارداد..." /> : contractModal && (
           <form onSubmit={saveContract} className="space-y-3">
-            <input required placeholder="شماره قرارداد" value={contractModal.contract_number || ''} onChange={(event) => setContractModal({ ...contractModal, contract_number: event.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-            <input required placeholder="عنوان قرارداد" value={contractModal.title_fa || ''} onChange={(event) => setContractModal({ ...contractModal, title_fa: event.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-            <input required placeholder="عنوان انگلیسی قرارداد" value={contractModal.title_en || ''} onChange={(event) => setContractModal({ ...contractModal, title_en: event.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-            <input required placeholder="کارفرما" value={contractModal.client_fa || ''} onChange={(event) => setContractModal({ ...contractModal, client_fa: event.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-            <input required placeholder="کارفرما (انگلیسی)" value={contractModal.client_en || ''} onChange={(event) => setContractModal({ ...contractModal, client_en: event.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+              <span className="block">شماره قرارداد *</span>
+              <input required value={contractModal.contract_number || ''} onChange={(event) => setContractModal({ ...contractModal, contract_number: event.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
+            <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+              <span className="block">عنوان قرارداد (فارسی) *</span>
+              <input required value={contractModal.title_fa || ''} onChange={(event) => setContractModal({ ...contractModal, title_fa: event.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
+            <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+              <span className="block">عنوان قرارداد (انگلیسی) *</span>
+              <input required value={contractModal.title_en || ''} onChange={(event) => setContractModal({ ...contractModal, title_en: event.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
+            <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+              <span className="block">نام کارفرما (فارسی) *</span>
+              <input required value={contractModal.client_fa || ''} onChange={(event) => setContractModal({ ...contractModal, client_fa: event.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
+            <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
+              <span className="block">نام کارفرما (انگلیسی) *</span>
+              <input required value={contractModal.client_en || ''} onChange={(event) => setContractModal({ ...contractModal, client_en: event.target.value })} dir="ltr" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="text-xs text-(--theme-text-muted)">مبلغ (میلیارد ریال)
-                <input type="number" min={0} value={contractModal.amount_billion_irr ?? 0} onChange={(event) => setContractModal({ ...contractModal, amount_billion_irr: Number(event.target.value) })} className="mt-1 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+              <label className="block space-y-1 text-xs text-(--theme-text-muted)">
+                <span className="block">مبلغ (میلیارد ریال)</span>
+                <input type="number" min={0} value={contractModal.amount_billion_irr ?? 0} onChange={(event) => setContractModal({ ...contractModal, amount_billion_irr: Number(event.target.value) })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
               </label>
-              <label className="text-xs text-(--theme-text-muted)">سال شروع
-                <input required type="number" min={1348} max={1450} value={contractModal.start_year || ''} onChange={(event) => setContractModal({ ...contractModal, start_year: Number(event.target.value) })} className="mt-1 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+              <label className="block space-y-1 text-xs text-(--theme-text-muted)">
+                <span className="block">سال شروع *</span>
+                <input required type="number" min={1348} max={1450} value={contractModal.start_year || ''} onChange={(event) => setContractModal({ ...contractModal, start_year: Number(event.target.value) })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
               </label>
-              <label className="text-xs text-(--theme-text-muted)">سال پایان (اختیاری)
-                <input type="number" min={1348} max={1450} value={contractModal.end_year ?? ''} onChange={(event) => setContractModal({ ...contractModal, end_year: event.target.value ? Number(event.target.value) : null })} className="mt-1 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+              <label className="block space-y-1 text-xs text-(--theme-text-muted)">
+                <span className="block">سال پایان (اختیاری)</span>
+                <input type="number" min={1348} max={1450} value={contractModal.end_year ?? ''} onChange={(event) => setContractModal({ ...contractModal, end_year: event.target.value ? Number(event.target.value) : null })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
               </label>
-              <label className="text-xs text-(--theme-text-muted)">وضعیت
-                <select value={contractModal.status || 'active'} onChange={(event) => setContractModal({ ...contractModal, status: event.target.value as Contract['status'] })} className="mt-1 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)">
+              <label className="block space-y-1 text-xs text-(--theme-text-muted)">
+                <span className="block">وضعیت</span>
+                <select value={contractModal.status || 'active'} onChange={(event) => setContractModal({ ...contractModal, status: event.target.value as Contract['status'] })} className="w-full min-w-0 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)">
                   <option value="active">فعال</option><option value="completed">تکمیل‌شده</option><option value="pending">در انتظار</option><option value="archived">بایگانی</option>
                 </select>
               </label>
             </div>
-            <textarea placeholder="شرح فارسی قرارداد" value={contractModal.scope_fa || ''} onChange={(event) => setContractModal({ ...contractModal, scope_fa: event.target.value })} rows={3} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-            <textarea placeholder="Contract scope (English)" value={contractModal.scope_en || ''} onChange={(event) => setContractModal({ ...contractModal, scope_en: event.target.value })} dir="ltr" rows={3} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
+            <label className="block space-y-1 text-xs text-(--theme-text-muted)">
+              <span className="block">شرح فارسی قرارداد (اختیاری)</span>
+              <textarea value={contractModal.scope_fa || ''} onChange={(event) => setContractModal({ ...contractModal, scope_fa: event.target.value })} rows={3} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
+            <label className="block space-y-1 text-xs text-(--theme-text-muted)">
+              <span className="block">شرح انگلیسی قرارداد (اختیاری)</span>
+              <textarea value={contractModal.scope_en || ''} onChange={(event) => setContractModal({ ...contractModal, scope_en: event.target.value })} dir="ltr" rows={3} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+            </label>
             <FileUploader folder="documents" currentUrl={contractModal.document_url || undefined} label="پیوست PDF قرارداد" onUploaded={(url) => setContractModal({ ...contractModal, document_url: url })} />
             <label className="flex items-center gap-2 text-xs text-(--theme-text)">
               <input type="checkbox" checked={contractModal.requires_auth ?? false} onChange={(event) => setContractModal({ ...contractModal, requires_auth: event.target.checked })} />

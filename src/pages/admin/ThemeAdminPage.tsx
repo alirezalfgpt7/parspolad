@@ -4,13 +4,14 @@ import { ThemeScopeEditor, type ThemeScopeValues } from '../../components/admin/
 import { ThemeScopeTabs } from '../../components/admin/theme/ThemeScopeTabs.tsx';
 import { ThemeStudioHero } from '../../components/admin/theme/ThemeStudioHero.tsx';
 import { LandingHeaderSettingsEditor } from '../../components/admin/theme/LandingHeaderSettingsEditor.tsx';
+import { PublicPageTitleSettingsEditor } from '../../components/admin/theme/PublicPageTitleSettingsEditor.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { EffectAction } from '../../components/effects/EffectAction.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { LandingHeaderSettings, ThemePreset, ThemeScope, ThemeSettings } from '../../types/index.ts';
-import { DEFAULT_LANDING_HEADER_SETTINGS } from '../../utils/brandingDefaults.ts';
+import type { LandingHeaderSettings, PublicPageTitleSettings, ThemePreset, ThemeScope, ThemeSettings } from '../../types/index.ts';
+import { DEFAULT_LANDING_HEADER_SETTINGS, DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS } from '../../utils/brandingDefaults.ts';
 import { ensureContrastAgainst, pickReadableForeground } from '../../utils/themeContrast.ts';
 
 export const ThemeAdminPage: React.FC = () => {
@@ -180,6 +181,7 @@ export const ThemeAdminPage: React.FC = () => {
             design_style: preset.design_style,
             button_shape: preset.button_shape,
             button_effect: preset.button_effect,
+            public_page_title_settings: { ...DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS },
           };
     if (scope === 'site') {
       setColorMode('light');
@@ -455,6 +457,15 @@ export const ThemeAdminPage: React.FC = () => {
           }}
           onPaletteChange={(landing_palette) => {
             previewSettings({ ...settings, landing_palette }, 'landing');
+          }}
+        />
+      )}
+
+      {scope === 'site' && (
+        <PublicPageTitleSettingsEditor
+          settings={settings.public_page_title_settings}
+          onChange={(public_page_title_settings: PublicPageTitleSettings) => {
+            previewSettings({ ...settings, public_page_title_settings }, 'site');
           }}
         />
       )}

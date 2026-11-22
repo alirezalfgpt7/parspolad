@@ -6,6 +6,7 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { ActivityLog } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 interface ProjectImportRow {
   line: number;
@@ -16,7 +17,7 @@ interface ProjectImportRow {
   imported?: boolean;
 }
 
-const LOG_PAGE_SIZES = [10, 20, 50] as const;
+const LOG_PAGE_SIZES = [5, 10, 20, 50] as const;
 
 export const ReportsLogsAdminPage: React.FC = () => {
   const { token, addToast, bootstrap, user } = useAppStore();
@@ -24,7 +25,7 @@ export const ReportsLogsAdminPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [logTotal, setLogTotal] = useState(0);
-  const [perPage, setPerPage] = useState<number>(LOG_PAGE_SIZES[2]);
+  const [perPage, setPerPage] = useState<number>(50);
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
@@ -227,15 +228,15 @@ export const ReportsLogsAdminPage: React.FC = () => {
   };
 
   const cols: Column<ActivityLog>[] = [
-    { key: 'user', header: 'کاربر', render: (l) => <span className="font-semibold text-(--theme-text)">{l.user_name}</span> },
+    { key: 'user', hideable: true, header: 'کاربر', render: (l) => <span className="font-semibold text-(--theme-text)">{l.user_name}</span> },
     { key: 'action', sortKey: 'description', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-(--theme-primary-ink)">{l.action}</span> },
-    { key: 'subject', header: 'بخش / موضوع', render: (l) => <span>{l.subject_type} · {l.subject_label}</span> },
-    { key: 'ip', header: 'IP', render: (l) => <span className="font-mono text-xs">{l.ip_address}</span> },
-    { key: 'date', sortKey: 'created_at', header: 'زمان', render: (l) => <span className="text-xs text-(--theme-text-muted)">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
+    { key: 'subject', hideable: true, header: 'بخش / موضوع', render: (l) => <span>{l.subject_type} · {l.subject_label}</span> },
+    { key: 'ip', hideable: true, header: 'IP', render: (l) => <span className="font-mono text-xs">{l.ip_address}</span> },
+    { key: 'date', sortKey: 'created_at', hideable: true, header: 'زمان', render: (l) => <span className="text-xs text-(--theme-text-muted)">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
   ];
 
   const importColumns: Column<ProjectImportRow>[] = [
-    { key: 'line', header: 'ردیف', className: 'whitespace-nowrap', render: (row) => <span className="tabular-nums">{row.line}</span> },
+    { key: 'line', hideable: true, header: 'ردیف', className: 'whitespace-nowrap', render: (row) => <span className="tabular-nums">{row.line}</span> },
     { key: 'title', header: 'پروژه', className: 'min-w-[180px]', render: (row) => row.title },
     {
       key: 'validation',
@@ -251,12 +252,13 @@ export const ReportsLogsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-        <div>
-          <h1 className="text-lg font-extrabold text-(--theme-text)">گزارش‌های اکسل (Import/Export) و لاگ فعالیت‌های سیستم</h1>
-          <p className="mt-1 text-xs text-(--theme-text-muted)">خروجی رسمی اکسل از پروژه‌ها، قراردادها و لاگ‌های امنیتی</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <AdminPageHeader
+        icon={FileSpreadsheet}
+        eyebrow="Reports & activity logs"
+        title="گزارش‌های اکسل و لاگ فعالیت‌های سیستم"
+        description="خروجی رسمی اکسل از پروژه‌ها، قراردادها و لاگ‌های امنیتی"
+        actions={(
+          <>
           <button type="button" onClick={() => exportExcel('projects')} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-800">
             <FileSpreadsheet className="h-4 w-4" />
             <span>خروجی اکسل پروژه‌ها</span>
@@ -294,8 +296,9 @@ export const ReportsLogsAdminPage: React.FC = () => {
             <span>بررسی فایل اکسل پروژه‌ها</span>
             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => previewImport(e.target.files?.[0])} />
           </label>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       {importRows.length > 0 && (
         <section className="space-y-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">

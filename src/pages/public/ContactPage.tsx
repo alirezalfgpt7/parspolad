@@ -45,7 +45,7 @@ interface PublicTicket {
 }
 
 const TicketLookupPanel: React.FC = () => {
-  const { addToast } = useAppStore();
+  const { addToast, language } = useAppStore();
   const [ticket, setTicket] = useState<PublicTicket | null>(null);
   const [identity, setIdentity] = useState<z.infer<typeof ticketLookupSchema> | null>(null);
   const [captchaKey, setCaptchaKey] = useState('');
@@ -104,12 +104,14 @@ const TicketLookupPanel: React.FC = () => {
     <section className="mt-8 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow)">
       <h2 className="text-lg font-bold text-(--theme-text)">پیگیری و پاسخ به تیکت</h2>
       <form onSubmit={lookup.handleSubmit(findTicket)} className="mt-4 grid gap-3 sm:grid-cols-3">
-        <input {...lookup.register('tracking_number')} placeholder="شماره پیگیری مانند PPA-12345678" dir="ltr" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-        <input {...lookup.register('email')} type="email" placeholder="ایمیل ثبت‌شده" dir="ltr" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-        <input {...lookup.register('phone')} placeholder="شماره تماس ثبت‌شده" dir="ltr" className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
-        <button type="submit" disabled={lookup.formState.isSubmitting} className="rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) sm:col-span-3">
-          {lookup.formState.isSubmitting ? 'در حال جستجو...' : 'نمایش گفتگو'}
-        </button>
+        <input {...lookup.register('tracking_number')} placeholder="شماره پیگیری مانند PPA-12345678" dir="ltr" className={`rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) ${language === 'fa' ? 'placeholder:text-right' : 'placeholder:text-left'}`} />
+        <input {...lookup.register('email')} type="email" placeholder="ایمیل ثبت‌شده" dir="ltr" className={`rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) ${language === 'fa' ? 'placeholder:text-right' : 'placeholder:text-left'}`} />
+        <input {...lookup.register('phone')} placeholder="شماره تماس ثبت‌شده" dir="ltr" className={`rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) ${language === 'fa' ? 'placeholder:text-right' : 'placeholder:text-left'}`} />
+        <div className="flex justify-end sm:col-span-3">
+          <button type="submit" disabled={lookup.formState.isSubmitting} className="w-full rounded-xl bg-(--theme-btn-bg) px-5 py-2.5 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) sm:w-auto sm:min-w-36">
+            {lookup.formState.isSubmitting ? 'در حال جستجو...' : 'نمایش گفتگو'}
+          </button>
+        </div>
       </form>
 
       {ticket && (
@@ -144,9 +146,11 @@ const TicketLookupPanel: React.FC = () => {
               }}
               error={reply.formState.errors.captcha?.message}
             />
-            <button type="submit" disabled={reply.formState.isSubmitting || !captchaKey} className="rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-50">
-              ارسال پاسخ
-            </button>
+            <div className="flex justify-end">
+              <button type="submit" disabled={reply.formState.isSubmitting || !captchaKey} className="w-full rounded-xl bg-(--theme-btn-bg) px-4 py-2.5 text-sm font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover) disabled:opacity-50 sm:w-auto">
+                ارسال پاسخ
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -317,15 +321,17 @@ export const ContactPage: React.FC = () => {
               error={errors.captcha?.message}
             />
 
-            <button
-              type="submit"
-              disabled={isSubmitting || !captchaKey}
-              style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
-              className="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold shadow-xs disabled:opacity-60"
-            >
-              <Send className="h-4 w-4" />
-              <span>{isSubmitting ? 'در حال ارسال...' : 'ارسال پیام'}</span>
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmitting || !captchaKey}
+                style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold shadow-xs disabled:opacity-60 sm:w-auto"
+              >
+                <Send className="h-4 w-4" />
+                <span>{isSubmitting ? 'در حال ارسال...' : 'ارسال پیام'}</span>
+              </button>
+            </div>
           </form>
         </div>
 

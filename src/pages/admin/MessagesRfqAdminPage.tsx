@@ -3,11 +3,12 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ContactMessage } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
-import { Trash2 } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 
-const MESSAGE_PAGE_SIZES = [10, 20, 50] as const;
+const MESSAGE_PAGE_SIZES = [5, 10, 20, 50] as const;
 
 interface AdminTicket extends ContactMessage {
   ticket_messages: Array<{ id: number; author_name: string; author_type: string; body: string; is_internal: boolean; created_at: string }>;
@@ -21,7 +22,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [perPage, setPerPage] = useState<number>(MESSAGE_PAGE_SIZES[0]);
+  const [perPage, setPerPage] = useState<number>(10);
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
@@ -136,6 +137,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
     {
       key: 'subject',
       sortKey: 'subject',
+      hideable: true,
       header: 'موضوع و شرح',
       render: (m) => (
         <div className="max-w-md">
@@ -147,6 +149,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
     {
       key: 'status',
       sortKey: 'status',
+      hideable: true,
       header: 'وضعیت پیگیری',
       render: (m) => (
         <div className="w-36">
@@ -175,6 +178,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
     },
     {
       key: 'ticket',
+      hideable: true,
       header: 'پیگیری تیکت',
       render: (message) => message.type === 'ticket' ? (
         <div className="space-y-1">
@@ -213,10 +217,12 @@ export const MessagesRfqAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت پیام‌های تماس، استعلام‌های RFQ و تیکت‌ها</h1>
-      <p className="text-xs leading-6 text-(--theme-text-muted)">
-        درخواست‌های همکاری و استعلام قیمت (RFQ)، پیام‌های فرم تماس و گفتگوهای پیگیری تیکت از این بخش بررسی و پاسخ داده می‌شوند.
-      </p>
+      <AdminPageHeader
+        icon={MessageSquare}
+        eyebrow="Customer support"
+        title="مدیریت پیام‌های تماس، استعلام‌های RFQ و تیکت‌ها"
+        description="درخواست‌های همکاری و استعلام قیمت، پیام‌های فرم تماس و گفتگوهای پیگیری تیکت را بررسی و پاسخ دهید."
+      />
       <DataTable
         data={messages}
         columns={cols}

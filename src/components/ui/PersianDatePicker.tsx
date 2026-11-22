@@ -76,7 +76,7 @@ export const PersianDatePicker: React.FC<PersianDatePickerProps> = ({
       locale={persian_fa}
       format="YYYY/MM/DD"
       calendarPosition="bottom-right"
-      inputClass={`w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 ${className}`}
+      inputClass={`block box-border min-w-0 w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) ${className}`}
       placeholder={placeholder}
     />
   );

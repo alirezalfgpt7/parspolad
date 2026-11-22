@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, FileText, Lock, Pencil, Save, Trash2, Unlock } from 'lucide-react';
+import { Copy, FileText, Image as ImageIcon, Lock, Pencil, Save, Trash2, Unlock } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 export const MediaLibraryPage: React.FC = () => {
   const { addToast } = useAppStore();
@@ -87,8 +88,13 @@ export const MediaLibraryPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <AdminPageHeader
+        icon={ImageIcon}
+        eyebrow="Media library"
+        title="کتابخانه رسانه"
+        description="مدیریت متمرکز فایل‌های بارگذاری‌شده در فضای ذخیره‌سازی سایت."
+      />
       <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-        <h1 className="mb-3 text-lg font-extrabold text-(--theme-text)">کتابخانه رسانه و مدیریت متمرکز فایل‌ها (storage/app/public)</h1>
         <FileUploader folder="uploads" onUploaded={() => load()} />
       </div>
 

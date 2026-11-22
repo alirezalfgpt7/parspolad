@@ -7,6 +7,7 @@ import type { PageContent } from '../../types/index.ts';
 import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { ContentRecordsAdminPage } from './ContentRecordsAdminPage.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 type Tab = 'pages' | 'services' | 'products' | 'articles' | 'banners' | 'kpis';
 
@@ -71,20 +72,12 @@ export const ContentCmsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <header className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) sm:p-6">
-        <div className="flex items-start gap-3">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-(--theme-primary)/10 text-(--theme-primary-ink)">
-            <LayoutGrid className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--theme-primary-ink)">Website content</p>
-            <h1 className="mt-1 text-lg font-black text-(--theme-text)">مدیریت محتوای سایت</h1>
-            <p className="mt-1.5 max-w-3xl text-xs leading-6 text-(--theme-text-muted)">
-              از اینجا محتوای صفحات و بخش‌های اصلی سایت را مدیریت کنید. خدمات، محصولات، خبرها، بنرها و شاخص‌ها اکنون فهرست کامل، جست‌وجو، افزودن، ویرایش و حذف دارند.
-            </p>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader
+        icon={LayoutGrid}
+        eyebrow="Website content"
+        title="مدیریت محتوای سایت"
+        description="از اینجا محتوای صفحات و بخش‌های اصلی سایت را مدیریت کنید. خدمات، محصولات، خبرها، بنرها و شاخص‌ها اکنون فهرست کامل، جست‌وجو، افزودن، ویرایش و حذف دارند."
+      />
 
       <nav aria-label="بخش‌های محتوای سایت" className="grid grid-cols-2 gap-2 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 shadow-(--theme-card-shadow) md:grid-cols-3 xl:grid-cols-6">
         {tabs.map((t) => {

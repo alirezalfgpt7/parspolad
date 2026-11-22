@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Bell, FileSpreadsheet, FolderKanban, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Award, Bell, FileSpreadsheet, FolderKanban, LayoutDashboard, MessageSquare, ShieldCheck } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import type { ActivityLog, ContactMessage, NotificationItem } from '../../types/index.ts';
 import { CategoryBarChart } from '../../components/charts/IndustrialCharts.tsx';
 import { PersianDatePicker, gregorianToJalali, jalaliToGregorian } from '../../components/ui/PersianDatePicker.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 interface AnalyticsPoint {
   date: string;
@@ -90,6 +91,12 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <AdminPageHeader
+        icon={LayoutDashboard}
+        eyebrow="Administration overview"
+        title="داشبورد مدیریت"
+        description="نمای کلی آمار، فعالیت‌ها و وضعیت سامانه را مشاهده کنید."
+      />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 tabular-nums">
         {cards.map((c) => {
           const Icon = c.icon;

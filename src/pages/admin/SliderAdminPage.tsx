@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { GripVertical, Plus, Save, Trash2 } from 'lucide-react';
+import { GripVertical, PanelTop, Plus, Save, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -11,6 +11,7 @@ import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 const EFFECTS: Array<{ value: SlideEffect; label: string }> = [
   { value: 'ken-burns', label: 'Ken Burns (زوم نرم سینمایی)' },
@@ -254,14 +255,13 @@ export const SliderAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-        <div>
-          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت اسلایدر صفحات (Drag & Drop + افکت‌ها)</h1>
-          <p className="mt-1 text-xs text-(--theme-text-muted)">
-            اسلایدر را بر اساس صفحه انتخاب کنید؛ ترتیب اسلایدها را با کشیدن کارت‌ها تغییر دهید.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      <AdminPageHeader
+        icon={PanelTop}
+        eyebrow="Page sliders"
+        title="مدیریت اسلایدر صفحات"
+        description="اسلایدر را بر اساس صفحه انتخاب کنید؛ ترتیب اسلایدها را با کشیدن کارت‌ها تغییر دهید."
+        actions={(
+          <>
           <select
             aria-label="انتخاب اسلایدر"
             value={selectedSliderId ?? ''}
@@ -284,8 +284,9 @@ export const SliderAdminPage: React.FC = () => {
             <Plus className="h-4 w-4" />
             <span>افزودن اسلاید</span>
           </button>
-        </div>
-      </div>
+          </>
+        )}
+      />
 
       {creatingSlider && (
         <form onSubmit={createSlider} className="grid gap-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:grid-cols-2">

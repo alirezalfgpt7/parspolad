@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
-const CONTRACT_PAGE_SIZES = [10, 20, 50] as const;
+const CONTRACT_PAGE_SIZES = [5, 10, 20, 50] as const;
 
 export const ContractsLicensesPage: React.FC = () => {
   const { language, user, addToast } = useAppStore();
@@ -19,7 +19,7 @@ export const ContractsLicensesPage: React.FC = () => {
   const [contractPage, setContractPage] = useState(1);
   const [contractLastPage, setContractLastPage] = useState(1);
   const [contractTotal, setContractTotal] = useState(0);
-  const [contractPerPage, setContractPerPage] = useState<number>(CONTRACT_PAGE_SIZES[0]);
+  const [contractPerPage, setContractPerPage] = useState<number>(10);
   const [contractSearch, setContractSearch] = useState('');
   const [appliedContractSearch, setAppliedContractSearch] = useState('');
   const [contractSortBy, setContractSortBy] = useState('start_year');
@@ -90,6 +90,7 @@ export const ContractsLicensesPage: React.FC = () => {
     {
       key: 'number',
       sortKey: 'contract_number',
+      hideable: true,
       header: 'شماره قرارداد',
       render: (c) => <span className="font-mono text-xs font-semibold">{c.contract_number}</span>,
     },
@@ -107,12 +108,14 @@ export const ContractsLicensesPage: React.FC = () => {
     {
       key: 'year',
       sortKey: 'start_year',
+      hideable: true,
       header: 'دوره اجرا',
       render: (c) => <span>{c.start_year} – {c.end_year || 'جاری'}</span>,
     },
     {
       key: 'status',
       sortKey: 'status',
+      hideable: true,
       header: 'وضعیت',
       render: (c) => (
         <span className={c.status === 'completed' ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
@@ -122,6 +125,7 @@ export const ContractsLicensesPage: React.FC = () => {
     },
     {
       key: 'doc',
+      hideable: true,
       header: 'مستندات',
       render: (c) =>
         c.document_url ? (

@@ -20,6 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { NotificationTemplate, SiteSettings, SocialLinkSetting, SmsProvider } from '../../types/index.ts';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
@@ -428,17 +429,12 @@ export const SettingsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:p-5">
-        <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-(--theme-primary)/12 text-(--theme-primary-ink)">
-            <Settings2 className="h-5 w-5" />
-          </span>
-          <div>
-            <h1 className="text-base font-extrabold text-(--theme-text)">مرکز تنظیمات</h1>
-            <p className="mt-1 text-xs text-(--theme-text-muted)">مدیریت یکپارچهٔ پیکربندی و اطلاعات سامانه</p>
-          </div>
-        </div>
-        {tab !== 'backup' && tab !== 'partners' && (
+      <AdminPageHeader
+        icon={Settings2}
+        eyebrow="System settings"
+        title="مرکز تنظیمات"
+        description="مدیریت یکپارچهٔ پیکربندی و اطلاعات سامانه"
+        actions={tab !== 'backup' && tab !== 'partners' ? (
           <EffectAction
             type="button"
             onClick={saveCurrentTab}
@@ -448,8 +444,8 @@ export const SettingsAdminPage: React.FC = () => {
             <Save className="h-4 w-4" />
             <span>{saving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}</span>
           </EffectAction>
-        )}
-      </header>
+        ) : undefined}
+      />
 
       <nav aria-label="بخش‌های تنظیمات" className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 shadow-(--theme-card-shadow) sm:p-3">
         <div className="grid grid-cols-2 gap-2 md:grid-cols-4">

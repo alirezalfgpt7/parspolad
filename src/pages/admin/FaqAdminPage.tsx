@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pencil, Save, Trash2 } from 'lucide-react';
+import { CircleHelp, Pencil, Save, Trash2 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -7,6 +7,7 @@ import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 interface FaqItem {
   id: number;
@@ -30,6 +31,7 @@ export const FaqAdminPage: React.FC = () => {
   const [items, setItems] = useState<FaqItem[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [editing, setEditing] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<FaqItem | null>(null);
   const {
@@ -40,7 +42,7 @@ export const FaqAdminPage: React.FC = () => {
   } = useForm<FaqForm>({ resolver: zodResolver(faqSchema), defaultValues: emptyFaq });
 
   const load = async (targetPage = page) => {
-    const response = await apiRequest<{ data: FaqItem[]; meta: { last_page: number } }>(
+    const response = await apiRequest<{ data: FaqItem[]; meta: { last_page: number; total: number } }>(
       `/admin/faqs?page=${targetPage}&per_page=20`,
     );
     if (targetPage > response.meta.last_page) {
@@ -49,6 +51,7 @@ export const FaqAdminPage: React.FC = () => {
     }
     setItems(response.data);
     setLastPage(response.meta.last_page);
+    setTotal(response.meta.total);
   };
 
   useEffect(() => {
@@ -83,14 +86,26 @@ export const FaqAdminPage: React.FC = () => {
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="space-y-5">
+      <AdminPageHeader
+        icon={CircleHelp}
+        eyebrow="FAQ workspace"
+        title="مدیریت سوالات متداول"
+        description="پرسش‌ها و پاسخ‌های منتشرشده در صفحهٔ سوالات متداول را مدیریت کنید."
+      />
+      <div className="grid items-start gap-6 xl:grid-cols-2">
       <form onSubmit={handleSubmit(save)} className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-        <h1 className="text-lg font-extrabold text-(--theme-text)">{editing ? 'ویرایش سوال متداول' : 'افزودن سوال متداول'}</h1>
+        <div className="border-b border-(--theme-border) pb-3">
+          <h2 className="text-base font-extrabold text-(--theme-text)">{editing ? 'ویرایش سوال متداول' : 'افزودن سوال متداول'}</h2>
+          <p className="mt-1 text-xs text-(--theme-text-muted)">متن کامل پاسخ در صفحهٔ عمومی نمایش داده می‌شود.</p>
+        </div>
         <label className="block space-y-1">
+          <span className="block text-xs font-medium text-(--theme-text)">پرسش *</span>
           <input maxLength={500} {...register('question_fa')} placeholder="پرسش" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
           {errors.question_fa && <span role="alert" className="text-xs text-red-600 dark:text-red-400">{errors.question_fa.message}</span>}
         </label>
         <label className="block space-y-1">
+          <span className="block text-xs font-medium text-(--theme-text)">پاسخ *</span>
           <textarea maxLength={10000} rows={6} {...register('answer_fa')} placeholder="پاسخ" className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
           {errors.answer_fa && <span role="alert" className="text-xs text-red-600 dark:text-red-400">{errors.answer_fa.message}</span>}
         </label>
@@ -107,7 +122,14 @@ export const FaqAdminPage: React.FC = () => {
         </div>
       </form>
 
-      <div className="space-y-3">
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
+          <div>
+            <h2 className="font-bold text-(--theme-text)">سوال‌های ثبت‌شده</h2>
+            <p className="mt-1 text-xs text-(--theme-text-muted)">سوال‌های فعال در سایت نمایش داده می‌شوند.</p>
+          </div>
+          <span className="rounded-full bg-(--theme-surface-muted) px-3 py-1 text-xs font-semibold text-(--theme-text-muted)">{total.toLocaleString('fa-IR')}</span>
+        </div>
         {items.map((item) => (
           <article key={item.id} className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
             <div className="flex items-start justify-between gap-3">
@@ -121,9 +143,10 @@ export const FaqAdminPage: React.FC = () => {
           </article>
         ))}
         {items.length === 0 && <p className="text-sm text-(--theme-text-muted)">سوالی برای نمایش وجود ندارد.</p>}
-      </div>
-      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+        <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      </section>
       <ConfirmDialog open={Boolean(deleting)} onClose={() => setDeleting(null)} onConfirm={remove} message="این سوال نرم حذف می‌شود و از سایت عمومی نمایش داده نخواهد شد. ادامه می‌دهید؟" />
+      </div>
     </div>
   );
 };

@@ -43,6 +43,7 @@ import { DynamicLucideIcon } from '../../components/ui/LucideIconMap.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
 import { pickReadableForeground } from '../../utils/themeContrast.ts';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 type StudioTab = 'login' | 'fonts-colors' | 'logos' | 'pages';
 
@@ -344,41 +345,34 @@ export const LoginAppearanceAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-10">
-      {/* Header Banner */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-(--theme-primary)/12 px-3 py-1 text-[11px] font-bold text-(--theme-primary-ink)">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>استودیو جامع ظاهر، لوگو و احراز هویت</span>
-          </span>
-          <h1 className="mt-2 text-2xl font-extrabold text-(--theme-text)">
-            تنظیمات لاگین و تنظیمات ظاهری
-          </h1>
-          <p className="mt-1 text-xs text-(--theme-text-muted)">
-            مدیریت کامل متون و آیکون‌های ورود و ثبت‌نام، رنگ‌بندی و فونت کل بخش‌ها، لوگوهای ثابت/متحرک و متون صفحات سایت
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={handleResetDefaults}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2.5 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
-          >
-            <RotateCcw className="h-4 w-4" />
-            <span>بازنشانی پیش‌فرض</span>
-          </button>
-          <EffectAction
-            type="button"
-            disabled={saving}
-            onClick={handleSaveAll}
-            style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold shadow-md disabled:opacity-60"
-          >
-            <Save className="h-4 w-4" />
-            <span>{saving ? 'در حال ذخیره...' : 'ذخیره و انتشار همه تغییرات'}</span>
-          </EffectAction>
-        </div>
-      </div>
+      <AdminPageHeader
+        icon={Sparkles}
+        eyebrow="Appearance & authentication studio"
+        title="تنظیمات لاگین و تنظیمات ظاهری"
+        description="مدیریت متون و آیکون‌های ورود و ثبت‌نام، رنگ‌بندی و فونت بخش‌ها، لوگوهای ثابت و متحرک و محتوای صفحات سایت."
+        actions={(
+          <>
+            <button
+              type="button"
+              onClick={handleResetDefaults}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2.5 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span>بازنشانی پیش‌فرض</span>
+            </button>
+            <EffectAction
+              type="button"
+              disabled={saving}
+              onClick={handleSaveAll}
+              style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold shadow-md disabled:opacity-60"
+            >
+              <Save className="h-4 w-4" />
+              <span>{saving ? 'در حال ذخیره...' : 'ذخیره و انتشار همه تغییرات'}</span>
+            </EffectAction>
+          </>
+        )}
+      />
 
       {/* Effect 022 Animated Tabs */}
       <div className="overflow-x-auto pb-1">

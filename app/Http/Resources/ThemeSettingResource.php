@@ -14,6 +14,19 @@ class ThemeSettingResource extends JsonResource
         'blur' => 20,
     ];
 
+    private const DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS = [
+        'background_color' => '#0F172A',
+        'title_color' => '#FFFFFF',
+        'subtitle_color' => '#CBD5E1',
+        'border_color' => '#334155',
+        'wave_color' => '#DC2626',
+        'icon_name' => 'Globe',
+        'icon_color' => '#F8FAFC',
+        'icon_background_color' => '#1E293B',
+        'radius' => 24,
+        'wave_enabled' => true,
+    ];
+
     private const DEFAULT_PALETTE = [
         'primary' => '#B91C1C',
         'secondary' => '#1E293B',
@@ -51,6 +64,10 @@ class ThemeSettingResource extends JsonResource
             'landing_header_settings' => array_replace(
                 self::DEFAULT_LANDING_HEADER_SETTINGS,
                 $this->landing_header_settings ?? [],
+            ),
+            'public_page_title_settings' => array_replace(
+                self::DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS,
+                $this->public_page_title_settings ?? [],
             ),
             'admin_palette' => $adminPalette,
             'admin_design_style' => $this->admin_design_style ?? $this->design_style,

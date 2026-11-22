@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, Check, Save, ShieldCheck } from 'lucide-react';
+import { Bell, Check, Save, ShieldCheck, UserRound } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import type { NotificationItem, User } from '../../types/index.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { EffectProfileAvatar, EffectProfileCard } from '../../components/effects/index.ts';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 const profileSchema = z.object({
   name: z.string().trim().min(1, 'نام الزامی است.').max(120, 'نام نمی‌تواند بیش از ۱۲۰ نویسه باشد.'),
@@ -86,8 +87,14 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <EffectProfileCard className="mx-auto max-w-2xl rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow)">
-      <h1 className="mb-5 text-lg font-extrabold text-(--theme-text)">پروفایل کاربری، آواتار و احراز هویت دو مرحله‌ای (2FA)</h1>
+    <div className="space-y-5">
+      <AdminPageHeader
+        icon={UserRound}
+        eyebrow="Account profile"
+        title="پروفایل کاربری"
+        description="اطلاعات حساب، تصویر آواتار و تنظیمات احراز هویت دو مرحله‌ای را مدیریت کنید."
+      />
+      <EffectProfileCard className="mx-auto w-full max-w-2xl rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow)">
       <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
         <div className="flex items-center gap-4">
           <EffectProfileAvatar src={avatar} alt={name} className="h-16 w-16 rounded-full border border-(--theme-border) object-cover" />
@@ -131,7 +138,8 @@ export const ProfilePage: React.FC = () => {
           <span>ذخیره پروفایل</span>
         </button>
       </form>
-    </EffectProfileCard>
+      </EffectProfileCard>
+    </div>
   );
 };
 
@@ -162,14 +170,13 @@ export const NotificationsPage: React.FC = () => {
   }, [page]);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <h1 className="flex items-center gap-2 text-lg font-extrabold text-(--theme-text)">
-        <Bell className="h-5 w-5 text-(--theme-primary-ink)" />
-        <span>مرکز اعلان‌ها (Notification Center)</span>
-      </h1>
-      <p className="text-xs leading-6 text-(--theme-text-muted)">
-        اعلان‌های داخل پنل را اینجا می‌بینید و می‌توانید وضعیت خوانده‌شدنشان را مدیریت کنید؛ این بخش تنظیمات ارسال ایمیل یا پیامک نیست.
-      </p>
+    <div className="space-y-4">
+      <AdminPageHeader
+        icon={Bell}
+        eyebrow="Notification center"
+        title="مرکز اعلان‌ها (Notification Center)"
+        description="اعلان‌های داخل پنل را ببینید و وضعیت خوانده‌شدنشان را مدیریت کنید."
+      />
       {items.map((n) => (
         <div key={n.id} className="flex items-start justify-between gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
           <div>

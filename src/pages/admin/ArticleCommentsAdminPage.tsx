@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 type CommentStatus = 'pending' | 'approved' | 'rejected';
 
@@ -80,28 +82,31 @@ export const ArticleCommentsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت دیدگاه‌های مقالات</h1>
-          <p className="mt-1 text-xs text-(--theme-text-muted)">دیدگاه‌ها تا زمان تأیید مدیر برای بازدیدکنندگان نمایش داده نمی‌شوند.</p>
-        </div>
-        <label className="flex items-center gap-2 text-xs text-(--theme-text)">
-          وضعیت
-          <select
-            value={statusFilter}
-            onChange={(event) => {
-              setStatusFilter(event.target.value as CommentStatus | 'all');
-              setPage(1);
-            }}
-            className="rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-(--theme-input-text)"
-          >
-            <option value="pending">در انتظار بررسی</option>
-            <option value="approved">منتشرشده</option>
-            <option value="rejected">ردشده</option>
-            <option value="all">همه</option>
-          </select>
-        </label>
-      </div>
+      <AdminPageHeader
+        icon={MessageCircle}
+        eyebrow="Content moderation"
+        title="مدیریت دیدگاه‌های مقالات"
+        description="دیدگاه‌ها تا زمان تأیید مدیر برای بازدیدکنندگان نمایش داده نمی‌شوند."
+        actions={(
+          <label className="flex min-w-52 items-center gap-2 text-xs text-(--theme-text)">
+            <span className="shrink-0">وضعیت</span>
+            <select
+              aria-label="فیلتر وضعیت دیدگاه‌ها"
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as CommentStatus | 'all');
+                setPage(1);
+              }}
+              className="min-w-0 flex-1 rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-(--theme-input-text)"
+            >
+              <option value="pending">در انتظار بررسی</option>
+              <option value="approved">منتشرشده</option>
+              <option value="rejected">ردشده</option>
+              <option value="all">همه</option>
+            </select>
+          </label>
+        )}
+      />
 
       {comments.length === 0 ? (
         <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-8 text-center text-sm text-(--theme-text-muted) shadow-(--theme-card-shadow)">

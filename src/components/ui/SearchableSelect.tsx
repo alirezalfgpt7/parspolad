@@ -79,7 +79,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   }, [open, onSearchChange]);
 
   return (
-    <div ref={containerRef} className={cn('relative w-full', className)}>
+    <div ref={containerRef} className={cn('relative min-w-0 w-full', className)}>
       {label && (
         <label className="mb-1.5 block text-xs font-medium text-(--theme-text)">
           {label}
@@ -90,11 +90,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
         className={cn(
-          'flex min-h-10.5 w-full items-center justify-between gap-2 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) transition-colors hover:border-(--theme-border-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary)',
+          'flex min-h-10.5 min-w-0 w-full items-center justify-between gap-2 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-start text-sm text-(--theme-input-text) transition-colors hover:border-(--theme-border-strong) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--theme-primary)',
           disabled && 'cursor-not-allowed opacity-60'
         )}
       >
-        <span className={cn('truncate', !selected && 'text-(--theme-placeholder)')}>
+        <span className={cn('min-w-0 flex-1 truncate', !selected && 'text-(--theme-placeholder)')}>
           {selected ? selected.label : placeholder}
         </span>
         <span className="flex items-center gap-1 shrink-0">
@@ -124,7 +124,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {open && (
         <div
-          className="theme-popover absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) shadow-lg"
+          className="theme-popover absolute inset-x-0 z-50 mt-1.5 min-w-0 overflow-hidden rounded-lg border border-(--theme-border) bg-(--theme-surface) text-(--theme-text) shadow-lg"
         >
           {/* Mandatory Search Box on the First Row */}
           <div className="flex items-center gap-2 border-b border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2">
@@ -168,10 +168,10 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         isSelected && 'bg-(--theme-surface-muted) font-semibold text-(--theme-primary-ink)'
                       )}
                     >
-                      <span className="truncate">
+                      <span className="min-w-0 truncate">
                         {opt.label}
                         {opt.sublabel && (
-                          <span className="ms-2 text-xs font-normal text-(--theme-text-muted)">
+                          <span className="ms-2 inline-block max-w-[45%] truncate align-bottom text-xs font-normal text-(--theme-text-muted)">
                             {opt.sublabel}
                           </span>
                         )}

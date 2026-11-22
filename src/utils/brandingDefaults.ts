@@ -4,6 +4,7 @@ import type {
   FontFamilyKey,
   LoginPageSettings,
   LandingHeaderSettings,
+  PublicPageTitleSettings,
   PagesConfigSettings,
   ThemePalette,
 } from '../types/index.ts';
@@ -29,6 +30,19 @@ export const DEFAULT_LANDING_HEADER_SETTINGS: LandingHeaderSettings = {
   mode: 'glass',
   radius: 18,
   blur: 20,
+};
+
+export const DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS: PublicPageTitleSettings = {
+  background_color: '#0F172A',
+  title_color: '#FFFFFF',
+  subtitle_color: '#CBD5E1',
+  border_color: '#334155',
+  wave_color: '#DC2626',
+  icon_name: 'Globe',
+  icon_color: '#F8FAFC',
+  icon_background_color: '#1E293B',
+  radius: 24,
+  wave_enabled: true,
 };
 
 export interface FontOption {

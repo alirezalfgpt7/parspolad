@@ -87,7 +87,7 @@ describe('separate contract and license admin pages', () => {
     render(<ContractsAdminPage />);
 
     fireEvent.click(await screen.findByRole('button', { name: 'ویرایش پیمان نمونه' }));
-    await screen.findByPlaceholderText('شرح فارسی قرارداد');
+    await screen.findByLabelText('شرح فارسی قرارداد (اختیاری)');
     expect(apiRequest).toHaveBeenCalledWith('/admin/contracts/1');
   });
 

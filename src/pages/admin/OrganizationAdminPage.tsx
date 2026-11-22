@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Building2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Department, TeamMember } from '../../types/index.ts';
 import { PartnerLogoManager } from '../../components/admin/PartnerLogoManager.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 interface DepartmentForm {
   parent_id: string;
@@ -215,14 +216,12 @@ export const OrganizationAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      <section className="space-y-5 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-extrabold text-(--theme-text)">ساختار سازمانی، مدیران و کارکنان</h1>
-            <p className="mt-1 text-xs leading-6 text-(--theme-text-muted)">
-              واحدها و زیرمجموعه‌ها را تعریف کنید و با ترتیب نمایش، چیدمان نمودار عمومی را تنظیم کنید.
-            </p>
-          </div>
+      <AdminPageHeader
+        icon={Building2}
+        eyebrow="Organization structure"
+        title="ساختار سازمانی، مدیران و کارکنان"
+        description="واحدها و زیرمجموعه‌ها را تعریف کنید و با ترتیب نمایش، چیدمان نمودار عمومی را تنظیم کنید."
+        actions={(
           <button
             type="button"
             onClick={openNewDepartment}
@@ -231,8 +230,9 @@ export const OrganizationAdminPage: React.FC = () => {
             <Plus className="h-4 w-4" />
             افزودن واحد
           </button>
-        </div>
-
+        )}
+      />
+      <section className="space-y-5 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {departments.map((department) => (
             <article key={department.id} className="rounded-xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">

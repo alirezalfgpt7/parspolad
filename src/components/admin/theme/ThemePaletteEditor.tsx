@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ThemePalette } from '../../../types/index.ts';
 import { ColorPicker } from '../../ui/ColorPicker.tsx';
-import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 const PALETTE_LABELS: Array<{ key: keyof ThemePalette; label: string }> = [
   { key: 'primary', label: 'رنگ اصلی' },
@@ -63,20 +63,14 @@ export const ThemePaletteEditor: React.FC<ThemePaletteEditorProps> = ({ palette,
       <h3 className="text-sm font-bold">رنگ‌های این بخش</h3>
       <p className="mt-1 text-xs text-slate-500">رنگ‌ها فقط روی همین محدودهٔ انتخاب‌شده اعمال می‌شوند.</p>
     </div>
-    <div className={`mb-4 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2.5 text-xs ${
-      lowContrast.length === 0
-        ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200'
-        : 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200'
-    }`}>
-      {lowContrast.length === 0
-        ? <CheckCircle2 className="h-4 w-4" />
-        : <AlertTriangle className="h-4 w-4" />}
-      <span className="font-bold">
-        {lowContrast.length === 0
-          ? 'کنتراست متن‌ها مناسب است'
-          : `کنتراست ضعیف در ${lowContrast.map((check) => check.label).join('، ')}؛ متن یا پس‌زمینه را اصلاح کنید`}
-      </span>
-    </div>
+    {lowContrast.length > 0 && (
+      <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+        <AlertTriangle className="h-4 w-4" />
+        <span className="font-bold">
+          {`کنتراست ضعیف در ${lowContrast.map((check) => check.label).join('، ')}؛ متن یا پس‌زمینه را اصلاح کنید`}
+        </span>
+      </div>
+    )}
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {PALETTE_LABELS.map(({ key, label }) => (
         <ColorPicker

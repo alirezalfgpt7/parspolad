@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Circle, LoaderCircle, MessageSquare, RefreshCw, Search, Send, X } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 interface LiveChatMessage {
   id: number;
@@ -162,22 +163,22 @@ export const LiveChatAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-(--theme-text)">{isPersian ? 'گفتگوی آنلاین' : 'Live chat'}</h1>
-          <p className="mt-1 text-sm text-(--theme-text-muted)">
-            {isPersian ? 'مشاهده و پاسخ‌گویی به گفتگوهای بازدیدکنندگان سایت' : 'View and reply to website visitor conversations'}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => void loadConversations()}
-          className="inline-flex items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3 py-2 text-sm text-(--theme-text) hover:bg-(--theme-surface-muted)"
-        >
-          <RefreshCw className="h-4 w-4" />
-          {isPersian ? 'به‌روزرسانی' : 'Refresh'}
-        </button>
-      </header>
+      <AdminPageHeader
+        icon={MessageSquare}
+        eyebrow="Live support"
+        title={isPersian ? 'گفتگوی آنلاین' : 'Live chat'}
+        description={isPersian ? 'مشاهده و پاسخ‌گویی به گفتگوهای بازدیدکنندگان سایت' : 'View and reply to website visitor conversations'}
+        actions={(
+          <button
+            type="button"
+            onClick={() => void loadConversations()}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-sm font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
+          >
+            <RefreshCw className="h-4 w-4" />
+            {isPersian ? 'به‌روزرسانی' : 'Refresh'}
+          </button>
+        )}
+      />
 
       {error && (
         <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">

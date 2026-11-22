@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   CopyPlus,
   Database,
-  ListFilter,
   Pencil,
   Plus,
   Save,
@@ -19,6 +18,7 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { PersianDatePicker, gregorianToJalali, jalaliToGregorian } from '../../components/ui/PersianDatePicker.tsx';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { IconPicker } from '../../components/ui/IconPicker.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
@@ -417,12 +417,6 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
     }
   };
 
-  const toggleColumn = (name: string) => {
-    setVisibleColumns((current) => current.includes(name)
-      ? current.filter((column) => column !== name)
-      : [...current, name]);
-  };
-
   const renderValue = (record: ContentRecord, field: ContentField): React.ReactNode => {
     const value = record[field.name];
     if (field.type === 'boolean') {
@@ -507,8 +501,9 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
       className: 'whitespace-nowrap',
       render: (record) => <span className="font-mono text-xs text-(--theme-text-muted)">#{record.id}</span>,
     },
-    ...displayedFields.map((field) => ({
+    ...sortableFields.map((field) => ({
       key: field.name,
+      hideable: true,
       header: (
         <span>
           <span className="block">{field.label_fa}</span>
@@ -528,50 +523,14 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
     },
   ];
 
-  const columnActions = (
-    <details className="group relative">
-      <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 text-sm font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted)">
-        <ListFilter className="h-4 w-4" />
-        ستون‌ها
-      </summary>
-      <div className="absolute inset-e-0 top-full z-30 mt-2 max-h-80 w-72 overflow-y-auto rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow-hover)">
-        <p className="mb-2 text-xs font-bold text-(--theme-text-muted)">ستون‌های قابل نمایش</p>
-        {sortableFields.map((field) => (
-          <label key={field.name} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted)">
-            <input
-              type="checkbox"
-              checked={visibleColumns.includes(field.name)}
-              onChange={() => toggleColumn(field.name)}
-              className="mt-0.5 accent-(--theme-primary)"
-            />
-            <span>
-              <span className="block font-semibold">{field.label_fa}</span>
-              <span className="mt-0.5 block text-[10px] text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
-            </span>
-          </label>
-        ))}
-      </div>
-    </details>
-  );
-
   return (
     <div className="mx-auto max-w-[1600px] space-y-5">
-      <header className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
-        <div className="relative flex flex-col gap-5 p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between">
-          <div className="absolute inset-y-0 inset-s-0 w-1 bg-(--theme-primary)" aria-hidden="true" />
-          <div className="flex items-start gap-4">
-            <div className="hidden rounded-2xl bg-(--theme-primary)/10 p-3 text-(--theme-primary-ink) sm:block">
-              <Database className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-(--theme-primary-ink)">Content workspace</p>
-              <h1 className="mt-1 text-xl font-black text-(--theme-text) sm:text-2xl">مدیریت داده‌های محتوا</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-(--theme-text-muted)">
-                بخش موردنظر را انتخاب کنید، اطلاعات همان بخش را جست‌وجو و مرتب کنید و فقط در صورت نیاز فرم افزودن یا ویرایش را باز کنید.
-              </p>
-            </div>
-          </div>
-
+      <AdminPageHeader
+        icon={Database}
+        eyebrow="Content workspace"
+        title="مدیریت داده‌های محتوا"
+        description="بخش موردنظر را انتخاب کنید، اطلاعات همان بخش را جست‌وجو و مرتب کنید و فقط در صورت نیاز فرم افزودن یا ویرایش را باز کنید."
+        actions={(
           <div className={`grid w-full gap-3 ${lockedResource ? '' : 'sm:grid-cols-[minmax(0,1fr)_auto]'} lg:w-auto lg:min-w-104`}>
             {lockedResource && selectedResource ? (
               <div className="flex min-h-11 items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3">
@@ -608,10 +567,11 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                   to={getPublicPath()!}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-bold text-(--theme-text) transition hover:border-(--theme-primary)/40 hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
+                  aria-label="مشاهده در سایت"
+                  title="مشاهده در سایت"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3 text-(--theme-text) transition hover:border-(--theme-primary)/40 hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
                 >
-                  مشاهده در سایت
-                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               )}
               {selectedResource?.related_admin_path && (
@@ -634,8 +594,8 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
               </button>
             </div>
           </div>
-        </div>
-      </header>
+        )}
+      />
 
       {loadingResources ? (
         <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-12 text-center shadow-(--theme-card-shadow)">
@@ -663,10 +623,12 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
           <DataTable
             data={records}
             columns={recordColumns}
+            visibleColumnKeys={visibleColumns}
+            onVisibleColumnKeysChange={setVisibleColumns}
             rowKey={(record) => record.id}
             tableLabel={selectedResource?.label_fa}
             pageSize={perPage}
-            pageSizeOptions={[10, 20, 50]}
+            pageSizeOptions={[5, 10, 20, 50]}
             onPageSizeChange={(size) => {
               setPerPage(size);
               setPage(1);
@@ -689,7 +651,6 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
               setSortOrder(direction);
               setPage(1);
             }}
-            actions={columnActions}
             loading={loadingRecords || loadingSchema}
             emptyText={(
               <div>

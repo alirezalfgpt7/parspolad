@@ -15,6 +15,7 @@ class ThemeController extends Controller
     public function show(): JsonResponse
     {
         ThemePreset::ensureBuiltInPresets();
+
         return response()->json([
             'presets' => ThemePreset::query()->orderBy('id')->get(),
             'settings' => new ThemeSettingResource(ThemeSetting::query()->firstOrFail()),
@@ -27,7 +28,7 @@ class ThemeController extends Controller
         $validated = $request->validated();
         $current = (new ThemeSettingResource($theme))->toArray($request);
 
-        foreach (['active_palette', 'landing_palette', 'admin_palette', 'landing_header_settings'] as $key) {
+        foreach (['active_palette', 'landing_palette', 'admin_palette', 'landing_header_settings', 'public_page_title_settings'] as $key) {
             if (isset($validated[$key])) {
                 $validated[$key] = array_replace($current[$key], $validated[$key]);
             }

@@ -272,6 +272,47 @@
   color: var(--theme-header-ink);
 }
 
+.public-navbar .effect-navbar-control,
+.public-info-bar .effect-navbar-control {
+  border-color: color-mix(in srgb, var(--theme-header-text) 35%, transparent);
+  background: color-mix(in srgb, var(--theme-header-text) 9%, transparent);
+  color: var(--theme-header-text);
+  box-shadow: none;
+}
+
+.public-navbar .effect-navbar-control:hover,
+.public-navbar .effect-navbar-control:focus-visible,
+.public-info-bar .effect-navbar-control:hover,
+.public-info-bar .effect-navbar-control:focus-visible {
+  border-color: color-mix(in srgb, var(--theme-header-text) 60%, transparent);
+  background: color-mix(in srgb, var(--theme-header-text) 17%, transparent);
+  color: var(--theme-header-text);
+}
+
+.public-navbar .effect-theme-switch,
+.public-info-bar .effect-theme-switch {
+  color: var(--theme-header-text);
+}
+
+.public-navbar .effect-theme-pill,
+.public-info-bar .effect-theme-pill {
+  border-color: color-mix(in srgb, var(--theme-header-text) 35%, transparent);
+  background: color-mix(in srgb, var(--theme-header-text) 9%, transparent);
+  box-shadow: none;
+}
+
+.public-navbar .effect-theme-knob,
+.public-info-bar .effect-theme-knob {
+  background: color-mix(in srgb, var(--theme-header-text) 18%, transparent);
+  color: var(--theme-header-text);
+  box-shadow: none;
+}
+
+.public-navbar .effect-theme-icon,
+.public-info-bar .effect-theme-icon {
+  color: var(--theme-header-text);
+}
+
 html {
   scroll-padding-top: 9.5rem;
   scroll-behavior: smooth;

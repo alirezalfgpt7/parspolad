@@ -197,12 +197,12 @@ export const PartnerLogoManager: React.FC = () => {
               </label>
             </>
           )}
-          <div className="flex items-end">
+          <div className="flex items-end justify-end">
             <button
               type="button"
               onClick={editingPartner ? savePartner : addPartner}
               disabled={saving}
-              className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-bold text-(--theme-btn-text) transition-colors hover:bg-(--theme-btn-hover) disabled:opacity-50"
+              className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2 text-xs font-bold text-(--theme-btn-text) transition-colors hover:bg-(--theme-btn-hover) disabled:opacity-50 sm:w-auto"
             >
               {editingPartner ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               {saving ? 'در حال ذخیره...' : editingPartner ? 'ذخیره ویرایش' : 'افزودن به اسلایدر'}

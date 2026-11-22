@@ -59,6 +59,19 @@ export interface LandingHeaderSettings {
   blur: number;
 }
 
+export interface PublicPageTitleSettings {
+  background_color: string;
+  title_color: string;
+  subtitle_color: string;
+  border_color: string;
+  wave_color: string;
+  icon_name: string;
+  icon_color: string;
+  icon_background_color: string;
+  radius: number;
+  wave_enabled: boolean;
+}
+
 export interface ThemePreset {
   id: number;
   slug: string;
@@ -84,6 +97,7 @@ export interface ThemeSettings {
   landing_button_shape: ButtonShape;
   landing_button_effect: ThemeButtonEffect;
   landing_header_settings: LandingHeaderSettings;
+  public_page_title_settings: PublicPageTitleSettings;
   admin_palette: ThemePalette;
   admin_design_style: ThemeDesignStyle;
   admin_button_shape: ButtonShape;

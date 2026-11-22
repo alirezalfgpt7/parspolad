@@ -5,6 +5,7 @@ import type { ColorMode, Language, User } from '../../types/index.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { AnimatedHamburger } from '../effects/index.ts';
+import { PersianClockBadge } from '../common/PersianClockBadge.tsx';
 import type { AdminNavItem } from './AdminSidebar.tsx';
 
 interface AdminTopbarProps {
@@ -101,6 +102,7 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        <PersianClockBadge className="hidden sm:inline-flex" />
         <Link
           to="/"
           className="admin-topbar-control rounded-lg p-2"

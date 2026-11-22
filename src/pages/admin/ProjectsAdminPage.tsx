@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, FolderKanban, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Project, ProjectCategory, ProjectStatus } from '../../types/index.ts';
@@ -12,6 +12,7 @@ import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { z } from 'zod';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
 const projectFormSchema = z.object({
   slug: z.string().max(160).nullish(),
@@ -59,7 +60,7 @@ type ProjectListRow = Pick<
   'contract_number' | 'year' | 'status' | 'cover_image'
 >;
 
-const PROJECT_PAGE_SIZES = [10, 20, 50] as const;
+const PROJECT_PAGE_SIZES = [5, 10, 20, 50] as const;
 const CATEGORY_PAGE_SIZE = 8;
 
 export const ProjectsAdminPage: React.FC = () => {
@@ -68,7 +69,7 @@ export const ProjectsAdminPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [projectTotal, setProjectTotal] = useState(0);
-  const [perPage, setPerPage] = useState<number>(PROJECT_PAGE_SIZES[0]);
+  const [perPage, setPerPage] = useState<number>(10);
   const [projectSearch, setProjectSearch] = useState('');
   const [appliedProjectSearch, setAppliedProjectSearch] = useState('');
   const [projectSortBy, setProjectSortBy] = useState('year');
@@ -301,6 +302,7 @@ export const ProjectsAdminPage: React.FC = () => {
     },
     {
       key: 'category',
+      hideable: true,
       header: 'دسته فنی',
       className: 'min-w-[140px]',
       render: (p) => p.category ? (
@@ -310,9 +312,9 @@ export const ProjectsAdminPage: React.FC = () => {
         </span>
       ) : <span className="text-(--theme-text-muted)">بدون دسته</span>,
     },
-    { key: 'client', sortKey: 'client_name_fa', header: 'کارفرما', className: 'hidden md:table-cell', render: (p) => <span>{p.client_name_fa}</span> },
-    { key: 'contract', sortKey: 'contract_number', header: 'شماره قرارداد', className: 'hidden lg:table-cell', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
-    { key: 'year', sortKey: 'year', header: 'سال', className: 'hidden sm:table-cell', render: (p) => <span>{p.year}</span> },
+    { key: 'client', sortKey: 'client_name_fa', hideable: true, header: 'کارفرما', className: 'hidden md:table-cell', render: (p) => <span>{p.client_name_fa}</span> },
+    { key: 'contract', sortKey: 'contract_number', hideable: true, header: 'شماره قرارداد', className: 'hidden lg:table-cell', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
+    { key: 'year', sortKey: 'year', hideable: true, header: 'سال', className: 'hidden sm:table-cell', render: (p) => <span>{p.year}</span> },
     {
       key: 'actions',
       header: 'عملیات',
@@ -333,12 +335,12 @@ export const ProjectsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت پروژه‌ها و دسته‌بندی‌های فنی</h1>
-          <p className="mt-1 text-xs text-(--theme-text-muted)">پروژه‌ها و دسته‌های فنی را جست‌وجو، مشاهده و مدیریت کنید.</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
+      <AdminPageHeader
+        icon={FolderKanban}
+        eyebrow="Projects workspace"
+        title="مدیریت پروژه‌ها و دسته‌بندی‌های فنی"
+        description="پروژه‌ها و دسته‌های فنی را جست‌وجو، مشاهده و مدیریت کنید."
+        actions={(
           <button
             type="button"
             onClick={() => setEditing({ slug: `proj-${Date.now()}`, title_fa: '', title_en: '', category_id: categoryOptions[0]?.id || categories[0]?.id || 0, client_name_fa: '', client_name_en: '', contract_number: '', contract_type_fa: 'ساخت و تولید', contract_type_en: 'Manufacturing', location_fa: 'اهواز', location_en: 'Ahvaz', year: 1404, status: 'in_progress', summary_fa: '', summary_en: '', description_fa: '', description_en: '', cover_image: '/storage/hero/hero-rig.jpg', is_featured: true })}
@@ -347,8 +349,8 @@ export const ProjectsAdminPage: React.FC = () => {
             <Plus className="h-4 w-4" />
             <span>پروژه جدید</span>
           </button>
-        </div>
-      </div>
+        )}
+      />
 
       <section className="overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface) shadow-(--theme-card-shadow)">
         <div className="flex flex-wrap items-center justify-between gap-3 p-4">
