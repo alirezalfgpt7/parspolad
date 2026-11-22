@@ -30,6 +30,8 @@ export const DEFAULT_LANDING_HEADER_SETTINGS: LandingHeaderSettings = {
   mode: 'glass',
   radius: 18,
   blur: 20,
+  wave_colors: ['#DC2626', '#DC2626', '#DC2626'],
+  wave_bottom_color: '#EF4444',
 };
 
 export const DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS: PublicPageTitleSettings = {
@@ -38,6 +40,7 @@ export const DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS: PublicPageTitleSettings = {
   subtitle_color: '#CBD5E1',
   border_color: '#334155',
   wave_color: '#DC2626',
+  wave_colors: ['#DC2626', '#DC2626', '#DC2626'],
   icon_name: 'Globe',
   icon_color: '#F8FAFC',
   icon_background_color: '#1E293B',

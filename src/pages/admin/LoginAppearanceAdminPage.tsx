@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  CheckCircle2,
   FileText,
   Image as ImageIcon,
-  Palette,
   RotateCcw,
   Save,
   ShieldCheck,
@@ -18,12 +16,9 @@ import type {
   FontFamilyKey,
   LoginPageSettings,
   LogoPlacement,
-  PageContent,
   PageOverrideEntry,
   PagesConfigSettings,
   SiteSettings,
-  ThemeScope,
-  ThemeSettings,
 } from '../../types/index.ts';
 import {
   BUNDLED_FONTS,
@@ -35,8 +30,6 @@ import {
 } from '../../utils/brandingDefaults.ts';
 import { BrandLogo } from '../../components/common/BrandLogo.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
-import { ThemeScopeEditor, type ThemeScopeValues } from '../../components/admin/theme/ThemeScopeEditor.tsx';
-import { ThemeScopeTabs } from '../../components/admin/theme/ThemeScopeTabs.tsx';
 import { AnimatedTabsEffect, DecorativeCube, EffectAction, EffectText } from '../../components/effects/index.ts';
 import { IconPicker } from '../../components/ui/IconPicker.tsx';
 import { DynamicLucideIcon } from '../../components/ui/LucideIconMap.tsx';
@@ -45,7 +38,7 @@ import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
 import { pickReadableForeground } from '../../utils/themeContrast.ts';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 
-type StudioTab = 'login' | 'fonts-colors' | 'logos' | 'pages';
+type StudioTab = 'login' | 'fonts' | 'logos' | 'pages';
 
 const SYSTEM_PAGE_CARDS: Array<{ key: string; label: string; hasBadge?: boolean; hasCta?: boolean }> = [
   { key: 'home_spotlight', label: 'بخش اسپات‌لایت صفحه اصلی', hasBadge: true },
@@ -99,7 +92,7 @@ const TextField: React.FC<{
 );
 
 export const LoginAppearanceAdminPage: React.FC = () => {
-  const { addToast, fetchBootstrap, setPreviewTheme, setPreviewBranding } = useAppStore();
+  const { addToast, fetchBootstrap, setPreviewBranding } = useAppStore();
   const [tab, setTab] = useState<StudioTab>('login');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -110,20 +103,12 @@ export const LoginAppearanceAdminPage: React.FC = () => {
   const [appearanceCfg, setAppearanceCfg] = useState<AppearanceSettings>({ ...DEFAULT_APPEARANCE_SETTINGS });
   const [pagesConfig, setPagesConfig] = useState<PagesConfigSettings>({ ...DEFAULT_PAGES_CONFIG });
 
-  const [themeSettings, setThemeSettings] = useState<ThemeSettings | null>(null);
-  const [themeScope, setThemeScope] = useState<ThemeScope>('site');
-  const [cmsPages, setCmsPages] = useState<PageContent[]>([]);
-  const [selectedCmsPageId, setSelectedCmsPageId] = useState<number | null>(null);
   const [previewFlip, setPreviewFlip] = useState<'login' | 'register'>('login');
 
   useEffect(() => {
     let active = true;
-    Promise.all([
-      apiRequest<{ data: SiteSettings }>('/admin/settings'),
-      apiRequest<{ settings: ThemeSettings }>('/admin/themes'),
-      apiRequest<{ data: PageContent[] }>('/admin/pages'),
-    ])
-      .then(([settingsRes, themeRes, pagesRes]) => {
+    apiRequest<{ data: SiteSettings }>('/admin/settings')
+      .then((settingsRes) => {
         if (!active) return;
         const s = settingsRes.data;
         setSiteSettings(s);
@@ -136,12 +121,11 @@ export const LoginAppearanceAdminPage: React.FC = () => {
         }
         setLogosCfg(savedLogos);
         setAppearanceCfg({ ...DEFAULT_APPEARANCE_SETTINGS, ...(s.appearance || {}) });
-        setPagesConfig({ ...DEFAULT_PAGES_CONFIG, ...(s.pages_config || {}) });
-        setThemeSettings(themeRes.settings);
-        setCmsPages(pagesRes.data || []);
-        if (pagesRes.data?.length) {
-          setSelectedCmsPageId(pagesRes.data[0].id);
-        }
+        const savedPagesConfig = s.pages_config || {};
+        const systemPageConfig = Object.fromEntries(
+          Object.entries(savedPagesConfig).filter(([key]) => SYSTEM_PAGE_CARDS.some((card) => card.key === key)),
+        );
+        setPagesConfig({ ...DEFAULT_PAGES_CONFIG, ...systemPageConfig });
       })
       .catch((error: unknown) => {
         if (!active) return;
@@ -153,10 +137,9 @@ export const LoginAppearanceAdminPage: React.FC = () => {
 
     return () => {
       active = false;
-      setPreviewTheme(null);
       setPreviewBranding(null);
     };
-  }, [addToast, setPreviewBranding, setPreviewTheme]);
+  }, [addToast, setPreviewBranding]);
 
   // Live reactive preview into Zustand store
   useEffect(() => {
@@ -169,75 +152,11 @@ export const LoginAppearanceAdminPage: React.FC = () => {
     });
   }, [appearanceCfg, loading, loginCfg, logosCfg, pagesConfig, setPreviewBranding]);
 
-  const activeCmsPage = cmsPages.find((p) => p.id === selectedCmsPageId) || null;
-
   const updatePageOverride = (key: string, patch: Partial<PageOverrideEntry>) => {
     setPagesConfig((prev) => ({
       ...prev,
       [key]: { ...(prev[key] || {}), ...patch },
     }));
-  };
-
-  const updateCmsPageField = <K extends keyof PageContent>(field: K, value: PageContent[K]) => {
-    if (!activeCmsPage) return;
-    setCmsPages((prev) =>
-      prev.map((item) => (item.id === activeCmsPage.id ? { ...item, [field]: value } : item)),
-    );
-  };
-
-  const currentScopeValues: ThemeScopeValues | null = themeSettings
-    ? themeScope === 'landing'
-      ? {
-          palette: themeSettings.landing_palette,
-          designStyle: themeSettings.landing_design_style,
-          buttonShape: themeSettings.landing_button_shape,
-          buttonEffect: themeSettings.landing_button_effect,
-        }
-      : themeScope === 'admin'
-        ? {
-            palette: themeSettings.admin_palette,
-            designStyle: themeSettings.admin_design_style,
-            buttonShape: themeSettings.admin_button_shape,
-            buttonEffect: themeSettings.admin_button_effect,
-          }
-        : {
-            palette: themeSettings.active_palette,
-            designStyle: themeSettings.design_style,
-            buttonShape: themeSettings.button_shape,
-            buttonEffect: themeSettings.button_effect,
-          }
-    : null;
-
-  const handleUpdateScope = (update: Partial<ThemeScopeValues>) => {
-    if (!themeSettings) return;
-    let next = { ...themeSettings };
-    if (themeScope === 'landing') {
-      next = {
-        ...next,
-        ...(update.palette ? { landing_palette: update.palette } : {}),
-        ...(update.designStyle ? { landing_design_style: update.designStyle } : {}),
-        ...(update.buttonShape ? { landing_button_shape: update.buttonShape } : {}),
-        ...(update.buttonEffect ? { landing_button_effect: update.buttonEffect } : {}),
-      };
-    } else if (themeScope === 'admin') {
-      next = {
-        ...next,
-        ...(update.palette ? { admin_palette: update.palette } : {}),
-        ...(update.designStyle ? { admin_design_style: update.designStyle } : {}),
-        ...(update.buttonShape ? { admin_button_shape: update.buttonShape } : {}),
-        ...(update.buttonEffect ? { admin_button_effect: update.buttonEffect } : {}),
-      };
-    } else {
-      next = {
-        ...next,
-        ...(update.palette ? { active_palette: update.palette } : {}),
-        ...(update.designStyle ? { design_style: update.designStyle } : {}),
-        ...(update.buttonShape ? { button_shape: update.buttonShape } : {}),
-        ...(update.buttonEffect ? { button_effect: update.buttonEffect } : {}),
-      };
-    }
-    setThemeSettings(next);
-    setPreviewTheme(next, themeScope);
   };
 
   const handleSaveAll = async () => {
@@ -252,12 +171,10 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             logo_url: logosCfg.footer || siteSettings.company.logo_url,
             logo_small_url: logosCfg.navbar || siteSettings.company.logo_small_url,
           },
-          map: siteSettings.map,
           seo: {
             ...siteSettings.seo,
             meta_image: logosCfg.seo_share || siteSettings.seo.meta_image,
           },
-          site: siteSettings.site,
           login: loginCfg,
           logos: logosCfg,
           appearance: appearanceCfg,
@@ -265,34 +182,9 @@ export const LoginAppearanceAdminPage: React.FC = () => {
         }),
       });
 
-      if (themeSettings) {
-        await apiRequest('/admin/themes', {
-          method: 'PUT',
-          body: JSON.stringify(themeSettings),
-        });
-      }
-
-      if (activeCmsPage) {
-        await apiRequest(`/admin/pages/${activeCmsPage.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-            title_fa: activeCmsPage.title_fa,
-            title_en: activeCmsPage.title_en,
-            subtitle_fa: activeCmsPage.subtitle_fa,
-            subtitle_en: activeCmsPage.subtitle_en,
-            content_fa: activeCmsPage.content_fa,
-            content_en: activeCmsPage.content_en,
-            meta_title: activeCmsPage.meta_title,
-            meta_description: activeCmsPage.meta_description,
-            meta_image: activeCmsPage.meta_image,
-          }),
-        });
-      }
-
-      setPreviewTheme(null);
       setPreviewBranding(null);
       await fetchBootstrap();
-      addToast('success', 'تمام تنظیمات لاگین، فونت‌ها، رنگ‌ها، لوگوها و متون صفحات با موفقیت ذخیره شد.');
+      addToast('success', 'تنظیمات لاگین، فونت‌ها، لوگوها و صفحات سیستمی ذخیره شد.');
     } catch (error: unknown) {
       addToast('error', error instanceof Error ? error.message : 'ذخیره تنظیمات با خطا مواجه شد.');
     } finally {
@@ -312,12 +204,10 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             logo_url: logosCfg.footer || siteSettings.company.logo_url,
             logo_small_url: logosCfg.navbar || siteSettings.company.logo_small_url,
           },
-          map: siteSettings.map,
           seo: {
             ...siteSettings.seo,
             meta_image: logosCfg.seo_share || siteSettings.seo.meta_image,
           },
-          site: siteSettings.site,
           logos: logosCfg,
         }),
       });
@@ -349,7 +239,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
         icon={Sparkles}
         eyebrow="Appearance & authentication studio"
         title="تنظیمات لاگین و تنظیمات ظاهری"
-        description="مدیریت متون و آیکون‌های ورود و ثبت‌نام، رنگ‌بندی و فونت بخش‌ها، لوگوهای ثابت و متحرک و محتوای صفحات سایت."
+        description="مدیریت ورود و ثبت‌نام، فونت‌ها، لوگوهای ثابت و متحرک و متون صفحات سیستمی؛ تنظیم رنگ‌بندی در استودیو هویت بصری انجام می‌شود."
         actions={(
           <>
             <button
@@ -381,9 +271,9 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           onChange={(next) => setTab(next as StudioTab)}
           items={[
             { id: 'login', label: 'لاگین و ثبت‌نام', icon: <ShieldCheck className="h-4 w-4" /> },
-            { id: 'fonts-colors', label: 'رنگ‌بندی و فونت کل بخش‌ها', icon: <Palette className="h-4 w-4" /> },
+            { id: 'fonts', label: 'فونت کل بخش‌ها', icon: <Type className="h-4 w-4" /> },
             { id: 'logos', label: 'لوگوها و فایل‌های متحرک', icon: <ImageIcon className="h-4 w-4" /> },
-            { id: 'pages', label: 'متون و لوگوی صفحات', icon: <FileText className="h-4 w-4" /> },
+            { id: 'pages', label: 'صفحات سیستمی', icon: <FileText className="h-4 w-4" /> },
           ]}
         />
       </div>
@@ -396,20 +286,6 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
               <h2 className="mb-4 text-sm font-extrabold text-(--theme-text)">متون صفحه ورود و احراز هویت دوعاملی (FA / EN)</h2>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="flex items-center gap-2 rounded-lg border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-xs font-medium text-(--theme-text) sm:col-span-2">
-                  <input
-                    type="checkbox"
-                    checked={siteSettings?.site.allow_registration ?? true}
-                    onChange={(event) => {
-                      if (!siteSettings) return;
-                      setSiteSettings({
-                        ...siteSettings,
-                        site: { ...siteSettings.site, allow_registration: event.target.checked },
-                      });
-                    }}
-                  />
-                  <span>فعال‌بودن ثبت‌نام عمومی (در صورت غیرفعال‌سازی، لینک ورود و مسیر مستقیم ثبت‌نام بسته می‌شود)</span>
-                </label>
                 <TextField label="برچسب امنیتی (فارسی)" value={loginCfg.badge_text_fa} onChange={(v) => setLoginCfg({ ...loginCfg, badge_text_fa: v })} />
                 <TextField label="Badge Text (EN)" dir="ltr" value={loginCfg.badge_text_en} onChange={(v) => setLoginCfg({ ...loginCfg, badge_text_en: v })} />
                 <TextField label="تیتر ورود (فارسی)" value={loginCfg.title_fa} onChange={(v) => setLoginCfg({ ...loginCfg, title_fa: v })} />
@@ -657,8 +533,8 @@ export const LoginAppearanceAdminPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: FONTS & SECTION COLORS */}
-      {tab === 'fonts-colors' && (
+      {/* TAB 2: FONTS */}
+      {tab === 'fonts' && (
         <div className="space-y-6">
           <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -714,29 +590,6 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             </div>
           </section>
 
-          {themeSettings && currentScopeValues && (
-            <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h2 className="text-base font-extrabold text-(--theme-text)">مدیریت رنگ‌بندی و زبان بصری کل بخش‌ها</h2>
-                  <p className="text-xs text-(--theme-text-muted)">رنگ‌های اصلی، پس‌زمینه، نوبار، فوتر و دکمه‌های هر بخش را جداگانه تنظیم کنید.</p>
-                </div>
-              </div>
-              <ThemeScopeTabs
-                selected={themeScope}
-                onSelect={(next) => {
-                  setThemeScope(next);
-                  setPreviewTheme(themeSettings, next);
-                }}
-              />
-              <ThemeScopeEditor
-                title={themeScope === 'landing' ? 'صفحه اصلی' : themeScope === 'admin' ? 'پنل مدیریت' : 'سایت عمومی'}
-                description="تغییرات بلافاصله در پیش‌نمایش فعال می‌شوند و با ذخیره نهایی در سراسر پرتال اعمال می‌گردند."
-                values={currentScopeValues}
-                onChange={handleUpdateScope}
-              />
-            </section>
-          )}
         </div>
       )}
 
@@ -936,99 +789,6 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             </div>
           </section>
 
-          {/* CMS Database Pages */}
-          <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
-            <h2 className="mb-4 text-base font-extrabold text-(--theme-text)">متون و لوگوی تمامی صفحات محتوایی پرتال (CMS Pages)</h2>
-            <div className="grid gap-5 lg:grid-cols-12">
-              <div className="space-y-1.5 lg:col-span-4">
-                {cmsPages.map((p) => {
-                  const active = p.id === selectedCmsPageId;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setSelectedCmsPageId(p.id)}
-                      className={`flex w-full items-center justify-between rounded-xl border px-3.5 py-2.5 text-start text-xs font-bold transition-colors ${
-                        active
-                          ? 'border-(--theme-primary-ink) bg-(--theme-primary)/10 text-(--theme-primary-ink)'
-                          : 'border-(--theme-border) bg-(--theme-surface) text-(--theme-text) hover:bg-(--theme-surface-muted)'
-                      }`}
-                    >
-                      <span>{p.title_fa}</span>
-                      <span className="font-mono text-[10px] opacity-75">/{p.slug}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {activeCmsPage && (
-                <div className="space-y-4 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4 lg:col-span-8">
-                  <div className="flex items-center justify-between border-b border-(--theme-border) pb-3">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-extrabold text-(--theme-text)">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                      <span>ویرایش صفحه: {activeCmsPage.title_fa}</span>
-                    </span>
-                    <span className="font-mono text-xs text-(--theme-text-muted)">slug: {activeCmsPage.slug}</span>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <TextField label="تیتر اصلی (فارسی)" value={activeCmsPage.title_fa} onChange={(v) => updateCmsPageField('title_fa', v)} />
-                    <TextField label="Main Title (EN)" dir="ltr" value={activeCmsPage.title_en} onChange={(v) => updateCmsPageField('title_en', v)} />
-                    <TextField label="زیرتیتر (فارسی)" value={activeCmsPage.subtitle_fa || ''} onChange={(v) => updateCmsPageField('subtitle_fa', v)} />
-                    <TextField label="Subtitle (EN)" dir="ltr" value={activeCmsPage.subtitle_en || ''} onChange={(v) => updateCmsPageField('subtitle_en', v)} />
-                    <TextField
-                      label="برچسب بالای صفحه (Badge FA)"
-                      value={pagesConfig[activeCmsPage.slug]?.badge_fa || ''}
-                      onChange={(v) => updatePageOverride(activeCmsPage.slug, { badge_fa: v })}
-                    />
-                    <TextField
-                      label="Top Badge (EN)"
-                      dir="ltr"
-                      value={pagesConfig[activeCmsPage.slug]?.badge_en || ''}
-                      onChange={(v) => updatePageOverride(activeCmsPage.slug, { badge_en: v })}
-                    />
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="block space-y-1">
-                      <span className="text-[11px] font-semibold text-(--theme-text-muted)">متن بدنه (فارسی)</span>
-                      <textarea
-                        rows={4}
-                        value={activeCmsPage.content_fa}
-                        onChange={(e) => updateCmsPageField('content_fa', e.target.value)}
-                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
-                      />
-                    </label>
-                    <label className="block space-y-1">
-                      <span className="text-[11px] font-semibold text-(--theme-text-muted)">Body Content (EN)</span>
-                      <textarea
-                        rows={4}
-                        dir="ltr"
-                        value={activeCmsPage.content_en}
-                        onChange={(e) => updateCmsPageField('content_en', e.target.value)}
-                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
-                      />
-                    </label>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <MediaUrlField
-                      label="لوگوی اختصاصی هدر این صفحه (ثابت یا متحرک)"
-                      value={pagesConfig[activeCmsPage.slug]?.logo_url || ''}
-                      onChange={(url) => updatePageOverride(activeCmsPage.slug, { logo_url: url })}
-                      showAnimatedPresets
-                    />
-                    <MediaUrlField
-                      label="تصویر سئو / کاور این صفحه (Meta Image)"
-                      value={activeCmsPage.meta_image || ''}
-                      onChange={(url) => updateCmsPageField('meta_image', url)}
-                      folder="pages"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
         </div>
       )}
     </div>

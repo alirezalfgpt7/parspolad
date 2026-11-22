@@ -3,6 +3,7 @@ import { Check, GlassWater, Square } from 'lucide-react';
 import { ColorPicker } from '../../ui/ColorPicker.tsx';
 import type { LandingHeaderSettings, ThemePalette } from '../../../types/index.ts';
 import { ensureContrastAgainst } from '../../../utils/themeContrast.ts';
+import { WaveHeroEffect } from '../../effects/WaveHeroEffect.tsx';
 
 interface LandingHeaderSettingsEditorProps {
   settings: LandingHeaderSettings;
@@ -115,6 +116,33 @@ export const LandingHeaderSettingsEditor: React.FC<LandingHeaderSettingsEditorPr
         )}
       </div>
 
+      <div className="space-y-3">
+        <h4 className="text-xs font-bold text-(--theme-text)">رنگ موج زیر اسلایدر صفحهٔ اصلی</h4>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {([
+            { index: 0, label: 'رنگ موج اول' },
+            { index: 1, label: 'رنگ موج دوم' },
+            { index: 2, label: 'رنگ موج سوم' },
+          ] as const).map(({ index, label }) => (
+            <ColorPicker
+              key={index}
+              label={label}
+              value={settings.wave_colors[index]}
+              onChange={(color) => {
+                const wave_colors: [string, string, string] = [...settings.wave_colors];
+                wave_colors[index] = color;
+                update({ wave_colors });
+              }}
+            />
+          ))}
+          <ColorPicker
+            label="رنگ موج پایه"
+            value={settings.wave_bottom_color}
+            onChange={(wave_bottom_color) => update({ wave_bottom_color })}
+          />
+        </div>
+      </div>
+
       <div
         className="relative overflow-hidden rounded-xl border border-(--theme-border) p-4 sm:p-6"
         style={{
@@ -145,6 +173,17 @@ export const LandingHeaderSettingsEditor: React.FC<LandingHeaderSettingsEditorPr
           >
             درخواست همکاری
           </span>
+        </div>
+      </div>
+      <div
+        className="relative h-24 overflow-hidden rounded-xl border border-(--theme-border) bg-slate-950"
+        aria-label="پیش‌نمایش موج زیر اسلایدر صفحه اصلی"
+      >
+        <div className="absolute inset-x-0 bottom-0">
+          <WaveHeroEffect
+            waveColors={settings.wave_colors}
+            bottomFill={`color-mix(in srgb, var(--theme-bg) 84%, ${settings.wave_bottom_color})`}
+          />
         </div>
       </div>
     </section>

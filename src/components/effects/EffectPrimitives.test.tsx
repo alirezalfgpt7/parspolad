@@ -30,6 +30,17 @@ describe('effect primitives & standalone effects', () => {
     expect(button.getAttribute('data-effect-override')).toBeNull();
   });
 
+  it('applies independent colors to the three animated wave layers', () => {
+    const { container } = render(
+      <WaveHeroEffect waveColors={['#111111', '#222222', '#333333']} />,
+    );
+    const layers = container.querySelectorAll('.effect-waves-parallax > use');
+
+    expect(layers[0]?.getAttribute('fill')).toContain('#111111');
+    expect(layers[1]?.getAttribute('fill')).toContain('#222222');
+    expect(layers[2]?.getAttribute('fill')).toContain('#333333');
+  });
+
   it('keeps one slideshow image active while cycling', () => {
     vi.useFakeTimers();
     try {

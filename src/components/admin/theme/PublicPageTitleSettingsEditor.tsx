@@ -18,6 +18,14 @@ export const PublicPageTitleSettingsEditor: React.FC<PublicPageTitleSettingsEdit
   const update = (patch: Partial<PublicPageTitleSettings>) => {
     onChange({ ...settings, ...patch });
   };
+  const updateWaveColor = (index: 0 | 1 | 2, color: string) => {
+    const wave_colors: [string, string, string] = [...settings.wave_colors];
+    wave_colors[index] = color;
+    update({
+      wave_colors,
+      ...(index === 0 ? { wave_color: color } : {}),
+    });
+  };
 
   return (
     <section className="theme-editor-section space-y-5">
@@ -48,11 +56,6 @@ export const PublicPageTitleSettingsEditor: React.FC<PublicPageTitleSettingsEdit
           label="رنگ حاشیه"
           value={settings.border_color}
           onChange={(border_color) => update({ border_color })}
-        />
-        <ColorPicker
-          label="رنگ موج"
-          value={settings.wave_color}
-          onChange={(wave_color) => update({ wave_color })}
         />
         <ColorPicker
           label="رنگ آیکن"
@@ -87,6 +90,21 @@ export const PublicPageTitleSettingsEditor: React.FC<PublicPageTitleSettingsEdit
         </label>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        {([
+          { index: 0, label: 'رنگ موج اول' },
+          { index: 1, label: 'رنگ موج دوم' },
+          { index: 2, label: 'رنگ موج سوم' },
+        ] as const).map(({ index, label }) => (
+          <ColorPicker
+            key={index}
+            label={label}
+            value={settings.wave_colors[index]}
+            onChange={(color) => updateWaveColor(index, color)}
+          />
+        ))}
+      </div>
+
       <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-(--theme-text)">
         <input
           type="checkbox"
@@ -102,10 +120,11 @@ export const PublicPageTitleSettingsEditor: React.FC<PublicPageTitleSettingsEdit
         backgroundColor: settings.background_color,
         borderColor: settings.border_color,
         borderRadius: `${settings.radius}px`,
+        clipPath: `inset(0 round ${settings.radius}px)`,
       }}>
         <div className="relative z-10 flex min-h-24 items-center justify-between gap-4">
           <div className="min-w-0">
-            <span className="mb-1 block text-xs font-semibold" style={{ color: settings.wave_color }}>معرفی بخش</span>
+            <span className="mb-1 block text-xs font-semibold" style={{ color: settings.wave_colors[0] }}>معرفی بخش</span>
             <h4 className="text-lg font-extrabold" style={{ color: settings.title_color }}>عنوان نمونه صفحه</h4>
             <p className="mt-1 text-xs leading-6" style={{ color: settings.subtitle_color }}>پیش‌نمایش عنوان و توضیح صفحهٔ عمومی</p>
           </div>
@@ -124,7 +143,7 @@ export const PublicPageTitleSettingsEditor: React.FC<PublicPageTitleSettingsEdit
           <div className="pointer-events-none absolute inset-x-0 bottom-0">
             <WaveHeroEffect
               bottomFill="transparent"
-              tintColor={settings.wave_color}
+              waveColors={settings.wave_colors}
               heightClassName="!h-10"
             />
           </div>

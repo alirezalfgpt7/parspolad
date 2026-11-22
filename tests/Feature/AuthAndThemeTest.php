@@ -83,6 +83,8 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
             'mode' => 'solid',
             'radius' => 24,
             'blur' => 12,
+            'wave_colors' => ['#DC2626', '#EF4444', '#F87171'],
+            'wave_bottom_color' => '#EF4444',
         ],
         'public_page_title_settings' => [
             'background_color' => '#0F172A',
@@ -90,6 +92,7 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
             'subtitle_color' => '#CBD5E1',
             'border_color' => '#334155',
             'wave_color' => '#DC2626',
+            'wave_colors' => ['#DC2626', '#EF4444', '#F87171'],
             'icon_name' => 'Globe',
             'icon_color' => '#F8FAFC',
             'icon_background_color' => '#1E293B',
@@ -115,7 +118,10 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
         ->assertJsonPath('landing_button_shape', 'square')
         ->assertJsonPath('landing_header_settings.mode', 'solid')
         ->assertJsonPath('landing_header_settings.radius', 24)
+        ->assertJsonPath('landing_header_settings.wave_colors.1', '#EF4444')
+        ->assertJsonPath('landing_header_settings.wave_bottom_color', '#EF4444')
         ->assertJsonPath('public_page_title_settings.wave_color', '#DC2626')
+        ->assertJsonPath('public_page_title_settings.wave_colors.2', '#F87171')
         ->assertJsonPath('public_page_title_settings.radius', 32)
         ->assertJsonPath('admin_design_style', 'modern')
         ->assertJsonPath('admin_palette.primary', '#0F4C81')
@@ -133,6 +139,12 @@ it('authenticates seeded super admin with Sanctum token and updates theme', func
     $this->withToken($token)->putJson('/api/v1/admin/themes', $invalidPageTitleSettings)
         ->assertUnprocessable()
         ->assertJsonValidationErrors('public_page_title_settings.radius');
+
+    $invalidWaveColor = $updateTheme->json();
+    $invalidWaveColor['landing_header_settings']['wave_colors'][1] = 'red';
+    $this->withToken($token)->putJson('/api/v1/admin/themes', $invalidWaveColor)
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('landing_header_settings.wave_colors.1');
 });
 
 it('requires a valid server-side captcha for login', function (): void {

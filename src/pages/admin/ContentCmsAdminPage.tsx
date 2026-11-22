@@ -37,15 +37,15 @@ const publicPagePaths: Record<string, string> = {
 };
 
 export const ContentCmsAdminPage: React.FC = () => {
-  const { addToast } = useAppStore();
+  const { addToast, bootstrap } = useAppStore();
   const [tab, setTab] = useState<Tab>('pages');
   const [pages, setPages] = useState<PageContent[]>([]);
   const [editPage, setEditPage] = useState<PageContent | null>(null);
   const [savingPage, setSavingPage] = useState(false);
   const isHomeSpotlight = editPage?.slug === 'home-spotlight';
-  const getPageMetadataText = (key: string): string => {
+  const getPageMetadataText = (key: string, fallback = ''): string => {
     const value = editPage?.metadata?.[key];
-    return typeof value === 'string' ? value : '';
+    return typeof value === 'string' ? value : fallback;
   };
   const updatePageMetadata = (key: string, value: string) => {
     setEditPage((current) =>
@@ -168,6 +168,44 @@ export const ContentCmsAdminPage: React.FC = () => {
                   <input dir="ltr" value={editPage.subtitle_en || ''} onChange={(e) => setEditPage({ ...editPage, subtitle_en: e.target.value })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-xs text-(--theme-input-text) placeholder:text-(--theme-placeholder)" />
                 </label>
               </div>
+              {!isHomeSpotlight && (
+                <section className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+                  <div>
+                    <h3 className="text-xs font-bold text-(--theme-text)">نشان و لوگوی سربرگ این صفحه</h3>
+                    <p className="mt-1 text-[11px] leading-5 text-(--theme-text-muted)">
+                      تنظیمات سربرگ را همراه عنوان و محتوای همین صفحه در یک بخش مدیریت کنید.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                      نشان صفحه (فارسی)
+                      <input
+                        value={getPageMetadataText('badge_fa', bootstrap?.pages_config?.[editPage.slug]?.badge_fa || '')}
+                        onChange={(event) => updatePageMetadata('badge_fa', event.target.value)}
+                        className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
+                      />
+                    </label>
+                    <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                      Page badge (English)
+                      <input
+                        dir="ltr"
+                        value={getPageMetadataText('badge_en', bootstrap?.pages_config?.[editPage.slug]?.badge_en || '')}
+                        onChange={(event) => updatePageMetadata('badge_en', event.target.value)}
+                        className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder)"
+                      />
+                    </label>
+                    <div className="sm:col-span-2">
+                      <MediaUrlField
+                        label="لوگوی اختصاصی سربرگ (ثابت یا متحرک)"
+                        value={getPageMetadataText('logo_url', bootstrap?.pages_config?.[editPage.slug]?.logo_url || '')}
+                        onChange={(url) => updatePageMetadata('logo_url', url)}
+                        folder="logos"
+                        showAnimatedPresets
+                      />
+                    </div>
+                  </div>
+                </section>
+              )}
               {isHomeSpotlight && (
                 <div className="space-y-2 rounded-xl border border-amber-500/25 bg-amber-500/5 p-3 text-[11px] leading-5 text-(--theme-text-muted)">
                   عنوان/نشان و لوگوی بخش ویژه در تنظیمات ظاهر است؛ تصاویر، توضیحات و دکمه‌های همین اسلاید در این فرم ویرایش می‌شوند.

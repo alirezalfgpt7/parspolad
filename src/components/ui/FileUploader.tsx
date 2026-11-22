@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FileCheck2, FileText, Film, Image as ImageIcon, Upload } from 'lucide-react';
+import { Camera, FileCheck2, FileText, Film, Image as ImageIcon, Upload } from 'lucide-react';
 import { apiRequest, fileToBase64 } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
@@ -12,6 +12,7 @@ interface FileUploaderProps {
   accept?: string;
   label?: string;
   currentUrl?: string;
+  variant?: 'dropzone' | 'icon-button';
   onUploaded: (url: string, media?: MediaFile) => void;
 }
 
@@ -23,6 +24,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   accept = '.pdf,.docx,.xlsx,.dwg,.zip,.mp4,.webm,.jpg,.jpeg,.png,.webp,.gif',
   label = 'انتخاب یا رها کردن فایل (JPG, PNG, WEBP, GIF, MP4, WEBM, PDF, DOCX, ZIP)',
   currentUrl,
+  variant = 'dropzone',
   onUploaded,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +64,31 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
       setUploading(false);
     }
   };
+
+  if (variant === 'icon-button') {
+    return (
+      <div className="absolute -bottom-1 -right-1 z-10">
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={(event) => handleFile(event.target.files?.[0])}
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+          aria-label={uploading ? 'در حال آپلود تصویر پروفایل' : label}
+          aria-busy={uploading}
+          title={label}
+          className="grid h-8 w-8 place-items-center rounded-full border-2 border-(--theme-card-surface) bg-(--theme-primary) text-(--theme-primary-foreground) shadow-md transition hover:bg-(--theme-primary-hover) disabled:cursor-wait disabled:opacity-70"
+        >
+          <Camera className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">

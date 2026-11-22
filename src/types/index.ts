@@ -57,6 +57,8 @@ export interface LandingHeaderSettings {
   mode: LandingHeaderMode;
   radius: number;
   blur: number;
+  wave_colors: [string, string, string];
+  wave_bottom_color: string;
 }
 
 export interface PublicPageTitleSettings {
@@ -65,6 +67,7 @@ export interface PublicPageTitleSettings {
   subtitle_color: string;
   border_color: string;
   wave_color: string;
+  wave_colors: [string, string, string];
   icon_name: string;
   icon_color: string;
   icon_background_color: string;

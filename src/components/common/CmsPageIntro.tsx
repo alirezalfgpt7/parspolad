@@ -24,9 +24,12 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
 }) => {
   const { page, title, subtitle, content, metaTitle, metaDescription, language, badge, logoUrl } = useCmsPage(slug);
   const theme = useAppStore((state) => state.previewTheme || state.bootstrap?.theme);
+  const savedTitleSettings = theme?.public_page_title_settings;
+  const legacyWaveColor = savedTitleSettings?.wave_color || DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS.wave_color;
   const titleSettings = {
     ...DEFAULT_PUBLIC_PAGE_TITLE_SETTINGS,
-    ...theme?.public_page_title_settings,
+    ...savedTitleSettings,
+    wave_colors: savedTitleSettings?.wave_colors ?? [legacyWaveColor, legacyWaveColor, legacyWaveColor],
   };
   if (!page) return null;
 
@@ -47,6 +50,7 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
             backgroundColor: titleSettings.background_color,
             borderColor: titleSettings.border_color,
             borderRadius: `${titleSettings.radius}px`,
+            clipPath: `inset(0 round ${titleSettings.radius}px)`,
           }}
         >
           <div className="flex flex-wrap items-center justify-between gap-6 px-6 pt-8 pb-16 sm:px-10">
@@ -66,7 +70,7 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
                 />
               </div>
               <div className="min-w-0">
-                <p className="mb-1 text-xs font-semibold" style={{ color: titleSettings.wave_color }}>
+                <p className="mb-1 text-xs font-semibold" style={{ color: titleSettings.wave_colors[0] }}>
                   {badge || (language === 'fa' ? 'درباره ما' : 'About Us')}
                 </p>
                 <h1 className={titleClassName} style={{ color: titleSettings.title_color }}>{title}</h1>
@@ -90,7 +94,7 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
             <div className="pointer-events-none absolute inset-x-0 bottom-0">
               <WaveHeroEffect
                 bottomFill="transparent"
-                tintColor={titleSettings.wave_color}
+                waveColors={titleSettings.wave_colors}
                 heightClassName="!h-12"
               />
             </div>

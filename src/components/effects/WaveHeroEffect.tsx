@@ -8,6 +8,7 @@ interface WaveHeroEffectProps {
   bottomFill?: string;
   tintRgb?: string;
   tintColor?: string;
+  waveColors?: readonly [string, string, string];
   flipVertical?: boolean;
 }
 
@@ -21,12 +22,16 @@ export const WaveHeroEffect: React.FC<WaveHeroEffectProps> = ({
   bottomFill = 'var(--theme-bg)',
   tintRgb = '255 255 255',
   tintColor,
+  waveColors,
   flipVertical = false,
 }) => {
   const pathId = useId();
   const tintFill = (opacity: number) => tintColor
     ? `color-mix(in srgb, ${tintColor} ${Math.round(opacity * 100)}%, transparent)`
     : `rgb(${tintRgb} / ${opacity})`;
+  const layerFill = (index: 0 | 1 | 2, opacity: number) => waveColors
+    ? `color-mix(in srgb, ${waveColors[index]} ${Math.round(opacity * 100)}%, transparent)`
+    : tintFill(opacity);
 
   return (
     <div
@@ -52,9 +57,9 @@ export const WaveHeroEffect: React.FC<WaveHeroEffectProps> = ({
           />
         </defs>
         <g className="effect-waves-parallax">
-          <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="0" fill={tintFill(0.28)} />
-          <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="3" fill={tintFill(0.20)} />
-          <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="5" fill={tintFill(0.14)} />
+          <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="0" fill={layerFill(0, 0.28)} />
+          <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="3" fill={layerFill(1, 0.20)} />
+          <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="5" fill={layerFill(2, 0.14)} />
           <use xlinkHref={`#${pathId}`} href={`#${pathId}`} x="48" y="7" fill={bottomFill} />
         </g>
       </svg>

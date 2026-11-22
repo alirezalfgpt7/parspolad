@@ -96,17 +96,15 @@ export const ProfilePage: React.FC = () => {
       />
       <EffectProfileCard className="mx-auto w-full max-w-2xl rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-6 shadow-(--theme-card-shadow)">
       <form onSubmit={handleSubmit(handleSave)} className="space-y-4">
-        <div className="flex items-center gap-4">
+        <div className="relative h-16 w-16">
           <EffectProfileAvatar src={avatar} alt={name} className="h-16 w-16 rounded-full border border-(--theme-border) object-cover" />
-          <div className="flex-1">
-            <FileUploader
-              folder="avatars"
-              accept=".jpg,.jpeg,.png,.webp,.gif"
-              currentUrl={avatar}
-              label="آپلود تصویر آواتار جدید"
-              onUploaded={(url) => setValue('avatar', url, { shouldValidate: true, shouldDirty: true })}
-            />
-          </div>
+          <FileUploader
+            variant="icon-button"
+            folder="avatars"
+            accept=".jpg,.jpeg,.png,.webp,.gif"
+            label="تغییر تصویر پروفایل"
+            onUploaded={(url) => setValue('avatar', url, { shouldValidate: true, shouldDirty: true })}
+          />
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-(--theme-text)">نام و نام خانوادگی</label>

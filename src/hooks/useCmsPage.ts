@@ -9,22 +9,25 @@ export const useCmsPage = (slug: string) => {
 
   const cmsTitle = page ? (language === 'fa' ? page.title_fa : page.title_en) : '';
   const cmsSubtitle = page ? (language === 'fa' ? page.subtitle_fa : page.subtitle_en) : '';
-  const overrideTitle = language === 'fa' ? override.title_fa : override.title_en;
-  const overrideSubtitle = language === 'fa' ? override.subtitle_fa : override.subtitle_en;
-  const badge = language === 'fa' ? override.badge_fa : override.badge_en;
+  const metadataValue = (key: string): string | undefined => {
+    const value = page?.metadata?.[key];
+    return typeof value === 'string' ? value : undefined;
+  };
+  const pageBadge = metadataValue(language === 'fa' ? 'badge_fa' : 'badge_en');
+  const legacyBadge = language === 'fa' ? override.badge_fa : override.badge_en;
 
   return {
     page,
     language,
-    badge: badge || '',
-    logoUrl: override.logo_url || '',
-    title: (overrideTitle && overrideTitle.trim()) || cmsTitle,
-    subtitle: (overrideSubtitle && overrideSubtitle.trim()) || cmsSubtitle,
+    badge: pageBadge ?? legacyBadge ?? '',
+    logoUrl: metadataValue('logo_url') ?? override.logo_url ?? '',
+    title: cmsTitle,
+    subtitle: cmsSubtitle,
     content: page ? (language === 'fa' ? page.content_fa : page.content_en) : '',
     metaTitle: page
       ? language === 'fa'
-        ? page.meta_title || (overrideTitle && overrideTitle.trim()) || page.title_fa
-        : page.meta_title_en || (overrideTitle && overrideTitle.trim()) || page.title_en
+        ? page.meta_title || page.title_fa
+        : page.meta_title_en || page.title_en
       : '',
     metaDescription: page
       ? language === 'fa'

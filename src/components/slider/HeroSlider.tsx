@@ -7,6 +7,7 @@ import { cn } from '../../utils/i18n.ts';
 import { ZeroBrokenImage } from '../ui/ZeroBrokenImage.tsx';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
 import { EffectAction, ParticleHoverNetwork, WaveHeroEffect } from '../effects/index.ts';
+import { DEFAULT_LANDING_HEADER_SETTINGS } from '../../utils/brandingDefaults.ts';
 
 const isVideoMedia = (src: string): boolean => /\.(mp4|webm|ogv|ogg)(?:$|[?#])/i.test(src);
 
@@ -66,6 +67,11 @@ const AnimatedHeadline: React.FC<{
 
 export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
   const language = useAppStore((state) => state.language);
+  const theme = useAppStore((state) => state.previewTheme || state.bootstrap?.theme);
+  const landingHeaderSettings = {
+    ...DEFAULT_LANDING_HEADER_SETTINGS,
+    ...theme?.landing_header_settings,
+  };
   const shouldReduceMotion = usePrefersReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(
@@ -216,8 +222,8 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
         <WaveHeroEffect
-          bottomFill="color-mix(in srgb, var(--theme-bg) 84%, #ef4444)"
-          tintRgb="220 38 38"
+          waveColors={landingHeaderSettings.wave_colors}
+          bottomFill={`color-mix(in srgb, var(--theme-bg) 84%, ${landingHeaderSettings.wave_bottom_color})`}
         />
       </div>
 

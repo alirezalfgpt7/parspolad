@@ -280,6 +280,15 @@
   box-shadow: none;
 }
 
+.public-navbar .effect-expanding-search {
+  border-color: color-mix(in srgb, var(--theme-header-text) 35%, transparent);
+  color: var(--theme-header-text);
+}
+
+.public-navbar .effect-expanding-search__input {
+  color: var(--theme-header-text);
+}
+
 .public-navbar .effect-navbar-control:hover,
 .public-navbar .effect-navbar-control:focus-visible,
 .public-info-bar .effect-navbar-control:hover,
@@ -287,6 +296,11 @@
   border-color: color-mix(in srgb, var(--theme-header-text) 60%, transparent);
   background: color-mix(in srgb, var(--theme-header-text) 17%, transparent);
   color: var(--theme-header-text);
+}
+
+.public-navbar .effect-expanding-search:hover,
+.public-navbar .effect-expanding-search:focus-within {
+  border-color: color-mix(in srgb, var(--theme-header-text) 60%, transparent);
 }
 
 .public-navbar .effect-theme-switch,
