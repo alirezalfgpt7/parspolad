@@ -1,14 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import type { Article, Language } from '../../../types/index.ts';
+import type { Language } from '../../../types/index.ts';
+import type { HomepageArticle } from '../../../utils/homepageSections.ts';
 import { Reveal } from '../../effects/index.ts';
 import { ZeroBrokenImage } from '../../ui/ZeroBrokenImage.tsx';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion.ts';
 import { HomeSectionHeading } from './HomeSectionHeading.tsx';
+import { getArticleImageObjectFit } from '../../../utils/articleImageFit.ts';
 
 interface HomeNewsSectionProps {
-  articles: Article[];
+  articles: HomepageArticle[];
   language: Language;
   text: (key: string) => string;
 }
@@ -37,7 +39,8 @@ export const HomeNewsSection: React.FC<HomeNewsSectionProps> = ({ articles, lang
                 src={article.cover_image}
                 alt={language === 'fa' ? article.title_fa : article.title_en}
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
+                className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
+                style={{ objectFit: getArticleImageObjectFit(article.image_fit), objectPosition: 'center' }}
               />
               <div className="absolute inset-0 flex flex-col justify-end bg-slate-950/60 p-5 text-white backdrop-blur-[2px] transition-transform duration-500 ease-out md:translate-y-full md:group-hover:translate-y-0 md:group-focus-visible:translate-y-0 motion-reduce:transition-none">
                 <div className="mb-auto flex items-center gap-2 text-xs text-white/80 tabular-nums">

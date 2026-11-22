@@ -23,6 +23,7 @@ class Article extends Model
         'category_fa',
         'category_en',
         'cover_image',
+        'image_fit',
         'author_fa',
         'published_at',
         'read_minutes',

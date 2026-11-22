@@ -255,7 +255,7 @@ export const LiveChatAdminPage: React.FC = () => {
           </div>
         </aside>
 
-        <section className="flex min-h-[24rem] min-w-0 flex-col">
+        <section className="flex min-h-96 min-w-0 flex-col">
           {!selectedConversation ? (
             <div className="grid flex-1 place-items-center p-8 text-center text-sm text-(--theme-text-muted)">
               {isPersian ? 'برای مشاهده پیام‌ها یک گفتگو را انتخاب کنید.' : 'Select a conversation to view its messages.'}

@@ -113,7 +113,7 @@ export const ProjectDetailPage: React.FC = () => {
             />
           </div>
 
-          {project.images.length > 1 && (
+          {project.images.length > 0 && (
             <div className="flex flex-wrap gap-3">
               {project.images.map((img, i) => (
                 <button
@@ -130,11 +130,11 @@ export const ProjectDetailPage: React.FC = () => {
             </div>
           )}
 
-          {project.videos.length > 0 && (
-            <div className="rounded-2xl border border-(--theme-card-border) bg-slate-950 p-3 shadow-(--theme-card-shadow)">
-              <video src={project.videos[0]} controls className="max-h-80 w-full rounded-xl" />
+          {project.videos.map((video, index) => (
+            <div key={`${video}-${index}`} className="rounded-2xl border border-(--theme-card-border) bg-slate-950 p-3 shadow-(--theme-card-shadow)">
+              <video src={video} controls preload="metadata" className="max-h-80 w-full rounded-xl" />
             </div>
-          )}
+          ))}
         </div>
 
         {/* Specs & Documents */}

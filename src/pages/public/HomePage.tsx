@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Compass, Factory, PlayCircle, ShieldCheck, Wrench } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
-import type { Article, Project } from '../../types/index.ts';
+import type { HomepageSectionData } from '../../utils/homepageSections.ts';
 import { BrandLogo } from '../../components/common/BrandLogo.tsx';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { StatCounter } from '../../components/ui/StatCounter.tsx';
@@ -27,31 +27,34 @@ import './HomePage.css';
 export const HomePage: React.FC = () => {
   const { bootstrap, previewPagesConfig, language } = useAppStore();
   const shouldReduceMotion = usePrefersReducedMotion();
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [homeContent, setHomeContent] = useState<HomepageSectionData | null>(null);
   const { page: spotlight } = useCmsPage('home-spotlight');
 
   useEffect(() => {
-    apiRequest<{ data: Project[] }>('/projects?per_page=6')
-      .then((res) => {
-        if (!Array.isArray(res.data)) {
-          throw new TypeError('The projects API response must include a data array.');
+    let active = true;
+    apiRequest<{ data: HomepageSectionData }>('/homepage-sections')
+      .then(({ data }) => {
+        if (
+          !Array.isArray(data?.projects) ||
+          !Array.isArray(data.articles) ||
+          !Array.isArray(data.services) ||
+          !Array.isArray(data.partners) ||
+          !Array.isArray(data.kpis) ||
+          !Array.isArray(data.banners)
+        ) {
+          throw new TypeError('The homepage sections API response must include all section arrays.');
         }
-        setFeaturedProjects(res.data);
+        if (active) setHomeContent(data);
       })
-      .catch((error: unknown) => console.error('Could not load featured projects:', error));
-    apiRequest<{ data: Article[] }>('/articles?per_page=3')
-      .then((res) => {
-        if (!Array.isArray(res.data)) {
-          throw new TypeError('The articles API response must include a data array.');
-        }
-        setArticles(res.data);
-      })
-      .catch((error: unknown) => console.error('Could not load home page articles:', error));
+      .catch((error: unknown) => console.error('Could not load homepage sections:', error));
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const kpis = bootstrap?.kpis || [];
-  const services = bootstrap?.services || [];
+  const kpis = homeContent?.kpis || [];
+  const services = homeContent?.services || [];
   const capabilityStages = [
     {
       slug: 'design-engineering',
@@ -87,8 +90,10 @@ export const HomePage: React.FC = () => {
       return stageRank(a.slug, a.sort_order) - stageRank(b.slug, b.sort_order);
     })
     .slice(0, 4);
-  const partners = bootstrap?.partners || [];
-  const banners = bootstrap?.banners?.filter((b) => b.placement === 'landing_mid') || [];
+  const partners = homeContent?.partners || [];
+  const banners = homeContent?.banners || [];
+  const featuredProjects = homeContent?.projects || [];
+  const articles = homeContent?.articles || [];
   const ArrowIcon = language === 'fa' ? ArrowLeft : ArrowRight;
   const homeText = (key: string): string => {
     const value = spotlight?.metadata?.[`${key}_${language}`];
@@ -175,6 +180,7 @@ export const HomePage: React.FC = () => {
       />
 
       {/* Industrial performance metrics */}
+      {kpis.length > 0 && (
       <section
         id="home-performance"
         className={`industrial-performance home-page-snap-section${performanceBackgroundColor ? ' industrial-performance--custom-background' : ''}`}
@@ -315,8 +321,10 @@ export const HomePage: React.FC = () => {
           </span>
         </div>
       </section>
+      )}
 
       {/* Full-cycle wellhead engineering and manufacturing route */}
+      {services.length > 0 && (
       <section id="home-capabilities" className="home-page-snap-section mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -444,6 +452,7 @@ export const HomePage: React.FC = () => {
           </ol>
         </div>
       </section>
+      )}
 
       {spotlight && (
         <section
@@ -551,7 +560,9 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Featured Projects */}
-      <HomeProjectsSection projects={featuredProjects} language={language} text={homeText} />
+      {featuredProjects.length > 0 && (
+        <HomeProjectsSection projects={featuredProjects} language={language} text={homeText} />
+      )}
 
       {/* Effect 067: Infinite Brand Partners Strip */}
       {partners.length > 0 && (
@@ -579,7 +590,9 @@ export const HomePage: React.FC = () => {
       )}
 
       {/* Latest News & Technical Articles */}
-      <HomeNewsSection articles={articles} language={language} text={homeText} />
+      {articles.length > 0 && (
+        <HomeNewsSection articles={articles} language={language} text={homeText} />
+      )}
 
       {/* Mid/Bottom Conversion CTA Banner */}
       {banners.map((banner) => (

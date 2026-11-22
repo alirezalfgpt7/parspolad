@@ -176,7 +176,7 @@ export interface ProjectCategory {
 }
 
 export interface ProjectDocument {
-  id: number;
+  id?: number;
   title_fa: string;
   title_en: string;
   file_url: string;
@@ -327,6 +327,7 @@ export interface Article {
   category_en: string;
   article_category_id?: number | null;
   cover_image: string;
+  image_fit?: 'cover' | 'fit' | 'stretch' | 'center';
   author_fa: string;
   published_at: string;
   read_minutes: number;

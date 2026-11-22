@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void {
     // Public API endpoints
     Route::get('/bootstrap', [PublicController::class, 'bootstrap']);
+    Route::get('/homepage-sections', [PublicController::class, 'homepageSections']);
     Route::get('/sitemap', [PublicController::class, 'sitemap']);
     Route::get('/search', [PublicController::class, 'search']);
     Route::post('/contact', [PublicController::class, 'submitContact'])->middleware('throttle:5,1');

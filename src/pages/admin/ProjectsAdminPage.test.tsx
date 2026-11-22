@@ -96,10 +96,22 @@ describe('ProjectsAdminPage', () => {
     fireEvent.change(screen.getByPlaceholderText('جستجو در گزینه‌ها...'), {
       target: { value: 'specialty' },
     });
-
     await waitFor(() => {
       expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('search=specialty'));
     }, { timeout: 1500 });
+  });
+
+  it('offers fields for project videos, gallery images, and downloadable documents', async () => {
+    render(<ProjectsAdminPage />);
+
+    await screen.findByText('دسته آزمایشی');
+    fireEvent.click(screen.getByRole('button', { name: 'پروژه جدید' }));
+    expect(await screen.findByText('ویدئوهای پروژه')).toBeTruthy();
+    expect(screen.getByText('گالری تصاویر پروژه')).toBeTruthy();
+    expect(screen.getByText('مدارک و مستندات قابل دانلود')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'افزودن ویدئو' }));
+    expect(await screen.findByText('ویدئوی پروژه 1')).toBeTruthy();
   });
 
   it('saves an existing category with a nullable description', async () => {

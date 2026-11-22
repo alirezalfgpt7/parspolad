@@ -146,7 +146,7 @@ export const PublicNavbar: React.FC = () => {
                     setActiveMegaChildId(null);
                   }}
                   aria-current={pathname === item.url ? 'page' : undefined}
-                  className="!gap-1.5 !py-1 !text-[13px]"
+                  className="gap-1.5! py-1! text-[13px]!"
                 >
                   {item.icon && <DynamicLucideIcon name={item.icon} className="h-4 w-4 opacity-75" />}
                   <span>{label}</span>

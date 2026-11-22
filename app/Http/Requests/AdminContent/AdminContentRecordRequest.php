@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\AdminContent;
 
-use App\Support\AdminContentRegistry;
 use App\Models\Department;
+use App\Support\AdminContentRegistry;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -80,6 +80,9 @@ abstract class AdminContentRecordRequest extends FormRequest
 
             if ($field === 'background_color') {
                 $fieldRules[] = 'regex:/^#[0-9a-fA-F]{6}$/';
+            }
+            if ($resource === 'articles' && $field === 'image_fit') {
+                $fieldRules[] = Rule::in(['cover', 'fit', 'stretch', 'center']);
             }
 
             if (in_array($field, $uniqueFields, true)) {

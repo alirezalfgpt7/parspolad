@@ -146,6 +146,12 @@ class AdminContentRegistry
     ];
 
     private const FIELD_OPTIONS = [
+        'articles.image_fit' => [
+            ['value' => 'cover', 'label_fa' => 'پوشش کامل (Cover)', 'label_en' => 'Cover'],
+            ['value' => 'fit', 'label_fa' => 'نمایش کامل (Fit)', 'label_en' => 'Fit / Contain'],
+            ['value' => 'stretch', 'label_fa' => 'کشیده (Stretch)', 'label_en' => 'Stretch / Fill'],
+            ['value' => 'center', 'label_fa' => 'وسط با اندازهٔ اصلی (Center)', 'label_en' => 'Centered at natural size'],
+        ],
         'banners.placement' => [
             ['value' => 'landing_mid', 'label_fa' => 'خانه · میان‌بخش‌ها', 'label_en' => 'Home · Mid-page'],
             ['value' => 'projects_top', 'label_fa' => 'پروژه‌ها · بالای فهرست', 'label_en' => 'Projects · Above list'],
@@ -167,6 +173,7 @@ class AdminContentRegistry
         'website' => ['fa' => 'وب‌سایت', 'en' => 'Website'],
         'avatar_url' => ['fa' => 'نشانی تصویر نمایه', 'en' => 'Avatar URL'],
         'cover_image' => ['fa' => 'تصویر کاور', 'en' => 'Cover image'],
+        'image_fit' => ['fa' => 'نحوهٔ نمایش تصویر', 'en' => 'Image display mode'],
         'catalog_url' => ['fa' => 'نشانی کاتالوگ', 'en' => 'Catalog URL'],
         'canonical_url' => ['fa' => 'نشانی اصلی صفحه', 'en' => 'Canonical URL'],
         'meta_image' => ['fa' => 'تصویر اشتراک‌گذاری', 'en' => 'Social share image'],

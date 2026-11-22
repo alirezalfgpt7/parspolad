@@ -13,6 +13,8 @@ use App\Models\ProjectCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -154,7 +156,7 @@ class ProjectController extends Controller
 
     public function adminShow(Project $project): ProjectResource
     {
-        return new ProjectResource($project->load('category'));
+        return new ProjectResource($project->load(['category', 'images', 'videos', 'documents']));
     }
 
     public function show(string $slug): JsonResponse
@@ -168,16 +170,51 @@ class ProjectController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = $data['slug'] ?? Str::slug($data['title_en']).'-'.time();
-        $project = Project::query()->create($data);
+        $project = DB::transaction(function () use ($data): Project {
+            $project = Project::query()->create(Arr::except($data, ['images', 'videos', 'documents']));
+            $this->syncProjectRelations($project, $data);
+
+            return $project;
+        });
 
         return response()->json(new ProjectResource($project->load(['category', 'images', 'videos', 'documents'])), 201);
     }
 
     public function update(UpdateProjectRequest $request, Project $project): JsonResponse
     {
-        $project->update($request->validated());
+        $data = $request->validated();
+        DB::transaction(function () use ($project, $data): void {
+            $project->update(Arr::except($data, ['images', 'videos', 'documents']));
+            $this->syncProjectRelations($project, $data);
+        });
 
         return response()->json(new ProjectResource($project->fresh(['category', 'images', 'videos', 'documents'])));
+    }
+
+    private function syncProjectRelations(Project $project, array $data): void
+    {
+        if (array_key_exists('images', $data)) {
+            $project->images()->delete();
+            $project->images()->createMany(array_map(
+                fn (string $image, int $index): array => ['image_url' => $image, 'sort_order' => $index],
+                array_values($data['images']),
+                array_keys(array_values($data['images'])),
+            ));
+        }
+
+        if (array_key_exists('videos', $data)) {
+            $project->videos()->delete();
+            $project->videos()->createMany(array_map(
+                fn (string $video, int $index): array => ['video_url' => $video, 'sort_order' => $index],
+                array_values($data['videos']),
+                array_keys(array_values($data['videos'])),
+            ));
+        }
+
+        if (array_key_exists('documents', $data)) {
+            $project->documents()->delete();
+            $project->documents()->createMany($data['documents']);
+        }
     }
 
     public function destroy(Project $project): JsonResponse

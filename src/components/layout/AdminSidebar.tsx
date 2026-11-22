@@ -123,6 +123,32 @@ interface AdminSidebarProps {
   onCloseMobile: () => void;
 }
 
+const SIDEBAR_GROUPS_STORAGE_KEY = 'ppa_admin_sidebar_groups';
+
+const defaultOpenGroups = (): Record<string, boolean> =>
+  Object.fromEntries(adminNavGroups.map((group) => [group.id, true]));
+
+const readOpenGroups = (): Record<string, boolean> => {
+  try {
+    const saved = window.localStorage.getItem(SIDEBAR_GROUPS_STORAGE_KEY);
+    if (!saved) return defaultOpenGroups();
+
+    const parsed: unknown = JSON.parse(saved);
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return defaultOpenGroups();
+    }
+
+    const values = parsed as Record<string, unknown>;
+    return Object.fromEntries(adminNavGroups.map((group) => {
+      const isOpen = values[group.id];
+      return [group.id, typeof isOpen === 'boolean' ? isOpen : true];
+    }));
+  } catch (error) {
+    console.warn('Could not read admin sidebar group preferences:', error);
+    return defaultOpenGroups();
+  }
+};
+
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   user,
   language,
@@ -139,17 +165,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const activeGroup = adminNavGroups.find((group) =>
     group.items.some((item) => item.to === location.pathname)
   );
+  const previousPath = useRef(location.pathname);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(adminNavGroups.map((group) => [group.id, true]))
-  );
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(readOpenGroups);
 
   useEffect(() => {
+    if (previousPath.current === location.pathname) return;
+    previousPath.current = location.pathname;
     if (activeGroup) {
       setOpenGroups((groups) => ({ ...groups, [activeGroup.id]: true }));
     }
-  }, [activeGroup]);
+  }, [activeGroup, location.pathname]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SIDEBAR_GROUPS_STORAGE_KEY, JSON.stringify(openGroups));
+    } catch (error) {
+      console.warn('Could not save admin sidebar group preferences:', error);
+    }
+  }, [openGroups]);
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((groups) => ({ ...groups, [groupId]: !groups[groupId] }));

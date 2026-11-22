@@ -6,6 +6,7 @@ interface ZeroBrokenImageProps {
   src?: string;
   alt: string;
   className?: string;
+  style?: React.CSSProperties;
   loading?: 'lazy' | 'eager';
 }
 
@@ -13,6 +14,7 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
   src,
   alt,
   className,
+  style,
   loading = 'lazy',
 }) => {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
@@ -24,6 +26,7 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
           'zero-broken-image-fallback bg-linear-to-br from-slate-100 to-slate-200 text-slate-500 dark:from-slate-800 dark:to-slate-900 dark:text-slate-400',
           className
         )}
+        style={style}
       >
         <Factory className="h-8 w-8 opacity-50" />
         {alt && <span>{alt}</span>}
@@ -39,6 +42,7 @@ export const ZeroBrokenImage: React.FC<ZeroBrokenImageProps> = ({
       referrerPolicy="no-referrer"
       onError={() => setFailedSrc(src)}
       className={className}
+      style={style}
     />
   );
 };

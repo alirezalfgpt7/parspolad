@@ -9,6 +9,7 @@ import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { PublicBanner } from '../../components/common/PublicBanner.tsx';
 import './ServicesPage.css';
+import '../../components/effects/FlipCard.css';
 
 export const ServicesPage: React.FC = () => {
   const { language, addToast, bootstrap } = useAppStore();
@@ -150,9 +151,9 @@ export const ServicesPage: React.FC = () => {
                 key={svc.id}
                 className="flex h-full flex-col overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow) transition-shadow duration-300 hover:shadow-(--theme-card-shadow-hover)"
               >
-                <div className="service-flip-container group/flip">
-                  <div className="service-flipper">
-                    <div className="service-flip-face service-flip-face--front bg-(--theme-card-surface)">
+                <div className="flip-card-container group/flip">
+                  <div className="flip-card">
+                    <div className="flip-card-face flip-card-face--front bg-(--theme-card-surface)">
                       <div className="relative aspect-16/10 overflow-hidden bg-(--theme-surface-muted) p-4">
                         <ZeroBrokenImage
                           src={svc.image_url}
@@ -177,7 +178,7 @@ export const ServicesPage: React.FC = () => {
                     </div>
                     <div
                       aria-hidden="true"
-                      className="service-flip-face service-flip-face--back relative bg-(--theme-surface-muted) p-6"
+                      className="flip-card-face flip-card-face--back relative bg-(--theme-surface-muted) p-6"
                     >
                       <span className="absolute inset-e-5 top-3 font-mono text-6xl font-black text-(--theme-primary)/12">
                         {String((page - 1) * 3 + idx + 1).padStart(2, '0')}

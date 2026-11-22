@@ -16,6 +16,7 @@ import { PublicHoneypotField } from '../../components/forms/PublicHoneypotField.
 import { sanitizeHtml } from '../../utils/sanitizeHtml.ts';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
+import { getArticleImageObjectFit } from '../../utils/articleImageFit.ts';
 
 interface ArticleComment {
   id: number;
@@ -173,7 +174,12 @@ export const NewsPage: React.FC = () => {
         <Breadcrumb items={[{ label: 'اخبار و مقالات', to: '/news' }, { label: single.title_fa }]} />
         <article className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
           <div className="h-72 bg-(--theme-surface-muted)">
-            <ZeroBrokenImage src={single.cover_image} alt={single.title_fa} className="h-full w-full object-cover" />
+            <ZeroBrokenImage
+              src={single.cover_image}
+              alt={single.title_fa}
+              className="h-full w-full"
+              style={{ objectFit: getArticleImageObjectFit(single.image_fit), objectPosition: 'center' }}
+            />
           </div>
           <div className="p-6 sm:p-8">
             <div className="flex flex-wrap items-center gap-2 text-xs text-(--theme-text-muted) tabular-nums">
@@ -319,7 +325,12 @@ export const NewsPage: React.FC = () => {
             className="group overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow) transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-(--theme-card-border-hover) hover:shadow-(--theme-card-shadow-hover)"
           >
             <div className="h-48 overflow-hidden bg-(--theme-surface-muted)">
-              <ZeroBrokenImage src={art.cover_image} alt={art.title_fa} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              <ZeroBrokenImage
+                src={art.cover_image}
+                alt={art.title_fa}
+                className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+                style={{ objectFit: getArticleImageObjectFit(art.image_fit), objectPosition: 'center' }}
+              />
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2 text-xs text-(--theme-text-muted) tabular-nums">

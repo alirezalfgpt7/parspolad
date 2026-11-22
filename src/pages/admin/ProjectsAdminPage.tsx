@@ -33,6 +33,15 @@ const projectFormSchema = z.object({
   description_fa: z.string().nullish(),
   description_en: z.string().nullish(),
   cover_image: z.string().trim().min(1, 'تصویر کاور پروژه الزامی است.').max(255),
+  images: z.array(z.string().trim().min(1).max(500)).optional(),
+  videos: z.array(z.string().trim().min(1).max(500)).optional(),
+  documents: z.array(z.object({
+    title_fa: z.string().trim().min(1, 'عنوان فارسی مدرک الزامی است.').max(255),
+    title_en: z.string().trim().min(1, 'عنوان انگلیسی مدرک الزامی است.').max(255),
+    file_url: z.string().trim().min(1, 'فایل مدرک را انتخاب کنید.').max(500),
+    file_type: z.string().max(20).optional(),
+    requires_auth: z.boolean().optional(),
+  })).optional(),
   is_featured: z.boolean().optional(),
 });
 const categoryFormSchema = z.object({
@@ -227,7 +236,15 @@ export const ProjectsAdminPage: React.FC = () => {
   const saveProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
-    const parsed = projectFormSchema.safeParse(editing);
+    const formData = {
+      ...editing,
+      images: (editing.images || []).filter((image) => image.trim()),
+      videos: (editing.videos || []).filter((video) => video.trim()),
+      documents: (editing.documents || []).filter((document) =>
+        document.title_fa?.trim() || document.title_en?.trim() || document.file_url?.trim(),
+      ),
+    };
+    const parsed = projectFormSchema.safeParse(formData);
     if (!parsed.success) {
       addToast('error', parsed.error.issues[0]?.message ?? 'اطلاعات پروژه معتبر نیست.');
       return;
@@ -236,7 +253,7 @@ export const ProjectsAdminPage: React.FC = () => {
       if (editing.id) {
         await apiRequest(`/admin/projects/${editing.id}`, { method: 'PUT', body: JSON.stringify({ ...editing, ...parsed.data }) });
       } else {
-        await apiRequest('/admin/projects', { method: 'POST', body: JSON.stringify({ ...editing, ...parsed.data, images: [parsed.data.cover_image], videos: [], documents: [], standards: ['API 6A', 'ISO 9001'] }) });
+        await apiRequest('/admin/projects', { method: 'POST', body: JSON.stringify({ ...editing, ...parsed.data, standards: ['API 6A', 'ISO 9001'] }) });
       }
       setEditing(null);
       setProjectRefresh((current) => current + 1);
@@ -343,7 +360,7 @@ export const ProjectsAdminPage: React.FC = () => {
         actions={(
           <button
             type="button"
-            onClick={() => setEditing({ slug: `proj-${Date.now()}`, title_fa: '', title_en: '', category_id: categoryOptions[0]?.id || categories[0]?.id || 0, client_name_fa: '', client_name_en: '', contract_number: '', contract_type_fa: 'ساخت و تولید', contract_type_en: 'Manufacturing', location_fa: 'اهواز', location_en: 'Ahvaz', year: 1404, status: 'in_progress', summary_fa: '', summary_en: '', description_fa: '', description_en: '', cover_image: '/storage/hero/hero-rig.jpg', is_featured: true })}
+            onClick={() => setEditing({ slug: `proj-${Date.now()}`, title_fa: '', title_en: '', category_id: categoryOptions[0]?.id || categories[0]?.id || 0, client_name_fa: '', client_name_en: '', contract_number: '', contract_type_fa: 'ساخت و تولید', contract_type_en: 'Manufacturing', location_fa: 'اهواز', location_en: 'Ahvaz', year: 1404, status: 'in_progress', summary_fa: '', summary_en: '', description_fa: '', description_en: '', cover_image: '/storage/hero/hero-rig.jpg', images: [], videos: [], documents: [], is_featured: true })}
             className="inline-flex items-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)"
           >
             <Plus className="h-4 w-4" />
@@ -394,7 +411,7 @@ export const ProjectsAdminPage: React.FC = () => {
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {categoryLoading ? (
                 Array.from({ length: 4 }, (_, index) => (
-                  <div key={index} className="h-[68px] animate-pulse rounded-lg border border-(--theme-border) bg-(--theme-surface-muted)" />
+                  <div key={index} className="h-17 animate-pulse rounded-lg border border-(--theme-border) bg-(--theme-surface-muted)" />
                 ))
               ) : categories.length ? categories.map((category) => (
                 <div key={category.id} className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-(--theme-border) bg-(--theme-surface) p-3">
@@ -540,6 +557,172 @@ export const ProjectsAdminPage: React.FC = () => {
               folder="projects"
               placeholder="/storage/hero/hero-rig.jpg"
             />
+            <section className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-(--theme-text)">گالری تصاویر پروژه</h3>
+                <button
+                  type="button"
+                  onClick={() => setEditing({ ...editing, images: [...(editing.images || []), ''] })}
+                  className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-1.5 text-xs font-semibold text-(--theme-text) hover:border-(--theme-primary)"
+                >
+                  افزودن تصویر
+                </button>
+              </div>
+              {(editing.images || []).map((image, index) => (
+                <div key={`image-${index}`} className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <MediaUrlField
+                      label={`تصویر گالری ${index + 1}`}
+                      value={image}
+                      onChange={(url) => setEditing({
+                        ...editing,
+                        images: (editing.images || []).map((current, itemIndex) => itemIndex === index ? url : current),
+                      })}
+                      folder="projects"
+                      accept=".jpg,.jpeg,.png,.webp,.gif"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditing({ ...editing, images: (editing.images || []).filter((_, itemIndex) => itemIndex !== index) })}
+                    aria-label={`حذف تصویر گالری ${index + 1}`}
+                    className="mt-8 rounded-lg border border-(--theme-border) p-2 text-(--theme-text-muted) hover:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </section>
+            <section className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-(--theme-text)">ویدئوهای پروژه</h3>
+                <button
+                  type="button"
+                  onClick={() => setEditing({ ...editing, videos: [...(editing.videos || []), ''] })}
+                  className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-1.5 text-xs font-semibold text-(--theme-text) hover:border-(--theme-primary)"
+                >
+                  افزودن ویدئو
+                </button>
+              </div>
+              {(editing.videos || []).map((video, index) => (
+                <div key={`video-${index}`} className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <MediaUrlField
+                      label={`ویدئوی پروژه ${index + 1}`}
+                      value={video}
+                      onChange={(url) => setEditing({
+                        ...editing,
+                        videos: (editing.videos || []).map((current, itemIndex) => itemIndex === index ? url : current),
+                      })}
+                      folder="videos"
+                      accept=".mp4,.webm,.ogg,.mov"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditing({ ...editing, videos: (editing.videos || []).filter((_, itemIndex) => itemIndex !== index) })}
+                    aria-label={`حذف ویدئوی پروژه ${index + 1}`}
+                    className="mt-8 rounded-lg border border-(--theme-border) p-2 text-(--theme-text-muted) hover:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </section>
+            <section className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-bold text-(--theme-text)">مدارک و مستندات قابل دانلود</h3>
+                <button
+                  type="button"
+                  onClick={() => setEditing({
+                    ...editing,
+                    documents: [...(editing.documents || []), {
+                      title_fa: '',
+                      title_en: '',
+                      file_url: '',
+                      file_type: 'PDF',
+                      requires_auth: false,
+                    }],
+                  })}
+                  className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-3 py-1.5 text-xs font-semibold text-(--theme-text) hover:border-(--theme-primary)"
+                >
+                  افزودن مدرک
+                </button>
+              </div>
+              {(editing.documents || []).map((document, index) => (
+                <div key={`document-${document.id ?? index}`} className="space-y-3 rounded-lg border border-(--theme-border) bg-(--theme-surface) p-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="space-y-1 text-xs font-semibold text-(--theme-text)">
+                      عنوان مدرک (فارسی)
+                      <input
+                        value={document.title_fa}
+                        onChange={(event) => setEditing({
+                          ...editing,
+                          documents: (editing.documents || []).map((current, itemIndex) => itemIndex === index ? { ...current, title_fa: event.target.value } : current),
+                        })}
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                      />
+                    </label>
+                    <label className="space-y-1 text-xs font-semibold text-(--theme-text)">
+                      Document title (English)
+                      <input
+                        dir="ltr"
+                        value={document.title_en}
+                        onChange={(event) => setEditing({
+                          ...editing,
+                          documents: (editing.documents || []).map((current, itemIndex) => itemIndex === index ? { ...current, title_en: event.target.value } : current),
+                        })}
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                      />
+                    </label>
+                    <MediaUrlField
+                      label={`فایل مدرک ${index + 1}`}
+                      value={document.file_url}
+                      onChange={(url) => setEditing({
+                        ...editing,
+                        documents: (editing.documents || []).map((current, itemIndex) => itemIndex === index ? { ...current, file_url: url } : current),
+                      })}
+                      folder="projects"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.zip"
+                    />
+                    <label className="space-y-1 text-xs font-semibold text-(--theme-text)">
+                      نوع فایل
+                      <input
+                        dir="ltr"
+                        value={document.file_type}
+                        onChange={(event) => setEditing({
+                          ...editing,
+                          documents: (editing.documents || []).map((current, itemIndex) => itemIndex === index ? { ...current, file_type: event.target.value } : current),
+                        })}
+                        className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                      />
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-(--theme-text)">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(document.requires_auth)}
+                        onChange={(event) => setEditing({
+                          ...editing,
+                          documents: (editing.documents || []).map((current, itemIndex) => itemIndex === index ? { ...current, requires_auth: event.target.checked } : current),
+                        })}
+                        className="h-4 w-4 accent-(--theme-primary)"
+                      />
+                      فقط برای کاربران واردشده
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setEditing({ ...editing, documents: (editing.documents || []).filter((_, itemIndex) => itemIndex !== index) })}
+                      className="rounded-lg border border-(--theme-border) p-2 text-(--theme-text-muted) hover:text-red-600"
+                      aria-label={`حذف مدرک ${index + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </section>
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setEditing(null)} className="rounded-lg border border-(--theme-border) bg-(--theme-surface) px-4 py-2 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)">انصراف</button>
               <button type="submit" className="rounded-lg bg-(--theme-btn-bg) px-5 py-2 text-xs font-semibold text-(--theme-btn-text) hover:bg-(--theme-btn-hover)">ذخیره پروژه</button>

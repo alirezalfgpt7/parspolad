@@ -8,6 +8,8 @@ import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { ContentRecordsAdminPage } from './ContentRecordsAdminPage.tsx';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
+import { HomepageSectionsSettingsEditor } from '../../components/admin/HomepageSectionsSettingsEditor.tsx';
+import { normalizeHomepageSectionsSettings } from '../../utils/homepageSections.ts';
 
 type Tab = 'pages' | 'services' | 'products' | 'articles' | 'banners' | 'kpis';
 
@@ -47,7 +49,8 @@ export const ContentCmsAdminPage: React.FC = () => {
     const value = editPage?.metadata?.[key];
     return typeof value === 'string' ? value : fallback;
   };
-  const updatePageMetadata = (key: string, value: string) => {
+  const homepageSections = normalizeHomepageSectionsSettings(editPage?.metadata?.home_sections);
+  const updatePageMetadataValue = (key: string, value: unknown) => {
     setEditPage((current) =>
       current
         ? {
@@ -56,6 +59,9 @@ export const ContentCmsAdminPage: React.FC = () => {
           }
         : current,
     );
+  };
+  const updatePageMetadata = (key: string, value: string) => {
+    updatePageMetadataValue(key, value);
   };
 
   const load = async () => {
@@ -213,6 +219,12 @@ export const ContentCmsAdminPage: React.FC = () => {
                     تنظیمات ظاهر و هدرهای صفحه <ArrowUpRight className="h-3 w-3" />
                   </Link>
                 </div>
+              )}
+              {isHomeSpotlight && (
+                <HomepageSectionsSettingsEditor
+                  settings={homepageSections}
+                  onChange={(value) => updatePageMetadataValue('home_sections', value)}
+                />
               )}
               <MediaUrlField
                 label="تصویر کاور / پیش‌نمایش صفحه (Meta Image)"

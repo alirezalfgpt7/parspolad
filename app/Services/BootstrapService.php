@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Http\Resources\ThemeSettingResource;
-use App\Models\Article;
 use App\Models\Banner;
 use App\Models\Contract;
 use App\Models\Department;
@@ -13,7 +12,6 @@ use App\Models\Menu;
 use App\Models\Page;
 use App\Models\Partner;
 use App\Models\Product;
-use App\Models\Project;
 use App\Models\ProjectCategory;
 use App\Models\Service;
 use App\Models\Setting;
@@ -39,7 +37,6 @@ class BootstrapService
             'menus' => Menu::query()->with('items')->get(),
             'kpis' => Kpi::query()->orderBy('sort_order')->get(),
             'project_categories' => ProjectCategory::query()->orderBy('id')->get(),
-            'projects' => Project::query()->with('category')->orderByDesc('year')->get(),
             'contracts' => Contract::query()->orderByDesc('start_year')->get()
                 ->map(fn (Contract $contract): array => [
                     ...$contract->toArray(),
@@ -63,7 +60,6 @@ class BootstrapService
             'departments' => Department::query()->orderBy('sort_order')->orderBy('id')->get(),
             'team_members' => TeamMember::query()->with('department')->orderBy('sort_order')->orderBy('id')->get(),
             'partners' => Partner::query()->where('is_active', true)->orderBy('id')->get(),
-            'articles' => Article::query()->orderByDesc('published_at')->get(),
             'pages' => Page::query()->orderBy('id')->get(),
             'banners' => Banner::query()->where('is_active', true)->orderBy('id')->get(),
             'settings' => $this->groupedPublicSettings(),
@@ -87,6 +83,7 @@ class BootstrapService
             $decoded = json_decode((string) $row->value, true);
             $result[$row->group][$row->key] = json_last_error() === JSON_ERROR_NONE ? $decoded : $row->value;
         }
+
         return $result;
     }
 }

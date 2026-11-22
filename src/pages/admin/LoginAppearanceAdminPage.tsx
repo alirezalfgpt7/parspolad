@@ -652,7 +652,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           {/* System Pages */}
           <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
             <h2 className="mb-4 text-base font-extrabold text-(--theme-text)">متون و لوگوی صفحات سیستمی و بخش ویژه صفحه اصلی</h2>
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="grid items-start gap-5 lg:grid-cols-2">
               {SYSTEM_PAGE_CARDS.map((card) => {
                 const entry = pagesConfig[card.key] || {};
                 return (

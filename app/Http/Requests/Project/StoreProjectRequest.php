@@ -33,9 +33,20 @@ class StoreProjectRequest extends FormRequest
             'summary_en' => ['nullable', 'string'],
             'description_fa' => ['nullable', 'string'],
             'description_en' => ['nullable', 'string'],
-            'standards' => ['nullable', 'array'],
+            'standards' => ['sometimes', 'array', 'max:20'],
+            'standards.*' => ['string', 'max:80'],
             'cover_image' => ['required', 'string', 'max:255'],
-            'is_featured' => ['boolean'],
+            'images' => ['sometimes', 'array', 'max:30'],
+            'images.*' => ['required', 'string', 'max:500', 'distinct'],
+            'videos' => ['sometimes', 'array', 'max:10'],
+            'videos.*' => ['required', 'string', 'max:500', 'distinct'],
+            'documents' => ['sometimes', 'array', 'max:30'],
+            'documents.*.title_fa' => ['required', 'string', 'max:255'],
+            'documents.*.title_en' => ['required', 'string', 'max:255'],
+            'documents.*.file_url' => ['required', 'string', 'max:500'],
+            'documents.*.file_type' => ['sometimes', 'string', 'max:20'],
+            'documents.*.requires_auth' => ['sometimes', 'boolean'],
+            'is_featured' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -20,6 +20,7 @@ use App\Models\Project;
 use App\Models\Service;
 use App\Models\TeamMember;
 use App\Services\BootstrapService;
+use App\Services\HomepageSectionsService;
 use App\Services\SitemapService;
 use App\Services\TicketService;
 use Illuminate\Http\JsonResponse;
@@ -27,6 +28,11 @@ use Illuminate\Http\Request;
 
 class PublicController extends Controller
 {
+    public function homepageSections(HomepageSectionsService $sections): JsonResponse
+    {
+        return response()->json(['data' => $sections->get()]);
+    }
+
     public function bootstrap(BootstrapService $service, Request $request): JsonResponse
     {
         $data = $service->getPublicBootstrap($request);
