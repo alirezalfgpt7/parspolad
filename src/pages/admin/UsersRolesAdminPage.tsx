@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pencil, Plus, Shield, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
@@ -6,7 +6,6 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import type { Role, User } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
-import { Pagination } from '../../components/ui/Pagination.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 
 interface UserForm {
@@ -27,6 +26,7 @@ interface RoleForm {
 const emptyUser: UserForm = { name: '', email: '', phone: '', role: '', password: '' };
 const emptyRole: RoleForm = { name: '', label_fa: '', label_en: '', permissions: [] };
 const systemRoles = ['super-admin', 'admin', 'editor', 'project_manager', 'client', 'content-manager', 'operator', 'user'];
+const USER_PAGE_SIZES = [10, 20, 50] as const;
 const isSuperAdminRole = (role?: string): boolean => ['super-admin', 'super_admin'].includes(role ?? '');
 const userFormSchema = z.object({
   name: z.string().trim().min(1, 'نام کاربر الزامی است.').max(120),
@@ -47,6 +47,13 @@ export const UsersRolesAdminPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [userTotal, setUserTotal] = useState(0);
+  const [perPage, setPerPage] = useState<number>(USER_PAGE_SIZES[0]);
+  const [userSearch, setUserSearch] = useState('');
+  const [appliedUserSearch, setAppliedUserSearch] = useState('');
+  const [userSortBy, setUserSortBy] = useState('name');
+  const [userSortOrder, setUserSortOrder] = useState<'asc' | 'desc'>('asc');
+  const userLoadRequest = useRef(0);
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -116,30 +123,47 @@ export const UsersRolesAdminPage: React.FC = () => {
     'logs.view': 'View activity logs',
   };
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAppliedUserSearch(userSearch.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [userSearch]);
+
   const load = async (targetPage = page) => {
+    const requestId = ++userLoadRequest.current;
     try {
+      const params = new URLSearchParams({
+        page: String(targetPage),
+        per_page: String(perPage),
+        sort_by: userSortBy,
+        sort_order: userSortOrder,
+      });
+      if (appliedUserSearch) params.set('q', appliedUserSearch);
       const response = await apiRequest<{
         users: User[];
-        users_meta: { last_page: number };
+        users_meta: { last_page: number; total: number };
         roles: Role[];
         permissions: string[];
-      }>(`/admin/users?page=${targetPage}&per_page=8`);
+      }>(`/admin/users?${params.toString()}`);
+      if (requestId !== userLoadRequest.current) return;
       if (targetPage > response.users_meta.last_page) {
         setPage(Math.max(1, response.users_meta.last_page));
         return;
       }
       setUsers(response.users);
       setLastPage(response.users_meta.last_page);
+      setUserTotal(response.users_meta.total);
       setRoles(response.roles);
       setPermissions(response.permissions);
     } catch (error) {
-      addToast('error', error instanceof Error ? error.message : 'دریافت کاربران و نقش‌ها ناموفق بود.');
+      if (requestId === userLoadRequest.current) {
+        addToast('error', error instanceof Error ? error.message : 'دریافت کاربران و نقش‌ها ناموفق بود.');
+      }
     }
   };
 
   useEffect(() => {
     void load(page);
-  }, [page]);
+  }, [page, perPage, appliedUserSearch, userSortBy, userSortOrder]);
 
   const openNewUser = () => {
     setEditingUser(null);
@@ -264,8 +288,8 @@ export const UsersRolesAdminPage: React.FC = () => {
   };
 
   const userCols: Column<User>[] = [
-    { key: 'name', header: 'نام کاربر', render: (user) => <span className="font-bold">{user.name}</span> },
-    { key: 'email', header: 'ایمیل', render: (user) => <span dir="ltr" className="text-xs">{user.email}</span> },
+    { key: 'name', sortKey: 'name', header: 'نام کاربر', render: (user) => <span className="font-bold">{user.name}</span> },
+    { key: 'email', sortKey: 'email', header: 'ایمیل', render: (user) => <span dir="ltr" className="text-xs">{user.email}</span> },
     {
       key: 'role',
       header: 'نقش کاربری',
@@ -333,6 +357,62 @@ export const UsersRolesAdminPage: React.FC = () => {
     },
   ];
 
+  const permissionRows = permissions.map((permission) => ({ permission }));
+  const permissionColumns: Column<{ permission: string }>[] = [
+    {
+      key: 'permission',
+      header: language === 'fa' ? 'صفحه و دسترسی' : 'Page & permission',
+      className: 'min-w-[220px]',
+      render: ({ permission }) => (
+        <div>
+          <div className="font-semibold text-(--theme-text)">
+            {language === 'fa'
+              ? permissionNamesFa[permission] || permission
+              : permissionNamesEn[permission] || permission}
+          </div>
+          {language === 'fa' && (
+            <div dir="ltr" className="mt-0.5 text-start font-mono text-[10px] text-(--theme-text-muted)">
+              {permission}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    ...roles.map((role): Column<{ permission: string }> => ({
+      key: `role-${role.id}`,
+      header: (
+        <div className="min-w-28">
+          <span>{role.label_fa}</span>
+          {!systemRoles.includes(role.name) && (
+            <button type="button" onClick={() => openEditRole(role)} className="ms-2 text-(--theme-text-muted) hover:text-(--theme-primary-ink)" aria-label={`ویرایش نقش ${role.label_fa}`}>
+              <Pencil className="inline h-3.5 w-3.5" />
+            </button>
+          )}
+          {!systemRoles.includes(role.name) && (
+            <button type="button" onClick={() => void deleteRole(role)} disabled={(role.users_count ?? 0) > 0} className="ms-2 text-red-600 disabled:opacity-40" aria-label={`حذف نقش ${role.label_fa}`}>
+              <Trash2 className="inline h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      ),
+      align: 'center',
+      className: 'min-w-28',
+      render: ({ permission }) => {
+        const checked = role.permissions.includes('*') || role.permissions.includes(permission);
+        return (
+          <input
+            type="checkbox"
+            disabled={role.name === 'super-admin'}
+            checked={checked}
+            onChange={() => void togglePermission(role, permission)}
+            className="h-4 w-4 accent-(--theme-primary)"
+            aria-label={`${permission} برای ${role.label_fa}`}
+          />
+        );
+      },
+    })),
+  ];
+
   return (
     <div className="space-y-8">
       <div className="space-y-4">
@@ -343,8 +423,36 @@ export const UsersRolesAdminPage: React.FC = () => {
             <span>کاربر جدید</span>
           </button>
         </div>
-        <DataTable data={users} columns={userCols} pageSize={8} searchKeys={[(user) => user.name, (user) => user.email]} />
-        <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+        <DataTable
+          data={users}
+          columns={userCols}
+          rowKey={(user) => user.id}
+          tableLabel="فهرست کاربران"
+          pageSize={perPage}
+          pageSizeOptions={USER_PAGE_SIZES}
+          onPageSizeChange={(size) => {
+            setPerPage(size);
+            setPage(1);
+          }}
+          currentPage={page}
+          lastPage={lastPage}
+          total={userTotal}
+          onPageChange={setPage}
+          searchValue={userSearch}
+          onSearchChange={(value) => {
+            setUserSearch(value);
+            setPage(1);
+          }}
+          searchPlaceholder="جست‌وجوی نام یا ایمیل..."
+          searchLabel="جست‌وجوی کاربران"
+          sortBy={userSortBy}
+          sortDirection={userSortOrder}
+          onSortChange={(field, direction) => {
+            setUserSortBy(field);
+            setUserSortOrder(direction);
+            setPage(1);
+          }}
+        />
       </div>
 
       <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
@@ -358,65 +466,15 @@ export const UsersRolesAdminPage: React.FC = () => {
             <span>نقش جدید</span>
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-(--theme-border)">
-                <th className="py-2.5 text-start font-bold text-(--theme-text)">
-                  {language === 'fa' ? 'صفحه و دسترسی' : 'Page & permission'}
-                </th>
-                {roles.map((role) => (
-                  <th key={role.id} className="min-w-28 px-3 py-2.5 text-center font-bold text-(--theme-text)">
-                    <span>{role.label_fa}</span>
-                    {!systemRoles.includes(role.name) && (
-                      <button type="button" onClick={() => openEditRole(role)} className="ms-2 text-(--theme-text-muted) hover:text-(--theme-primary-ink)" aria-label={`ویرایش نقش ${role.label_fa}`}>
-                        <Pencil className="inline h-3.5 w-3.5" />
-                      </button>
-                    )}
-                    {!systemRoles.includes(role.name) && (
-                      <button type="button" onClick={() => void deleteRole(role)} disabled={(role.users_count ?? 0) > 0} className="ms-2 text-red-600 disabled:opacity-40" aria-label={`حذف نقش ${role.label_fa}`}>
-                        <Trash2 className="inline h-3.5 w-3.5" />
-                      </button>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-(--theme-border)">
-              {permissions.map((permission) => (
-                <tr key={permission}>
-                  <td className="py-2.5">
-                    <div className="font-semibold text-(--theme-text)">
-                      {language === 'fa'
-                        ? permissionNamesFa[permission] || permission
-                        : permissionNamesEn[permission] || permission}
-                    </div>
-                    {language === 'fa' && (
-                      <div dir="ltr" className="mt-0.5 text-start font-mono text-[10px] text-(--theme-text-muted)">
-                        {permission}
-                      </div>
-                    )}
-                  </td>
-                  {roles.map((role) => {
-                    const checked = role.permissions.includes('*') || role.permissions.includes(permission);
-                    return (
-                      <td key={role.id} className="px-3 py-2.5 text-center">
-                        <input
-                          type="checkbox"
-                          disabled={role.name === 'super-admin'}
-                          checked={checked}
-                          onChange={() => void togglePermission(role, permission)}
-                          className="h-4 w-4 accent-(--theme-primary)"
-                          aria-label={`${permission} برای ${role.label_fa}`}
-                        />
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          data={permissionRows}
+          columns={permissionColumns}
+          rowKey={(row) => row.permission}
+          tableLabel="ماتریس نقش‌ها و دسترسی‌ها"
+          pageSize={Math.max(permissionRows.length, 1)}
+          pageSizeOptions={[]}
+          emptyText="دسترسی‌ای برای نمایش وجود ندارد."
+        />
       </div>
 
       <Modal open={userModalOpen} onClose={() => setUserModalOpen(false)} title={editingUser ? 'ویرایش کاربر' : 'ایجاد کاربر جدید'} size="md">

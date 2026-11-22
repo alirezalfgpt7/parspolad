@@ -92,43 +92,43 @@ class AdminContentRegistry
         'services' => [
             'description_fa' => 'شرح، تصویر، آیکن، ترتیب و اطلاعات فارسی/انگلیسی خدمات مهندسی.',
             'usage_fa' => 'در صفحهٔ خدمات و بخش خدمات مهندسی صفحهٔ اصلی نمایش داده می‌شود.',
-            'public_path' => '/services',
+            'public_path' => '/#home-capabilities',
             'related_admin_path' => null,
         ],
         'products' => [
             'description_fa' => 'اطلاعات دوزبانهٔ محصول، مدل، مشخصات فنی، تصویر و فایل کاتالوگ.',
             'usage_fa' => 'در فهرست عمومی محصولات و صفحهٔ جزئیات محصول استفاده می‌شود.',
-            'public_path' => '/products',
+            'public_path' => '/products#products-list',
             'related_admin_path' => null,
         ],
         'articles' => [
             'description_fa' => 'مدیریت کامل خبر یا مقاله شامل عنوان و متن دوزبانه، دسته‌بندی، نویسنده، کاور و تاریخ انتشار شمسی.',
             'usage_fa' => 'دسته‌ها را ابتدا در «دسته‌بندی اخبار و مقالات» تعریف کنید؛ خبرها در صفحهٔ اخبار و کارت‌های منتخب صفحهٔ اصلی دیده می‌شوند.',
-            'public_path' => '/news',
+            'public_path' => '/news#news-list',
             'related_admin_path' => '/admin/content-records?resource=article-categories',
         ],
         'article-categories' => [
             'description_fa' => 'دسته‌های دوزبانهٔ اخبار و مقالات را یک‌بار تعریف کنید و هنگام ساخت یا ویرایش مقاله از فهرست انتخاب کنید.',
             'usage_fa' => 'نام فارسی و انگلیسی دسته کنار هر خبر و مقاله در سایت نمایش داده می‌شود.',
-            'public_path' => '/news',
+            'public_path' => '/news#news-list',
             'related_admin_path' => null,
         ],
         'banners' => [
             'description_fa' => 'ساخت و ویرایش بنر فراخوان شامل عنوان، توضیح، تصویر و پیوند دکمه.',
             'usage_fa' => 'محل نمایش را از خانه، بالای فهرست پروژه‌ها یا پایین فهرست خدمات انتخاب کنید؛ بنر غیرفعال پنهان است.',
-            'public_path' => '/',
+            'public_path' => '/#home-spotlight',
             'related_admin_path' => null,
         ],
         'kpis' => [
             'description_fa' => 'هر رکورد یک شاخص است: برچسب و مقدار دوزبانه، آیکون، رنگ پس‌زمینه و ترتیب را تنظیم کنید.',
             'usage_fa' => 'کارت‌های شاخص در بخش عملکرد صفحهٔ اصلی نمایش داده می‌شوند؛ تیتر و پس‌زمینهٔ کلی در تنظیمات ظاهر صفحهٔ اصلی است.',
-            'public_path' => '/',
+            'public_path' => '/#home-performance',
             'related_admin_path' => '/admin/login-appearance',
         ],
         'categories' => [
             'description_fa' => 'دسته‌بندی پروژه‌ها و مشخصات دوزبانهٔ آن‌ها.',
             'usage_fa' => 'در فهرست و فیلتر پروژه‌های سایت استفاده می‌شود.',
-            'public_path' => '/projects',
+            'public_path' => '/projects#projects-list',
             'related_admin_path' => null,
         ],
         'faqs' => [
@@ -140,7 +140,7 @@ class AdminContentRegistry
         'partners' => [
             'description_fa' => 'نام و لوگوی کارفرمایان و شرکای سازمان.',
             'usage_fa' => 'در اسلایدر شرکا و کارفرمایان سایت نمایش داده می‌شود.',
-            'public_path' => '/',
+            'public_path' => '/#home-partners',
             'related_admin_path' => null,
         ],
     ];

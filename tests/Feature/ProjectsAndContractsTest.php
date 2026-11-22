@@ -4,6 +4,7 @@ use Database\Seeders\DatabaseSeeder;
 use App\Enums\ProjectStatusEnum;
 use App\Models\Article;
 use App\Models\Banner;
+use App\Models\Contract;
 use App\Models\Department;
 use App\Models\Faq;
 use App\Models\Kpi;
@@ -79,6 +80,19 @@ it('paginates the administrative project list', function (): void {
     ->assertJsonCount(1, 'data')
     ->assertJsonPath('meta.per_page', 1)
     ->assertJsonPath('meta.current_page', 1);
+});
+
+it('sorts administrative projects by an allowed field and direction', function (): void {
+    $token = $this->postJson('/api/v1/auth/login', loginPayloadWithCaptcha($this))
+        ->assertOk()->json('token');
+    $first = Project::factory()->create(['title_fa' => 'SortUnique-A']);
+    $second = Project::factory()->create(['title_fa' => 'SortUnique-B']);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/admin/projects?q=SortUnique&sort_by=title_fa&sort_order=asc')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $first->id)
+        ->assertJsonPath('data.1.id', $second->id);
 });
 
 it('searches administrative projects by category and returns a lean paginated row', function (): void {
@@ -159,6 +173,17 @@ it('paginates public catalog, services, FAQs and news and returns complete produ
     $this->getJson('/api/v1/products/filters')
     ->assertOk()
     ->assertJsonFragment(['category_en' => $product->category_en]);
+});
+
+it('searches and sorts public contracts in the database before pagination', function (): void {
+    $first = Contract::factory()->create(['contract_number' => 'PublicSortUnique-A']);
+    Contract::factory()->create(['contract_number' => 'PublicSortUnique-B']);
+
+    $this->getJson('/api/v1/contracts?q=PublicSortUnique&sort_by=contract_number&sort_dir=asc&per_page=1')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $first->id)
+        ->assertJsonPath('meta.total', 2)
+        ->assertJsonPath('meta.per_page', 1);
 });
 
 it('returns pagination metadata consistently for endpoints backed by raw Laravel paginators', function (): void {

@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Eraser, FileSpreadsheet, Trash2, Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ActivityLog } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
-import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 
 interface ProjectImportRow {
@@ -17,17 +16,32 @@ interface ProjectImportRow {
   imported?: boolean;
 }
 
+const LOG_PAGE_SIZES = [10, 20, 50] as const;
+
 export const ReportsLogsAdminPage: React.FC = () => {
   const { token, addToast, bootstrap, user } = useAppStore();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [logTotal, setLogTotal] = useState(0);
+  const [perPage, setPerPage] = useState<number>(LOG_PAGE_SIZES[2]);
+  const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [logsLoading, setLogsLoading] = useState(false);
   const [logsRefreshVersion, setLogsRefreshVersion] = useState(0);
   const [importRows, setImportRows] = useState<ProjectImportRow[]>([]);
   const [importing, setImporting] = useState(false);
   const [logMaintenanceAction, setLogMaintenanceAction] = useState<'prune' | 'reset' | null>(null);
   const [maintainingLogs, setMaintainingLogs] = useState(false);
   const isSuperAdmin = ['super-admin', 'super_admin'].includes(user?.role ?? '');
+  const logsRequest = useRef(0);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   const maintainLogs = async () => {
     if (!logMaintenanceAction) return;
@@ -55,21 +69,36 @@ export const ReportsLogsAdminPage: React.FC = () => {
 
   useEffect(() => {
     let active = true;
-    apiRequest<{ data: ActivityLog[]; meta: { last_page: number } }>(`/admin/activity-logs?page=${page}&per_page=50`)
+    const requestId = ++logsRequest.current;
+    const params = new URLSearchParams({
+      page: String(page),
+      per_page: String(perPage),
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    });
+    if (appliedSearch) params.set('q', appliedSearch);
+    setLogsLoading(true);
+    apiRequest<{ data: ActivityLog[]; meta: { last_page: number; total: number } }>(`/admin/activity-logs?${params.toString()}`)
       .then((response) => {
-        if (active) {
+        if (active && requestId === logsRequest.current) {
           setLogs(response.data);
           setLastPage(response.meta.last_page);
+          setLogTotal(response.meta.total);
         }
       })
       .catch((error: unknown) => {
-        if (active) addToast('error', error instanceof Error ? error.message : 'دریافت گزارش فعالیت‌ها ناموفق بود.');
+        if (active && requestId === logsRequest.current) {
+          addToast('error', error instanceof Error ? error.message : 'دریافت گزارش فعالیت‌ها ناموفق بود.');
+        }
+      })
+      .finally(() => {
+        if (active && requestId === logsRequest.current) setLogsLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, [page, logsRefreshVersion, addToast]);
+  }, [page, perPage, appliedSearch, sortBy, sortOrder, logsRefreshVersion, addToast]);
 
   const exportExcel = async (entity: 'projects' | 'contracts' | 'logs') => {
     try {
@@ -199,10 +228,25 @@ export const ReportsLogsAdminPage: React.FC = () => {
 
   const cols: Column<ActivityLog>[] = [
     { key: 'user', header: 'کاربر', render: (l) => <span className="font-semibold text-(--theme-text)">{l.user_name}</span> },
-    { key: 'action', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-(--theme-primary-ink)">{l.action}</span> },
+    { key: 'action', sortKey: 'description', header: 'رویداد', render: (l) => <span className="font-mono text-xs text-(--theme-primary-ink)">{l.action}</span> },
     { key: 'subject', header: 'بخش / موضوع', render: (l) => <span>{l.subject_type} · {l.subject_label}</span> },
     { key: 'ip', header: 'IP', render: (l) => <span className="font-mono text-xs">{l.ip_address}</span> },
-    { key: 'date', header: 'زمان', render: (l) => <span className="text-xs text-(--theme-text-muted)">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
+    { key: 'date', sortKey: 'created_at', header: 'زمان', render: (l) => <span className="text-xs text-(--theme-text-muted)">{new Date(l.created_at).toLocaleString('fa-IR')}</span> },
+  ];
+
+  const importColumns: Column<ProjectImportRow>[] = [
+    { key: 'line', header: 'ردیف', className: 'whitespace-nowrap', render: (row) => <span className="tabular-nums">{row.line}</span> },
+    { key: 'title', header: 'پروژه', className: 'min-w-[180px]', render: (row) => row.title },
+    {
+      key: 'validation',
+      header: 'اعتبارسنجی',
+      className: 'min-w-[220px]',
+      render: (row) => (
+        <span className={row.errors.length || row.importError ? 'text-red-600' : 'text-emerald-700 dark:text-emerald-400'}>
+          {[...row.errors, ...(row.importError ? [row.importError] : [])].join(' · ') || (row.imported ? 'وارد شد' : 'آماده ورود')}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -261,25 +305,49 @@ export const ReportsLogsAdminPage: React.FC = () => {
               {importing ? 'در حال ورود...' : 'ثبت ردیف‌های معتبر'}
             </button>
           </div>
-          <div className="max-h-80 overflow-auto">
-            <table className="w-full text-start text-xs">
-              <thead><tr><th className="p-2 text-(--theme-text-muted)">ردیف</th><th className="p-2 text-(--theme-text-muted)">پروژه</th><th className="p-2 text-(--theme-text-muted)">اعتبارسنجی</th></tr></thead>
-              <tbody>
-                {importRows.map((row) => (
-                  <tr key={row.line} className="border-t border-(--theme-border) align-top">
-                    <td className="p-2 tabular-nums">{row.line}</td>
-                    <td className="p-2">{row.title}</td>
-                    <td className={`p-2 ${row.errors.length || row.importError ? 'text-red-600' : 'text-emerald-700 dark:text-emerald-400'}`}>{[...row.errors, ...(row.importError ? [row.importError] : [])].join(' · ') || (row.imported ? 'وارد شد' : 'آماده ورود')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            data={importRows}
+            columns={importColumns}
+            rowKey={(row) => row.line}
+            tableLabel="پیش‌نمایش ورود پروژه‌ها"
+            pageSize={10}
+            emptyText="ردیفی برای نمایش وجود ندارد."
+          />
         </section>
       )}
 
-      <DataTable data={logs} columns={cols} pageSize={50} searchKeys={[(l) => l.user_name, (l) => l.action, (l) => l.subject_label]} />
-      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      <DataTable
+        data={logs}
+        columns={cols}
+        rowKey={(log) => log.id}
+        tableLabel="گزارش فعالیت‌های سیستم"
+        pageSize={perPage}
+        pageSizeOptions={LOG_PAGE_SIZES}
+        onPageSizeChange={(size) => {
+          setPerPage(size);
+          setPage(1);
+        }}
+        currentPage={page}
+        lastPage={lastPage}
+        total={logTotal}
+        onPageChange={setPage}
+        searchValue={search}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        searchPlaceholder="جست‌وجوی کاربر یا رویداد..."
+        searchLabel="جست‌وجو در گزارش فعالیت"
+        sortBy={sortBy}
+        sortDirection={sortOrder}
+        onSortChange={(field, direction) => {
+          setSortBy(field);
+          setSortOrder(direction);
+          setPage(1);
+        }}
+        loading={logsLoading}
+        emptyText={appliedSearch ? 'رویدادی با این جست‌وجو پیدا نشد.' : 'گزارش فعالیتی برای نمایش وجود ندارد.'}
+      />
       <ConfirmDialog
         open={logMaintenanceAction !== null}
         onClose={() => setLogMaintenanceAction(null)}

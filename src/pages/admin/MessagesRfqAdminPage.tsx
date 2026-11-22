@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { ContactMessage } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
-import { Pagination } from '../../components/ui/Pagination.tsx';
 import { Trash2 } from 'lucide-react';
+
+const MESSAGE_PAGE_SIZES = [10, 20, 50] as const;
 
 interface AdminTicket extends ContactMessage {
   ticket_messages: Array<{ id: number; author_name: string; author_type: string; body: string; is_internal: boolean; created_at: string }>;
@@ -19,6 +20,14 @@ export const MessagesRfqAdminPage: React.FC = () => {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [perPage, setPerPage] = useState<number>(MESSAGE_PAGE_SIZES[0]);
+  const [search, setSearch] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [loading, setLoading] = useState(false);
+  const loadRequest = useRef(0);
   const [deleteTarget, setDeleteTarget] = useState<ContactMessage | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
@@ -28,25 +37,45 @@ export const MessagesRfqAdminPage: React.FC = () => {
   const [internalReply, setInternalReply] = useState(false);
   const canManageMessages = Boolean(user?.permissions.includes('messages.manage'));
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAppliedSearch(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
   const load = async (targetPage = page) => {
+    const requestId = ++loadRequest.current;
+    const params = new URLSearchParams({
+      page: String(targetPage),
+      per_page: String(perPage),
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    });
+    if (appliedSearch) params.set('q', appliedSearch);
+    setLoading(true);
     try {
-      const response = await apiRequest<{ data: ContactMessage[]; meta: { last_page: number } }>(
-        `/admin/messages?page=${targetPage}&per_page=8`,
+      const response = await apiRequest<{ data: ContactMessage[]; meta: { last_page: number; total: number } }>(
+        `/admin/messages?${params.toString()}`,
       );
+      if (requestId !== loadRequest.current) return;
       if (targetPage > response.meta.last_page) {
         setPage(Math.max(1, response.meta.last_page));
         return;
       }
       setMessages(response.data);
       setLastPage(response.meta.last_page);
+      setTotal(response.meta.total);
     } catch (error) {
-      addToast('error', error instanceof Error ? error.message : 'بارگذاری پیام‌ها ناموفق بود.');
+      if (requestId === loadRequest.current) {
+        addToast('error', error instanceof Error ? error.message : 'بارگذاری پیام‌ها ناموفق بود.');
+      }
+    } finally {
+      if (requestId === loadRequest.current) setLoading(false);
     }
   };
 
   useEffect(() => {
-    load(page);
-  }, [page]);
+    void load(page);
+  }, [page, perPage, appliedSearch, sortBy, sortOrder]);
 
   useEffect(() => {
     if (selectedTicketId === null) {
@@ -95,6 +124,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
   const cols: Column<ContactMessage>[] = [
     {
       key: 'sender',
+      sortKey: 'name',
       header: 'فرستنده و شرکت',
       render: (m) => (
         <div>
@@ -105,6 +135,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
     },
     {
       key: 'subject',
+      sortKey: 'subject',
       header: 'موضوع و شرح',
       render: (m) => (
         <div className="max-w-md">
@@ -115,6 +146,7 @@ export const MessagesRfqAdminPage: React.FC = () => {
     },
     {
       key: 'status',
+      sortKey: 'status',
       header: 'وضعیت پیگیری',
       render: (m) => (
         <div className="w-36">
@@ -185,8 +217,38 @@ export const MessagesRfqAdminPage: React.FC = () => {
       <p className="text-xs leading-6 text-(--theme-text-muted)">
         درخواست‌های همکاری و استعلام قیمت (RFQ)، پیام‌های فرم تماس و گفتگوهای پیگیری تیکت از این بخش بررسی و پاسخ داده می‌شوند.
       </p>
-      <DataTable data={messages} columns={cols} pageSize={8} searchKeys={[(m) => m.name, (m) => m.subject, (m) => m.company || '']} />
-      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      <DataTable
+        data={messages}
+        columns={cols}
+        rowKey={(message) => message.id}
+        tableLabel="فهرست پیام‌ها و تیکت‌ها"
+        pageSize={perPage}
+        pageSizeOptions={MESSAGE_PAGE_SIZES}
+        onPageSizeChange={(size) => {
+          setPerPage(size);
+          setPage(1);
+        }}
+        currentPage={page}
+        lastPage={lastPage}
+        total={total}
+        onPageChange={setPage}
+        searchValue={search}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        searchPlaceholder="جست‌وجوی فرستنده، موضوع یا شرکت..."
+        searchLabel="جست‌وجوی پیام‌ها"
+        sortBy={sortBy}
+        sortDirection={sortOrder}
+        onSortChange={(field, direction) => {
+          setSortBy(field);
+          setSortOrder(direction);
+          setPage(1);
+        }}
+        loading={loading}
+        emptyText={appliedSearch ? 'پیامی با این جست‌وجو پیدا نشد.' : 'پیامی برای نمایش وجود ندارد.'}
+      />
       {ticket && (
         <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
           <div className="flex flex-wrap items-center justify-between gap-3">

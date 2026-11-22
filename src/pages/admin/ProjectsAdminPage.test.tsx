@@ -67,11 +67,16 @@ describe('ProjectsAdminPage', () => {
     expect(screen.getByRole('columnheader', { name: 'دسته فنی' })).toBeTruthy();
     expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('per_page=10'));
 
-    fireEvent.change(screen.getByRole('combobox', { name: 'تعداد پروژه در هر صفحه' }), {
+    fireEvent.change(screen.getByRole('combobox', { name: 'تعداد ردیف در هر صفحه' }), {
       target: { value: '20' },
     });
     await waitFor(() => {
       expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('per_page=20'));
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'عنوان پروژه' }));
+    await waitFor(() => {
+      expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('sort_by=title_fa&sort_order=asc'));
     });
 
     fireEvent.change(screen.getByRole('searchbox', { name: 'جست‌وجوی پروژه‌ها' }), {

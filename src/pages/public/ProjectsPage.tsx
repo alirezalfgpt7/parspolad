@@ -156,7 +156,7 @@ export const ProjectsPage: React.FC = () => {
       ))}
 
       {/* Advanced SearchableSelect Filter Panel */}
-      <div className="mb-8 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
+      <div id="projects-list" className="mb-8 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-(--theme-text-muted)">

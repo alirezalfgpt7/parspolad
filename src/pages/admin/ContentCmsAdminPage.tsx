@@ -24,7 +24,7 @@ const publicPagePaths: Record<string, string> = {
   'contracts-licenses': '/contracts-licenses',
   contact: '/contact',
   faq: '/faq',
-  'home-spotlight': '/',
+  'home-spotlight': '/#home-spotlight',
   legal: '/legal',
   news: '/news',
   'org-chart': '/org-chart',
@@ -117,10 +117,6 @@ export const ContentCmsAdminPage: React.FC = () => {
       {tab === 'pages' && (
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="space-y-2 lg:col-span-3">
-            <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-[11px] leading-5 text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
-              <strong className="block">صفحهٔ داینامیک یعنی چه؟</strong>
-              عنوان و زیرعنوان اینجا در سربرگ معرفی همان صفحهٔ عمومی نمایش داده می‌شود؛ این بخش هدر اصلی سایت نیست.
-            </div>
             {pages.map((p) => (
               <button
                 key={p.id}

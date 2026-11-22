@@ -77,7 +77,7 @@ export const ProductsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div id="products-list" className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {products.map((pr) => {
           const specs = language === 'fa' ? pr.specs || {} : pr.specs_en || pr.specs || {};
           return (

@@ -10,28 +10,72 @@ import { Modal } from '../../components/ui/Modal.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 
+const CONTRACT_PAGE_SIZES = [10, 20, 50] as const;
+
 export const ContractsLicensesPage: React.FC = () => {
   const { language, user, addToast } = useAppStore();
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [licenses, setLicenses] = useState<License[]>([]);
   const [contractPage, setContractPage] = useState(1);
   const [contractLastPage, setContractLastPage] = useState(1);
+  const [contractTotal, setContractTotal] = useState(0);
+  const [contractPerPage, setContractPerPage] = useState<number>(CONTRACT_PAGE_SIZES[0]);
+  const [contractSearch, setContractSearch] = useState('');
+  const [appliedContractSearch, setAppliedContractSearch] = useState('');
+  const [contractSortBy, setContractSortBy] = useState('start_year');
+  const [contractSortDirection, setContractSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [contractsLoading, setContractsLoading] = useState(false);
   const [licensePage, setLicensePage] = useState(1);
   const [licenseLastPage, setLicenseLastPage] = useState(1);
   const [previewLicense, setPreviewLicense] = useState<License | null>(null);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => setAppliedContractSearch(contractSearch.trim()), 300);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [contractSearch]);
+
+  useEffect(() => {
     let active = true;
-    Promise.all([
-      apiRequest<{ data: Contract[]; meta: { last_page: number } }>(`/contracts?page=${contractPage}&per_page=8`),
-      apiRequest<{ data: License[]; meta: { last_page: number } }>(`/licenses?page=${licensePage}&per_page=8`),
-    ])
-      .then(([contractResponse, licenseResponse]) => {
+    const params = new URLSearchParams({
+      page: String(contractPage),
+      per_page: String(contractPerPage),
+      sort_by: contractSortBy,
+      sort_dir: contractSortDirection,
+    });
+    if (appliedContractSearch) params.set('q', appliedContractSearch);
+    setContractsLoading(true);
+    apiRequest<{ data: Contract[]; meta: { last_page: number; total: number } }>(`/contracts?${params.toString()}`)
+      .then((response) => {
         if (!active) return;
-        setContracts(contractResponse.data);
-        setContractLastPage(contractResponse.meta.last_page);
-        setLicenses(licenseResponse.data);
-        setLicenseLastPage(licenseResponse.meta.last_page);
+        if (contractPage > response.meta.last_page) {
+          setContractPage(Math.max(1, response.meta.last_page));
+          return;
+        }
+        setContracts(response.data);
+        setContractLastPage(response.meta.last_page);
+        setContractTotal(response.meta.total);
+      })
+      .catch((error: unknown) => {
+        if (active) addToast('error', error instanceof Error ? error.message : 'دریافت قراردادها و گواهینامه‌ها ناموفق بود.');
+      })
+      .finally(() => {
+        if (active) setContractsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [contractPage, contractPerPage, appliedContractSearch, contractSortBy, contractSortDirection, addToast]);
+
+  useEffect(() => {
+    let active = true;
+    apiRequest<{ data: License[]; meta: { last_page: number } }>(`/licenses?page=${licensePage}&per_page=8`)
+      .then((response) => {
+        if (!active) return;
+        setLicenses(response.data);
+        setLicenseLastPage(response.meta.last_page);
       })
       .catch((error: unknown) => {
         if (active) addToast('error', error instanceof Error ? error.message : 'دریافت قراردادها و گواهینامه‌ها ناموفق بود.');
@@ -40,19 +84,19 @@ export const ContractsLicensesPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [contractPage, licensePage, addToast]);
+  }, [licensePage, addToast]);
 
   const contractCols: Column<Contract>[] = [
     {
       key: 'number',
+      sortKey: 'contract_number',
       header: 'شماره قرارداد',
-      sortValue: (c) => c.contract_number,
       render: (c) => <span className="font-mono text-xs font-semibold">{c.contract_number}</span>,
     },
     {
       key: 'title',
+      sortKey: 'title_fa',
       header: 'موضوع قرارداد',
-      sortValue: (c) => c.title_fa,
       render: (c) => (
         <div>
           <div className="font-semibold text-(--theme-text)">{language === 'fa' ? c.title_fa : c.title_en}</div>
@@ -62,12 +106,13 @@ export const ContractsLicensesPage: React.FC = () => {
     },
     {
       key: 'year',
+      sortKey: 'start_year',
       header: 'دوره اجرا',
-      sortValue: (c) => c.start_year,
       render: (c) => <span>{c.start_year} – {c.end_year || 'جاری'}</span>,
     },
     {
       key: 'status',
+      sortKey: 'status',
       header: 'وضعیت',
       render: (c) => (
         <span className={c.status === 'completed' ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
@@ -168,11 +213,35 @@ export const ContractsLicensesPage: React.FC = () => {
         <DataTable
           data={contracts}
           columns={contractCols}
-          pageSize={8}
-          searchKeys={[(c) => c.title_fa, (c) => c.client_fa, (c) => c.contract_number]}
+          rowKey={(contract) => contract.id}
+          tableLabel="فهرست قراردادهای شاخص"
+          pageSize={contractPerPage}
+          pageSizeOptions={CONTRACT_PAGE_SIZES}
+          onPageSizeChange={(size) => {
+            setContractPerPage(size);
+            setContractPage(1);
+          }}
+          currentPage={contractPage}
+          lastPage={contractLastPage}
+          total={contractTotal}
+          onPageChange={setContractPage}
+          searchValue={contractSearch}
+          onSearchChange={(value) => {
+            setContractSearch(value);
+            setContractPage(1);
+          }}
           searchPlaceholder="جستجو در شماره قرارداد، عنوان یا کارفرما..."
+          searchLabel="جست‌وجوی قراردادها"
+          sortBy={contractSortBy}
+          sortDirection={contractSortDirection}
+          onSortChange={(field, direction) => {
+            setContractSortBy(field);
+            setContractSortDirection(direction);
+            setContractPage(1);
+          }}
+          loading={contractsLoading}
+          emptyText={appliedContractSearch ? 'قراردادی با این جست‌وجو پیدا نشد.' : 'قراردادی برای نمایش وجود ندارد.'}
         />
-        <Pagination page={contractPage} lastPage={contractLastPage} onChange={setContractPage} />
       </section>
 
       <Modal

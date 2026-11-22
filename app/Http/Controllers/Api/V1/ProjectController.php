@@ -120,6 +120,8 @@ class ProjectController extends Controller
             'q' => ['sometimes', 'nullable', 'string', 'max:120'],
             'category_id' => ['sometimes', 'nullable', 'integer', 'exists:project_categories,id'],
             'per_page' => ['sometimes', 'integer', 'between:1,100'],
+            'sort_by' => ['sometimes', 'in:title_fa,client_name_fa,contract_number,year'],
+            'sort_order' => ['sometimes', 'in:asc,desc'],
         ]);
         $query = Project::query()->with('category:id,slug,name_fa,name_en,icon,color');
 
@@ -142,9 +144,11 @@ class ProjectController extends Controller
         }
 
         $perPage = $filters['per_page'] ?? 10;
+        $sortBy = $filters['sort_by'] ?? 'year';
+        $sortOrder = $filters['sort_order'] ?? 'desc';
 
         return AdminProjectListResource::collection(
-            $query->orderByDesc('year')->orderByDesc('id')->paginate($perPage)->withQueryString(),
+            $query->orderBy($sortBy, $sortOrder)->orderByDesc('id')->paginate($perPage)->withQueryString(),
         );
     }
 

@@ -2,13 +2,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   ArrowUpRight,
-  ArrowUpDown,
   CopyPlus,
   Database,
   ListFilter,
   Pencil,
   Plus,
-  Search,
   Save,
   Trash2,
 } from 'lucide-react';
@@ -20,12 +18,12 @@ import { useAppStore } from '../../store/useAppStore.ts';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
-import { Pagination } from '../../components/ui/Pagination.tsx';
 import { PersianDatePicker, gregorianToJalali, jalaliToGregorian } from '../../components/ui/PersianDatePicker.tsx';
 import { SearchableSelect } from '../../components/ui/SearchableSelect.tsx';
 import { IconPicker } from '../../components/ui/IconPicker.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
 import { RichTextEditor } from '../../components/ui/RichTextEditor.tsx';
+import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 
 type FieldType = 'boolean' | 'color' | 'date' | 'datetime' | 'jalali-date' | 'json' | 'number' | 'richtext' | 'select' | 'string' | 'textarea';
 
@@ -132,7 +130,7 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [perPage, setPerPage] = useState(20);
+  const [perPage, setPerPage] = useState(10);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('id');
@@ -293,16 +291,6 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
   const sortableFields = fields.filter((field) => field.type !== 'json' && field.type !== 'textarea');
   const displayedFields = sortableFields.filter((field) => visibleColumns.includes(field.name));
 
-  const setSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder((current) => current === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('asc');
-    }
-    setPage(1);
-  };
-
   const openCreate = () => {
     setEditingRecord(null);
     setIsDuplicating(false);
@@ -454,36 +442,116 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
     return <span className="block max-w-[20rem] truncate" title={printableValue(value)}>{printableValue(value)}</span>;
   };
 
-  const recordActions = (record: ContentRecord) => (
-    <div className="flex items-center gap-1">
-      <button
-        type="button"
-        onClick={() => openDuplicate(record)}
-        className="rounded-lg p-2 text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
-        aria-label="ساخت رکورد مشابه"
-        title="کپی و ساخت رکورد مشابه"
-      >
-        <CopyPlus className="h-4 w-4" />
-      </button>
-      <button
-        type="button"
-        onClick={() => openEdit(record)}
-        className="rounded-lg p-2 text-(--theme-text-muted) transition hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
-        aria-label="ویرایش رکورد"
-        title="ویرایش"
-      >
-        <Pencil className="h-4 w-4" />
-      </button>
-      <button
-        type="button"
-        onClick={() => setDeleteTarget(record)}
-        className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300"
-        aria-label="حذف رکورد"
-        title="حذف"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-    </div>
+  const getPublicPath = (record?: ContentRecord): string | null => {
+    if (resource !== 'banners' || !record) return selectedResource?.public_path ?? null;
+    const paths: Record<string, string> = {
+      landing_mid: '/#home-spotlight',
+      projects_top: '/projects#projects-list',
+      services_bottom: '/services#services-list',
+    };
+    return paths[String(record.placement)] ?? selectedResource?.public_path ?? null;
+  };
+
+  const recordActions = (record: ContentRecord) => {
+    const publicPath = getPublicPath(record);
+    return (
+      <div className="flex items-center gap-1">
+        {publicPath && (
+          <Link
+            to={publicPath}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-lg p-2 text-(--theme-text-muted) transition hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
+            aria-label="مشاهدهٔ بخش رکورد در سایت"
+            title="مشاهده در سایت"
+          >
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        )}
+        <button
+          type="button"
+          onClick={() => openDuplicate(record)}
+          className="rounded-lg p-2 text-slate-500 transition hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-950/40 dark:hover:text-indigo-300"
+          aria-label="ساخت رکورد مشابه"
+          title="کپی و ساخت رکورد مشابه"
+        >
+          <CopyPlus className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => openEdit(record)}
+          className="rounded-lg p-2 text-(--theme-text-muted) transition hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
+          aria-label="ویرایش رکورد"
+          title="ویرایش"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setDeleteTarget(record)}
+          className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+          aria-label="حذف رکورد"
+          title="حذف"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  };
+
+  const recordColumns: Column<ContentRecord>[] = [
+    {
+      key: 'id',
+      header: 'شناسه',
+      sortKey: 'id',
+      className: 'whitespace-nowrap',
+      render: (record) => <span className="font-mono text-xs text-(--theme-text-muted)">#{record.id}</span>,
+    },
+    ...displayedFields.map((field) => ({
+      key: field.name,
+      header: (
+        <span>
+          <span className="block">{field.label_fa}</span>
+          <span className="mt-0.5 block text-[10px] font-normal text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
+        </span>
+      ),
+      sortKey: field.name,
+      className: 'min-w-[140px]',
+      render: (record: ContentRecord) => renderValue(record, field),
+    })),
+    {
+      key: 'actions',
+      header: 'عملیات',
+      align: 'center',
+      className: 'whitespace-nowrap',
+      render: recordActions,
+    },
+  ];
+
+  const columnActions = (
+    <details className="group relative">
+      <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 text-sm font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted)">
+        <ListFilter className="h-4 w-4" />
+        ستون‌ها
+      </summary>
+      <div className="absolute inset-e-0 top-full z-30 mt-2 max-h-80 w-72 overflow-y-auto rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow-hover)">
+        <p className="mb-2 text-xs font-bold text-(--theme-text-muted)">ستون‌های قابل نمایش</p>
+        {sortableFields.map((field) => (
+          <label key={field.name} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted)">
+            <input
+              type="checkbox"
+              checked={visibleColumns.includes(field.name)}
+              onChange={() => toggleColumn(field.name)}
+              className="mt-0.5 accent-(--theme-primary)"
+            />
+            <span>
+              <span className="block font-semibold">{field.label_fa}</span>
+              <span className="mt-0.5 block text-[10px] text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </details>
   );
 
   return (
@@ -534,15 +602,37 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                 disabled={loadingResources || availableResources.length === 0}
               />
             ) : null}
-            <button
-              type="button"
-              onClick={openCreate}
-              disabled={!resource || loadingSchema || fields.length === 0}
-              className="inline-flex h-11 min-h-11 self-end items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-(--theme-btn-bg) px-5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Plus className="h-4 w-4" />
-              {embedded ? `افزودن ${selectedResource?.label_fa || 'رکورد'}` : 'افزودن رکورد'}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {getPublicPath() && resource !== 'banners' && (
+                <Link
+                  to={getPublicPath()!}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-bold text-(--theme-text) transition hover:border-(--theme-primary)/40 hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
+                >
+                  مشاهده در سایت
+                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              )}
+              {selectedResource?.related_admin_path && (
+                <Link
+                  to={selectedResource.related_admin_path}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2 text-xs font-bold text-(--theme-text) transition hover:border-(--theme-primary)/40 hover:bg-(--theme-surface-muted) hover:text-(--theme-primary-ink)"
+                >
+                  {selectedResource.key === 'articles' ? 'مدیریت دسته‌های مقالات' : 'تنظیمات عنوان و پس‌زمینه'}
+                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={openCreate}
+                disabled={!resource || loadingSchema || fields.length === 0}
+                className="inline-flex h-11 min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-(--theme-btn-bg) px-5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Plus className="h-4 w-4" />
+                {embedded ? `افزودن ${selectedResource?.label_fa || 'رکورد'}` : 'افزودن رکورد'}
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -558,216 +648,84 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
         </div>
       ) : (
         <>
-          {selectedResource && (
-            <section className="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 dark:border-blue-900/50 dark:bg-blue-950/20 sm:flex-row sm:items-start sm:justify-between sm:p-5">
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-blue-950 dark:text-blue-200">{selectedResource.description_fa}</p>
-                <p className="mt-1.5 text-xs leading-5 text-blue-900/75 dark:text-blue-200/75">
-                  <span className="font-bold">محل استفاده: </span>{selectedResource.usage_fa}
-                </p>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
-              {selectedResource.public_path && (
-                <Link
-                  to={selectedResource.public_path}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 self-start rounded-lg border border-blue-200 bg-(--theme-surface) px-3 py-2 text-[11px] font-bold text-blue-800 transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink) dark:border-blue-900 dark:text-blue-200"
-                >
-                  مشاهده در سایت
-                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                </Link>
-              )}
-              {selectedResource.related_admin_path && (
-                <Link
-                  to={selectedResource.related_admin_path}
-                  className="inline-flex items-center gap-1 self-start rounded-lg border border-blue-200 bg-(--theme-surface) px-3 py-2 text-[11px] font-bold text-blue-800 transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink) dark:border-blue-900 dark:text-blue-200"
-                >
-                  {selectedResource.key === 'articles' ? 'مدیریت دسته‌های مقالات' : 'تنظیمات عنوان و پس‌زمینه'}
-                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                </Link>
-              )}
-              </div>
-            </section>
-          )}
-          <section className="flex flex-col gap-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow) sm:p-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-2.5 text-(--theme-text-muted)">
-                <Database className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="truncate text-base font-extrabold text-(--theme-text)">
-                  {selectedResource?.label_fa}
-                  <span className="ms-2 text-xs font-medium text-(--theme-text-muted)" dir="ltr">{selectedResource?.label_en}</span>
-                </h2>
-                <p className="mt-1 text-xs text-(--theme-text-muted)">
-                  {total.toLocaleString('fa-IR')} رکورد
-                  {search ? ` · نتیجه برای «${search}»` : ' · فهرست صفحه‌بندی‌شده'}
-                </p>
-              </div>
+          <div className="flex items-center gap-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) px-4 py-3 shadow-(--theme-card-shadow)">
+            <div className="rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-2.5 text-(--theme-text-muted)">
+              <Database className="h-5 w-5" />
             </div>
-
-            <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-              <label className="relative min-w-0 flex-1 sm:min-w-72 lg:min-w-88">
-                <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-text-muted)" />
-                <input
-                  type="search"
-                  value={searchInput}
-                  onChange={(event) => setSearchInput(event.target.value)}
-                  placeholder="جست‌وجوی سریع در همهٔ فیلدهای متنی..."
-                  className="h-11 w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) pe-3 ps-10 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition focus:border-(--theme-primary) focus:ring-2 focus:ring-(--theme-primary)/15"
-                  aria-label="جست‌وجو در رکوردها"
-                />
-              </label>
-
-              <details className="group relative">
-                <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-4 text-sm font-semibold text-(--theme-text) transition hover:bg-(--theme-surface-muted)">
-                  <ListFilter className="h-4 w-4" />
-                  ستون‌ها
-                </summary>
-                <div className="absolute inset-e-0 top-full z-30 mt-2 max-h-80 w-72 overflow-y-auto rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow-hover)">
-                  <p className="mb-2 text-xs font-bold text-(--theme-text-muted)">ستون‌های قابل نمایش</p>
-                  {sortableFields.map((field) => (
-                    <label key={field.name} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs text-(--theme-text) hover:bg-(--theme-surface-muted)">
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns.includes(field.name)}
-                        onChange={() => toggleColumn(field.name)}
-                        className="mt-0.5 accent-(--theme-primary)"
-                      />
-                      <span>
-                        <span className="block font-semibold">{field.label_fa}</span>
-                        <span className="mt-0.5 block text-[10px] text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </details>
+            <div className="min-w-0">
+              <h2 className="truncate text-base font-extrabold text-(--theme-text)">
+                {selectedResource?.label_fa}
+                <span className="ms-2 text-xs font-medium text-(--theme-text-muted)" dir="ltr">{selectedResource?.label_en}</span>
+              </h2>
             </div>
-          </section>
-
-          <section className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-(--theme-border) px-4 py-3 sm:px-5">
-              <div className="flex items-center gap-2 text-xs text-(--theme-text-muted)">
-                <span>نمایش</span>
-                <select
-                  value={perPage}
-                  onChange={(event) => {
-                    setPerPage(Number(event.target.value));
-                    setPage(1);
-                  }}
-                  className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2 py-1.5 font-semibold text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
-                  aria-label="تعداد رکورد در هر صفحه"
-                >
-                  {[20, 50, 100].map((size) => <option key={size} value={size}>{size}</option>)}
-                </select>
-                <span>رکورد در هر صفحه</span>
-              </div>
-              <p className="text-xs text-(--theme-text-muted)">
-                {total > 0 ? `${((page - 1) * perPage + 1).toLocaleString('fa-IR')} تا ${Math.min(page * perPage, total).toLocaleString('fa-IR')} از ${total.toLocaleString('fa-IR')}` : 'رکوردی برای نمایش نیست'}
-              </p>
-            </div>
-
-            <div className="hidden overflow-x-auto md:block">
-              <table className="w-full min-w-190 border-collapse text-start text-sm">
-                <thead>
-                  <tr className="border-b border-(--theme-border) bg-(--theme-surface-muted) text-xs text-(--theme-text-muted)">
-                    <th className="w-20 px-4 py-3 text-start">
-                      <button type="button" onClick={() => setSort('id')} className="inline-flex items-center gap-1.5 hover:text-(--theme-primary-ink)">
-                        شناسه <ArrowUpDown className="h-3.5 w-3.5" />
-                      </button>
-                    </th>
-                    {displayedFields.map((field) => (
-                      <th key={field.name} className="px-4 py-3 text-start">
-                        <button type="button" onClick={() => setSort(field.name)} className="inline-flex items-center gap-1.5 text-start hover:text-(--theme-primary-ink)">
-                          <span>
-                            <span className="block">{field.label_fa}</span>
-                            <span className="mt-0.5 block text-[10px] font-normal text-(--theme-text-muted)" dir="ltr">{field.label_en}</span>
-                          </span>
-                          <ArrowUpDown className={`h-3.5 w-3.5 shrink-0 ${sortBy === field.name ? 'text-(--theme-primary-ink)' : 'opacity-40'}`} />
-                        </button>
-                      </th>
-                    ))}
-                    <th className="w-36 px-4 py-3 text-center">عملیات / Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-(--theme-border)">
-                  {loadingRecords ? (
-                    Array.from({ length: 5 }, (_, index) => (
-                      <tr key={index} className="animate-pulse">
-                        <td colSpan={displayedFields.length + 2} className="px-4 py-4">
-                          <div className="h-4 w-2/3 rounded bg-(--theme-surface-muted)" />
-                        </td>
-                      </tr>
-                    ))
-                  ) : records.length === 0 ? (
-                    <tr>
-                      <td colSpan={displayedFields.length + 2} className="px-4 py-16 text-center">
-                        <Database className="mx-auto h-8 w-8 text-(--theme-text-muted)" />
-                        <p className="mt-3 text-sm font-semibold text-(--theme-text-muted)">
-                          {search ? 'رکوردی با این عبارت پیدا نشد.' : 'هنوز رکوردی ثبت نشده است.'}
-                        </p>
-                        {!search && (
-                          <button type="button" onClick={openCreate} className="mt-3 text-xs font-bold text-(--theme-link) hover:underline">
-                            افزودن اولین رکورد
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ) : records.map((record) => (
-                    <tr key={record.id} className="transition-colors hover:bg-(--theme-surface-muted)/60">
-                      <td className="px-4 py-3.5 font-mono text-xs text-(--theme-text-muted)">#{record.id}</td>
-                      {displayedFields.map((field) => (
-                        <td key={field.name} className="px-4 py-3.5 text-(--theme-text)">
-                          {renderValue(record, field)}
-                        </td>
-                      ))}
-                      <td className="px-4 py-2">
-                        <div className="flex justify-center">{recordActions(record)}</div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="space-y-3 p-3 md:hidden">
-              {loadingRecords ? (
-                Array.from({ length: 4 }, (_, index) => <div key={index} className="h-24 animate-pulse rounded-xl bg-(--theme-surface-muted)" />)
-              ) : records.length === 0 ? (
-                <div className="px-3 py-12 text-center text-sm text-(--theme-text-muted)">
-                  {search ? 'رکوردی با این عبارت پیدا نشد.' : 'هنوز رکوردی ثبت نشده است.'}
-                </div>
-              ) : records.map((record) => (
-                <article key={record.id} className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-(--theme-text)">
-                        {primaryField ? printableValue(record[primaryField.name]) : `رکورد ${record.id}`}
-                      </p>
-                      <p className="mt-1 font-mono text-[10px] text-(--theme-text-muted)">ID: {record.id}</p>
-                    </div>
-                    {recordActions(record)}
-                  </div>
-                  <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-(--theme-border) pt-3">
-                    {displayedFields.filter((field) => field.name !== primaryField?.name).map((field) => (
-                      <div key={field.name} className="min-w-0">
-                        <dt className="truncate text-[10px] text-(--theme-text-muted)">{field.label_fa}</dt>
-                        <dd className="mt-1 truncate text-xs font-medium text-(--theme-text)">
-                          {renderValue(record, field)}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-            <p className="text-xs text-(--theme-text-muted)">جست‌وجو و مرتب‌سازی در پایگاه‌داده انجام می‌شود؛ همهٔ رکوردها یک‌جا بارگیری نمی‌شوند.</p>
-            <Pagination page={page} lastPage={lastPage} onChange={setPage} />
           </div>
+
+          <DataTable
+            data={records}
+            columns={recordColumns}
+            rowKey={(record) => record.id}
+            tableLabel={selectedResource?.label_fa}
+            pageSize={perPage}
+            pageSizeOptions={[10, 20, 50]}
+            onPageSizeChange={(size) => {
+              setPerPage(size);
+              setPage(1);
+            }}
+            currentPage={page}
+            lastPage={lastPage}
+            total={total}
+            onPageChange={setPage}
+            searchValue={searchInput}
+            onSearchChange={(value) => {
+              setSearchInput(value);
+              setPage(1);
+            }}
+            searchPlaceholder="جست‌وجوی سریع در همهٔ فیلدهای متنی..."
+            searchLabel="جست‌وجو در رکوردها"
+            sortBy={sortBy}
+            sortDirection={sortOrder}
+            onSortChange={(field, direction) => {
+              setSortBy(field);
+              setSortOrder(direction);
+              setPage(1);
+            }}
+            actions={columnActions}
+            loading={loadingRecords || loadingSchema}
+            emptyText={(
+              <div>
+                <Database className="mx-auto h-8 w-8 text-(--theme-text-muted)" />
+                <p className="mt-3 text-sm font-semibold text-(--theme-text-muted)">
+                  {search ? 'رکوردی با این عبارت پیدا نشد.' : 'هنوز رکوردی ثبت نشده است.'}
+                </p>
+                {!search && (
+                  <button type="button" onClick={openCreate} className="mt-3 text-xs font-bold text-(--theme-link) hover:underline">
+                    افزودن اولین رکورد
+                  </button>
+                )}
+              </div>
+            )}
+            mobileRenderer={(record) => (
+              <article className="rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-(--theme-text)">
+                      {primaryField ? printableValue(record[primaryField.name]) : `رکورد ${record.id}`}
+                    </p>
+                    <p className="mt-1 font-mono text-[10px] text-(--theme-text-muted)">ID: {record.id}</p>
+                  </div>
+                  {recordActions(record)}
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 border-t border-(--theme-border) pt-3">
+                  {displayedFields.filter((field) => field.name !== primaryField?.name).map((field) => (
+                    <div key={field.name} className="min-w-0">
+                      <dt className="truncate text-[10px] text-(--theme-text-muted)">{field.label_fa}</dt>
+                      <dd className="mt-1 truncate text-xs font-medium text-(--theme-text)">{renderValue(record, field)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            )}
+          />
         </>
       )}
 
@@ -778,12 +736,16 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
         size="xl"
       >
         <form onSubmit={handleSubmit(save)} className="space-y-5">
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs leading-6 text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200">
-            نام هر فیلد به فارسی و انگلیسی نمایش داده می‌شود. موارد ستاره‌دار الزامی‌اند.
-            {isDuplicating && (
-              <span className="ms-1">در حالت ساخت مشابه، شناسه‌های یکتای خالی‌شده را وارد کنید.</span>
-            )}
-          </div>
+          {selectedResource?.key === 'kpis' ? (
+            isDuplicating && <p className="text-xs text-(--theme-text-muted)">در حالت ساخت مشابه، شناسه‌های یکتای خالی‌شده را وارد کنید.</p>
+          ) : (
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-xs leading-6 text-indigo-900 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200">
+              {resource !== 'kpis' && 'نام هر فیلد به فارسی و انگلیسی نمایش داده می‌شود. موارد ستاره‌دار الزامی‌اند.'}
+              {isDuplicating && (
+                <span className="ms-1">در حالت ساخت مشابه، شناسه‌های یکتای خالی‌شده را وارد کنید.</span>
+              )}
+            </div>
+          )}
 
           {fields.length === 0 ? (
             <div className="py-10 text-center text-sm text-slate-500">ساختار فیلدهای این بخش در دسترس نیست.</div>

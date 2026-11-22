@@ -68,7 +68,7 @@ describe('separate contract and license admin pages', () => {
     await screen.findByText('پیمان نمونه');
     expect(apiRequest).toHaveBeenCalledWith(expect.stringContaining('per_page=10'));
 
-    fireEvent.change(screen.getByRole('combobox', { name: 'تعداد قرارداد در هر صفحه' }), {
+    fireEvent.change(screen.getByRole('combobox', { name: 'تعداد ردیف در هر صفحه' }), {
       target: { value: '20' },
     });
     await waitFor(() => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowDownWideNarrow, ArrowUpWideNarrow, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, Pencil, Plus, Trash2 } from 'lucide-react';
 import { z } from 'zod';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -7,7 +7,6 @@ import type { Contract } from '../../types/index.ts';
 import { DataTable, type Column } from '../../components/ui/DataTable.tsx';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
-import { Pagination } from '../../components/ui/Pagination.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { InlineLoader } from '../../components/common/InlineLoader.tsx';
 
@@ -27,7 +26,6 @@ const contractFormSchema = z.object({
   requires_auth: z.boolean().optional(),
 });
 
-type ContractSortField = 'start_year' | 'contract_number' | 'title_fa' | 'client_fa' | 'amount_billion_irr' | 'status';
 type PaginatedResponse<T> = {
   data: T[];
   meta: { current_page: number; last_page: number; per_page: number; total: number };
@@ -54,7 +52,7 @@ export const ContractsAdminPage: React.FC = () => {
   const [perPage, setPerPage] = useState<number>(PAGE_SIZES[0]);
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
-  const [sortBy, setSortBy] = useState<ContractSortField>('start_year');
+  const [sortBy, setSortBy] = useState('start_year');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [refresh, setRefresh] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -164,13 +162,14 @@ export const ContractsAdminPage: React.FC = () => {
   };
 
   const columns: Column<ContractListRow>[] = [
-    { key: 'number', header: 'شماره قرارداد', className: 'min-w-[140px]', render: (row) => <span dir="ltr" className="font-mono text-xs">{row.contract_number}</span> },
-    { key: 'title', header: 'عنوان قرارداد', className: 'min-w-[180px]', render: (row) => <span className="font-semibold">{row.title_fa}</span> },
-    { key: 'client', header: 'کارفرما', className: 'hidden md:table-cell min-w-[140px]', render: (row) => row.client_fa },
-    { key: 'amount', header: 'مبلغ (میلیارد ریال)', className: 'hidden lg:table-cell whitespace-nowrap', render: (row) => Number(row.amount_billion_irr).toLocaleString('fa-IR') },
-    { key: 'years', header: 'مدت قرارداد', className: 'whitespace-nowrap', render: (row) => `${row.start_year}${row.end_year ? ` تا ${row.end_year}` : ' به بعد'}` },
+    { key: 'number', sortKey: 'contract_number', header: 'شماره قرارداد', className: 'min-w-[140px]', render: (row) => <span dir="ltr" className="font-mono text-xs">{row.contract_number}</span> },
+    { key: 'title', sortKey: 'title_fa', header: 'عنوان قرارداد', className: 'min-w-[180px]', render: (row) => <span className="font-semibold">{row.title_fa}</span> },
+    { key: 'client', sortKey: 'client_fa', header: 'کارفرما', className: 'hidden md:table-cell min-w-[140px]', render: (row) => row.client_fa },
+    { key: 'amount', sortKey: 'amount_billion_irr', header: 'مبلغ (میلیارد ریال)', className: 'hidden lg:table-cell whitespace-nowrap', render: (row) => Number(row.amount_billion_irr).toLocaleString('fa-IR') },
+    { key: 'years', sortKey: 'start_year', header: 'مدت قرارداد', className: 'whitespace-nowrap', render: (row) => `${row.start_year}${row.end_year ? ` تا ${row.end_year}` : ' به بعد'}` },
     {
       key: 'status',
+      sortKey: 'status',
       header: 'وضعیت',
       className: 'hidden sm:table-cell whitespace-nowrap',
       render: (row) => <span className="rounded-full bg-(--theme-surface-muted) px-2.5 py-1 text-xs">{statusLabels[row.status]}</span>,
@@ -194,10 +193,16 @@ export const ContractsAdminPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-lg font-extrabold text-(--theme-text)">مدیریت قراردادها</h1>
-          <p className="mt-1 text-xs text-(--theme-text-muted)">جست‌وجو، مرتب‌سازی و مدیریت قراردادها با بارگذاری صفحه‌ای.</p>
+      <header className="flex flex-col gap-5 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow) sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="flex min-w-0 items-start gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-(--theme-primary)/10 text-(--theme-primary-ink)">
+            <FileSpreadsheet className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-(--theme-primary-ink)">Contracts workspace</p>
+            <h1 className="mt-1 text-lg font-black text-(--theme-text) sm:text-xl">مدیریت قراردادها</h1>
+            <p className="mt-1.5 max-w-2xl text-xs leading-6 text-(--theme-text-muted)">جست‌وجو، مرتب‌سازی و مدیریت قراردادها با بارگذاری صفحه‌ای.</p>
+          </div>
         </div>
         <button
           type="button"
@@ -214,69 +219,45 @@ export const ContractsAdminPage: React.FC = () => {
             scope_en: '',
             requires_auth: false,
           })}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-(--theme-btn-bg) px-4 py-2.5 text-xs font-semibold text-(--theme-btn-text) transition hover:bg-(--theme-btn-hover)"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-5 py-2.5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover)"
         >
           <Plus className="h-4 w-4" />
           ثبت قرارداد
         </button>
       </header>
 
-      <section className="space-y-3">
-        <div className="flex flex-col gap-3 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-4 shadow-(--theme-card-shadow) sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-sm">
-            <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(1);
-              }}
-              placeholder="جست‌وجوی عنوان، شماره یا کارفرما..."
-              aria-label="جست‌وجوی قراردادها"
-              className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) py-2 pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none focus:border-(--theme-primary)"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-xs text-(--theme-text-muted)">
-              مرتب‌سازی
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value as ContractSortField)} className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-2 text-xs text-(--theme-input-text)" aria-label="مرتب‌سازی قراردادها">
-                <option value="start_year">سال شروع</option>
-                <option value="contract_number">شماره قرارداد</option>
-                <option value="title_fa">عنوان</option>
-                <option value="client_fa">کارفرما</option>
-                <option value="amount_billion_irr">مبلغ</option>
-                <option value="status">وضعیت</option>
-              </select>
-            </label>
-            <button type="button" onClick={() => setSortDir((direction) => direction === 'asc' ? 'desc' : 'asc')} className="rounded-lg border border-(--theme-border) p-2 text-(--theme-text-muted) hover:bg-(--theme-surface-muted)" aria-label={sortDir === 'asc' ? 'مرتب‌سازی نزولی' : 'مرتب‌سازی صعودی'} title={sortDir === 'asc' ? 'صعودی' : 'نزولی'}>
-              {sortDir === 'asc' ? <ArrowUpWideNarrow className="h-4 w-4" /> : <ArrowDownWideNarrow className="h-4 w-4" />}
-            </button>
-            <label className="flex items-center gap-2 text-xs text-(--theme-text-muted)">
-              ردیف در صفحه
-              <select
-                value={perPage}
-                onChange={(event) => {
-                  setPerPage(Number(event.target.value));
-                  setPage(1);
-                }}
-                aria-label="تعداد قرارداد در هر صفحه"
-                className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-2 text-xs text-(--theme-input-text)"
-              >
-                {PAGE_SIZES.map((size) => <option key={size} value={size}>{size}</option>)}
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-          <p className="text-xs text-(--theme-text-muted)" aria-live="polite">
-            {loading ? 'در حال بارگذاری قراردادها...' : `نمایش ${contracts.length ? (page - 1) * perPage + 1 : 0} تا ${Math.min(page * perPage, total)} از ${total} قرارداد`}
-          </p>
-        </div>
-        <DataTable data={contracts} columns={columns} pageSize={perPage} loading={loading} emptyText={appliedSearch ? 'قراردادی با این جست‌وجو پیدا نشد.' : 'هنوز قراردادی ثبت نشده است.'} />
-        <Pagination page={page} lastPage={lastPage} onChange={setPage} />
-      </section>
+      <DataTable
+        data={contracts}
+        columns={columns}
+        rowKey={(row) => row.id}
+        tableLabel="فهرست قراردادها"
+        pageSize={perPage}
+        pageSizeOptions={PAGE_SIZES}
+        onPageSizeChange={(size) => {
+          setPerPage(size);
+          setPage(1);
+        }}
+        currentPage={page}
+        lastPage={lastPage}
+        total={total}
+        onPageChange={setPage}
+        searchValue={search}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        searchPlaceholder="جست‌وجوی عنوان، شماره یا کارفرما..."
+        searchLabel="جست‌وجوی قراردادها"
+        sortBy={sortBy}
+        sortDirection={sortDir}
+        onSortChange={(field, direction) => {
+          setSortBy(field);
+          setSortDir(direction);
+          setPage(1);
+        }}
+        loading={loading}
+        emptyText={appliedSearch ? 'قراردادی با این جست‌وجو پیدا نشد.' : 'هنوز قراردادی ثبت نشده است.'}
+      />
 
       <Modal open={Boolean(contractModal) || editorLoading} onClose={closeEditor} title={editorLoading ? 'بارگذاری قرارداد' : contractModal?.id ? 'ویرایش قرارداد' : 'ثبت قرارداد جدید'} size="md">
         {editorLoading ? <InlineLoader label="در حال دریافت جزئیات قرارداد..." /> : contractModal && (

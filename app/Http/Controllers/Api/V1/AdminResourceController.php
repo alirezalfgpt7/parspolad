@@ -29,8 +29,22 @@ class AdminResourceController extends Controller
     public function users(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'users.view');
-        $perPage = min(max($request->integer('per_page', 8), 1), 100);
-        $users = User::query()->with(['roles.permissions'])->orderBy('id')->paginate($perPage);
+        $filters = $request->validate([
+            'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'per_page' => ['sometimes', 'integer', 'between:1,100'],
+            'sort_by' => ['sometimes', 'in:id,name,email'],
+            'sort_order' => ['sometimes', 'in:asc,desc'],
+        ]);
+        $query = User::query()->with(['roles.permissions']);
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $query->where(fn ($sub) => $sub
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%"));
+        }
+        $users = $query
+            ->orderBy($filters['sort_by'] ?? 'id', $filters['sort_order'] ?? 'asc')
+            ->paginate($filters['per_page'] ?? 10);
         $userRows = $users->getCollection()
             ->map(fn (User $user): array => (new UserResource($user))->resolve())
             ->values();
@@ -236,10 +250,30 @@ class AdminResourceController extends Controller
     public function messages(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'messages.view');
+        $filters = $request->validate([
+            'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'per_page' => ['sometimes', 'integer', 'between:1,100'],
+            'sort_by' => ['sometimes', 'in:name,subject,status,created_at'],
+            'sort_order' => ['sometimes', 'in:asc,desc'],
+        ]);
+        $query = ContactMessage::query();
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $query->where(fn ($sub) => $sub
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('subject', 'like', "%{$search}%")
+                ->orWhere('company', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('tracking_number', 'like', "%{$search}%"));
+        }
 
-        $perPage = min(max($request->integer('per_page', 8), 1), 100);
-
-        return $this->paginatedResponse(ContactMessage::query()->latest()->paginate($perPage)->withQueryString());
+        return $this->paginatedResponse(
+            $query
+                ->orderBy($filters['sort_by'] ?? 'created_at', $filters['sort_order'] ?? 'desc')
+                ->orderByDesc('id')
+                ->paginate($filters['per_page'] ?? 10)
+                ->withQueryString(),
+        );
     }
 
     public function updateMessageStatus(Request $request, ContactMessage $message): JsonResponse
@@ -353,8 +387,24 @@ class AdminResourceController extends Controller
     public function activityLogs(Request $request): JsonResponse
     {
         $this->ensurePermission($request, 'logs.view');
-        $perPage = min(max($request->integer('per_page', 50), 1), 100);
-        $logs = Activity::query()->with(['causer', 'subject'])->latest()->paginate($perPage);
+        $filters = $request->validate([
+            'q' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'per_page' => ['sometimes', 'integer', 'between:1,100'],
+            'sort_by' => ['sometimes', 'in:created_at,description'],
+            'sort_order' => ['sometimes', 'in:asc,desc'],
+        ]);
+        $query = Activity::query()->with(['causer', 'subject']);
+        $search = trim((string) ($filters['q'] ?? ''));
+        if ($search !== '') {
+            $query->where(fn ($sub) => $sub
+                ->where('description', 'like', "%{$search}%")
+                ->orWhereHas('causer', fn ($causer) => $causer->where('name', 'like', "%{$search}%")));
+        }
+        $logs = $query
+            ->orderBy($filters['sort_by'] ?? 'created_at', $filters['sort_order'] ?? 'desc')
+            ->orderByDesc('id')
+            ->paginate($filters['per_page'] ?? 50)
+            ->withQueryString();
         $rows = $logs->getCollection()
             ->map(fn (Activity $activity): array => [
                 'id' => $activity->id,

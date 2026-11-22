@@ -71,6 +71,8 @@ export const ProjectsAdminPage: React.FC = () => {
   const [perPage, setPerPage] = useState<number>(PROJECT_PAGE_SIZES[0]);
   const [projectSearch, setProjectSearch] = useState('');
   const [appliedProjectSearch, setAppliedProjectSearch] = useState('');
+  const [projectSortBy, setProjectSortBy] = useState('year');
+  const [projectSortOrder, setProjectSortOrder] = useState<'asc' | 'desc'>('desc');
   const [projectRefresh, setProjectRefresh] = useState(0);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<ProjectCategory[]>([]);
@@ -100,7 +102,12 @@ export const ProjectsAdminPage: React.FC = () => {
 
   useEffect(() => {
     let active = true;
-    const params = new URLSearchParams({ page: String(page), per_page: String(perPage) });
+    const params = new URLSearchParams({
+      page: String(page),
+      per_page: String(perPage),
+      sort_by: projectSortBy,
+      sort_order: projectSortOrder,
+    });
     if (appliedProjectSearch) params.set('q', appliedProjectSearch);
 
     setLoading(true);
@@ -125,7 +132,7 @@ export const ProjectsAdminPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [page, perPage, appliedProjectSearch, projectRefresh, addToast]);
+  }, [page, perPage, appliedProjectSearch, projectSortBy, projectSortOrder, projectRefresh, addToast]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setAppliedCategorySearch(categorySearch.trim()), 300);
@@ -280,6 +287,7 @@ export const ProjectsAdminPage: React.FC = () => {
   const cols: Column<ProjectListRow>[] = [
     {
       key: 'title',
+      sortKey: 'title_fa',
       header: 'عنوان پروژه',
       className: 'min-w-[220px]',
       render: (p) => (
@@ -302,9 +310,9 @@ export const ProjectsAdminPage: React.FC = () => {
         </span>
       ) : <span className="text-(--theme-text-muted)">بدون دسته</span>,
     },
-    { key: 'client', header: 'کارفرما', className: 'hidden md:table-cell', render: (p) => <span>{p.client_name_fa}</span> },
-    { key: 'contract', header: 'شماره قرارداد', className: 'hidden lg:table-cell', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
-    { key: 'year', header: 'سال', className: 'hidden sm:table-cell', render: (p) => <span>{p.year}</span> },
+    { key: 'client', sortKey: 'client_name_fa', header: 'کارفرما', className: 'hidden md:table-cell', render: (p) => <span>{p.client_name_fa}</span> },
+    { key: 'contract', sortKey: 'contract_number', header: 'شماره قرارداد', className: 'hidden lg:table-cell', render: (p) => <span className="font-mono text-xs">{p.contract_number}</span> },
+    { key: 'year', sortKey: 'year', header: 'سال', className: 'hidden sm:table-cell', render: (p) => <span>{p.year}</span> },
     {
       key: 'actions',
       header: 'عملیات',
@@ -415,45 +423,38 @@ export const ProjectsAdminPage: React.FC = () => {
         )}
       </section>
 
-      <section className="space-y-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-sm">
-            <Search className="pointer-events-none absolute inset-s-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--theme-placeholder)" />
-            <input
-              type="search"
-              value={projectSearch}
-              onChange={(event) => {
-                setProjectSearch(event.target.value);
-                setPage(1);
-              }}
-              placeholder="جست‌وجوی عنوان، دسته، کارفرما یا قرارداد..."
-              aria-label="جست‌وجوی پروژه‌ها"
-              className="w-full rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) py-2 pe-3 ps-9 text-sm text-(--theme-input-text) placeholder:text-(--theme-placeholder) outline-none transition-colors focus:border-(--theme-primary)"
-            />
-          </div>
-          <label className="flex shrink-0 items-center gap-2 text-xs text-(--theme-text-muted)">
-            تعداد در هر صفحه
-            <select
-              value={perPage}
-              onChange={(event) => {
-                setPerPage(Number(event.target.value));
-                setPage(1);
-              }}
-              aria-label="تعداد پروژه در هر صفحه"
-              className="rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-2.5 py-2 text-sm text-(--theme-input-text) outline-none focus:border-(--theme-primary)"
-            >
-              {PROJECT_PAGE_SIZES.map((size) => <option key={size} value={size}>{size}</option>)}
-            </select>
-          </label>
-        </div>
-        <DataTable data={projects} columns={cols} pageSize={perPage} loading={loading} emptyText={appliedProjectSearch ? 'پروژه‌ای با این جست‌وجو پیدا نشد.' : 'هنوز پروژه‌ای ثبت نشده است.'} />
-        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-          <p className="text-xs text-(--theme-text-muted)">
-            نمایش {projectTotal ? (page - 1) * perPage + 1 : 0} تا {Math.min(page * perPage, projectTotal)} از {projectTotal} پروژه
-          </p>
-          <Pagination page={page} lastPage={lastPage} onChange={setPage} />
-        </div>
-      </section>
+      <DataTable
+        data={projects}
+        columns={cols}
+        rowKey={(project) => project.id}
+        tableLabel="فهرست پروژه‌ها"
+        pageSize={perPage}
+        pageSizeOptions={PROJECT_PAGE_SIZES}
+        onPageSizeChange={(size) => {
+          setPerPage(size);
+          setPage(1);
+        }}
+        currentPage={page}
+        lastPage={lastPage}
+        total={projectTotal}
+        onPageChange={setPage}
+        searchValue={projectSearch}
+        onSearchChange={(value) => {
+          setProjectSearch(value);
+          setPage(1);
+        }}
+        searchPlaceholder="جست‌وجوی عنوان، دسته، کارفرما یا قرارداد..."
+        searchLabel="جست‌وجوی پروژه‌ها"
+        sortBy={projectSortBy}
+        sortDirection={projectSortOrder}
+        onSortChange={(field, direction) => {
+          setProjectSortBy(field);
+          setProjectSortOrder(direction);
+          setPage(1);
+        }}
+        loading={loading}
+        emptyText={appliedProjectSearch ? 'پروژه‌ای با این جست‌وجو پیدا نشد.' : 'هنوز پروژه‌ای ثبت نشده است.'}
+      />
 
       <Modal
         open={Boolean(editing) || editingLoading}

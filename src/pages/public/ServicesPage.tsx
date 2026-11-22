@@ -107,7 +107,7 @@ export const ServicesPage: React.FC = () => {
         </div>
       </section>
 
-      <section aria-busy={isLoading}>
+      <section id="services-list" aria-busy={isLoading}>
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-extrabold text-(--theme-text)">
