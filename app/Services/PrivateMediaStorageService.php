@@ -16,7 +16,7 @@ class PrivateMediaStorageService
             }
         }
 
-        return false;
+        return $this->legacyPublicFile($media) !== null;
     }
 
     public function isAvailableOnPublicDisk(MediaFile $media): bool
@@ -27,7 +27,7 @@ class PrivateMediaStorageService
             }
         }
 
-        return false;
+        return $this->legacyPublicFile($media) !== null;
     }
 
     public function protectUrl(?string $url, bool $requiresAuth): ?string
@@ -76,14 +76,29 @@ class PrivateMediaStorageService
                 }
             }
         }
+        $legacyFile = $source === null ? $this->legacyPublicFile($media) : null;
+        if ($legacyFile !== null) {
+            $source = ['path' => $legacyFile['path'], 'disk' => 'legacy_public', 'absolute_path' => $legacyFile['absolute_path']];
+        }
         abort_unless($source !== null, 404, 'فایل اصلی در فضای ذخیره‌سازی پیدا نشد؛ آن را بازیابی یا دوباره بارگذاری کنید.');
 
         $path = $source['path'];
         $currentDisk = $source['disk'];
         if ($currentDisk !== $targetDisk) {
-            $content = Storage::disk($currentDisk)->get($path);
+            $content = $currentDisk === 'legacy_public'
+                ? file_get_contents($source['absolute_path'])
+                : Storage::disk($currentDisk)->get($path);
+            abort_unless(is_string($content), 500, 'خواندن فایل اصلی ناموفق بود.');
             abort_unless(Storage::disk($targetDisk)->put($path, $content), 500, 'انتقال فایل به فضای ذخیره‌سازی امن ناموفق بود.');
-            Storage::disk($currentDisk)->delete($path);
+            if ($currentDisk === 'legacy_public' && $requiresAuth) {
+                abort_unless(
+                    unlink($source['absolute_path']),
+                    500,
+                    'حذف نسخهٔ عمومی فایل پس از انتقال به فضای امن ناموفق بود.',
+                );
+            } elseif ($currentDisk !== 'legacy_public') {
+                Storage::disk($currentDisk)->delete($path);
+            }
         }
 
         $media->update([
@@ -139,6 +154,33 @@ class PrivateMediaStorageService
         }
 
         return $path;
+    }
+
+    /**
+     * Older deployments sometimes wrote uploads directly under public/storage
+     * instead of the configured public disk root.
+     *
+     * @return array{path: string, absolute_path: string}|null
+     */
+    private function legacyPublicFile(MediaFile $media): ?array
+    {
+        $path = $this->pathFromPublicUrl((string) $media->url);
+        if ($path === null) {
+            return null;
+        }
+
+        $storageRoot = realpath(public_path('storage'));
+        $absolutePath = realpath(public_path('storage'.DIRECTORY_SEPARATOR.$path));
+        if (
+            $storageRoot === false
+            || $absolutePath === false
+            || ! is_file($absolutePath)
+            || ! str_starts_with($absolutePath, $storageRoot.DIRECTORY_SEPARATOR)
+        ) {
+            return null;
+        }
+
+        return ['path' => $path, 'absolute_path' => $absolutePath];
     }
 
     /**

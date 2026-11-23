@@ -6,6 +6,7 @@ use App\Services\MediaOptimizationService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 it('creates reusable WebP variants without changing the source image', function (): void {
     $this->seed(DatabaseSeeder::class);
@@ -224,6 +225,65 @@ it('creates and serves a small reusable thumbnail instead of the original image'
     expect($thumbnail->mime_type)->toBe('image/webp')
         ->and($dimensions[0])->toBeLessThanOrEqual(320)
         ->and($media->fresh()->storage_path)->toBe('uploads/thumbnail-source.png');
+});
+
+it('recovers legacy originals stored directly below the public storage directory', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    Storage::fake('public');
+    Storage::fake('local');
+
+    $root = public_path('storage');
+    $createdRoot = ! is_dir($root);
+    if ($createdRoot) {
+        mkdir($root, 0755, true);
+    }
+
+    $relativePath = 'legacy-preview-'.Str::uuid().'/source.png';
+    $absolutePath = $root.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+    $directory = dirname($absolutePath);
+    mkdir($directory, 0755, true);
+
+    $image = imagecreatetruecolor(640, 480);
+    ob_start();
+    imagepng($image);
+    $contents = ob_get_clean();
+    imagedestroy($image);
+    file_put_contents($absolutePath, $contents);
+
+    try {
+        $media = MediaFile::query()->create([
+            'name' => 'source.png',
+            'url' => '/storage/'.$relativePath,
+            'storage_path' => 'legacy/stale-path.png',
+            'mime_type' => 'image/png',
+            'extension' => 'png',
+            'size_bytes' => strlen($contents),
+            'folder' => 'legacy',
+        ]);
+
+        $mediaResponse = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/media?optimizable=1')
+            ->assertOk();
+        expect(collect($mediaResponse->json('data'))->firstWhere('id', $media->id)['source_available'])->toBeTrue();
+        $this->actingAs($admin, 'sanctum')
+            ->get("/api/v1/admin/media/{$media->id}/thumbnail")
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/webp');
+
+        expect($media->fresh()->storage_path)->toBe($relativePath);
+        Storage::disk('public')->assertExists($relativePath);
+    } finally {
+        if (is_file($absolutePath)) {
+            unlink($absolutePath);
+        }
+        if (is_dir($directory)) {
+            rmdir($directory);
+        }
+        if ($createdRoot && is_dir($root)) {
+            rmdir($root);
+        }
+    }
 });
 
 it('returns actionable JSON when a legacy media record points to a missing file', function (): void {

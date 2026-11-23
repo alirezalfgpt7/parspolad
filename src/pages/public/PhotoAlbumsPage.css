@@ -8,6 +8,18 @@
   box-shadow: var(--theme-card-shadow-hover);
 }
 
+.photo-album-card .photo-album-card-cover {
+  aspect-ratio: 16 / 9;
+}
+
+.photo-album-card .photo-album-card-content {
+  padding: 1rem;
+}
+
+.photo-album-card .photo-album-card-title {
+  font-size: 1rem;
+}
+
 .photo-album-gallery {
   --album-columns: 3;
 }
@@ -83,6 +95,195 @@
   animation-fill-mode: both;
 }
 
+.photo-album-fullscreen {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  overflow: hidden;
+  background: #070b16;
+  color: #fff;
+  isolation: isolate;
+  animation: photoAlbumFullscreenIn 220ms ease-out both;
+}
+
+.photo-album-fullscreen > .effect-animated-background {
+  z-index: -1;
+}
+
+.photo-album-fullscreen-header,
+.photo-album-fullscreen-footer {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  padding: 1rem clamp(1rem, 3vw, 2.5rem);
+  background: linear-gradient(180deg, rgba(7, 11, 22, 0.88), rgba(7, 11, 22, 0.38));
+}
+
+.photo-album-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo-album-fullscreen-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.6rem 0.85rem;
+  color: #fff;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.photo-album-fullscreen-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.photo-album-fullscreen-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.75rem, 3vh, 2rem) clamp(3.75rem, 8vw, 7rem);
+}
+
+.photo-album-fullscreen-image-wrap {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  place-items: center;
+}
+
+.photo-album-fullscreen-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 55px rgba(0, 0, 0, 0.48));
+  animation-duration: 460ms;
+  animation-fill-mode: both;
+}
+
+.photo-album-fullscreen-image--fade {
+  animation-name: photoAlbumFullscreenFade;
+}
+
+.photo-album-fullscreen-image--slide {
+  animation-name: photoAlbumFullscreenSlide;
+}
+
+.photo-album-fullscreen-image--zoom {
+  animation-name: photoAlbumFullscreenZoom;
+}
+
+.photo-album-fullscreen-nav {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  background: rgba(10, 15, 28, 0.66);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.photo-album-fullscreen-nav:hover {
+  transform: translateY(-50%) scale(1.06);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.photo-album-fullscreen-nav--previous {
+  inset-inline-start: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+.photo-album-fullscreen-nav--next {
+  inset-inline-end: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+.photo-album-fullscreen-footer {
+  padding-top: 0.75rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, rgba(7, 11, 22, 0.96), rgba(7, 11, 22, 0.58));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo-album-filmstrip {
+  display: flex;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding: 0.35rem 0 0.5rem;
+  scrollbar-color: rgba(255, 255, 255, 0.32) transparent;
+  scroll-snap-type: x mandatory;
+}
+
+.photo-album-film-frame {
+  position: relative;
+  width: clamp(4.4rem, 8vw, 7rem);
+  height: clamp(3.2rem, 6vw, 5rem);
+  flex: none;
+  overflow: hidden;
+  scroll-snap-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.6rem;
+  opacity: 0.64;
+  transition: opacity 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.photo-album-film-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-album-film-frame:hover,
+.photo-album-film-frame.is-active {
+  transform: translateY(-2px);
+  border-color: var(--theme-primary, #dc2626);
+  opacity: 1;
+}
+
+@keyframes photoAlbumFullscreenIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes photoAlbumFullscreenFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes photoAlbumFullscreenSlide {
+  from { opacity: 0.35; transform: translateX(1.5rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes photoAlbumFullscreenZoom {
+  from { opacity: 0.35; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .photo-album-transition--fade .photo-album-slide-image {
   animation-name: photoAlbumFade;
 }
@@ -124,11 +325,29 @@
   .photo-album-gallery--masonry {
     column-count: 2;
   }
+
+  .photo-album-fullscreen-stage {
+    padding-inline: 3.25rem;
+  }
 }
 
 @media (max-width: 480px) {
   .photo-album-gallery--mosaic {
     grid-auto-rows: 7rem;
+  }
+
+  .photo-album-fullscreen-header,
+  .photo-album-fullscreen-footer {
+    padding-inline: 0.75rem;
+  }
+
+  .photo-album-fullscreen-stage {
+    padding: 0.5rem 2.8rem;
+  }
+
+  .photo-album-fullscreen-nav {
+    width: 2.35rem;
+    height: 2.35rem;
   }
 }
 
@@ -144,6 +363,11 @@
   }
 
   .photo-album-slide-image {
+    animation: none;
+  }
+
+  .photo-album-fullscreen,
+  .photo-album-fullscreen-image {
     animation: none;
   }
 }

@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiRequest, apiUrl } from '../../services/api.ts';
 import type { PhotoAlbum, PhotoAlbumSummary } from '../../types/index.ts';
 import { PhotoAlbumsPage } from './PhotoAlbumsPage.tsx';
@@ -32,6 +32,7 @@ const album: PhotoAlbum = {
 
 vi.mock('../../services/api.ts', () => ({
   apiUrl: (path: string) => `/api/v1${path}`,
+  mediaUrl: (path: string) => path.startsWith('/storage/') ? path : `/api/v1${path}`,
   apiRequest: vi.fn((path: string) => {
     if (path === '/albums/field-operations') {
       return Promise.resolve({ data: album });
@@ -82,8 +83,11 @@ vi.mock('../../store/useAppStore.ts', () => {
 });
 
 vi.mock('../../components/common/SeoHead.tsx', () => ({ SeoHead: () => null }));
+vi.mock('../../components/effects/AnimatedBackground.tsx', () => ({ AnimatedBackground: () => null }));
 
 describe('PhotoAlbumsPage', () => {
+  beforeEach(() => cleanup());
+
   it('lists albums with their cover thumbnails', async () => {
     render(
       <MemoryRouter initialEntries={['/albums']}>
@@ -95,7 +99,7 @@ describe('PhotoAlbumsPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'عملیات میدانی' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'آلبوم تصاویر', level: 1 })).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'عملیات میدانی' }).getAttribute('src')).toBe('/api/v1/storage/cover-thumb.webp');
+    expect(screen.getByRole('img', { name: 'عملیات میدانی' }).getAttribute('src')).toBe('/storage/cover-thumb.webp');
     expect(apiRequest).toHaveBeenCalledWith('/albums?page=1&per_page=12');
   });
 
@@ -110,14 +114,35 @@ describe('PhotoAlbumsPage', () => {
 
     await screen.findByRole('heading', { name: 'عملیات میدانی' });
     expect(screen.getByRole('heading', { name: 'عملیات میدانی', level: 1 })).toBeTruthy();
-    expect(screen.getByRole('img', { name: 'image-1.jpg' }).getAttribute('src')).toBe('/api/v1/storage/image-1-thumb.webp');
-    expect(screen.getByRole('img', { name: 'image-2.jpg' }).getAttribute('src')).toBe('/api/v1/storage/image-2-thumb.webp');
+    expect(screen.getByRole('img', { name: 'image-1.jpg' }).getAttribute('src')).toBe('/storage/image-1-thumb.webp');
+    expect(screen.getByRole('img', { name: 'image-2.jpg' }).getAttribute('src')).toBe('/storage/image-2-thumb.webp');
     fireEvent.click(screen.getByRole('button', { name: 'مترو' }));
     expect(container.querySelector('.photo-album-gallery--mosaic')).toBeTruthy();
     expect(screen.getAllByRole('button', { name: /تصویر \d/ })).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'نمایش همهٔ 3 تصویر' }));
     await waitFor(() => expect(screen.getAllByRole('button', { name: /تصویر \d/ })).toHaveLength(3));
     fireEvent.click(screen.getByRole('button', { name: /تصویر 1/ }));
-    expect(screen.getByRole('dialog').querySelector('img[src="/api/v1/storage/image-1.jpg"]')).toBeTruthy();
+    expect(screen.getByRole('dialog').querySelector('img[src="/storage/image-1.jpg"]')).toBeTruthy();
+  });
+
+  it('opens the slideshow as a full-screen filmstrip and exits with Escape', async () => {
+    render(
+      <MemoryRouter initialEntries={['/albums/field-operations']}>
+        <Routes>
+          <Route path="/albums/:slug" element={<PhotoAlbumsPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await screen.findByRole('heading', { name: 'عملیات میدانی', level: 1 });
+    fireEvent.click(screen.getAllByRole('button', { name: 'اسلایدر' })[0]);
+
+    expect(await screen.findByRole('dialog', { name: 'نمایش تمام‌صفحهٔ آلبوم' })).toBeTruthy();
+    expect(document.body.querySelectorAll('.photo-album-film-frame')).toHaveLength(3);
+    expect(screen.getByRole('button', { name: 'تصویر بعدی' })).toBeTruthy();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(document.body.querySelector('.photo-album-fullscreen')).toBeNull());
+    expect(screen.getByRole('button', { name: 'شبکه‌ای' })).toBeTruthy();
   });
 });

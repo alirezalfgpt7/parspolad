@@ -18,13 +18,19 @@ describe('MediaThumbnail', () => {
     render(<MediaThumbnail mediaId={4} alt="Original photo" isVideo={false} originalUrl="/storage/photo.jpg" />);
 
     const image = await screen.findByRole('img', { name: 'Original photo' });
-    expect(image.getAttribute('src')).toBe('/api/v1/storage/photo.jpg');
+    expect(image.getAttribute('src')).toBe('/storage/photo.jpg');
   });
 
-  it('does not fall back to downloading a full video for a preview', async () => {
+  it('shows a native metadata-only preview when no saved video poster exists', async () => {
     const { container } = render(<MediaThumbnail mediaId={5} alt="Original video" isVideo originalUrl="/storage/video.mp4" />);
 
-    await waitFor(() => expect(apiBlobMock).toHaveBeenCalledWith('/admin/media/5/thumbnail'));
+    await waitFor(() => {
+      expect(apiBlobMock).toHaveBeenCalledWith('/admin/media/5/thumbnail');
+      const video = container.querySelector('video');
+      expect(video?.getAttribute('src')).toBe('/storage/video.mp4');
+    });
+    const video = container.querySelector('video');
+    expect(video?.getAttribute('preload')).toBe('metadata');
     expect(container.querySelector('img')).toBeNull();
   });
 });

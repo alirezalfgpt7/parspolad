@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Film, Image as ImageIcon } from 'lucide-react';
-import { apiBlob, apiUrl } from '../../services/api.ts';
+import { apiBlob, mediaUrl } from '../../services/api.ts';
 
 interface MediaThumbnailProps {
   mediaId: number;
@@ -46,9 +46,9 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({ mediaId, alt, is
         else URL.revokeObjectURL(objectUrl);
       })
       .catch(() => {
-        if (active && !isVideo && originalUrl) {
+        if (active && originalUrl) {
           setUsingOriginal(true);
-          setSource(apiUrl(originalUrl));
+          setSource(mediaUrl(originalUrl));
         } else if (active) {
           setFailed(true);
         }
@@ -60,27 +60,40 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({ mediaId, alt, is
     };
   }, [isVideo, mediaId, originalUrl, visible]);
 
-  const handleImageError = () => {
-    if (!isVideo && originalUrl && !usingOriginal) {
+  const handlePreviewError = () => {
+    if (originalUrl && !usingOriginal) {
       setUsingOriginal(true);
-      setSource(apiUrl(originalUrl));
+      setSource(mediaUrl(originalUrl));
       return;
     }
 
     setFailed(true);
+    setSource(null);
   };
 
   return (
     <div ref={containerRef} className="flex h-full w-full items-center justify-center overflow-hidden">
       {source ? (
-        <img
-          src={source}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          onError={handleImageError}
-          className="h-full w-full object-contain"
-        />
+        isVideo && usingOriginal ? (
+          <video
+            src={source}
+            aria-label={alt}
+            preload="metadata"
+            muted
+            playsInline
+            onError={handlePreviewError}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <img
+            src={source}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            onError={handlePreviewError}
+            className="h-full w-full object-contain"
+          />
+        )
       ) : (
         <div className="flex flex-col items-center gap-1 text-(--theme-text-muted)" aria-label={failed ? 'پیش‌نمایش موجود نیست' : 'در حال بارگیری بندانگشتی'}>
           {isVideo ? <Film className="h-8 w-8" /> : <ImageIcon className="h-8 w-8" />}

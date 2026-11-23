@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Images, LayoutGrid, Pause, Play, SlidersHorizontal, Maximize2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Images, LayoutGrid, Pause, Play, SlidersHorizontal, Maximize2, X } from 'lucide-react';
 import { CmsPageIntro } from '../../components/common/CmsPageIntro.tsx';
+import { AnimatedBackground } from '../../components/effects/AnimatedBackground.tsx';
 import { SeoHead } from '../../components/common/SeoHead.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion.ts';
-import { apiRequest, apiUrl } from '../../services/api.ts';
+import { apiRequest, mediaUrl } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { PhotoAlbum, PhotoAlbumMedia, PhotoAlbumSummary } from '../../types/index.ts';
 import './PhotoAlbumsPage.css';
@@ -25,12 +27,12 @@ const AlbumCard: React.FC<{ album: PhotoAlbumSummary; language: string }> = ({ a
   const description = localized(album.description_fa, album.description_en, language);
 
   return (
-    <article className="photo-album-card group overflow-hidden rounded-3xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
+    <article className="photo-album-card group overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
       <Link to={`/albums/${album.slug}`} className="block">
-        <div className="relative aspect-16/10 overflow-hidden bg-(--theme-surface-muted)">
+        <div className="photo-album-card-cover relative overflow-hidden bg-(--theme-surface-muted)">
           {album.cover_thumbnail_url && !imageFailed ? (
             <img
-              src={apiUrl(album.cover_thumbnail_url)}
+              src={mediaUrl(album.cover_thumbnail_url)}
               alt={title}
               loading="lazy"
               decoding="async"
@@ -46,8 +48,8 @@ const AlbumCard: React.FC<{ album: PhotoAlbumSummary; language: string }> = ({ a
             {album.media_count.toLocaleString(language === 'fa' ? 'fa-IR' : 'en-US')} {language === 'fa' ? 'تصویر' : 'photos'}
           </span>
         </div>
-        <div className="p-5">
-          <h2 className="text-lg font-black text-(--theme-text) transition-colors group-hover:text-(--theme-primary-ink)">{title}</h2>
+        <div className="photo-album-card-content">
+          <h2 className="photo-album-card-title font-black text-(--theme-text) transition-colors group-hover:text-(--theme-primary-ink)">{title}</h2>
           {description && <p className="mt-2 line-clamp-2 text-sm leading-7 text-(--theme-text-muted)">{description}</p>}
           <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-(--theme-primary-ink)">
             {language === 'fa' ? 'مشاهدهٔ آلبوم' : 'View album'}
@@ -73,7 +75,7 @@ const GalleryImageButton: React.FC<{
     className={`photo-album-image photo-album-image--${effect} photo-album-card-effect--${cardEffect} group relative block w-full overflow-hidden rounded-2xl bg-(--theme-surface-muted)`}
   >
     <img
-      src={apiUrl(image.thumbnail_url || image.url)}
+      src={mediaUrl(image.thumbnail_url || image.url)}
       alt={image.alt_text || image.name}
       loading="lazy"
       decoding="async"
@@ -96,6 +98,7 @@ const AlbumGallery: React.FC<{
   const [showAll, setShowAll] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+  const [lastGridMode, setLastGridMode] = useState<PhotoAlbum['layout']>(album.layout === 'slider' ? 'grid' : album.layout);
   const columns = Math.max(2, Math.min(8, album.columns));
   const initialCount = columns * Math.max(1, album.rows);
   const visibleImages = showAll ? album.media : album.media.slice(0, initialCount);
@@ -109,6 +112,24 @@ const AlbumGallery: React.FC<{
     return () => window.clearInterval(timer);
   }, [album.interval_ms, album.media.length, isHovered, isPlaying, prefersReducedMotion, slider]);
 
+  useEffect(() => {
+    if (!slider) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setViewMode(lastGridMode);
+      if (event.key === 'ArrowLeft') setActiveIndex((index) => (index + 1) % album.media.length);
+      if (event.key === 'ArrowRight') setActiveIndex((index) => (index + album.media.length - 1) % album.media.length);
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [album.media.length, lastGridMode, slider]);
+
   const displayModes: Array<{ value: PhotoAlbum['layout']; label: string }> = [
     { value: 'grid', label: language === 'fa' ? 'شبکه‌ای' : 'Grid' },
     { value: 'masonry', label: language === 'fa' ? 'نامنظم' : 'Masonry' },
@@ -117,132 +138,153 @@ const AlbumGallery: React.FC<{
   ];
 
   return (
-    <section className="space-y-5" aria-label={language === 'fa' ? 'نمایش تصاویر آلبوم' : 'Album display'}>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow)">
-        <div className="flex flex-wrap gap-2" role="group" aria-label={language === 'fa' ? 'حالت نمایش آلبوم' : 'Album view mode'}>
-          {displayModes.map((mode) => (
-            <button
-              key={mode.value}
-              type="button"
-              onClick={() => setViewMode(mode.value)}
-              aria-pressed={viewMode === mode.value}
-              className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${viewMode === mode.value
-                ? 'border-(--theme-primary) bg-(--theme-primary) text-(--theme-primary-foreground)'
-                : 'border-(--theme-border) bg-(--theme-surface-muted) text-(--theme-text) hover:border-(--theme-primary-ink)'}`}
-            >
-              {mode.value === 'slider' ? <SlidersHorizontal className="me-1 inline h-3.5 w-3.5" aria-hidden="true" /> : <LayoutGrid className="me-1 inline h-3.5 w-3.5" aria-hidden="true" />}
-              {mode.label}
-            </button>
-          ))}
-        </div>
-        {slider && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-(--theme-text-muted)" dir="ltr">
-              {activeIndex + 1} / {album.media.length}
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsPlaying((playing) => !playing)}
-              aria-pressed={isPlaying}
-              className="inline-flex items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3 py-2 text-xs font-bold text-(--theme-text) transition hover:border-(--theme-primary-ink)"
-            >
-              {isPlaying ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
-              {isPlaying ? (language === 'fa' ? 'توقف اسلاید' : 'Pause') : (language === 'fa' ? 'ادامه اسلاید' : 'Play')}
-            </button>
+    <>
+      <section className="space-y-5" aria-label={language === 'fa' ? 'نمایش تصاویر آلبوم' : 'Album display'}>
+        {!slider && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow)">
+            <div className="flex flex-wrap gap-2" role="group" aria-label={language === 'fa' ? 'حالت نمایش آلبوم' : 'Album view mode'}>
+              {displayModes.map((mode) => (
+                <button
+                  key={mode.value}
+                  type="button"
+                  onClick={() => {
+                    if (mode.value !== 'slider') setLastGridMode(mode.value);
+                    setViewMode(mode.value);
+                  }}
+                  aria-pressed={viewMode === mode.value}
+                  className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${viewMode === mode.value
+                    ? 'border-(--theme-primary) bg-(--theme-primary) text-(--theme-primary-foreground)'
+                    : 'border-(--theme-border) bg-(--theme-surface-muted) text-(--theme-text) hover:border-(--theme-primary-ink)'}`}
+                >
+                  {mode.value === 'slider' ? <SlidersHorizontal className="me-1 inline h-3.5 w-3.5" aria-hidden="true" /> : <LayoutGrid className="me-1 inline h-3.5 w-3.5" aria-hidden="true" />}
+                  {mode.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
-      </div>
 
-      {slider ? (
+        {!slider && (
+          <>
+            <div
+              className={`photo-album-gallery photo-album-gallery--${viewMode}`}
+              style={{ '--album-columns': columns } as React.CSSProperties}
+            >
+              {visibleImages.map((image, index) => (
+                <GalleryImageButton
+                  key={image.id}
+                  image={image}
+                  index={index}
+                  effect={album.image_effect}
+                  cardEffect={album.card_effect}
+                  onOpen={() => onOpenImage(image)}
+                />
+              ))}
+            </div>
+            {visibleImages.length < album.media.length && (
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="mt-6 rounded-xl border border-(--theme-border) bg-(--theme-card-surface) px-5 py-2.5 text-sm font-bold text-(--theme-text) transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink)"
+              >
+                {language === 'fa' ? `نمایش همهٔ ${album.media.length} تصویر` : `Show all ${album.media.length} photos`}
+              </button>
+            )}
+          </>
+        )}
+      </section>
+      {slider && createPortal(
         <div
-          className={`photo-album-slider photo-album-card-effect--${album.card_effect} photo-album-transition--${album.transition}`}
+          className={`photo-album-fullscreen photo-album-transition--${album.transition}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={language === 'fa' ? 'نمایش تمام‌صفحهٔ آلبوم' : 'Full-screen album slideshow'}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-(--theme-card-border) bg-(--theme-surface-muted) shadow-(--theme-card-shadow)">
-            <button
-              type="button"
-              onClick={() => onOpenImage(album.media[activeIndex])}
-              className="block aspect-16/9 w-full"
-              aria-label={language === 'fa' ? 'نمایش تصویر در اندازهٔ اصلی' : 'View image at full size'}
-            >
+          <AnimatedBackground particles />
+          <header className="photo-album-fullscreen-header">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-white">{localized(album.title_fa, album.title_en, language)}</p>
+              <p className="mt-1 text-xs text-white/60" dir="ltr">{activeIndex + 1} / {album.media.length}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsPlaying((playing) => !playing)}
+                aria-pressed={isPlaying}
+                className="photo-album-fullscreen-button"
+                aria-label={isPlaying ? (language === 'fa' ? 'توقف پخش خودکار' : 'Pause slideshow') : (language === 'fa' ? 'ادامه پخش خودکار' : 'Resume slideshow')}
+              >
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode(lastGridMode)}
+                className="photo-album-fullscreen-button"
+                aria-label={language === 'fa' ? 'خروج از نمایش تمام‌صفحه' : 'Exit full screen'}
+              >
+                <X className="h-5 w-5" />
+                <span className="hidden sm:inline">{language === 'fa' ? 'خروج' : 'Exit'}</span>
+              </button>
+            </div>
+          </header>
+          <div className="photo-album-fullscreen-stage">
+            {album.media.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setActiveIndex((activeIndex + album.media.length - 1) % album.media.length)}
+                className="photo-album-fullscreen-nav photo-album-fullscreen-nav--previous"
+                aria-label={language === 'fa' ? 'تصویر قبلی' : 'Previous image'}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            )}
+            <div className="photo-album-fullscreen-image-wrap">
               <img
                 key={album.media[activeIndex].id}
-                src={apiUrl(album.media[activeIndex].url)}
+                src={mediaUrl(album.media[activeIndex].url)}
                 alt={album.media[activeIndex].alt_text || album.media[activeIndex].name}
-                className={`photo-album-slide-image photo-album-image--${album.image_effect}`}
+                className={`photo-album-fullscreen-image photo-album-fullscreen-image--${album.transition}`}
               />
-            </button>
-            <span className="absolute bottom-4 end-4 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm" dir="ltr">
-              {activeIndex + 1} / {album.media.length}
-            </span>
+            </div>
             {album.media.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setActiveIndex((activeIndex + album.media.length - 1) % album.media.length)}
-                  className="absolute start-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-black/55 text-white transition hover:bg-black/75"
-                  aria-label={language === 'fa' ? 'تصویر قبلی' : 'Previous image'}
-                >
-                  <ChevronRight className="h-5 w-5" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveIndex((activeIndex + 1) % album.media.length)}
-                  className="absolute end-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full border border-white/30 bg-black/55 text-white transition hover:bg-black/75"
-                  aria-label={language === 'fa' ? 'تصویر بعدی' : 'Next image'}
-                >
-                  <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={() => setActiveIndex((activeIndex + 1) % album.media.length)}
+                className="photo-album-fullscreen-nav photo-album-fullscreen-nav--next"
+                aria-label={language === 'fa' ? 'تصویر بعدی' : 'Next image'}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
             )}
           </div>
-          {album.media.length > 1 && (
-            <div className="mt-3 flex justify-center gap-2 overflow-x-auto py-1" aria-label={language === 'fa' ? 'انتخاب تصویر اسلایدر' : 'Select slide'}>
-              {album.media.slice(0, 8).map((item, index) => (
+          <footer className="photo-album-fullscreen-footer">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="min-w-0 truncate text-xs font-semibold text-white/80">
+                {album.media[activeIndex].alt_text || album.media[activeIndex].name}
+              </p>
+              <span className="shrink-0 text-[11px] text-white/55">{language === 'fa' ? 'تصاویر آلبوم' : 'Album frames'}</span>
+            </div>
+            <div className="photo-album-filmstrip" aria-label={language === 'fa' ? 'انتخاب تصویر' : 'Select image'}>
+              {album.media.map((item, index) => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   aria-label={language === 'fa' ? `رفتن به تصویر ${index + 1}` : `Go to image ${index + 1}`}
                   aria-current={index === activeIndex ? 'true' : undefined}
-                  className={`h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${index === activeIndex ? 'border-(--theme-primary)' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                  className={`photo-album-film-frame ${index === activeIndex ? 'is-active' : ''}`}
                 >
-                  <img src={apiUrl(item.thumbnail_url || item.url)} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <img src={mediaUrl(item.thumbnail_url || item.url)} alt="" loading="lazy" />
                 </button>
               ))}
             </div>
-          )}
-        </div>
-      ) : (
-        <>
-          <div
-            className={`photo-album-gallery photo-album-gallery--${viewMode}`}
-            style={{ '--album-columns': columns } as React.CSSProperties}
-          >
-            {visibleImages.map((image, index) => (
-              <GalleryImageButton
-                key={image.id}
-                image={image}
-                index={index}
-                effect={album.image_effect}
-                cardEffect={album.card_effect}
-                onOpen={() => onOpenImage(image)}
-              />
-            ))}
-          </div>
-          {visibleImages.length < album.media.length && (
-            <button
-              type="button"
-              onClick={() => setShowAll(true)}
-              className="mt-6 rounded-xl border border-(--theme-border) bg-(--theme-card-surface) px-5 py-2.5 text-sm font-bold text-(--theme-text) transition hover:border-(--theme-primary-ink) hover:text-(--theme-primary-ink)"
-            >
-              {language === 'fa' ? `نمایش همهٔ ${album.media.length} تصویر` : `Show all ${album.media.length} photos`}
-            </button>
-          )}
-        </>
+          </footer>
+        </div>,
+        document.body,
       )}
-    </section>
+    </>
   );
 };
 
@@ -301,12 +343,12 @@ export const PhotoAlbumsPage: React.FC = () => {
         description={isPersian
           ? 'مجموعهٔ تصاویر پروژه‌ها و فعالیت‌های پارس پولاد آقایی را در آلبوم‌های تصویری ببینید.'
           : 'Browse project and company photos in the Pars Poolad Aghaee image albums.'}
-        image={seoImage ? apiUrl(seoImage) : undefined}
+        image={seoImage ? mediaUrl(seoImage) : undefined}
         language={language}
       />
       <CmsPageIntro
         slug="albums"
-        className="mb-0"
+        className="mb-8"
         showContent={false}
         showSeo={false}
         titleOverride={slug ? pageTitle : undefined}
@@ -345,11 +387,11 @@ export const PhotoAlbumsPage: React.FC = () => {
       ) : (
         <div className="space-y-7">
           {loading ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }, (_, index) => <div key={index} className="aspect-4/3 animate-pulse rounded-2xl bg-(--theme-surface-muted)" />)}
             </div>
           ) : albums.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {albums.map((item) => <AlbumCard key={item.id} album={item} language={language} />)}
             </div>
           ) : (
@@ -374,7 +416,7 @@ export const PhotoAlbumsPage: React.FC = () => {
       >
         {selectedImage && (
           <img
-            src={apiUrl(selectedImage.url)}
+            src={mediaUrl(selectedImage.url)}
             alt={selectedImage.alt_text || selectedImage.name}
             className="mx-auto max-h-[75vh] max-w-full object-contain"
             onError={() => addToast('error', isPersian ? 'فایل اصلی تصویر در دسترس نیست.' : 'The original image is not available.')}

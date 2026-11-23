@@ -11,6 +11,19 @@ export function apiUrl(path: string): string {
   return `${base}${normalizedPath}`;
 }
 
+export function mediaUrl(path: string): string {
+  if (/^(?:[a-z][a-z\d+.-]*:)?\/\//i.test(path)) return path;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  if (!normalizedPath.startsWith('/storage/')) return apiUrl(normalizedPath);
+
+  try {
+    return `${new URL(API_BASE).origin}${normalizedPath}`;
+  } catch {
+    return normalizedPath;
+  }
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Copy, FileText, Image as ImageIcon, LoaderCircle, Lock, Pencil, Save, Trash2, Unlock } from 'lucide-react';
-import { apiRequest } from '../../services/api.ts';
+import { apiRequest, mediaUrl } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
@@ -385,14 +385,14 @@ export const MediaLibraryPage: React.FC = () => {
         {previewFile && (
           isVideoMediaUrl(previewFile.url) || ['mp4', 'webm'].includes(previewFile.extension.toLowerCase())
             ? <video
-              src={previewFile.url}
+              src={mediaUrl(previewFile.url)}
               controls
               playsInline
               onError={() => addToast('error', 'فایل اصلی ویدئو در دسترس نیست یا پیوند آن منقضی شده است.')}
               className="mx-auto max-h-[75vh] max-w-full"
             />
             : <img
-              src={previewFile.url}
+              src={mediaUrl(previewFile.url)}
               alt={previewFile.alt_text || previewFile.name}
               onError={() => addToast('error', 'فایل اصلی تصویر در فضای ذخیره‌سازی پیدا نشد.')}
               className="mx-auto max-h-[75vh] max-w-full object-contain"
