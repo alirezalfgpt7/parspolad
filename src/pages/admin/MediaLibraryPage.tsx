@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Copy, FileText, Image as ImageIcon, Lock, Pencil, Save, Trash2, Unlock } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Copy, FileText, Image as ImageIcon, LoaderCircle, Lock, Pencil, Save, Trash2, Unlock } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
@@ -7,40 +7,60 @@ import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
 import { FileUploader } from '../../components/ui/FileUploader.tsx';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog.tsx';
 import { Pagination } from '../../components/ui/Pagination.tsx';
-import { ZeroBrokenImage } from '../../components/ui/ZeroBrokenImage.tsx';
 import { Modal } from '../../components/ui/Modal.tsx';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
+import { MediaThumbnail } from '../../components/admin/MediaThumbnail.tsx';
+import { MediaOptimizerTab } from '../../components/admin/MediaOptimizerTab.tsx';
+
+type MediaTypeFilter = 'all' | 'images' | 'videos' | 'documents' | 'other';
+type MediaSort = 'newest' | 'largest';
 
 export const MediaLibraryPage: React.FC = () => {
   const { addToast } = useAppStore();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [typeFilter, setTypeFilter] = useState<MediaTypeFilter>('all');
+  const [sort, setSort] = useState<MediaSort>('newest');
+  const [loading, setLoading] = useState(true);
   const [deleteFile, setDeleteFile] = useState<MediaFile | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
+  const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
   const [editForm, setEditForm] = useState({ name: '', alt_text: '', description: '' });
   const [savingMetadata, setSavingMetadata] = useState(false);
+  const [activeTab, setActiveTab] = useState<'library' | 'optimizer'>('library');
+  const loadSequence = useRef(0);
 
   const load = async (targetPage = page) => {
+    const sequence = ++loadSequence.current;
+    setLoading(true);
     try {
-      const response = await apiRequest<{ data: MediaFile[]; meta: { last_page: number } }>(
-        `/admin/media?page=${targetPage}&per_page=12`,
+      const response = await apiRequest<{ data: MediaFile[]; meta: { last_page: number; total: number } }>(
+        `/admin/media?type=${typeFilter}&sort=${sort}&page=${targetPage}&per_page=12`,
       );
       if (targetPage > response.meta.last_page) {
+        if (sequence !== loadSequence.current) return;
         setPage(Math.max(1, response.meta.last_page));
         return;
       }
+      if (sequence !== loadSequence.current) return;
       setFiles(response.data);
       setLastPage(response.meta.last_page);
+      setTotal(response.meta.total);
     } catch (error) {
-      addToast('error', error instanceof Error ? error.message : 'بارگذاری رسانه‌ها ناموفق بود.');
+      if (sequence === loadSequence.current) {
+        addToast('error', error instanceof Error ? error.message : 'بارگذاری رسانه‌ها ناموفق بود.');
+      }
+    } finally {
+      if (sequence === loadSequence.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     void load(page);
-  }, [page]);
+  }, [page, typeFilter, sort]);
 
   const confirmDelete = async () => {
     if (!deleteFile) return;
@@ -94,23 +114,103 @@ export const MediaLibraryPage: React.FC = () => {
         title="کتابخانه رسانه"
         description="مدیریت متمرکز فایل‌های بارگذاری‌شده در فضای ذخیره‌سازی سایت."
       />
+      <div className="flex flex-wrap gap-2 border-b border-(--theme-border)" role="tablist" aria-label="بخش‌های کتابخانه رسانه">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'library'}
+          aria-controls="media-library-panel"
+          onClick={() => setActiveTab('library')}
+          className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${activeTab === 'library' ? 'border-(--theme-primary) text-(--theme-text)' : 'border-transparent text-(--theme-text-muted) hover:text-(--theme-text)'}`}
+        >
+          همهٔ فایل‌ها
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'optimizer'}
+          aria-controls="media-optimizer-panel"
+          onClick={() => setActiveTab('optimizer')}
+          className={`border-b-2 px-4 py-2.5 text-sm font-semibold transition ${activeTab === 'optimizer' ? 'border-(--theme-primary) text-(--theme-text)' : 'border-transparent text-(--theme-text-muted) hover:text-(--theme-text)'}`}
+        >
+          بهینه‌سازی تصویر و ویدئو
+        </button>
+      </div>
+      {activeTab === 'optimizer' ? (
+        <div id="media-optimizer-panel" role="tabpanel">
+          <MediaOptimizerTab />
+        </div>
+      ) : (
+        <div id="media-library-panel" role="tabpanel" className="space-y-6">
       <div className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <FileUploader folder="uploads" onUploaded={() => load()} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap gap-3">
+          <label className="space-y-1 text-xs font-semibold text-(--theme-text-muted)">
+            <span>دسته‌بندی</span>
+            <select
+              value={typeFilter}
+              onChange={(event) => {
+                setTypeFilter(event.target.value as MediaTypeFilter);
+                setPage(1);
+              }}
+              className="block rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+            >
+              <option value="all">همهٔ فایل‌ها</option>
+              <option value="images">تصاویر</option>
+              <option value="videos">ویدئوها</option>
+              <option value="documents">اسناد و آرشیوها</option>
+              <option value="other">سایر فایل‌ها</option>
+            </select>
+          </label>
+          <label className="space-y-1 text-xs font-semibold text-(--theme-text-muted)">
+            <span>مرتب‌سازی</span>
+            <select
+              value={sort}
+              onChange={(event) => {
+                setSort(event.target.value as MediaSort);
+                setPage(1);
+              }}
+              className="block rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+            >
+              <option value="newest">جدیدترین ابتدا</option>
+              <option value="largest">بزرگ‌ترین ابتدا</option>
+            </select>
+          </label>
+        </div>
+        <span className="text-xs text-(--theme-text-muted)">{total.toLocaleString('fa-IR')} فایل</span>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center gap-2 rounded-2xl border border-(--theme-card-border) p-10 text-sm text-(--theme-text-muted)">
+          <LoaderCircle className="h-4 w-4 animate-spin" />
+          در حال بارگذاری صفحهٔ رسانه‌ها...
+        </div>
+      ) : files.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-(--theme-card-border) p-10 text-center text-sm text-(--theme-text-muted)">
+          فایلی در این دسته‌بندی پیدا نشد.
+        </div>
+      ) : (
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {files.map((f) => {
           const isImage = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(f.extension.toLowerCase());
           const isVideo = isVideoMediaUrl(f.url) || ['mp4', 'webm'].includes(f.extension.toLowerCase());
 
           return (
-            <div key={f.id} className="flex flex-col justify-between rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-4 shadow-(--theme-card-shadow)">
+            <div key={f.id} className="flex flex-col justify-between rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow) transition-shadow hover:shadow-(--theme-card-shadow-hover)">
               <div>
-                <div className="mb-3 flex h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface-muted)">
-                  {isVideo ? (
-                    <video src={f.url} muted loop autoPlay playsInline className="h-full w-full object-contain" />
-                  ) : isImage ? (
-                    <ZeroBrokenImage src={f.url} alt={f.name} className="h-full w-full object-contain" />
+                <div className="mb-2 flex h-28 w-full items-center justify-center overflow-hidden rounded-lg border border-(--theme-border) bg-(--theme-surface-muted)">
+                  {isVideo || isImage ? (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewFile(f)}
+                      aria-label={`نمایش فایل اصلی ${f.name}`}
+                      className="h-full w-full"
+                    >
+                      <MediaThumbnail mediaId={f.id} alt={f.alt_text || f.name} isVideo={isVideo} originalUrl={f.url} />
+                    </button>
                   ) : (
                     <div className="flex flex-col items-center gap-1 text-(--theme-text-muted)">
                       <FileText className="h-8 w-8" />
@@ -190,7 +290,8 @@ export const MediaLibraryPage: React.FC = () => {
           );
         })}
       </div>
-      <Pagination page={page} lastPage={lastPage} onChange={setPage} />
+      )}
+      {!loading && <Pagination page={page} lastPage={lastPage} onChange={setPage} />}
       <Modal
         open={Boolean(editingFile)}
         onClose={() => setEditingFile(null)}
@@ -275,6 +376,31 @@ export const MediaLibraryPage: React.FC = () => {
           </button>
         </form>
       </Modal>
+      <Modal
+        open={Boolean(previewFile)}
+        onClose={() => setPreviewFile(null)}
+        title={previewFile?.name || 'پیش‌نمایش رسانه'}
+        size="xl"
+      >
+        {previewFile && (
+          isVideoMediaUrl(previewFile.url) || ['mp4', 'webm'].includes(previewFile.extension.toLowerCase())
+            ? <video
+              src={previewFile.url}
+              controls
+              playsInline
+              onError={() => addToast('error', 'فایل اصلی ویدئو در دسترس نیست یا پیوند آن منقضی شده است.')}
+              className="mx-auto max-h-[75vh] max-w-full"
+            />
+            : <img
+              src={previewFile.url}
+              alt={previewFile.alt_text || previewFile.name}
+              onError={() => addToast('error', 'فایل اصلی تصویر در فضای ذخیره‌سازی پیدا نشد.')}
+              className="mx-auto max-h-[75vh] max-w-full object-contain"
+            />
+        )}
+      </Modal>
+        </div>
+      )}
     </div>
   );
 };

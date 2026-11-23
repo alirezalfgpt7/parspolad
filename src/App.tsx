@@ -16,6 +16,7 @@ const AboutPage = lazy(() => import('./pages/public/AboutPage.tsx').then((module
 const ContactPage = lazy(() => import('./pages/public/ContactPage.tsx').then((module) => ({ default: module.ContactPage })));
 const ContractsLicensesPage = lazy(() => import('./pages/public/ContractsLicensesPage.tsx').then((module) => ({ default: module.ContractsLicensesPage })));
 const HomePage = lazy(() => import('./pages/public/HomePage.tsx').then((module) => ({ default: module.HomePage })));
+const PhotoAlbumsPage = lazy(() => import('./pages/public/PhotoAlbumsPage.tsx').then((module) => ({ default: module.PhotoAlbumsPage })));
 const ErrorPage = lazy(() => import('./pages/public/MiscPages.tsx').then((module) => ({ default: module.ErrorPage })));
 const FaqPage = lazy(() => import('./pages/public/MiscPages.tsx').then((module) => ({ default: module.FaqPage })));
 const LegalPage = lazy(() => import('./pages/public/MiscPages.tsx').then((module) => ({ default: module.LegalPage })));
@@ -37,6 +38,7 @@ const ContractsAdminPage = lazy(() => import('./pages/admin/ContractsAdminPage.t
 const LicensesAdminPage = lazy(() => import('./pages/admin/LicensesAdminPage.tsx').then((module) => ({ default: module.LicensesAdminPage })));
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage.tsx').then((module) => ({ default: module.DashboardPage })));
 const MediaLibraryPage = lazy(() => import('./pages/admin/MediaLibraryPage.tsx').then((module) => ({ default: module.MediaLibraryPage })));
+const PhotoAlbumsAdminPage = lazy(() => import('./pages/admin/PhotoAlbumsAdminPage.tsx').then((module) => ({ default: module.PhotoAlbumsAdminPage })));
 const MegaMenuAdminPage = lazy(() => import('./pages/admin/MegaMenuAdminPage.tsx').then((module) => ({ default: module.MegaMenuAdminPage })));
 const MessagesRfqAdminPage = lazy(() => import('./pages/admin/MessagesRfqAdminPage.tsx').then((module) => ({ default: module.MessagesRfqAdminPage })));
 const OrganizationAdminPage = lazy(() => import('./pages/admin/OrganizationAdminPage.tsx').then((module) => ({ default: module.OrganizationAdminPage })));
@@ -106,6 +108,8 @@ export default function App() {
               <Route path="/org-chart" element={<OrgChartPage />} />
               <Route path="/news" element={<NewsPage />} />
               <Route path="/news/:slug" element={<NewsPage />} />
+              <Route path="/albums" element={<PhotoAlbumsPage />} />
+              <Route path="/albums/:slug" element={<PhotoAlbumsPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/rfq" element={<RfqPage />} />
               <Route path="/faq" element={<FaqPage />} />
@@ -142,6 +146,7 @@ export default function App() {
               <Route path="comments" element={<ArticleCommentsAdminPage />} />
               <Route path="organization" element={<OrganizationAdminPage />} />
               <Route path="media" element={<MediaLibraryPage />} />
+              <Route path="albums" element={<PhotoAlbumsAdminPage />} />
               <Route path="messages" element={<MessagesRfqAdminPage />} />
               <Route path="live-chat" element={<LiveChatAdminPage />} />
               <Route path="users" element={<UsersRolesAdminPage />} />

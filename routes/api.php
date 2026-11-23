@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\ContractController;
 use App\Http\Controllers\Api\V1\LicenseController;
 use App\Http\Controllers\Api\V1\LiveChatController;
 use App\Http\Controllers\Api\V1\MediaDownloadController;
+use App\Http\Controllers\Api\V1\MediaOptimizationController;
+use App\Http\Controllers\Api\V1\PhotoAlbumController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\SettingsController;
@@ -53,6 +55,16 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
     Route::get('/articles/{slug}', [PublicController::class, 'article']);
     Route::get('/pages/{slug}', [PublicController::class, 'page']);
     Route::get('/sliders', [SliderController::class, 'index']);
+    Route::get('/albums', [PhotoAlbumController::class, 'index']);
+    Route::get('/albums/{slug}', [PhotoAlbumController::class, 'show'])->where('slug', '[a-z0-9-]+');
+    Route::get('/albums/{slug}/media/{media}/thumbnail', [PhotoAlbumController::class, 'thumbnail'])
+        ->where('slug', '[a-z0-9-]+')
+        ->whereNumber('media')
+        ->middleware('throttle:120,1');
+    Route::get('/albums/{slug}/media/{media}/original', [PhotoAlbumController::class, 'original'])
+        ->where('slug', '[a-z0-9-]+')
+        ->whereNumber('media')
+        ->middleware('throttle:120,1');
     Route::get('/media/{media}/download', MediaDownloadController::class)->name('media.download');
     Route::get('/theme', [ThemeController::class, 'show']);
 
@@ -97,6 +109,17 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
             Route::put('/menus/{menu}', [AdminContentController::class, 'updateMenu']);
             Route::get('/settings', [SettingsController::class, 'show'])->middleware('permission:settings.manage');
             Route::get('/media', [AdminResourceController::class, 'media'])->middleware('permission:media.manage');
+            Route::get('/albums', [PhotoAlbumController::class, 'adminIndex'])->middleware('permission:media.manage');
+            Route::get('/albums/{album}', [PhotoAlbumController::class, 'adminShow'])->middleware('permission:media.manage');
+            Route::post('/albums', [PhotoAlbumController::class, 'store'])->middleware('permission:media.manage');
+            Route::put('/albums/{album}', [PhotoAlbumController::class, 'update'])->middleware('permission:media.manage');
+            Route::delete('/albums/{album}', [PhotoAlbumController::class, 'destroy'])->middleware('permission:media.manage');
+            Route::get('/media/optimizer/capabilities', [MediaOptimizationController::class, 'capabilities']);
+            Route::get('/media/{media}/optimization-check', [MediaOptimizationController::class, 'optimizationCheck']);
+            Route::get('/media/{media}/thumbnail', [MediaOptimizationController::class, 'thumbnail']);
+            Route::get('/media/{media}/optimizer-source', [MediaOptimizationController::class, 'optimizerSource']);
+            Route::post('/media/{media}/optimizer-variant', [MediaOptimizationController::class, 'uploadBrowserVariant']);
+            Route::post('/media/{media}/optimize', [MediaOptimizationController::class, 'optimize']);
             Route::put('/media/{media}', [AdminResourceController::class, 'updateMedia']);
             Route::delete('/media/{media}', [AdminResourceController::class, 'destroyMedia']);
             Route::get('/backup/tables', [AdminContentController::class, 'backupTables'])

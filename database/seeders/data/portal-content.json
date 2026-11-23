@@ -356,6 +356,17 @@
           "icon": "Phone",
           "sort_order": 5,
           "is_active": true
+        },
+        {
+          "id": 6,
+          "menu_id": 1,
+          "parent_id": null,
+          "title_fa": "آلبوم تصاویر",
+          "title_en": "Photo Albums",
+          "url": "/albums",
+          "icon": "Images",
+          "sort_order": 6,
+          "is_active": true
         }
       ]
     },
@@ -1769,6 +1780,21 @@
       "meta_description": "فهرست صفحه‌های عمومی وب‌سایت.",
       "metadata": {
         "path": "/sitemap"
+      }
+    },
+    {
+      "id": 15,
+      "slug": "albums",
+      "title_fa": "آلبوم تصاویر",
+      "title_en": "Photo Albums",
+      "subtitle_fa": "تصاویر پروژه‌ها، تجهیزات و فعالیت‌های اجرایی را در مجموعه‌های موضوعی مشاهده کنید.",
+      "subtitle_en": "Explore projects, equipment and field operations through curated photo collections.",
+      "content_fa": "",
+      "content_en": "",
+      "meta_title": "آلبوم تصاویر | پارس پولاد آقایی",
+      "meta_description": "مجموعهٔ تصاویر پروژه‌ها و فعالیت‌های پارس پولاد آقایی.",
+      "metadata": {
+        "path": "/albums"
       }
     }
   ],

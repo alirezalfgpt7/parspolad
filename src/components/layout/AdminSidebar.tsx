@@ -13,6 +13,7 @@ import {
   FolderKanban,
   HelpCircle,
   Image as ImageIcon,
+  Images,
   Layers,
   LayoutDashboard,
   MessageSquare,
@@ -71,6 +72,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { to: '/admin/content-records', label_fa: 'CRUD کامل داده‌های محتوا', label_en: 'Content Data CRUD', icon: Files },
       { to: '/admin/faqs', label_fa: 'سوالات متداول', label_en: 'FAQs', icon: HelpCircle },
       { to: '/admin/media', label_fa: 'کتابخانه رسانه و فایل‌ها', label_en: 'Media Library', icon: ImageIcon },
+      { to: '/admin/albums', label_fa: 'آلبوم تصاویر', label_en: 'Photo Albums', icon: Images },
     ],
   },
   {

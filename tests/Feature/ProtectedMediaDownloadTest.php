@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Contract;
 use App\Models\MediaFile;
 use App\Models\Product;
-use App\Models\Contract;
+use App\Models\User;
 use App\Services\PrivateMediaStorageService;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
@@ -25,6 +27,32 @@ it('blocks direct access to private media and allows its temporary signed downlo
 
     $signedUrl = URL::temporarySignedRoute('media.download', now()->addMinute(), ['media' => $media->id]);
     $this->get($signedUrl)->assertOk()->assertHeader('Content-Type', 'application/pdf');
+});
+
+it('provides administrators a signed original URL for private media previews', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    Storage::fake('local');
+    Storage::disk('local')->put('uploads/private-image.jpg', 'private image');
+    $media = MediaFile::query()->create([
+        'name' => 'private-image.jpg',
+        'url' => '',
+        'storage_path' => 'uploads/private-image.jpg',
+        'mime_type' => 'image/jpeg',
+        'extension' => 'jpg',
+        'size_bytes' => 13,
+        'folder' => 'uploads',
+        'requires_auth' => true,
+    ]);
+    $media->update(['url' => "/api/v1/media/{$media->id}/download"]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/media?per_page=100')
+        ->assertOk();
+    $url = collect($response->json('data'))->firstWhere('id', $media->id)['url'];
+
+    expect($url)->toContain('signature=');
+    $this->get($url)->assertOk();
 });
 
 it('moves marked media out of the public disk before returning its protected URL', function (): void {

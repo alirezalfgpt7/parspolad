@@ -515,6 +515,10 @@
 }
 
 .industrial-stat {
+  min-width: 0;
+}
+
+.industrial-stat-shell {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -531,7 +535,7 @@
     border-color 650ms ease,
     box-shadow 750ms ease,
     background 650ms ease;
-  will-change: transform;
+  transform-origin: center;
 }
 
 .industrial-stat-icon-wrap {
@@ -653,8 +657,8 @@
   letter-spacing: 0.12em;
 }
 
-.industrial-stat:hover {
-  transform: translateY(-15px) scale(1.035);
+.industrial-stat:hover .industrial-stat-shell {
+  transform: translateY(-8px) scale(1.02);
   border-color: rgb(248 113 113 / 50%);
   background: var(--stat-background, linear-gradient(145deg, rgb(45 25 35 / 92%), rgb(8 15 27 / 94%)));
   box-shadow:
@@ -804,7 +808,7 @@
     display: none;
   }
 
-  .industrial-stat {
+  .industrial-stat-shell {
     min-height: 180px;
   }
 }
@@ -887,7 +891,7 @@
     gap: 0.7rem;
   }
 
-  .industrial-stat {
+  .industrial-stat-shell {
     min-height: 165px;
     padding: 0.75rem;
     border-radius: 12px;
@@ -987,7 +991,7 @@
     animation: none;
   }
 
-  .industrial-stat,
+  .industrial-stat-shell,
   .industrial-stat-icon,
   .industrial-stat-track-active,
   .industrial-stat-track-dot {

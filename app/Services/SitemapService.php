@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Article;
 use App\Models\Page;
 use App\Models\Project;
+use App\Models\PhotoAlbum;
 use Illuminate\Support\Collection;
 
 class SitemapService
@@ -20,6 +21,7 @@ class SitemapService
             ['path' => '/contracts-licenses', 'title_fa' => 'قراردادها و گواهینامه‌ها', 'title_en' => 'Contracts and Licenses', 'updated_at' => now()],
             ['path' => '/org-chart', 'title_fa' => 'ساختار سازمانی', 'title_en' => 'Organization', 'updated_at' => now()],
             ['path' => '/news', 'title_fa' => 'اخبار و مقالات', 'title_en' => 'News and Articles', 'updated_at' => now()],
+            ['path' => '/albums', 'title_fa' => 'آلبوم تصاویر', 'title_en' => 'Photo Albums', 'updated_at' => now()],
             ['path' => '/contact', 'title_fa' => 'تماس با ما', 'title_en' => 'Contact Us', 'updated_at' => now()],
             ['path' => '/rfq', 'title_fa' => 'درخواست همکاری و استعلام', 'title_en' => 'Request for Quotation', 'updated_at' => now()],
             ['path' => '/faq', 'title_fa' => 'سوالات متداول', 'title_en' => 'FAQ', 'updated_at' => now()],
@@ -49,6 +51,17 @@ class SitemapService
                     'title_fa' => $project->title_fa,
                     'title_en' => $project->title_en,
                     'updated_at' => $project->updated_at,
+                ]);
+            });
+
+        PhotoAlbum::query()->where('is_active', true)
+            ->get(['slug', 'title_fa', 'title_en', 'updated_at'])
+            ->each(function (PhotoAlbum $album) use ($entries): void {
+                $entries->put('/albums/'.$album->slug, [
+                    'path' => '/albums/'.$album->slug,
+                    'title_fa' => $album->title_fa,
+                    'title_en' => $album->title_en,
+                    'updated_at' => $album->updated_at,
                 ]);
             });
 

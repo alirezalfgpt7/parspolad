@@ -19,10 +19,6 @@ class PrivateDownloadUrl
             return null;
         }
 
-        if ($request->is('api/v1/admin/*')) {
-            return $storedUrl;
-        }
-
         $media = MediaFile::query()->find((int) $matches[1]);
         if (! $media?->requires_auth) {
             return null;
@@ -30,7 +26,7 @@ class PrivateDownloadUrl
 
         return URL::temporarySignedRoute(
             'media.download',
-            now()->addMinutes(5),
+            now()->addMinutes($request->is('api/v1/admin/*') ? 60 : 5),
             ['media' => $media->id],
         );
     }

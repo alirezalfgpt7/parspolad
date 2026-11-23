@@ -31,6 +31,7 @@ describe('StatCounter', () => {
       <StatCounter target={100} suffix="+" label="پروژه‌های موفق" lang="fa" index={0} />,
     );
 
+    expect(container.querySelector('.industrial-stat-shell')).toBeTruthy();
     expect(container.querySelector('.industrial-stat-value')?.textContent).toBe(formatLocalizedNumber(0, 'fa'));
 
     act(() => {

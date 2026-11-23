@@ -430,9 +430,60 @@ export interface MediaFile {
   size_bytes: number;
   folder: string;
   requires_auth: boolean;
+  source_media_id?: number | null;
+  source_available?: boolean;
+  variant?: string | null;
   alt_text?: string | null;
   description?: string | null;
   created_at: string;
+}
+
+export interface PhotoAlbumMedia {
+  id: number;
+  name: string;
+  url: string;
+  thumbnail_url?: string;
+  content_url?: string | null;
+  hero_url?: string | null;
+  alt_text?: string | null;
+  description?: string | null;
+}
+
+export interface PhotoAlbumSummary {
+  id: number;
+  title_fa: string;
+  title_en: string;
+  slug: string;
+  description_fa: string | null;
+  description_en: string | null;
+  cover_url: string | null;
+  cover_thumbnail_url: string | null;
+  media_count: number;
+  updated_at: string;
+}
+
+export interface PhotoAlbum {
+  id: number;
+  title_fa: string;
+  title_en: string;
+  slug: string;
+  description_fa: string | null;
+  description_en: string | null;
+  cover_media_id: number | null;
+  cover_url?: string | null;
+  cover_thumbnail_url?: string | null;
+  media_count?: number;
+  layout: 'grid' | 'masonry' | 'mosaic' | 'slider';
+  columns: number;
+  rows: number;
+  transition: 'fade' | 'slide' | 'zoom';
+  interval_ms: number;
+  image_effect: 'none' | 'zoom' | 'pan';
+  card_effect: 'none' | 'lift' | 'glow';
+  sort_order: number;
+  is_active: boolean;
+  media: PhotoAlbumMedia[];
+  updated_at?: string;
 }
 
 export interface ActivityLog {

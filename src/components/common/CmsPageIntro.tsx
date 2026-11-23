@@ -14,6 +14,10 @@ interface CmsPageIntroProps {
   className?: string;
   titleClassName?: string;
   showContent?: boolean;
+  showSeo?: boolean;
+  titleOverride?: string;
+  subtitleOverride?: string;
+  badgeOverride?: string;
 }
 
 export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
@@ -21,6 +25,10 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
   className = 'mb-10',
   titleClassName = 'text-3xl font-extrabold',
   showContent = true,
+  showSeo = true,
+  titleOverride,
+  subtitleOverride,
+  badgeOverride,
 }) => {
   const { page, title, subtitle, content, metaTitle, metaDescription, language, badge, logoUrl } = useCmsPage(slug);
   const theme = useAppStore((state) => state.previewTheme || state.bootstrap?.theme);
@@ -32,17 +40,22 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
     wave_colors: savedTitleSettings?.wave_colors ?? [legacyWaveColor, legacyWaveColor, legacyWaveColor],
   };
   if (!page) return null;
+  const resolvedTitle = titleOverride || title;
+  const resolvedSubtitle = subtitleOverride ?? subtitle;
+  const resolvedBadge = badgeOverride || badge;
 
   return (
     <>
-      <SeoHead
-        title={metaTitle}
-        description={metaDescription}
-        image={page.meta_image || undefined}
-        canonicalUrl={page.canonical_url || undefined}
-        language={language}
-      />
-      <Breadcrumb items={[{ label: title }]} />
+      {showSeo && (
+        <SeoHead
+          title={titleOverride || metaTitle}
+          description={subtitleOverride || metaDescription}
+          image={page.meta_image || undefined}
+          canonicalUrl={page.canonical_url || undefined}
+          language={language}
+        />
+      )}
+      <Breadcrumb items={[{ label: resolvedTitle }]} />
       <header className={className}>
         <div
           className="relative overflow-hidden border"
@@ -65,17 +78,17 @@ export const CmsPageIntro: React.FC<CmsPageIntroProps> = ({
                 <BrandLogo
                   placement="about"
                   overrideUrl={logoUrl || undefined}
-                  alt={title}
+                  alt={resolvedTitle}
                   className="h-full w-full"
                 />
               </div>
               <div className="min-w-0">
                 <p className="mb-1 text-xs font-semibold" style={{ color: titleSettings.wave_colors[0] }}>
-                  {badge || (language === 'fa' ? 'درباره ما' : 'About Us')}
+                  {resolvedBadge || (language === 'fa' ? 'درباره ما' : 'About Us')}
                 </p>
-                <h1 className={titleClassName} style={{ color: titleSettings.title_color }}>{title}</h1>
-                {subtitle && (
-                  <p className="mt-1.5 text-sm leading-7" style={{ color: titleSettings.subtitle_color }}>{subtitle}</p>
+                <h1 className={titleClassName} style={{ color: titleSettings.title_color }}>{resolvedTitle}</h1>
+                {resolvedSubtitle && (
+                  <p className="mt-1.5 text-sm leading-7" style={{ color: titleSettings.subtitle_color }}>{resolvedSubtitle}</p>
                 )}
               </div>
             </div>

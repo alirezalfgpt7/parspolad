@@ -111,32 +111,34 @@ export const StatCounter: React.FC<StatCounterProps> = ({
       data-cursor="industrial"
       style={{ '--stat-order': index, '--stat-background': backgroundColor || undefined } as React.CSSProperties}
     >
-      <div className="industrial-stat-icon-wrap">
-        <span className="industrial-stat-icon">
-          {icon
-            ? <DynamicLucideIcon name={icon} className="h-23px w-23px" />
-            : <FallbackIcon size={23} strokeWidth={1.7} aria-hidden="true" />}
-        </span>
-        <span className="industrial-stat-icon-ring" />
-      </div>
-
-      <div className="industrial-stat-content">
-        <div className="industrial-stat-number" dir="auto">
-          <span className="industrial-stat-value">{formatLocalizedNumber(value, lang)}</span>
-          {suffix && <span className="industrial-stat-suffix">{suffix}</span>}
+      <div className="industrial-stat-shell">
+        <div className="industrial-stat-icon-wrap">
+          <span className="industrial-stat-icon">
+            {icon
+              ? <DynamicLucideIcon name={icon} className="h-23px w-23px" />
+              : <FallbackIcon size={23} strokeWidth={1.7} aria-hidden="true" />}
+          </span>
+          <span className="industrial-stat-icon-ring" />
         </div>
-        <h3 className="industrial-stat-label">{label}</h3>
-      </div>
 
-      <div className="industrial-stat-track" aria-hidden="true">
-        <span className="industrial-stat-track-line" />
-        <span className="industrial-stat-track-active" />
-        <span className="industrial-stat-track-dot" />
-      </div>
+        <div className="industrial-stat-content">
+          <div className="industrial-stat-number" dir="auto">
+            <span className="industrial-stat-value">{formatLocalizedNumber(value, lang)}</span>
+            {suffix && <span className="industrial-stat-suffix">{suffix}</span>}
+          </div>
+          <h3 className="industrial-stat-label">{label}</h3>
+        </div>
 
-      <span className="industrial-stat-code" dir="ltr">
-        KPI / {String(index + 1).padStart(2, '0')}
-      </span>
+        <div className="industrial-stat-track" aria-hidden="true">
+          <span className="industrial-stat-track-line" />
+          <span className="industrial-stat-track-active" />
+          <span className="industrial-stat-track-dot" />
+        </div>
+
+        <span className="industrial-stat-code" dir="ltr">
+          KPI / {String(index + 1).padStart(2, '0')}
+        </span>
+      </div>
     </article>
   );
 };

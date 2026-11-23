@@ -9,10 +9,10 @@ use App\Models\ContactMessage;
 use App\Models\MediaFile;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\ActivityLogRetentionService;
+use App\Services\MediaContentValidator;
 use App\Services\PrivateDownloadUrl;
 use App\Services\PrivateMediaStorageService;
-use App\Services\MediaContentValidator;
-use App\Services\ActivityLogRetentionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -305,14 +305,67 @@ class AdminResourceController extends Controller
         return $this->paginatedResponse(Notification::query()->latest()->paginate($perPage)->withQueryString());
     }
 
-    public function media(Request $request, PrivateDownloadUrl $downloadUrls): JsonResponse
-    {
+    public function media(
+        Request $request,
+        PrivateDownloadUrl $downloadUrls,
+        PrivateMediaStorageService $storage,
+    ): JsonResponse {
         $this->ensurePermission($request, 'media.manage');
 
+        $filters = $request->validate([
+            'type' => ['sometimes', Rule::in(['all', 'images', 'videos', 'documents', 'other'])],
+            'sort' => ['sometimes', Rule::in(['newest', 'largest'])],
+            'source_only' => ['sometimes', 'boolean'],
+            'public_only' => ['sometimes', 'boolean'],
+        ]);
         $perPage = min(max($request->integer('per_page', 12), 1), 100);
 
-        $media = MediaFile::query()->latest()->paginate($perPage)->withQueryString();
-        $media->getCollection()->each(function (MediaFile $file) use ($downloadUrls, $request): void {
+        $query = MediaFile::query();
+        match ($filters['type'] ?? 'all') {
+            'images' => $query->where('mime_type', 'like', 'image/%'),
+            'videos' => $query->where('mime_type', 'like', 'video/%'),
+            'documents' => $query->whereIn('extension', ['pdf', 'docx', 'xlsx', 'zip', 'dwg']),
+            'other' => $query
+                ->where('mime_type', 'not like', 'image/%')
+                ->where('mime_type', 'not like', 'video/%')
+                ->whereNotIn('extension', ['pdf', 'docx', 'xlsx', 'zip', 'dwg']),
+            default => null,
+        };
+        if ($request->boolean('optimizable')) {
+            $query->whereNull('source_media_id')
+                ->whereIn('mime_type', [
+                    'image/jpeg',
+                    'image/png',
+                    'image/webp',
+                    'image/gif',
+                    'video/mp4',
+                    'video/webm',
+                ]);
+        }
+        if ($request->boolean('source_only')) {
+            $query->whereNull('source_media_id');
+        }
+        if ($request->boolean('public_only')) {
+            $query->where('requires_auth', false);
+        }
+        $query
+            ->when(
+                ($filters['sort'] ?? 'newest') === 'largest',
+                fn ($builder) => $builder->orderByDesc('size_bytes')->orderByDesc('id'),
+                fn ($builder) => $builder->orderByDesc('created_at')->orderByDesc('id'),
+            );
+        $media = $query->paginate($perPage)->withQueryString();
+        $checkSourceAvailability = $request->boolean('optimizable') || $request->boolean('source_only');
+        $checkPublicAvailability = $request->boolean('public_only');
+        $media->getCollection()->each(function (MediaFile $file) use ($downloadUrls, $request, $storage, $checkSourceAvailability, $checkPublicAvailability): void {
+            if ($checkSourceAvailability) {
+                $file->setAttribute(
+                    'source_available',
+                    $checkPublicAvailability
+                        ? $storage->isAvailableOnPublicDisk($file)
+                        : $storage->isAvailable($file),
+                );
+            }
             $file->url = $downloadUrls->resolve($file->url, (bool) $file->requires_auth, $request);
         });
 
@@ -340,6 +393,7 @@ class AdminResourceController extends Controller
     public function destroyMedia(Request $request, MediaFile $media): JsonResponse
     {
         $this->ensurePermission($request, 'media.manage');
+        $media->variants()->delete();
         $media->delete();
 
         return response()->json(['ok' => true]);
@@ -349,8 +403,7 @@ class AdminResourceController extends Controller
         Request $request,
         PrivateMediaStorageService $storage,
         MediaContentValidator $contentValidator,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->ensurePermission($request, 'media.manage');
         $request->validate([
             'file' => ['required_without:content_base64', 'file', 'max:25600'],
