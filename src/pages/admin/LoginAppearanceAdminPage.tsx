@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   FileText,
   Image as ImageIcon,
+  LoaderCircle,
   RotateCcw,
   Save,
   ShieldCheck,
@@ -18,6 +19,7 @@ import type {
   LogoPlacement,
   PageOverrideEntry,
   PagesConfigSettings,
+  PreloaderSettings,
   SiteSettings,
 } from '../../types/index.ts';
 import {
@@ -26,7 +28,9 @@ import {
   DEFAULT_BRAND_LOGOS,
   DEFAULT_LOGIN_SETTINGS,
   DEFAULT_PAGES_CONFIG,
+  DEFAULT_PRELOADER_SETTINGS,
   FONT_CSS_MAP,
+  normalizePreloaderSettings,
 } from '../../utils/brandingDefaults.ts';
 import { BrandLogo } from '../../components/common/BrandLogo.tsx';
 import { PagePreloader } from '../../components/common/PagePreloader.tsx';
@@ -37,8 +41,17 @@ import { MediaUrlField } from '../../components/ui/MediaUrlField.tsx';
 import { ColorPicker } from '../../components/ui/ColorPicker.tsx';
 import { pickReadableForeground } from '../../utils/themeContrast.ts';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
+import { PreloaderSettingsEditor } from '../../components/admin/PreloaderSettingsEditor.tsx';
 
-type StudioTab = 'login' | 'fonts' | 'logos' | 'pages';
+type StudioTab = 'login' | 'fonts' | 'logos' | 'pages' | 'preloader';
+
+const STUDIO_TAB_LABELS: Record<StudioTab, string> = {
+  login: 'لاگین و ثبت‌نام',
+  fonts: 'فونت‌ها',
+  logos: 'لوگوها',
+  pages: 'صفحات سیستمی',
+  preloader: 'تنظیمات پریلودر',
+};
 
 const SYSTEM_PAGE_CARDS: Array<{ key: string; label: string; hasBadge?: boolean; hasCta?: boolean }> = [
   { key: 'home_spotlight', label: 'بخش اسپات‌لایت صفحه اصلی', hasBadge: true },
@@ -102,6 +115,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
   const [logosCfg, setLogosCfg] = useState<BrandLogosSettings>({ ...DEFAULT_BRAND_LOGOS });
   const [appearanceCfg, setAppearanceCfg] = useState<AppearanceSettings>({ ...DEFAULT_APPEARANCE_SETTINGS });
   const [pagesConfig, setPagesConfig] = useState<PagesConfigSettings>({ ...DEFAULT_PAGES_CONFIG });
+  const [preloaderCfg, setPreloaderCfg] = useState<PreloaderSettings>({ ...DEFAULT_PRELOADER_SETTINGS });
 
   const [previewFlip, setPreviewFlip] = useState<'login' | 'register'>('login');
 
@@ -126,6 +140,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           Object.entries(savedPagesConfig).filter(([key]) => SYSTEM_PAGE_CARDS.some((card) => card.key === key)),
         );
         setPagesConfig({ ...DEFAULT_PAGES_CONFIG, ...systemPageConfig });
+        setPreloaderCfg(normalizePreloaderSettings(s.preloader));
       })
       .catch((error: unknown) => {
         if (!active) return;
@@ -149,8 +164,9 @@ export const LoginAppearanceAdminPage: React.FC = () => {
       logos: logosCfg,
       appearance: appearanceCfg,
       pages_config: pagesConfig,
+      preloader: preloaderCfg,
     });
-  }, [appearanceCfg, loading, loginCfg, logosCfg, pagesConfig, setPreviewBranding]);
+  }, [appearanceCfg, loading, loginCfg, logosCfg, pagesConfig, preloaderCfg, setPreviewBranding]);
 
   const updatePageOverride = (key: string, patch: Partial<PageOverrideEntry>) => {
     setPagesConfig((prev) => ({
@@ -159,32 +175,54 @@ export const LoginAppearanceAdminPage: React.FC = () => {
     }));
   };
 
-  const handleSaveAll = async () => {
+  const handleSaveCurrentTab = async () => {
     if (!siteSettings) return;
     setSaving(true);
     try {
+      let payload: Record<string, unknown>;
+      switch (tab) {
+        case 'login':
+          payload = { login: loginCfg };
+          break;
+        case 'fonts':
+          payload = { appearance: appearanceCfg };
+          break;
+        case 'logos':
+          payload = {
+            company: {
+              ...siteSettings.company,
+              logo_url: logosCfg.footer || siteSettings.company.logo_url,
+              logo_small_url: logosCfg.navbar || siteSettings.company.logo_small_url,
+            },
+            seo: {
+              ...siteSettings.seo,
+              meta_image: logosCfg.seo_share || siteSettings.seo.meta_image,
+            },
+            logos: logosCfg,
+          };
+          break;
+        case 'pages':
+          payload = { pages_config: pagesConfig };
+          break;
+        case 'preloader':
+          payload = { preloader: preloaderCfg };
+          break;
+      }
+
       await apiRequest('/admin/settings', {
         method: 'PUT',
-        body: JSON.stringify({
-          company: {
-            ...siteSettings.company,
-            logo_url: logosCfg.footer || siteSettings.company.logo_url,
-            logo_small_url: logosCfg.navbar || siteSettings.company.logo_small_url,
-          },
-          seo: {
-            ...siteSettings.seo,
-            meta_image: logosCfg.seo_share || siteSettings.seo.meta_image,
-          },
-          login: loginCfg,
-          logos: logosCfg,
-          appearance: appearanceCfg,
-          pages_config: pagesConfig,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      setPreviewBranding(null);
       await fetchBootstrap();
-      addToast('success', 'تنظیمات لاگین، فونت‌ها، لوگوها و صفحات سیستمی ذخیره شد.');
+      setPreviewBranding({
+        login: loginCfg,
+        logos: logosCfg,
+        appearance: appearanceCfg,
+        pages_config: pagesConfig,
+        preloader: preloaderCfg,
+      });
+      addToast('success', `تنظیمات «${STUDIO_TAB_LABELS[tab]}» ذخیره و منتشر شد.`);
     } catch (error: unknown) {
       addToast('error', error instanceof Error ? error.message : 'ذخیره تنظیمات با خطا مواجه شد.');
     } finally {
@@ -192,41 +230,25 @@ export const LoginAppearanceAdminPage: React.FC = () => {
     }
   };
 
-  const handleSaveLogos = async () => {
-    if (!siteSettings) return;
-    setSaving(true);
-    try {
-      await apiRequest('/admin/settings', {
-        method: 'PUT',
-        body: JSON.stringify({
-          company: {
-            ...siteSettings.company,
-            logo_url: logosCfg.footer || siteSettings.company.logo_url,
-            logo_small_url: logosCfg.navbar || siteSettings.company.logo_small_url,
-          },
-          seo: {
-            ...siteSettings.seo,
-            meta_image: logosCfg.seo_share || siteSettings.seo.meta_image,
-          },
-          logos: logosCfg,
-        }),
-      });
-      setPreviewBranding(null);
-      await fetchBootstrap();
-      addToast('success', 'تنظیمات لوگوها ذخیره و منتشر شد.');
-    } catch (error: unknown) {
-      addToast('error', error instanceof Error ? error.message : 'ذخیره لوگوها ناموفق بود.');
-    } finally {
-      setSaving(false);
+  const handleResetCurrentTab = () => {
+    switch (tab) {
+      case 'login':
+        setLoginCfg({ ...DEFAULT_LOGIN_SETTINGS });
+        break;
+      case 'fonts':
+        setAppearanceCfg({ ...DEFAULT_APPEARANCE_SETTINGS });
+        break;
+      case 'logos':
+        setLogosCfg({ ...DEFAULT_BRAND_LOGOS });
+        break;
+      case 'pages':
+        setPagesConfig({ ...DEFAULT_PAGES_CONFIG });
+        break;
+      case 'preloader':
+        setPreloaderCfg({ ...DEFAULT_PRELOADER_SETTINGS });
+        break;
     }
-  };
-
-  const handleResetDefaults = () => {
-    setLoginCfg({ ...DEFAULT_LOGIN_SETTINGS });
-    setLogosCfg({ ...DEFAULT_BRAND_LOGOS });
-    setAppearanceCfg({ ...DEFAULT_APPEARANCE_SETTINGS });
-    setPagesConfig({ ...DEFAULT_PAGES_CONFIG });
-    addToast('info', 'تنظیمات بخش‌های فرم به حالت پیش‌فرض بازنشانی شد. برای ثبت نهایی دکمه ذخیره را بزنید.');
+    addToast('info', `تنظیمات تب «${STUDIO_TAB_LABELS[tab]}» به پیش‌فرض برگشت؛ برای ثبت، ذخیره همین تب را بزنید.`);
   };
 
   if (loading) {
@@ -244,21 +266,21 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           <>
             <button
               type="button"
-              onClick={handleResetDefaults}
+              onClick={handleResetCurrentTab}
               className="inline-flex items-center gap-1.5 rounded-xl border border-(--theme-border) bg-(--theme-surface) px-3.5 py-2.5 text-xs font-semibold text-(--theme-text) hover:bg-(--theme-surface-muted)"
             >
               <RotateCcw className="h-4 w-4" />
-              <span>بازنشانی پیش‌فرض</span>
+              <span>بازنشانی همین تب</span>
             </button>
             <EffectAction
               type="button"
               disabled={saving}
-              onClick={handleSaveAll}
+              onClick={handleSaveCurrentTab}
               style={{ backgroundColor: 'var(--theme-btn-bg)', color: 'var(--theme-btn-text)' }}
               className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold shadow-md disabled:opacity-60"
             >
               <Save className="h-4 w-4" />
-              <span>{saving ? 'در حال ذخیره...' : 'ذخیره و انتشار همه تغییرات'}</span>
+              <span>{saving ? 'در حال ذخیره...' : `ذخیره و انتشار «${STUDIO_TAB_LABELS[tab]}»`}</span>
             </EffectAction>
           </>
         )}
@@ -274,6 +296,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             { id: 'fonts', label: 'فونت کل بخش‌ها', icon: <Type className="h-4 w-4" /> },
             { id: 'logos', label: 'لوگوها و فایل‌های متحرک', icon: <ImageIcon className="h-4 w-4" /> },
             { id: 'pages', label: 'صفحات سیستمی', icon: <FileText className="h-4 w-4" /> },
+            { id: 'preloader', label: 'تنظیمات پریلودر', icon: <LoaderCircle className="h-4 w-4" /> },
           ]}
         />
       </div>
@@ -635,7 +658,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
             </div>
             <button
               type="button"
-              onClick={handleSaveLogos}
+              onClick={handleSaveCurrentTab}
               disabled={saving}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2.5 text-xs font-bold text-(--theme-btn-text) transition-colors hover:bg-(--theme-btn-hover) disabled:opacity-60"
             >
@@ -790,6 +813,9 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           </section>
 
         </div>
+      )}
+      {tab === 'preloader' && (
+        <PreloaderSettingsEditor settings={preloaderCfg} onChange={setPreloaderCfg} />
       )}
     </div>
   );

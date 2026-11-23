@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmailSetting;
 use App\Models\Setting;
 use App\Models\SmsProviderSetting;
+use App\Services\PrivateDownloadUrl;
 use App\Services\SmtpEmailService;
 use App\Services\SmsDispatcherService;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,7 @@ use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
 {
-    public function show(Request $request): JsonResponse
+    public function show(Request $request, PrivateDownloadUrl $downloadUrls): JsonResponse
     {
         $this->ensurePermission($request, 'settings.manage');
         $settings = Setting::query()->whereIn('group', [
@@ -27,6 +28,7 @@ class SettingsController extends Controller
             'appearance',
             'logos',
             'pages_config',
+            'preloader',
             'logs',
         ])->get();
         $groups = [];
@@ -36,6 +38,7 @@ class SettingsController extends Controller
                 ? $decoded
                 : $setting->value;
         }
+        $groups['preloader'] = $downloadUrls->resolvePreloaderMediaSettings($groups['preloader'] ?? []);
 
         $email = EmailSetting::query()->first();
         $sms = SmsProviderSetting::query()->first();
@@ -72,6 +75,33 @@ class SettingsController extends Controller
             'appearance' => ['sometimes', 'array'],
             'logos' => ['sometimes', 'array'],
             'pages_config' => ['sometimes', 'array'],
+            'preloader' => ['sometimes', 'array'],
+            'preloader.initial' => ['sometimes', 'array:enabled,display_mode,background_color,background_image,background_overlay_opacity,show_background_media,transparent_background,remove_logo_background,text_fa,text_en,text_color,logo_url,show_logo,show_logo_frame,show_spinner,show_text,show_dots,show_particles,logo_size_mobile,logo_size_tablet,logo_size_desktop,text_size_mobile,text_size_tablet,text_size_desktop'],
+            'preloader.internal' => ['sometimes', 'array:enabled,display_mode,background_color,background_image,background_overlay_opacity,show_background_media,transparent_background,remove_logo_background,text_fa,text_en,text_color,logo_url,show_logo,show_logo_frame,show_spinner,show_text,show_dots,show_particles,logo_size_mobile,logo_size_tablet,logo_size_desktop,text_size_mobile,text_size_tablet,text_size_desktop'],
+            'preloader.*.enabled' => ['sometimes', 'boolean'],
+            'preloader.*.display_mode' => ['sometimes', Rule::in(['full', 'background_only'])],
+            'preloader.*.background_color' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'preloader.*.background_image' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'preloader.*.background_overlay_opacity' => ['sometimes', 'integer', 'between:0,100'],
+            'preloader.*.show_background_media' => ['sometimes', 'boolean'],
+            'preloader.*.transparent_background' => ['sometimes', 'boolean'],
+            'preloader.*.remove_logo_background' => ['sometimes', 'boolean'],
+            'preloader.*.text_fa' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'preloader.*.text_en' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'preloader.*.text_color' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'preloader.*.logo_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'preloader.*.show_logo' => ['sometimes', 'boolean'],
+            'preloader.*.show_logo_frame' => ['sometimes', 'boolean'],
+            'preloader.*.show_spinner' => ['sometimes', 'boolean'],
+            'preloader.*.show_text' => ['sometimes', 'boolean'],
+            'preloader.*.show_dots' => ['sometimes', 'boolean'],
+            'preloader.*.show_particles' => ['sometimes', 'boolean'],
+            'preloader.*.logo_size_mobile' => ['sometimes', 'integer', 'between:32,128'],
+            'preloader.*.logo_size_tablet' => ['sometimes', 'integer', 'between:32,128'],
+            'preloader.*.logo_size_desktop' => ['sometimes', 'integer', 'between:32,128'],
+            'preloader.*.text_size_mobile' => ['sometimes', 'integer', 'between:10,28'],
+            'preloader.*.text_size_tablet' => ['sometimes', 'integer', 'between:10,28'],
+            'preloader.*.text_size_desktop' => ['sometimes', 'integer', 'between:10,28'],
             'logs' => ['sometimes', 'array'],
             'logs.activity_logs_retention_months' => ['sometimes', 'integer', Rule::in([1, 3, 6, 12])],
             'seo.site_title' => ['sometimes', 'string', 'max:255'],
@@ -108,7 +138,7 @@ class SettingsController extends Controller
             'sms.api_key_plain' => ['sometimes', 'nullable', 'string'],
         ]);
 
-        foreach (Arr::only($payload, ['company', 'map', 'seo', 'site', 'login', 'appearance', 'logos', 'pages_config', 'logs']) as $group => $entries) {
+        foreach (Arr::only($payload, ['company', 'map', 'seo', 'site', 'login', 'appearance', 'logos', 'pages_config', 'preloader', 'logs']) as $group => $entries) {
             foreach ($entries as $key => $value) {
                 Setting::query()->updateOrCreate(
                     ['key' => $key],

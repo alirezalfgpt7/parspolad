@@ -77,12 +77,14 @@ class BootstrapService
             'appearance',
             'logos',
             'pages_config',
+            'preloader',
         ])->get();
         $result = [];
         foreach ($rows as $row) {
             $decoded = json_decode((string) $row->value, true);
             $result[$row->group][$row->key] = json_last_error() === JSON_ERROR_NONE ? $decoded : $row->value;
         }
+        $result['preloader'] = app(PrivateDownloadUrl::class)->resolvePreloaderMediaSettings($result['preloader'] ?? []);
 
         return $result;
     }

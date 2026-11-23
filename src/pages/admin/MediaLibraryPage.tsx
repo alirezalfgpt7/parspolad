@@ -12,7 +12,7 @@ import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 import { MediaThumbnail } from '../../components/admin/MediaThumbnail.tsx';
 import { MediaOptimizerTab } from '../../components/admin/MediaOptimizerTab.tsx';
 
-type MediaTypeFilter = 'all' | 'images' | 'videos' | 'documents' | 'other';
+type MediaTypeFilter = 'all' | 'images' | 'gifs' | 'videos' | 'documents' | 'other';
 type MediaSort = 'newest' | 'largest';
 
 export const MediaLibraryPage: React.FC = () => {
@@ -28,9 +28,12 @@ export const MediaLibraryPage: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
+  const [videoPreviewFailed, setVideoPreviewFailed] = useState(false);
+  const [usingOptimizedVideoPreview, setUsingOptimizedVideoPreview] = useState(false);
   const [editForm, setEditForm] = useState({ name: '', alt_text: '', description: '' });
   const [savingMetadata, setSavingMetadata] = useState(false);
   const [activeTab, setActiveTab] = useState<'library' | 'optimizer'>('library');
+  const [autoOptimizeMediaId, setAutoOptimizeMediaId] = useState<number | null>(null);
   const loadSequence = useRef(0);
 
   const load = async (targetPage = page) => {
@@ -87,6 +90,21 @@ export const MediaLibraryPage: React.FC = () => {
     });
   };
 
+  const openPreview = (file: MediaFile) => {
+    setVideoPreviewFailed(false);
+    setUsingOptimizedVideoPreview(false);
+    setPreviewFile(file);
+  };
+
+  const copyMediaUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      addToast('success', 'آدرس فایل کپی شد.');
+    } catch (error) {
+      addToast('error', error instanceof Error ? error.message : 'کپی آدرس فایل ناموفق بود.');
+    }
+  };
+
   const saveMetadata = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!editingFile) return;
@@ -138,7 +156,11 @@ export const MediaLibraryPage: React.FC = () => {
       </div>
       {activeTab === 'optimizer' ? (
         <div id="media-optimizer-panel" role="tabpanel">
-          <MediaOptimizerTab />
+          <MediaOptimizerTab
+            autoOptimizeMediaId={autoOptimizeMediaId}
+            onAutoOptimizeStarted={() => setAutoOptimizeMediaId(null)}
+            onOptimized={() => void load()}
+          />
         </div>
       ) : (
         <div id="media-library-panel" role="tabpanel" className="space-y-6">
@@ -160,6 +182,7 @@ export const MediaLibraryPage: React.FC = () => {
             >
               <option value="all">همهٔ فایل‌ها</option>
               <option value="images">تصاویر</option>
+              <option value="gifs">GIF متحرک</option>
               <option value="videos">ویدئوها</option>
               <option value="documents">اسناد و آرشیوها</option>
               <option value="other">سایر فایل‌ها</option>
@@ -205,11 +228,17 @@ export const MediaLibraryPage: React.FC = () => {
                   {isVideo || isImage ? (
                     <button
                       type="button"
-                      onClick={() => setPreviewFile(f)}
+                      onClick={() => openPreview(f)}
                       aria-label={`نمایش فایل اصلی ${f.name}`}
                       className="h-full w-full"
                     >
-                      <MediaThumbnail mediaId={f.id} alt={f.alt_text || f.name} isVideo={isVideo} originalUrl={f.url} />
+                      <MediaThumbnail
+                        mediaId={f.id}
+                        alt={f.alt_text || f.name}
+                        isVideo={isVideo}
+                        originalUrl={f.preview_url || f.url}
+                        thumbnailUrl={f.thumbnail_url}
+                      />
                     </button>
                   ) : (
                     <div className="flex flex-col items-center gap-1 text-(--theme-text-muted)">
@@ -229,6 +258,44 @@ export const MediaLibraryPage: React.FC = () => {
                     {f.alt_text && <p className="truncate">Alt: {f.alt_text}</p>}
                     {f.description && <p className="line-clamp-2">{f.description}</p>}
                   </div>
+                )}
+                {f.derived_files && f.derived_files.length > 0 && (
+                  <details className="mt-3 rounded-lg border border-(--theme-border) px-2.5 py-2">
+                    <summary className="cursor-pointer text-xs font-semibold text-(--theme-text)">
+                      نسخه‌های تولیدشده ({f.derived_files.length})
+                    </summary>
+                    <div className="mt-2 space-y-2">
+                      {f.derived_files.map((variant) => (
+                        <div key={variant.id} className="rounded-md bg-(--theme-surface-muted) p-2 text-[11px]">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="min-w-0 truncate font-semibold text-(--theme-text)">
+                              {variant.variant} · {variant.extension.toUpperCase()} · {Math.max(1, Math.round(variant.size_bytes / 1024))} KB
+                            </span>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => openPreview(variant)}
+                                className="rounded px-1.5 py-1 text-(--theme-link) hover:bg-(--theme-card-surface)"
+                              >
+                                نمایش
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void copyMediaUrl(variant.url)}
+                                aria-label={`کپی آدرس نسخهٔ ${variant.variant}`}
+                                className="rounded p-1 text-(--theme-text-muted) hover:bg-(--theme-card-surface)"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="mt-1 truncate font-mono text-[10px] text-(--theme-text-muted)" dir="ltr">
+                            {variant.storage_path || variant.folder}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
                 )}
               </div>
 
@@ -261,8 +328,7 @@ export const MediaLibraryPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    navigator.clipboard?.writeText(f.url);
-                    addToast('success', 'مسیر فایل کپی شد.');
+                    void copyMediaUrl(f.url);
                   }}
                   className="rounded-lg p-1.5 text-(--theme-text-muted) hover:bg-(--theme-surface-muted) hover:text-(--theme-text)"
                   title="کپی آدرس"
@@ -378,21 +444,67 @@ export const MediaLibraryPage: React.FC = () => {
       </Modal>
       <Modal
         open={Boolean(previewFile)}
-        onClose={() => setPreviewFile(null)}
+        onClose={() => {
+          setPreviewFile(null);
+          setVideoPreviewFailed(false);
+          setUsingOptimizedVideoPreview(false);
+        }}
         title={previewFile?.name || 'پیش‌نمایش رسانه'}
         size="xl"
       >
         {previewFile && (
           isVideoMediaUrl(previewFile.url) || ['mp4', 'webm'].includes(previewFile.extension.toLowerCase())
-            ? <video
-              src={mediaUrl(previewFile.url)}
-              controls
-              playsInline
-              onError={() => addToast('error', 'فایل اصلی ویدئو در دسترس نیست یا پیوند آن منقضی شده است.')}
-              className="mx-auto max-h-[75vh] max-w-full"
-            />
+            ? videoPreviewFailed
+              ? (
+                <div className="mx-auto max-w-3xl space-y-4">
+                  <div className="mx-auto h-64 max-w-lg overflow-hidden rounded-xl bg-(--theme-surface-muted)">
+                    <MediaThumbnail
+                      mediaId={previewFile.id}
+                      alt={previewFile.alt_text || previewFile.name}
+                      isVideo
+                      originalUrl={previewFile.preview_url || previewFile.url}
+                      thumbnailUrl={previewFile.thumbnail_url}
+                    />
+                  </div>
+                  <div className="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+                    مرورگر این فایل MP4 را به‌دلیل کدک داخلی آن پخش نمی‌کند. تصویر پیش‌نمایش ویدئو نمایش داده شده است.
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAutoOptimizeMediaId(previewFile.id);
+                        setPreviewFile(null);
+                        setVideoPreviewFailed(false);
+                        setUsingOptimizedVideoPreview(false);
+                        setActiveTab('optimizer');
+                      }}
+                      className="ms-2 font-bold underline"
+                    >
+                      ساخت خودکار نسخهٔ سازگار برای پخش
+                    </button>
+                  </div>
+                </div>
+              )
+              : <video
+                key={usingOptimizedVideoPreview ? previewFile.optimized_preview_url : previewFile.preview_url}
+                src={mediaUrl(
+                  usingOptimizedVideoPreview && previewFile.optimized_preview_url
+                    ? previewFile.optimized_preview_url
+                    : previewFile.preview_url || previewFile.url,
+                )}
+                controls
+                playsInline
+                preload="metadata"
+                onError={() => {
+                  if (previewFile.optimized_preview_url && !usingOptimizedVideoPreview) {
+                    setUsingOptimizedVideoPreview(true);
+                  } else {
+                    setVideoPreviewFailed(true);
+                  }
+                }}
+                className="mx-auto max-h-[75vh] max-w-full"
+              />
             : <img
-              src={mediaUrl(previewFile.url)}
+              src={mediaUrl(previewFile.preview_url || previewFile.url)}
               alt={previewFile.alt_text || previewFile.name}
               onError={() => addToast('error', 'فایل اصلی تصویر در فضای ذخیره‌سازی پیدا نشد.')}
               className="mx-auto max-h-[75vh] max-w-full object-contain"

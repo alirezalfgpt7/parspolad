@@ -39,13 +39,18 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
         ->assertJsonPath('data.0.usage_fa', 'در فهرست و فیلتر پروژه‌های سایت استفاده می‌شود.')
         ->assertJsonPath('data.11.related_admin_path', '/admin/login-appearance');
 
-    $this->withToken($token)->getJson('/api/v1/admin/content-schema/articles')
+    $articleSchema = $this->withToken($token)->getJson('/api/v1/admin/content-schema/articles')
         ->assertOk()
         ->assertJsonPath('data.fields.5.name', 'content_fa')
         ->assertJsonPath('data.fields.5.type', 'richtext')
         ->assertJsonPath('data.fields.7.name', 'article_category_id')
-        ->assertJsonPath('data.fields.7.type', 'select')
-        ->assertJsonPath('data.fields.10.type', 'jalali-date');
+        ->assertJsonPath('data.fields.7.type', 'select');
+
+    $publishedAtField = collect($articleSchema->json('data.fields'))
+        ->firstWhere('name', 'published_at');
+
+    expect($publishedAtField)->not->toBeNull();
+    expect($publishedAtField['type'])->toBe('jalali-date');
 
     $this->withToken($token)->getJson('/api/v1/admin/content-schema/banners')
         ->assertOk()

@@ -49,6 +49,7 @@ class PublicController extends Controller
             'appearance' => $data['settings']['appearance'] ?? [],
             'logos' => $data['settings']['logos'] ?? [],
             'pages_config' => $data['settings']['pages_config'] ?? [],
+            'preloader' => $data['settings']['preloader'] ?? [],
             'is_authenticated' => $request->user('sanctum') !== null,
         ])->header('Cache-Control', 'no-store, private, max-age=0');
     }

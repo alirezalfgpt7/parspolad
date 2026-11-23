@@ -142,5 +142,66 @@ export async function transcodeVideoInBrowser(
         loadPromise = null;
       }
     }
+
+  }
+}
+
+export async function createVideoPosterInBrowser(
+  file: File,
+  onStatus: (status: string) => void,
+): Promise<File> {
+  if (typeof Worker === 'undefined' || typeof WebAssembly === 'undefined') {
+    throw new Error('مرورگر فعلی از ساخت پیش‌نمایش ویدئو پشتیبانی نمی‌کند.');
+  }
+
+  const processor = await getFFmpeg(onStatus);
+  const suffix = crypto.randomUUID();
+  const extension = file.name.toLowerCase().endsWith('.webm') ? 'webm' : 'mp4';
+  const inputPath = `poster-source-${suffix}.${extension}`;
+  const posterPath = `poster-${suffix}.jpg`;
+  let inputCreated = false;
+  let posterCreated = false;
+  let completed = false;
+
+  try {
+    onStatus('در حال ساخت تصویر پیش‌نمایش ویدئو...');
+    await processor.writeFile(inputPath, new Uint8Array(await file.arrayBuffer()));
+    inputCreated = true;
+
+    const exitCode = await processor.exec([
+      '-i',
+      inputPath,
+      '-frames:v',
+      '1',
+      '-vf',
+      "scale=w='min(640,iw)':h='min(360,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
+      '-q:v',
+      '4',
+      posterPath,
+    ], 120_000);
+    if (exitCode !== 0) {
+      throw new Error('ساخت تصویر پیش‌نمایش ناموفق بود؛ احتمالاً کدک داخلی MP4/WebM پشتیبانی نمی‌شود.');
+    }
+    posterCreated = true;
+
+    const posterData = await processor.readFile(posterPath);
+    if (typeof posterData === 'string') {
+      throw new Error('خروجی تصویر پیش‌نمایش معتبر نیست.');
+    }
+
+    const poster = createFile(posterData, 'poster.jpg', 'image/jpeg');
+    completed = true;
+    return poster;
+  } finally {
+    if (completed && processor.loaded) {
+      if (posterCreated) await processor.deleteFile(posterPath);
+      if (inputCreated) await processor.deleteFile(inputPath);
+    } else {
+      processor.terminate();
+      if (ffmpeg === processor) {
+        ffmpeg = null;
+        loadPromise = null;
+      }
+    }
   }
 }

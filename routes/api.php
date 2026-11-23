@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\LicenseController;
 use App\Http\Controllers\Api\V1\LiveChatController;
 use App\Http\Controllers\Api\V1\MediaDownloadController;
 use App\Http\Controllers\Api\V1\MediaOptimizationController;
+use App\Http\Controllers\Api\V1\MediaPreviewController;
+use App\Http\Controllers\Api\V1\MediaThumbnailController;
 use App\Http\Controllers\Api\V1\PhotoAlbumController;
 use App\Http\Controllers\Api\V1\ProjectController;
 use App\Http\Controllers\Api\V1\PublicController;
@@ -66,6 +68,8 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
         ->whereNumber('media')
         ->middleware('throttle:120,1');
     Route::get('/media/{media}/download', MediaDownloadController::class)->name('media.download');
+    Route::get('/media/{media}/preview', MediaPreviewController::class)->name('media.preview');
+    Route::get('/media/{media}/thumbnail', MediaThumbnailController::class)->name('media.thumbnail');
     Route::get('/theme', [ThemeController::class, 'show']);
 
     // Authentication

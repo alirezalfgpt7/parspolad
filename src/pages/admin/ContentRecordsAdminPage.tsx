@@ -8,6 +8,7 @@ import {
   Plus,
   Save,
   Trash2,
+  type LucideIcon,
 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -113,12 +114,18 @@ interface ContentRecordsAdminPageProps {
   initialResource?: string;
   lockedResource?: boolean;
   embedded?: boolean;
+  pageTitle?: string;
+  pageDescription?: string;
+  pageIcon?: LucideIcon;
 }
 
 export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = ({
   initialResource,
   lockedResource = false,
   embedded = false,
+  pageTitle = 'مدیریت داده‌های محتوا',
+  pageDescription = 'بخش موردنظر را انتخاب کنید، اطلاعات همان بخش را جست‌وجو و مرتب کنید و فقط در صورت نیاز فرم افزودن یا ویرایش را باز کنید.',
+  pageIcon = Database,
 }) => {
   const { addToast, fetchBootstrap } = useAppStore();
   const [searchParams] = useSearchParams();
@@ -526,14 +533,14 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
   return (
     <div className="mx-auto max-w-[1600px] space-y-5">
       <AdminPageHeader
-        icon={Database}
+        icon={pageIcon}
         eyebrow="Content workspace"
-        title="مدیریت داده‌های محتوا"
-        description="بخش موردنظر را انتخاب کنید، اطلاعات همان بخش را جست‌وجو و مرتب کنید و فقط در صورت نیاز فرم افزودن یا ویرایش را باز کنید."
+        title={pageTitle}
+        description={pageDescription}
         actions={(
-          <div className={`grid w-full gap-3 ${lockedResource ? '' : 'sm:grid-cols-[minmax(0,1fr)_auto]'} lg:w-auto lg:min-w-104`}>
+          <div className="flex w-full items-end gap-3 lg:w-auto lg:min-w-104">
             {lockedResource && selectedResource ? (
-              <div className="flex min-h-11 items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3">
+              <div className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) px-3">
                 <span className="text-sm font-bold text-(--theme-text)">{selectedResource.label_fa}</span>
                 <span className="text-xs text-(--theme-text-muted)" dir="ltr">{selectedResource.label_en}</span>
               </div>
@@ -559,9 +566,10 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                 }}
                 placeholder={loadingResources ? 'در حال دریافت بخش‌ها...' : 'انتخاب بخش'}
                 disabled={loadingResources || availableResources.length === 0}
+                className="flex-1"
               />
             ) : null}
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               {getPublicPath() && resource !== 'banners' && (
                 <Link
                   to={getPublicPath()!}
@@ -587,10 +595,11 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
                 type="button"
                 onClick={openCreate}
                 disabled={!resource || loadingSchema || fields.length === 0}
-                className="inline-flex h-11 min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-(--theme-btn-bg) px-5 text-sm font-bold text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={embedded ? `افزودن ${selectedResource?.label_fa || 'رکورد'}` : 'افزودن رکورد'}
+                title={embedded ? `افزودن ${selectedResource?.label_fa || 'رکورد'}` : 'افزودن رکورد'}
+                className="inline-flex h-11 min-h-11 w-11 items-center justify-center rounded-xl bg-(--theme-btn-bg) p-0 text-(--theme-btn-text) shadow-sm transition hover:bg-(--theme-btn-hover) disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Plus className="h-4 w-4" />
-                {embedded ? `افزودن ${selectedResource?.label_fa || 'رکورد'}` : 'افزودن رکورد'}
+                <Plus className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
           </div>

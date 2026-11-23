@@ -7,9 +7,16 @@ interface MediaThumbnailProps {
   alt: string;
   isVideo: boolean;
   originalUrl?: string;
+  thumbnailUrl?: string | null;
 }
 
-export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({ mediaId, alt, isVideo, originalUrl }) => {
+export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
+  mediaId,
+  alt,
+  isVideo,
+  originalUrl,
+  thumbnailUrl,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   const [source, setSource] = useState<string | null>(null);
@@ -39,26 +46,38 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({ mediaId, alt, is
 
     let active = true;
     let objectUrl: string | null = null;
-    void apiBlob(`/admin/media/${mediaId}/thumbnail`)
-      .then((blob) => {
-        objectUrl = URL.createObjectURL(blob);
-        if (active) setSource(objectUrl);
-        else URL.revokeObjectURL(objectUrl);
-      })
-      .catch(() => {
-        if (active && originalUrl) {
-          setUsingOriginal(true);
-          setSource(mediaUrl(originalUrl));
-        } else if (active) {
-          setFailed(true);
-        }
-      });
+    setFailed(false);
+    setUsingOriginal(false);
+    if (thumbnailUrl) {
+      setSource(mediaUrl(thumbnailUrl));
+    } else if (mediaId) {
+      void apiBlob(`/admin/media/${mediaId}/thumbnail`)
+        .then((blob) => {
+          objectUrl = URL.createObjectURL(blob);
+          if (active) setSource(objectUrl);
+          else URL.revokeObjectURL(objectUrl);
+        })
+        .catch(() => {
+          if (active && originalUrl) {
+            setUsingOriginal(true);
+            setSource(mediaUrl(originalUrl));
+          } else if (active) {
+            setFailed(true);
+          }
+        });
+    } else if (originalUrl) {
+      setUsingOriginal(true);
+      setSource(mediaUrl(originalUrl));
+    } else {
+      setFailed(true);
+      setSource(null);
+    }
 
     return () => {
       active = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [isVideo, mediaId, originalUrl, visible]);
+  }, [mediaId, originalUrl, thumbnailUrl, visible]);
 
   const handlePreviewError = () => {
     if (originalUrl && !usingOriginal) {
@@ -97,7 +116,11 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({ mediaId, alt, is
       ) : (
         <div className="flex flex-col items-center gap-1 text-(--theme-text-muted)" aria-label={failed ? 'پیش‌نمایش موجود نیست' : 'در حال بارگیری بندانگشتی'}>
           {isVideo ? <Film className="h-8 w-8" /> : <ImageIcon className="h-8 w-8" />}
-          {failed && <span className="text-[10px]">پیش‌نمایش موجود نیست</span>}
+          {failed && (
+            <span className="px-1 text-center text-[10px]">
+              {isVideo ? 'کدک ویدئو قابل پیش‌نمایش نیست' : 'پیش‌نمایش موجود نیست'}
+            </span>
+          )}
         </div>
       )}
     </div>

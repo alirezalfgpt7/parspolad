@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Camera, FileCheck2, FileText, Film, Image as ImageIcon, Upload } from 'lucide-react';
-import { apiRequest, fileToBase64 } from '../../services/api.ts';
+import { apiMultipartRequest, apiRequest, fileToBase64 } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
@@ -28,7 +28,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   onUploaded,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadLock = useRef(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('در حال آپلود و اعتبارسنجی فایل...');
   const [uploadedName, setUploadedName] = useState<string | null>(null);
   const [localPreview, setLocalPreview] = useState<string>('');
   const addToast = useAppStore((s) => s.addToast);
@@ -36,7 +38,8 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   const previewUrl = localPreview || currentUrl || '';
 
   const handleFile = async (file?: File) => {
-    if (!file) return;
+    if (!file || uploadLock.current) return;
+    uploadLock.current = true;
     if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
       try {
         setLocalPreview(URL.createObjectURL(file));
@@ -46,6 +49,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     }
     setUploading(true);
     try {
+      setUploadStatus('در حال آپلود و اعتبارسنجی فایل...');
       const b64 = await fileToBase64(file);
       const res = await apiRequest<{ data: MediaFile }>('/admin/media/upload', {
         method: 'POST',
@@ -55,12 +59,31 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           folder,
         }),
       });
+      let posterWarning: string | null = null;
+      if (res.data.mime_type === 'video/mp4' || res.data.mime_type === 'video/webm') {
+        try {
+          const { createVideoPosterInBrowser } = await import('../../services/browserVideoOptimizer.ts');
+          const poster = await createVideoPosterInBrowser(file, setUploadStatus);
+          const form = new FormData();
+          form.append('file', poster);
+          form.append('variant', 'poster');
+          await apiMultipartRequest(`/admin/media/${res.data.id}/optimizer-variant`, form);
+        } catch (error) {
+          posterWarning = error instanceof Error
+            ? error.message
+            : 'ساخت تصویر پیش‌نمایش ویدئو در این مرورگر ناموفق بود.';
+        }
+      }
       setUploadedName(file.name);
       addToast('success', `فایل «${file.name}» با موفقیت آپلود شد.`);
+      if (posterWarning) {
+        addToast('info', `ویدئو ذخیره شد اما پیش‌نمایش ساخته نشد: ${posterWarning}`);
+      }
       onUploaded(res.data.url, res.data);
     } catch (err) {
       addToast('error', err instanceof Error ? err.message : 'خطا در آپلود فایل');
     } finally {
+      uploadLock.current = false;
       setUploading(false);
     }
   };
@@ -73,7 +96,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           type="file"
           accept={accept}
           className="hidden"
-          onChange={(event) => handleFile(event.target.files?.[0])}
+          disabled={uploading}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.currentTarget.value = '';
+            void handleFile(file);
+          }}
         />
         <button
           type="button"
@@ -130,9 +158,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          handleFile(e.dataTransfer.files[0]);
+          if (!uploadLock.current) void handleFile(e.dataTransfer.files[0]);
         }}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => {
+          if (!uploading) inputRef.current?.click();
+        }}
+        aria-busy={uploading}
         className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-(--theme-border-strong) bg-(--theme-surface-muted) p-4 text-center transition-colors hover:border-(--theme-primary)"
       >
         <input
@@ -140,7 +171,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           type="file"
           accept={accept}
           className="hidden"
-          onChange={(e) => handleFile(e.target.files?.[0])}
+          disabled={uploading}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.currentTarget.value = '';
+            void handleFile(file);
+          }}
         />
         {uploadedName ? (
           <FileCheck2 className="h-5 w-5 text-emerald-500" />
@@ -148,7 +184,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           <Upload className="h-5 w-5 text-(--theme-text-muted)" />
         )}
         <p className="text-xs font-medium text-(--theme-text)">
-          {uploading ? <InlineLoader label="در حال آپلود و اعتبارسنجی فایل..." /> : uploadedName || label}
+          {uploading ? <InlineLoader label={uploadStatus} /> : uploadedName || label}
         </p>
       </div>
     </div>

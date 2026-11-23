@@ -425,6 +425,7 @@ export interface MediaFile {
   id: number;
   name: string;
   url: string;
+  storage_path?: string | null;
   mime_type: string;
   extension: string;
   size_bytes: number;
@@ -433,6 +434,10 @@ export interface MediaFile {
   source_media_id?: number | null;
   source_available?: boolean;
   variant?: string | null;
+  derived_files?: MediaFile[];
+  preview_url?: string | null;
+  thumbnail_url?: string | null;
+  optimized_preview_url?: string | null;
   alt_text?: string | null;
   description?: string | null;
   created_at: string;
@@ -577,6 +582,38 @@ export interface BrandLogosSettings {
   seo_share: string;
 }
 
+export interface PreloaderModeSettings {
+  enabled: boolean;
+  display_mode: 'full' | 'background_only';
+  background_color: string;
+  background_image: string;
+  background_overlay_opacity: number;
+  show_background_media: boolean;
+  remove_logo_background: boolean;
+  transparent_background?: boolean;
+  text_fa: string;
+  text_en: string;
+  text_color: string;
+  logo_url: string;
+  show_logo: boolean;
+  show_logo_frame: boolean;
+  show_spinner: boolean;
+  show_text: boolean;
+  show_dots: boolean;
+  show_particles: boolean;
+  logo_size_mobile: number;
+  logo_size_tablet: number;
+  logo_size_desktop: number;
+  text_size_mobile: number;
+  text_size_tablet: number;
+  text_size_desktop: number;
+}
+
+export interface PreloaderSettings {
+  initial: PreloaderModeSettings;
+  internal: PreloaderModeSettings;
+}
+
 export type LogoPlacement = keyof BrandLogosSettings;
 
 export interface AppearanceSettings {
@@ -713,6 +750,7 @@ export interface SiteSettings {
   logos?: Partial<BrandLogosSettings>;
   appearance?: Partial<AppearanceSettings>;
   pages_config?: PagesConfigSettings;
+  preloader?: Partial<PreloaderSettings>;
   logs?: {
     activity_logs_retention_months: 1 | 3 | 6 | 12;
   };

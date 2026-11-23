@@ -4,6 +4,8 @@ import type {
   FontFamilyKey,
   LoginPageSettings,
   LandingHeaderSettings,
+  PreloaderModeSettings,
+  PreloaderSettings,
   PublicPageTitleSettings,
   PagesConfigSettings,
   ThemePalette,
@@ -157,7 +159,7 @@ export const DEFAULT_LOGIN_SETTINGS: LoginPageSettings = {
   card_bg_color: 'rgba(15, 23, 42, 0.72)',
   backdrop_color: '#020617',
   accent_color: '#B91C1C',
-  text_color: '#F8FAFC',
+  text_color: '',
   input_bg_color: 'rgba(255, 255, 255, 0.06)',
   enable_3d_flip: true,
   show_decorative_cube: true,
@@ -190,6 +192,110 @@ export const DEFAULT_APPEARANCE_SETTINGS: AppearanceSettings = {
   font_footer: 'vazirmatn',
   base_font_size: 16,
 };
+
+const DEFAULT_PRELOADER_MODE: PreloaderModeSettings = {
+  enabled: true,
+  display_mode: 'full',
+  background_color: '#020617',
+  background_image: '',
+  background_overlay_opacity: 25,
+  show_background_media: true,
+  remove_logo_background: false,
+  text_fa: '',
+  text_en: '',
+  text_color: '',
+  logo_url: '',
+  show_logo: true,
+  show_logo_frame: true,
+  show_spinner: true,
+  show_text: true,
+  show_dots: true,
+  show_particles: true,
+  logo_size_mobile: 56,
+  logo_size_tablet: 64,
+  logo_size_desktop: 72,
+  text_size_mobile: 13,
+  text_size_tablet: 14,
+  text_size_desktop: 15,
+};
+
+export const DEFAULT_PRELOADER_SETTINGS: PreloaderSettings = {
+  initial: { ...DEFAULT_PRELOADER_MODE },
+  internal: {
+    ...DEFAULT_PRELOADER_MODE,
+    background_color: 'transparent',
+    show_particles: false,
+    logo_size_mobile: 48,
+    logo_size_tablet: 52,
+    logo_size_desktop: 56,
+    text_size_mobile: 12,
+    text_size_tablet: 13,
+    text_size_desktop: 14,
+  },
+};
+
+export function normalizePreloaderSettings(value?: {
+  initial?: Partial<PreloaderModeSettings> | null;
+  internal?: Partial<PreloaderModeSettings> | null;
+} | null): PreloaderSettings {
+  const normalizeMode = (
+    mode?: Partial<PreloaderModeSettings> | null,
+    defaults = DEFAULT_PRELOADER_MODE,
+  ): PreloaderModeSettings => {
+    const source = mode && typeof mode === 'object' && !Array.isArray(mode) ? mode : {};
+    const { transparent_background: legacyTransparentBackground, ...sourceSettings } = source;
+    const size = (candidate: unknown, fallback: number) => (
+      typeof candidate === 'number' && Number.isFinite(candidate)
+        ? Math.min(128, Math.max(32, candidate))
+        : fallback
+    );
+
+    return {
+      ...defaults,
+      ...sourceSettings,
+      enabled: typeof source.enabled === 'boolean' ? source.enabled : defaults.enabled,
+      display_mode: source.display_mode === 'background_only' ? 'background_only' : 'full',
+      background_color: typeof source.background_color === 'string' ? source.background_color : defaults.background_color,
+      background_image: typeof source.background_image === 'string' ? source.background_image : defaults.background_image,
+      background_overlay_opacity: typeof source.background_overlay_opacity === 'number' && Number.isFinite(source.background_overlay_opacity)
+        ? Math.min(100, Math.max(0, source.background_overlay_opacity))
+        : defaults.background_overlay_opacity,
+      show_background_media: typeof source.show_background_media === 'boolean' ? source.show_background_media : defaults.show_background_media,
+      remove_logo_background: typeof source.remove_logo_background === 'boolean'
+        ? source.remove_logo_background
+        : typeof legacyTransparentBackground === 'boolean'
+          ? legacyTransparentBackground
+          : defaults.remove_logo_background,
+      text_fa: typeof source.text_fa === 'string' ? source.text_fa : defaults.text_fa,
+      text_en: typeof source.text_en === 'string' ? source.text_en : defaults.text_en,
+      text_color: typeof source.text_color === 'string' ? source.text_color : defaults.text_color,
+      logo_url: typeof source.logo_url === 'string' ? source.logo_url : defaults.logo_url,
+      show_logo: typeof source.show_logo === 'boolean' ? source.show_logo : defaults.show_logo,
+      show_logo_frame: typeof source.show_logo_frame === 'boolean' ? source.show_logo_frame : defaults.show_logo_frame,
+      show_spinner: typeof source.show_spinner === 'boolean' ? source.show_spinner : defaults.show_spinner,
+      show_text: typeof source.show_text === 'boolean' ? source.show_text : defaults.show_text,
+      show_dots: typeof source.show_dots === 'boolean' ? source.show_dots : defaults.show_dots,
+      show_particles: typeof source.show_particles === 'boolean' ? source.show_particles : defaults.show_particles,
+      logo_size_mobile: size(source.logo_size_mobile, defaults.logo_size_mobile),
+      logo_size_tablet: size(source.logo_size_tablet, defaults.logo_size_tablet),
+      logo_size_desktop: size(source.logo_size_desktop, defaults.logo_size_desktop),
+      text_size_mobile: typeof source.text_size_mobile === 'number' && Number.isFinite(source.text_size_mobile)
+        ? Math.min(28, Math.max(10, source.text_size_mobile))
+        : defaults.text_size_mobile,
+      text_size_tablet: typeof source.text_size_tablet === 'number' && Number.isFinite(source.text_size_tablet)
+        ? Math.min(28, Math.max(10, source.text_size_tablet))
+        : defaults.text_size_tablet,
+      text_size_desktop: typeof source.text_size_desktop === 'number' && Number.isFinite(source.text_size_desktop)
+        ? Math.min(28, Math.max(10, source.text_size_desktop))
+        : defaults.text_size_desktop,
+    };
+  };
+
+  return {
+    initial: normalizeMode(value?.initial),
+    internal: normalizeMode(value?.internal, DEFAULT_PRELOADER_SETTINGS.internal),
+  };
+}
 
 export const DEFAULT_PAGES_CONFIG: PagesConfigSettings = {
   error_404: {
@@ -266,10 +372,12 @@ export const BUILTIN_BRAND_MEDIA_PRESETS = [
 
 export function isVideoMediaUrl(url?: string | null): boolean {
   if (!url) return false;
-  return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url.trim());
+  const normalized = url.trim();
+  return normalized.endsWith('#video') || /\.(mp4|webm|ogg|mov)([?#].*)?$/i.test(normalized);
 }
 
 export function isAnimatedMediaUrl(url?: string | null): boolean {
   if (!url) return false;
-  return /\.(mp4|webm|ogg|mov|gif)(\?.*)?$/i.test(url.trim());
+  const normalized = url.trim();
+  return isVideoMediaUrl(normalized) || /\.gif([?#].*)?$/i.test(normalized);
 }

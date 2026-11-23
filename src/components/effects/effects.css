@@ -6,6 +6,15 @@
   animation: effect-fade-up 240ms ease both;
 }
 
+.effect-preloader-label {
+  font-size: var(--preloader-active-text-size, 13px);
+}
+
+.effect-loader-scene {
+  width: 112px;
+  height: 112px;
+}
+
 .effect-scroll-top {
   animation: effect-fade-up 200ms ease both;
 }
@@ -1179,10 +1188,19 @@
   animation: effect-preloader-pulse 2.6s ease-in-out infinite;
 }
 
+.effect-preloader-logo-frame--plain {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+
 .effect-preloader-logo {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .theme-style-option {

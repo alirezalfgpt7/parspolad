@@ -73,4 +73,52 @@ describe('MediaOptimizerTab', () => {
       });
     });
   });
+
+  it('starts optimization for a video requested from the preview dialog', async () => {
+    mocks.apiRequest.mockImplementation((path: string) => {
+      if (path === '/admin/media?optimizable=1&page=1&per_page=12') {
+        return Promise.resolve({
+          data: [{
+            id: 8,
+            name: 'unsupported-codec.mp4',
+            url: '/storage/unsupported-codec.mp4',
+            mime_type: 'video/mp4',
+            extension: 'mp4',
+            size_bytes: 10 * 1024 * 1024,
+            folder: 'uploads',
+            requires_auth: false,
+            source_available: true,
+            created_at: '2026-01-01T00:00:00Z',
+          }],
+          meta: { last_page: 1 },
+        });
+      }
+      if (path === '/admin/media/optimizer/capabilities') {
+        return Promise.resolve({ data: { images: { available: true, format: 'webp' }, videos: { available: true, format: 'mp4' } } });
+      }
+      if (path === '/admin/media/8/optimization-check') {
+        return Promise.resolve({ data: { requires_confirmation: false, reason: null } });
+      }
+      if (path === '/admin/media/8/optimize') {
+        return Promise.resolve({ data: { source: {}, variants: [] } });
+      }
+      throw new Error(`Unexpected API request: ${path}`);
+    });
+    const onAutoOptimizeStarted = vi.fn();
+
+    render(
+      <MediaOptimizerTab
+        autoOptimizeMediaId={8}
+        onAutoOptimizeStarted={onAutoOptimizeStarted}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(mocks.apiRequest).toHaveBeenCalledWith('/admin/media/8/optimize', {
+        method: 'POST',
+        body: JSON.stringify({ force: false }),
+      });
+    });
+    expect(onAutoOptimizeStarted).toHaveBeenCalledTimes(1);
+  });
 });

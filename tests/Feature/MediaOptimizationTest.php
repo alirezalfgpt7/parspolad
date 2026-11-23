@@ -56,6 +56,10 @@ it('creates reusable WebP variants without changing the source image', function 
 
     $thumbnail = MediaFile::query()->where('source_media_id', $media->id)->where('variant', 'thumbnail')->firstOrFail();
     $thumbnailDimensions = getimagesizefromstring(Storage::disk('public')->get($thumbnail->storage_path));
+    $this->get(route('media.thumbnail', ['media' => $media->id], false))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/webp')
+        ->assertHeader('Cache-Control', 'max-age=3600, public');
     expect($thumbnail->mime_type)->toBe('image/webp')
         ->and($thumbnailDimensions[0])->toBeLessThanOrEqual(320);
 });
@@ -137,6 +141,33 @@ it('stores a browser-generated poster as a reusable variant of the source video'
     expect($posterMedia->source_media_id)->toBe($source->id)
         ->and($posterMedia->requires_auth)->toBeFalse();
     Storage::disk('public')->assertExists($posterMedia->storage_path);
+});
+
+it('explains when a video poster cannot be generated without FFmpeg or a browser-generated poster', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    Storage::fake('public');
+    config(['media.ffmpeg_binary' => 'ppa-test-missing-ffmpeg-binary']);
+
+    $contents = "\x00\x00\x00\x18ftypisom";
+    Storage::disk('public')->put('uploads/no-poster.mp4', $contents);
+    $media = MediaFile::query()->create([
+        'name' => 'no-poster.mp4',
+        'url' => '/storage/uploads/no-poster.mp4',
+        'storage_path' => 'uploads/no-poster.mp4',
+        'mime_type' => 'video/mp4',
+        'extension' => 'mp4',
+        'size_bytes' => strlen($contents),
+        'folder' => 'uploads',
+    ]);
+
+    $this->actingAs($admin, 'sanctum')
+        ->getJson("/api/v1/admin/media/{$media->id}/thumbnail")
+        ->assertStatus(503)
+        ->assertJsonPath(
+            'message',
+            'برای ساخت پیش‌نمایش این ویدئو، فایل اصلی در مرورگر پشتیبانی نشد و FFmpeg نیز روی سرور در دسترس نیست.',
+        );
 });
 
 it('serves a video to the authenticated media manager for local browser conversion', function (): void {
@@ -346,4 +377,87 @@ it('filters and sorts the paginated media library by category and file size', fu
     expect($response->json('meta.total'))->toBeGreaterThanOrEqual(2)
         ->and($response->json('data'))->toHaveCount(1)
         ->and($smallVideo->id)->not->toBe($largeVideo->id);
+});
+
+it('lists only original media and links optimized video previews to their source variants', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    $source = MediaFile::query()->create([
+        'name' => 'source.mp4',
+        'url' => '/storage/uploads/source.mp4',
+        'storage_path' => 'uploads/source.mp4',
+        'mime_type' => 'video/mp4',
+        'extension' => 'mp4',
+        'size_bytes' => 4096,
+        'folder' => 'uploads',
+    ]);
+    $poster = MediaFile::query()->create([
+        'name' => 'source - poster',
+        'url' => '/storage/optimized/1/poster.jpg',
+        'storage_path' => 'optimized/1/poster.jpg',
+        'source_media_id' => $source->id,
+        'variant' => 'poster',
+        'mime_type' => 'image/jpeg',
+        'extension' => 'jpg',
+        'size_bytes' => 512,
+        'folder' => 'optimized/1',
+    ]);
+    $optimizedVideo = MediaFile::query()->create([
+        'name' => 'source - video_720',
+        'url' => '/storage/optimized/1/video.mp4',
+        'storage_path' => 'optimized/1/video.mp4',
+        'source_media_id' => $source->id,
+        'variant' => 'video_720',
+        'mime_type' => 'video/mp4',
+        'extension' => 'mp4',
+        'size_bytes' => 2048,
+        'folder' => 'optimized/1',
+    ]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/media?per_page=100')
+        ->assertOk();
+    $listedMedia = collect($response->json('data'));
+    $listedSource = $listedMedia->firstWhere('id', $source->id);
+
+    expect($listedMedia->pluck('id'))->toContain($source->id)
+        ->and($listedMedia->pluck('id'))->not->toContain($poster->id)
+        ->and($listedMedia->pluck('id'))->not->toContain($optimizedVideo->id)
+        ->and($listedSource['preview_url'])->toBe('/api/v1/media/'.$source->id.'/preview')
+        ->and($listedSource['thumbnail_url'])->toBe('/api/v1/media/'.$source->id.'/thumbnail')
+        ->and(collect($listedSource['derived_files'])->pluck('id'))
+        ->toContain($poster->id)
+        ->toContain($optimizedVideo->id)
+        ->and(collect($listedSource['derived_files'])->firstWhere('id', $optimizedVideo->id)['preview_url'])
+        ->toBe('/api/v1/media/'.$optimizedVideo->id.'/preview')
+        ->and($listedSource['optimized_preview_url'])->toBe('/api/v1/media/'.$optimizedVideo->id.'/preview');
+});
+
+it('provides a dedicated GIF filter without exposing generated variants as files', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    $gif = MediaFile::query()->create([
+        'name' => 'animated.gif',
+        'url' => '/storage/uploads/animated.gif',
+        'mime_type' => 'image/gif',
+        'extension' => 'gif',
+        'size_bytes' => 1024,
+        'folder' => 'uploads',
+    ]);
+    $png = MediaFile::query()->create([
+        'name' => 'still.png',
+        'url' => '/storage/uploads/still.png',
+        'mime_type' => 'image/png',
+        'extension' => 'png',
+        'size_bytes' => 1024,
+        'folder' => 'uploads',
+    ]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/api/v1/admin/media?type=gifs&per_page=100')
+        ->assertOk();
+
+    expect(collect($response->json('data'))->pluck('id'))
+        ->toContain($gif->id)
+        ->not->toContain($png->id);
 });

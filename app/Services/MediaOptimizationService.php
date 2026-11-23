@@ -123,15 +123,15 @@ class MediaOptimizationService
 
         if (in_array($media->mime_type, ['video/mp4', 'video/webm'], true)) {
             $poster = $media->variants()->where('variant', 'poster')->first();
-            abort_unless(
-                $poster !== null
-                    && filled($poster->storage_path)
-                    && Storage::disk($media->requires_auth ? 'local' : 'public')->exists($poster->storage_path),
-                404,
-                'تصویر بندانگشتی ویدئو هنوز ساخته نشده است.',
-            );
+            if (
+                $poster === null
+                || ! filled($poster->storage_path)
+                || ! Storage::disk($media->requires_auth ? 'local' : 'public')->exists($poster->storage_path)
+            ) {
+                $poster = $this->generateVideoPoster($media);
+            }
 
-            $contents = Storage::disk($media->requires_auth ? 'local' : 'public')->get($poster->storage_path);
+            $contents = Storage::disk($poster->requires_auth ? 'local' : 'public')->get($poster->storage_path);
             abort_unless(is_string($contents), 500, 'خواندن تصویر بندانگشتی ویدئو ناموفق بود.');
 
             return $contents;
@@ -327,6 +327,75 @@ class MediaOptimizationService
             }
             if (! rmdir($workspace)) {
                 throw new \RuntimeException('پاک‌سازی فضای موقت پردازش ویدئو ناموفق بود.');
+            }
+        }
+    }
+
+    private function generateVideoPoster(MediaFile $media): MediaFile
+    {
+        $binary = $this->ffmpegPath();
+        abort_if(
+            $binary === null,
+            503,
+            'برای ساخت پیش‌نمایش این ویدئو، فایل اصلی در مرورگر پشتیبانی نشد و FFmpeg نیز روی سرور در دسترس نیست.',
+        );
+
+        $source = $this->readSource($media);
+        $workspace = sys_get_temp_dir().DIRECTORY_SEPARATOR.'ppa-poster-'.Str::uuid();
+        abort_unless(mkdir($workspace, 0700), 500, 'ساخت فضای موقت پیش‌نمایش ویدئو ناموفق بود.');
+
+        try {
+            $extension = $media->mime_type === 'video/webm' ? 'webm' : 'mp4';
+            $input = $workspace.DIRECTORY_SEPARATOR.'source.'.$extension;
+            $poster = $workspace.DIRECTORY_SEPARATOR.'poster.jpg';
+            abort_unless(file_put_contents($input, $source) !== false, 500, 'خواندن ویدئو برای ساخت پیش‌نمایش ناموفق بود.');
+
+            $process = new Process([
+                $binary,
+                '-nostdin',
+                '-hide_banner',
+                '-loglevel',
+                'error',
+                '-y',
+                '-i',
+                $input,
+                '-frames:v',
+                '1',
+                '-vf',
+                "scale=w='min(640,iw)':h='min(360,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
+                '-q:v',
+                '4',
+                $poster,
+            ]);
+            $process->setTimeout(120);
+            $process->run();
+            if (! $process->isSuccessful() || ! is_file($poster)) {
+                Log::notice('Video poster generation failed.', [
+                    'media_id' => $media->id,
+                    'exit_code' => $process->getExitCode(),
+                    'error' => Str::limit($process->getErrorOutput(), 1000),
+                ]);
+                abort(422, 'ساخت پیش‌نمایش ناموفق بود؛ کدک داخلی ویدئو را بررسی کنید.');
+            }
+
+            $contents = file_get_contents($poster);
+            abort_unless(is_string($contents), 500, 'خواندن تصویر پیش‌نمایش ویدئو ناموفق بود.');
+
+            return $this->persistVariants($media, [
+                'poster' => [
+                    'contents' => $contents,
+                    'extension' => 'jpg',
+                    'mime_type' => 'image/jpeg',
+                ],
+            ])[0];
+        } finally {
+            foreach (glob($workspace.DIRECTORY_SEPARATOR.'*') ?: [] as $path) {
+                if (is_file($path) && ! unlink($path)) {
+                    throw new \RuntimeException('پاک‌سازی فایل موقت پیش‌نمایش ویدئو ناموفق بود.');
+                }
+            }
+            if (! rmdir($workspace)) {
+                throw new \RuntimeException('پاک‌سازی فضای موقت پیش‌نمایش ویدئو ناموفق بود.');
             }
         }
     }

@@ -46,4 +46,10 @@ describe('AdminSidebar', () => {
     renderSidebar();
     expect(screen.getByRole('button', { name: new RegExp(groupLabel) }).getAttribute('aria-expanded')).toBe('false');
   });
+
+  it('exposes dedicated products and articles management routes', () => {
+    renderSidebar();
+    expect(screen.getByRole('link', { name: /مدیریت محصولات/ }).getAttribute('href')).toBe('/admin/products');
+    expect(screen.getByRole('link', { name: /اخبار و مقالات/ }).getAttribute('href')).toBe('/admin/articles');
+  });
 });

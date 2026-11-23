@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowUpRight, FileText, LayoutGrid, Newspaper, Package, PanelTop, Plus, Save, Sparkles, Wrench, type LucideIcon } from 'lucide-react';
+import { ArrowUpRight, FileText, LayoutGrid, ListFilter, PanelTop, Plus, Save, Sparkles, Wrench, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
@@ -11,15 +11,14 @@ import { AdminPageHeader } from '../../components/admin/AdminPageHeader.tsx';
 import { HomepageSectionsSettingsEditor } from '../../components/admin/HomepageSectionsSettingsEditor.tsx';
 import { normalizeHomepageSectionsSettings } from '../../utils/homepageSections.ts';
 
-type Tab = 'pages' | 'services' | 'products' | 'articles' | 'banners' | 'kpis';
+type Tab = 'pages' | 'services' | 'banners' | 'kpis' | 'sections';
 
 const tabs: Array<{ key: Tab; label: string; description: string; icon: LucideIcon }> = [
   { key: 'pages', label: 'صفحات داینامیک', description: 'عنوان و محتوای معرفی صفحات عمومی', icon: FileText },
   { key: 'services', label: 'خدمات مهندسی', description: 'کارت‌های خدمات صفحهٔ اصلی و خدمات', icon: Wrench },
-  { key: 'products', label: 'محصولات', description: 'کاتالوگ و فهرست محصولات سایت', icon: Package },
-  { key: 'articles', label: 'اخبار و مقالات', description: 'مقالهٔ کامل، انتشار و تصویر کاور', icon: Newspaper },
   { key: 'banners', label: 'بنرها و CTA', description: 'انتخاب محل نمایش بنرهای سایت', icon: PanelTop },
   { key: 'kpis', label: 'شاخص‌های آماری', description: 'مقدار، آیکون و رنگ هر شاخص', icon: Sparkles },
+  { key: 'sections', label: 'منبع و تعداد نمایش', description: 'منابع و چیدمان بخش‌های صفحهٔ خانه', icon: ListFilter },
 ];
 
 const publicPagePaths: Record<string, string> = {
@@ -43,13 +42,14 @@ export const ContentCmsAdminPage: React.FC = () => {
   const [tab, setTab] = useState<Tab>('pages');
   const [pages, setPages] = useState<PageContent[]>([]);
   const [editPage, setEditPage] = useState<PageContent | null>(null);
+  const [homeSpotlightPage, setHomeSpotlightPage] = useState<PageContent | null>(null);
+  const [homeSections, setHomeSections] = useState(() => normalizeHomepageSectionsSettings(null));
   const [savingPage, setSavingPage] = useState(false);
   const isHomeSpotlight = editPage?.slug === 'home-spotlight';
   const getPageMetadataText = (key: string, fallback = ''): string => {
     const value = editPage?.metadata?.[key];
     return typeof value === 'string' ? value : fallback;
   };
-  const homepageSections = normalizeHomepageSectionsSettings(editPage?.metadata?.home_sections);
   const updatePageMetadataValue = (key: string, value: unknown) => {
     setEditPage((current) =>
       current
@@ -67,7 +67,12 @@ export const ContentCmsAdminPage: React.FC = () => {
   const load = async () => {
     const pg = await apiRequest<{ data: PageContent[] }>('/admin/pages?per_page=100');
     setPages(pg.data);
-    if (!editPage && pg.data[0]) setEditPage(pg.data[0]);
+    setEditPage((current) => current
+      ? pg.data.find((page) => page.id === current.id) || current
+      : pg.data[0] || null);
+    const homePage = pg.data.find((page) => page.slug === 'home-spotlight') || null;
+    setHomeSpotlightPage(homePage);
+    setHomeSections(normalizeHomepageSectionsSettings(homePage?.metadata?.home_sections));
   };
 
   useEffect(() => {
@@ -82,10 +87,10 @@ export const ContentCmsAdminPage: React.FC = () => {
         icon={LayoutGrid}
         eyebrow="Website content"
         title="مدیریت محتوای سایت"
-        description="از اینجا محتوای صفحات و بخش‌های اصلی سایت را مدیریت کنید. خدمات، محصولات، خبرها، بنرها و شاخص‌ها اکنون فهرست کامل، جست‌وجو، افزودن، ویرایش و حذف دارند."
+        description="از اینجا صفحات، خدمات و بخش‌های اصلی سایت را مدیریت کنید. محصولات و اخبار در صفحه‌های مستقل خودشان قرار دارند."
       />
 
-      <nav aria-label="بخش‌های محتوای سایت" className="grid grid-cols-2 gap-2 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 shadow-(--theme-card-shadow) md:grid-cols-3 xl:grid-cols-6">
+      <nav aria-label="بخش‌های محتوای سایت" className="grid grid-cols-2 gap-2 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-2.5 shadow-(--theme-card-shadow) md:grid-cols-3 xl:grid-cols-5">
         {tabs.map((t) => {
           const Icon = t.icon;
           const selected = tab === t.key;
@@ -220,12 +225,6 @@ export const ContentCmsAdminPage: React.FC = () => {
                   </Link>
                 </div>
               )}
-              {isHomeSpotlight && (
-                <HomepageSectionsSettingsEditor
-                  settings={homepageSections}
-                  onChange={(value) => updatePageMetadataValue('home_sections', value)}
-                />
-              )}
               <MediaUrlField
                 label="تصویر کاور / پیش‌نمایش صفحه (Meta Image)"
                 value={editPage.meta_image || ''}
@@ -346,17 +345,52 @@ export const ContentCmsAdminPage: React.FC = () => {
         </div>
       )}
 
-      {tab !== 'pages' && (
-        <>
-          {tab === 'articles' && (
-            <p className="rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-3 text-xs leading-6 text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
-              پیش از افزودن مقاله، دسته‌های فارسی و انگلیسی را تعریف کنید.
-              {' '}
-              <Link to="/admin/content-records?resource=article-categories" className="font-bold underline underline-offset-2">
-                مدیریت دسته‌بندی اخبار و مقالات
-              </Link>
+      {tab === 'sections' && (
+        <section className="space-y-4">
+          {!homeSpotlightPage ? (
+            <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-(--theme-text)">
+              صفحهٔ «تولید بومی تجهیزات حیاتی نفت و گاز» پیدا نشد؛ ابتدا رکورد صفحهٔ خانه را در بخش صفحات ایجاد یا بازیابی کنید.
             </p>
+          ) : (
+            <>
+              <HomepageSectionsSettingsEditor settings={homeSections} onChange={setHomeSections} />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  disabled={savingPage}
+                  onClick={async () => {
+                    setSavingPage(true);
+                    try {
+                      const updatedPage: PageContent = {
+                        ...homeSpotlightPage,
+                        metadata: { ...(homeSpotlightPage.metadata || {}), home_sections: homeSections },
+                      };
+                      await apiRequest(`/admin/pages/${homeSpotlightPage.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(updatedPage),
+                      });
+                      setHomeSpotlightPage(updatedPage);
+                      addToast('success', 'منبع و تعداد نمایش بخش‌های صفحهٔ خانه ذخیره شد.');
+                      await load();
+                    } catch (error) {
+                      addToast('error', error instanceof Error ? error.message : 'ذخیرهٔ تنظیمات بخش‌های صفحهٔ خانه ناموفق بود.');
+                    } finally {
+                      setSavingPage(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 rounded-xl bg-(--theme-btn-bg) px-4 py-2.5 text-xs font-bold text-(--theme-btn-text) disabled:opacity-60"
+                >
+                  <Save className="h-4 w-4" />
+                  {savingPage ? 'در حال ذخیره...' : 'ذخیرهٔ تنظیمات بخش‌ها'}
+                </button>
+              </div>
+            </>
           )}
+        </section>
+      )}
+
+      {tab !== 'pages' && tab !== 'sections' && (
+        <>
           <ContentRecordsAdminPage
             key={tab}
             initialResource={tab}

@@ -313,16 +313,19 @@ class AdminResourceController extends Controller
         $this->ensurePermission($request, 'media.manage');
 
         $filters = $request->validate([
-            'type' => ['sometimes', Rule::in(['all', 'images', 'videos', 'documents', 'other'])],
+            'type' => ['sometimes', Rule::in(['all', 'images', 'gifs', 'videos', 'documents', 'other'])],
             'sort' => ['sometimes', Rule::in(['newest', 'largest'])],
             'source_only' => ['sometimes', 'boolean'],
             'public_only' => ['sometimes', 'boolean'],
         ]);
         $perPage = min(max($request->integer('per_page', 12), 1), 100);
 
-        $query = MediaFile::query();
+        $query = MediaFile::query()
+            ->whereNull('source_media_id')
+            ->with('variants');
         match ($filters['type'] ?? 'all') {
             'images' => $query->where('mime_type', 'like', 'image/%'),
+            'gifs' => $query->where('mime_type', 'image/gif'),
             'videos' => $query->where('mime_type', 'like', 'video/%'),
             'documents' => $query->whereIn('extension', ['pdf', 'docx', 'xlsx', 'zip', 'dwg']),
             'other' => $query
@@ -341,9 +344,6 @@ class AdminResourceController extends Controller
                     'video/mp4',
                     'video/webm',
                 ]);
-        }
-        if ($request->boolean('source_only')) {
-            $query->whereNull('source_media_id');
         }
         if ($request->boolean('public_only')) {
             $query->where('requires_auth', false);
@@ -367,6 +367,22 @@ class AdminResourceController extends Controller
                 );
             }
             $file->url = $downloadUrls->resolve($file->url, (bool) $file->requires_auth, $request);
+            $file->setAttribute('preview_url', $downloadUrls->preview($file, $request));
+            $file->setAttribute('thumbnail_url', $downloadUrls->thumbnail($file, $request));
+            $derivedFiles = $file->variants->map(function (MediaFile $variant) use ($downloadUrls, $request): MediaFile {
+                $variant->url = $downloadUrls->resolve($variant->url, (bool) $variant->requires_auth, $request);
+                $variant->setAttribute('preview_url', $downloadUrls->preview($variant, $request));
+                $variant->setAttribute('thumbnail_url', $downloadUrls->thumbnail($variant, $request));
+
+                return $variant;
+            })->values();
+            $file->setAttribute('derived_files', $derivedFiles);
+            $optimizedPreview = $derivedFiles->firstWhere('variant', 'video_720');
+            $file->setAttribute(
+                'optimized_preview_url',
+                $optimizedPreview?->preview_url,
+            );
+            $file->unsetRelation('variants');
         });
 
         return $this->paginatedResponse($media);

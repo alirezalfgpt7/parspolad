@@ -1,7 +1,8 @@
 {
   "name": "parspoolad-corporate-portal",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "author": "Alireza Labbaf",
   "type": "module",
   "scripts": {
     "dev": "node -e \"const {spawnSync,spawn}=require('node:child_process'),fs=require('node:fs');const php=spawnSync('php',['-v'],{stdio:'ignore'});const task=php.status===0&&fs.existsSync('vendor/autoload.php')?'dev:fullstack':'dev:frontend';const cli=process.env.npm_execpath;if(!cli)throw new Error('npm CLI path is unavailable');const c=spawn(process.execPath,[cli,'run',task],{stdio:'inherit',windowsHide:true});c.on('error',e=>{console.error(e);process.exitCode=1});c.on('exit',code=>{process.exitCode=code??1});\"",

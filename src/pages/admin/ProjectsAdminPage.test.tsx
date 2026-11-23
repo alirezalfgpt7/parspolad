@@ -19,6 +19,7 @@ const category = {
 };
 
 vi.mock('../../services/api.ts', () => ({
+  mediaUrl: (path: string) => path,
   apiRequest: vi.fn((path: string) => {
     if (path.startsWith('/admin/projects?')) {
       return Promise.resolve({

@@ -12,6 +12,7 @@ interface BrandLogoProps {
   className?: string;
   imgClassName?: string;
   hueHover?: boolean;
+  removeWhiteBackground?: boolean;
 }
 
 /**
@@ -25,6 +26,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className,
   imgClassName,
   hueHover = false,
+  removeWhiteBackground: removeWhiteBackgroundOverride,
 }) => {
   const previewLogos = useAppStore((s) => s.previewLogos);
   const logos = useAppStore((s) => s.bootstrap?.logos);
@@ -55,7 +57,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   }, [resolvedUrl]);
 
   const isVideo = isVideoMediaUrl(resolvedUrl) && !videoFailed;
-  const removeWhiteBackground = placement === 'about' || placement === 'admin_sidebar';
+  const removeWhiteBackground = removeWhiteBackgroundOverride ?? (placement === 'about' || placement === 'admin_sidebar');
+  const mediaSource = resolvedUrl;
+  const whiteBackgroundFilter = removeWhiteBackground ? { filter: `url(#${whiteBackgroundFilterId})` } : undefined;
 
   return (
     <span className={cn(
@@ -78,7 +82,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {isVideo ? (
         <video
           key={resolvedUrl}
-          src={resolvedUrl}
+          src={mediaSource}
           autoPlay
           muted
           loop
@@ -86,7 +90,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           aria-label={alt || undefined}
           aria-hidden={!alt}
           onError={() => setVideoFailed(true)}
-          style={removeWhiteBackground ? { filter: `url(#${whiteBackgroundFilterId})` } : undefined}
+          style={whiteBackgroundFilter}
           className={cn(
             'h-full w-full object-contain',
             placement === 'about' && 'scale-200',
@@ -97,8 +101,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         />
       ) : (
         <ZeroBrokenImage
-          src={resolvedUrl}
+          src={mediaSource}
           alt={alt}
+          style={whiteBackgroundFilter}
           className={cn(
             'h-full w-full object-contain',
             placement === 'about' && 'scale-200',

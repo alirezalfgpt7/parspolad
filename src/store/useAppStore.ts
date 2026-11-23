@@ -12,6 +12,7 @@ import type {
   PageContent,
   PagesConfigSettings,
   Partner,
+  PreloaderSettings,
   ProjectCategory,
   Service,
   SiteSettings,
@@ -47,6 +48,7 @@ export interface BootstrapPayload {
   appearance?: Partial<AppearanceSettings>;
   logos?: Partial<BrandLogosSettings>;
   pages_config?: PagesConfigSettings;
+  preloader?: Partial<PreloaderSettings>;
   is_authenticated: boolean;
 }
 
@@ -64,6 +66,8 @@ interface AppState {
   previewLogos: Partial<BrandLogosSettings> | null;
   previewAppearance: Partial<AppearanceSettings> | null;
   previewPagesConfig: PagesConfigSettings | null;
+  previewPreloader: Partial<PreloaderSettings> | null;
+  cachedPreloader: Partial<PreloaderSettings> | null;
   searchOpen: boolean;
   toasts: ToastMessage[];
   setLanguage: (lang: Language) => void;
@@ -83,6 +87,7 @@ interface AppState {
     logos?: Partial<BrandLogosSettings> | null;
     appearance?: Partial<AppearanceSettings> | null;
     pages_config?: PagesConfigSettings | null;
+    preloader?: Partial<PreloaderSettings> | null;
   } | null) => void;
   setSearchOpen: (open: boolean) => void;
   addToast: (type: ToastMessage['type'], text: string) => void;
@@ -111,6 +116,19 @@ function readSavedColorMode(): { mode: ColorMode; hasSaved: boolean } {
   return { mode: 'light', hasSaved: false };
 }
 
+function readSavedPreloader(): Partial<PreloaderSettings> | null {
+  try {
+    const raw = localStorage.getItem('ppa_preloader');
+    if (!raw) return null;
+    const value: unknown = JSON.parse(raw);
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? value as Partial<PreloaderSettings>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 const savedLang = (() => {
   try {
     return (localStorage.getItem('ppa_lang') as Language) || 'fa';
@@ -127,6 +145,7 @@ const savedToken = (() => {
     return null;
   }
 })();
+const savedPreloader = readSavedPreloader();
 
 export const useAppStore = create<AppState>((set, get) => ({
   loading: true,
@@ -142,6 +161,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   previewLogos: null,
   previewAppearance: null,
   previewPagesConfig: null,
+  previewPreloader: null,
+  cachedPreloader: savedPreloader,
   searchOpen: false,
   toasts: [],
 
@@ -202,13 +223,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   fetchBootstrap: async () => {
     try {
       const data = await apiRequest<BootstrapPayload>('/bootstrap', { cache: 'no-store' });
+      if (data?.preloader) {
+        try {
+          localStorage.setItem('ppa_preloader', JSON.stringify(data.preloader));
+        } catch {
+          // Ignore storage quota and privacy-mode failures.
+        }
+      }
       const { hasSaved } = readSavedColorMode();
       const bootstrapMode = data?.theme?.default_mode;
       if (!hasSaved && (bootstrapMode === 'light' || bootstrapMode === 'dark')) {
         applyDocumentColorMode(bootstrapMode);
-        set({ bootstrap: data, colorMode: bootstrapMode, loading: false });
+        set({ bootstrap: data, cachedPreloader: data?.preloader ?? get().cachedPreloader, colorMode: bootstrapMode, loading: false });
       } else {
-        set({ bootstrap: data, loading: false });
+        set({ bootstrap: data, cachedPreloader: data?.preloader ?? get().cachedPreloader, loading: false });
       }
     } catch {
       set({ loading: false });
@@ -249,12 +277,14 @@ export const useAppStore = create<AppState>((set, get) => ({
           previewLogos: null,
           previewAppearance: null,
           previewPagesConfig: null,
+          previewPreloader: null,
         }
       : {
           previewLogin: patch.login !== undefined ? patch.login : state.previewLogin,
           previewLogos: patch.logos !== undefined ? patch.logos : state.previewLogos,
           previewAppearance: patch.appearance !== undefined ? patch.appearance : state.previewAppearance,
           previewPagesConfig: patch.pages_config !== undefined ? patch.pages_config : state.previewPagesConfig,
+          previewPreloader: patch.preloader !== undefined ? patch.preloader : state.previewPreloader,
         })),
 
   setSearchOpen: (open) => set({ searchOpen: open }),

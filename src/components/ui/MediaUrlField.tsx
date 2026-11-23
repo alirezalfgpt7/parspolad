@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, FolderOpen, Sparkles, Trash2, UploadCloud } from 'lucide-react';
-import { apiRequest } from '../../services/api.ts';
+import { apiRequest, mediaUrl } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { BUILTIN_BRAND_MEDIA_PRESETS, isAnimatedMediaUrl, isVideoMediaUrl } from '../../utils/brandingDefaults.ts';
@@ -8,6 +8,7 @@ import { FileUploader } from './FileUploader.tsx';
 import { Modal } from './Modal.tsx';
 import { Pagination } from './Pagination.tsx';
 import { ZeroBrokenImage } from './ZeroBrokenImage.tsx';
+import { MediaLibraryPreview } from '../admin/MediaLibraryPreview.tsx';
 
 interface MediaUrlFieldProps {
   label: string;
@@ -93,7 +94,7 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
           ) : isVideo ? (
             <video
               key={value}
-              src={value}
+              src={mediaUrl(value)}
               autoPlay
               muted
               loop
@@ -102,7 +103,7 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
             />
           ) : isImage ? (
             <ZeroBrokenImage
-              src={value}
+              src={mediaUrl(value)}
               alt={label}
               className="h-full w-full rounded-lg object-contain"
             />
@@ -213,16 +214,20 @@ export const MediaUrlField: React.FC<MediaUrlFieldProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => {
-                      onChange(item.url);
+                      const isVideoFile = item.mime_type.startsWith('video/') || isVideoMediaUrl(item.url);
+                      const selectedUrl = isVideoFile
+                        ? item.optimized_preview_url || item.preview_url || item.url
+                        : item.preview_url || item.url;
+                      onChange(isVideoFile && !isVideoMediaUrl(selectedUrl) ? `${selectedUrl}#video` : selectedUrl);
                       setLibraryOpen(false);
                     }}
                     className="group overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-2 text-start transition hover:border-(--theme-primary)"
                   >
                     <div className="flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-(--theme-surface)">
                       {isVideoMediaUrl(item.url) || item.mime_type.startsWith('video/') ? (
-                        <video src={item.url} muted loop autoPlay playsInline className="h-full w-full object-contain" />
+                        <MediaLibraryPreview item={item} />
                       ) : item.mime_type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg|ico)(\?.*)?$/i.test(item.url) ? (
-                        <ZeroBrokenImage src={item.url} alt={item.name} className="h-full w-full object-contain" />
+                        <MediaLibraryPreview item={item} />
                       ) : (
                         <FileText className="h-7 w-7 text-(--theme-text-muted)" aria-hidden="true" />
                       )}

@@ -17,9 +17,19 @@ interface OptimizedMedia {
   variants: MediaFile[];
 }
 
+interface MediaOptimizerTabProps {
+  autoOptimizeMediaId?: number | null;
+  onAutoOptimizeStarted?: () => void;
+  onOptimized?: () => void;
+}
+
 const isVideo = (media: MediaFile) => media.mime_type.startsWith('video/');
 
-export const MediaOptimizerTab: React.FC = () => {
+export const MediaOptimizerTab: React.FC<MediaOptimizerTabProps> = ({
+  autoOptimizeMediaId = null,
+  onAutoOptimizeStarted,
+  onOptimized,
+}) => {
   const { addToast } = useAppStore();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [results, setResults] = useState<Record<number, MediaFile[]>>({});
@@ -31,6 +41,7 @@ export const MediaOptimizerTab: React.FC = () => {
   const [processingMessage, setProcessingMessage] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<{ media: MediaFile; message: string } | null>(null);
   const processingLock = useRef(false);
+  const lastAutoOptimizeId = useRef<number | null>(null);
   const browserVideoAvailable = typeof Worker !== 'undefined' && typeof WebAssembly !== 'undefined';
 
   const load = async (targetPage = page) => {
@@ -94,6 +105,7 @@ export const MediaOptimizerTab: React.FC = () => {
         }
         setResults((current) => ({ ...current, [media.id]: savedVariants }));
         addToast('success', `نسخه‌های ویدئویی «${media.name}» در مرورگر ساخته شد؛ فایل اصلی بدون تغییر باقی ماند.`);
+        onOptimized?.();
         return;
       }
 
@@ -103,6 +115,7 @@ export const MediaOptimizerTab: React.FC = () => {
       });
       setResults((current) => ({ ...current, [media.id]: response.data.variants }));
       addToast('success', `نسخه‌های بهینهٔ «${media.name}» آماده شد؛ فایل اصلی بدون تغییر باقی ماند.`);
+      onOptimized?.();
     } catch (error) {
       addToast('error', error instanceof Error ? error.message : 'بهینه‌سازی رسانه ناموفق بود.');
     } finally {
@@ -153,6 +166,25 @@ export const MediaOptimizerTab: React.FC = () => {
     setConfirmation(null);
     void runOptimization(media, true);
   };
+
+  useEffect(() => {
+    if (
+      autoOptimizeMediaId === null
+      || loading
+      || processingId !== null
+      || confirmation !== null
+      || lastAutoOptimizeId.current === autoOptimizeMediaId
+    ) {
+      return;
+    }
+
+    const media = files.find((item) => item.id === autoOptimizeMediaId);
+    if (!media) return;
+
+    lastAutoOptimizeId.current = autoOptimizeMediaId;
+    onAutoOptimizeStarted?.();
+    void optimize(media);
+  }, [autoOptimizeMediaId, confirmation, files, loading, onAutoOptimizeStarted, optimize, processingId]);
 
   const copyUrl = async (url: string) => {
     try {
@@ -212,7 +244,7 @@ export const MediaOptimizerTab: React.FC = () => {
               : capabilities?.images.available);
             const sourceMissing = media.source_available === false;
             const isProcessing = processingId === media.id;
-            const variants = results[media.id];
+            const variants = media.derived_files?.length ? media.derived_files : results[media.id];
             const sizeChange = (variant: MediaFile) => media.size_bytes > 0
               ? Math.round((1 - variant.size_bytes / media.size_bytes) * 100)
               : null;
@@ -221,7 +253,13 @@ export const MediaOptimizerTab: React.FC = () => {
               <article key={media.id} className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-3 shadow-(--theme-card-shadow)">
                 <div className="flex gap-3">
                   <div className="flex h-20 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-(--theme-border) bg-(--theme-surface-muted)">
-                    <MediaThumbnail mediaId={media.id} alt={media.alt_text || media.name} isVideo={video} originalUrl={media.url} />
+                    <MediaThumbnail
+                      mediaId={media.id}
+                      alt={media.alt_text || media.name}
+                      isVideo={video}
+                      originalUrl={media.preview_url || media.url}
+                      thumbnailUrl={media.thumbnail_url}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-sm font-bold text-(--theme-text)">{media.name}</h3>
@@ -248,23 +286,23 @@ export const MediaOptimizerTab: React.FC = () => {
                         : 'پردازش تصویر به GD با پشتیبانی WebP نیاز دارد.'}
                   </p>
                 )}
-                {video && !capabilities?.videos.available && browserVideoAvailable && (
-                  <p className="mt-3 rounded-lg bg-sky-50 px-3 py-2 text-xs text-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
-                    ویدئو روی دستگاه همین مرورگر تبدیل می‌شود؛ بارگیری اولیهٔ مبدل ممکن است زمان‌بر باشد.
-                  </p>
-                )}
                 {variants && (
                   <div className="mt-4 space-y-2 border-t border-(--theme-border) pt-3">
-                    <p className="text-xs font-semibold text-(--theme-text)">نسخه‌های ساخته‌شده (در کتابخانه قابل انتخاب‌اند)</p>
+                    <p className="text-xs font-semibold text-(--theme-text)">نسخه‌های ساخته‌شده زیر فایل اصلی در کتابخانه نمایش داده می‌شوند</p>
                     {variants.map((variant) => {
                       const change = sizeChange(variant);
                       return (
                         <div key={variant.id} className="flex min-w-0 items-center gap-2 text-xs">
                           <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                          <span className="min-w-0 flex-1 truncate text-(--theme-text-muted)">
-                            {variant.variant} · {variant.extension.toUpperCase()} · {Math.max(1, Math.round(variant.size_bytes / 1024))} KB
-                            {' · '}
-                            {change === null ? '—' : change >= 0 ? `${change}٪ کاهش` : `${Math.abs(change)}٪ افزایش`}
+                          <span className="min-w-0 flex-1 text-(--theme-text-muted)">
+                            <span className="block truncate">
+                              {variant.variant} · {variant.extension.toUpperCase()} · {Math.max(1, Math.round(variant.size_bytes / 1024))} KB
+                              {' · '}
+                              {change === null ? '—' : change >= 0 ? `${change}٪ کاهش` : `${Math.abs(change)}٪ افزایش`}
+                            </span>
+                            <span className="block truncate font-mono text-[10px]" dir="ltr">
+                              {variant.storage_path || variant.folder}
+                            </span>
                           </span>
                           <button
                             type="button"

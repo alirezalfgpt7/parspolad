@@ -23,6 +23,8 @@ const LegalPage = lazy(() => import('./pages/public/MiscPages.tsx').then((module
 const SitemapPage = lazy(() => import('./pages/public/MiscPages.tsx').then((module) => ({ default: module.SitemapPage })));
 const FaqAdminPage = lazy(() => import('./pages/admin/FaqAdminPage.tsx').then((module) => ({ default: module.FaqAdminPage })));
 const ContentRecordsAdminPage = lazy(() => import('./pages/admin/ContentRecordsAdminPage.tsx').then((module) => ({ default: module.ContentRecordsAdminPage })));
+const ProductsAdminPage = lazy(() => import('./pages/admin/ProductsAdminPage.tsx').then((module) => ({ default: module.ProductsAdminPage })));
+const ArticlesAdminPage = lazy(() => import('./pages/admin/ArticlesAdminPage.tsx').then((module) => ({ default: module.ArticlesAdminPage })));
 const NewsPage = lazy(() => import('./pages/public/NewsPage.tsx').then((module) => ({ default: module.NewsPage })));
 const OrgChartPage = lazy(() => import('./pages/public/OrgChartPage.tsx').then((module) => ({ default: module.OrgChartPage })));
 const ProductsPage = lazy(() => import('./pages/public/ProductsPage.tsx').then((module) => ({ default: module.ProductsPage })));
@@ -143,6 +145,8 @@ export default function App() {
               <Route path="content" element={<ContentCmsAdminPage />} />
               <Route path="faqs" element={<FaqAdminPage />} />
               <Route path="content-records" element={<ContentRecordsAdminPage />} />
+              <Route path="products" element={<ProductsAdminPage />} />
+              <Route path="articles" element={<ArticlesAdminPage />} />
               <Route path="comments" element={<ArticleCommentsAdminPage />} />
               <Route path="organization" element={<OrganizationAdminPage />} />
               <Route path="media" element={<MediaLibraryPage />} />

@@ -33,14 +33,19 @@ it('provides administrators a signed original URL for private media previews', f
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
     Storage::fake('local');
-    Storage::disk('local')->put('uploads/private-image.jpg', 'private image');
+    $image = imagecreatetruecolor(32, 32);
+    ob_start();
+    imagejpeg($image);
+    $contents = ob_get_clean();
+    imagedestroy($image);
+    Storage::disk('local')->put('uploads/private-image.jpg', $contents);
     $media = MediaFile::query()->create([
         'name' => 'private-image.jpg',
         'url' => '',
         'storage_path' => 'uploads/private-image.jpg',
         'mime_type' => 'image/jpeg',
         'extension' => 'jpg',
-        'size_bytes' => 13,
+        'size_bytes' => strlen($contents),
         'folder' => 'uploads',
         'requires_auth' => true,
     ]);
@@ -49,10 +54,67 @@ it('provides administrators a signed original URL for private media previews', f
     $response = $this->actingAs($admin, 'sanctum')
         ->getJson('/api/v1/admin/media?per_page=100')
         ->assertOk();
-    $url = collect($response->json('data'))->firstWhere('id', $media->id)['url'];
+    $item = collect($response->json('data'))->firstWhere('id', $media->id);
+    $url = $item['url'];
+    $previewUrl = $item['preview_url'];
+    $thumbnailUrl = $item['thumbnail_url'];
 
-    expect($url)->toContain('signature=');
+    expect($url)->toContain('signature=')
+        ->and($previewUrl)->toContain('signature=')
+        ->and($thumbnailUrl)->toContain('signature=');
     $this->get($url)->assertOk();
+    $this->get($previewUrl)
+        ->assertOk()
+        ->assertHeader('Content-Disposition', 'inline; filename=private-image.jpg');
+    $this->get($thumbnailUrl)
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/webp')
+        ->assertHeader('Cache-Control', 'max-age=3600, private');
+});
+
+it('serves the unchanged original GIF inline for full-size previews', function (): void {
+    Storage::fake('public');
+    $contents = base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+    Storage::disk('public')->put('uploads/animation.gif', $contents);
+    $media = MediaFile::query()->create([
+        'name' => 'animation.gif',
+        'url' => '/storage/uploads/animation.gif',
+        'storage_path' => 'uploads/animation.gif',
+        'mime_type' => 'image/gif',
+        'extension' => 'gif',
+        'size_bytes' => strlen($contents),
+        'folder' => 'uploads',
+    ]);
+
+    $response = $this->get(route('media.preview', ['media' => $media->id], false))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/gif')
+        ->assertHeader('Content-Disposition', 'inline; filename=animation.gif');
+
+    expect($response->baseResponse->getFile()->getPathname())
+        ->toBe(Storage::disk('public')->path('uploads/animation.gif'))
+        ->and(file_get_contents($response->baseResponse->getFile()->getPathname()))
+        ->toBe($contents);
+});
+
+it('supports byte-range requests for in-browser video previews', function (): void {
+    Storage::fake('public');
+    $contents = '0123456789';
+    Storage::disk('public')->put('uploads/range-preview.mp4', $contents);
+    $media = MediaFile::query()->create([
+        'name' => 'range-preview.mp4',
+        'url' => '/storage/uploads/range-preview.mp4',
+        'storage_path' => 'uploads/range-preview.mp4',
+        'mime_type' => 'video/mp4',
+        'extension' => 'mp4',
+        'size_bytes' => strlen($contents),
+        'folder' => 'uploads',
+    ]);
+
+    $this->get(route('media.preview', ['media' => $media->id], false), ['Range' => 'bytes=2-5'])
+        ->assertStatus(206)
+        ->assertHeader('Content-Range', 'bytes 2-5/10')
+        ->assertHeader('Accept-Ranges', 'bytes');
 });
 
 it('moves marked media out of the public disk before returning its protected URL', function (): void {
