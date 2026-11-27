@@ -15,11 +15,11 @@ vi.mock('../ui/ZeroBrokenImage.tsx', () => ({
   ZeroBrokenImage: () => <img alt="" />,
 }));
 
-const renderSidebar = () => render(
+const renderSidebar = (language: 'fa' | 'en' = 'fa') => render(
   <MemoryRouter initialEntries={['/admin/projects']}>
     <AdminSidebar
       user={null}
-      language="fa"
+      language={language}
       mini={false}
       mobileOpen={false}
       onToggleMini={vi.fn()}
@@ -51,5 +51,11 @@ describe('AdminSidebar', () => {
     renderSidebar();
     expect(screen.getByRole('link', { name: /مدیریت محصولات/ }).getAttribute('href')).toBe('/admin/products');
     expect(screen.getByRole('link', { name: /اخبار و مقالات/ }).getAttribute('href')).toBe('/admin/articles');
+  });
+
+  it('links the profile card to the profile page and sets sidebar direction from the language', () => {
+    renderSidebar('en');
+    expect(screen.getByRole('link', { name: 'User profile' }).getAttribute('href')).toBe('/admin/profile');
+    expect(screen.getByRole('complementary').getAttribute('dir')).toBe('ltr');
   });
 });

@@ -232,11 +232,13 @@ export const DEFAULT_PRELOADER_SETTINGS: PreloaderSettings = {
     text_size_tablet: 13,
     text_size_desktop: 14,
   },
+  initial_display_duration_ms: 1000,
 };
 
 export function normalizePreloaderSettings(value?: {
   initial?: Partial<PreloaderModeSettings> | null;
   internal?: Partial<PreloaderModeSettings> | null;
+  initial_display_duration_ms?: number;
 } | null): PreloaderSettings {
   const normalizeMode = (
     mode?: Partial<PreloaderModeSettings> | null,
@@ -246,7 +248,7 @@ export function normalizePreloaderSettings(value?: {
     const { transparent_background: legacyTransparentBackground, ...sourceSettings } = source;
     const size = (candidate: unknown, fallback: number) => (
       typeof candidate === 'number' && Number.isFinite(candidate)
-        ? Math.min(128, Math.max(32, candidate))
+        ? Math.min(256, Math.max(32, candidate))
         : fallback
     );
 
@@ -294,6 +296,10 @@ export function normalizePreloaderSettings(value?: {
   return {
     initial: normalizeMode(value?.initial),
     internal: normalizeMode(value?.internal, DEFAULT_PRELOADER_SETTINGS.internal),
+    initial_display_duration_ms: typeof value?.initial_display_duration_ms === 'number'
+      && Number.isFinite(value.initial_display_duration_ms)
+      ? Math.min(10000, Math.max(0, Math.round(value.initial_display_duration_ms)))
+      : DEFAULT_PRELOADER_SETTINGS.initial_display_duration_ms,
   };
 }
 

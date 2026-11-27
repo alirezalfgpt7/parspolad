@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAppStore } from './store/useAppStore.ts';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal.tsx';
+import { HomeNavigationPreloader } from './components/common/HomeNavigationPreloader.tsx';
 import { PagePreloader } from './components/common/PagePreloader.tsx';
 import { OfflineIndicator } from './components/common/OfflineIndicator.tsx';
 import { ThemeProvider } from './components/common/ThemeProvider.tsx';
@@ -11,6 +12,8 @@ import { ToastContainer } from './components/ui/ToastContainer.tsx';
 import { CustomCursor } from './components/ui/CustomCursor.tsx';
 import { ScrollingTitleEffect } from './components/effects/index.ts';
 import { apiRequest } from './services/api.ts';
+import { normalizePreloaderSettings } from './utils/brandingDefaults.ts';
+import { useMinimumDisplayDuration } from './hooks/useMinimumDisplayDuration.ts';
 
 const AboutPage = lazy(() => import('./pages/public/AboutPage.tsx').then((module) => ({ default: module.AboutPage })));
 const ContactPage = lazy(() => import('./pages/public/ContactPage.tsx').then((module) => ({ default: module.ContactPage })));
@@ -81,7 +84,9 @@ const PageViewTracker: React.FC = () => {
 };
 
 export default function App() {
-  const { fetchBootstrap, fetchMe, language, colorMode, loading } = useAppStore();
+  const { fetchBootstrap, fetchMe, language, colorMode, loading, cachedPreloader } = useAppStore();
+  const initialDisplayDuration = normalizePreloaderSettings(cachedPreloader).initial_display_duration_ms;
+  const minimumDisplayElapsed = useMinimumDisplayDuration(initialDisplayDuration);
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -98,7 +103,8 @@ export default function App() {
       <PageViewTracker />
       <ThemeProvider>
         <CustomCursor />
-        {loading && <PagePreloader fullScreen label="در حال آماده‌سازی پرتال..." />}
+        <HomeNavigationPreloader />
+        {(loading || !minimumDisplayElapsed) && <PagePreloader fullScreen label="در حال آماده‌سازی پرتال..." />}
         <Suspense fallback={<PagePreloader fullScreen label="در حال آماده‌سازی صفحه..." />}>
           <Routes>
             <Route element={<PublicLayout />}>

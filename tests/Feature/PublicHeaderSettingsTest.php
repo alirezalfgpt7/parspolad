@@ -103,6 +103,7 @@ it('persists and publishes separate responsive preloader settings', function ():
         ->json('token');
 
     $preloader = [
+        'initial_display_duration_ms' => 2750,
         'initial' => [
             'enabled' => true,
             'display_mode' => 'full',
@@ -112,7 +113,7 @@ it('persists and publishes separate responsive preloader settings', function ():
             'show_logo_frame' => false,
             'logo_size_mobile' => 48,
             'logo_size_tablet' => 64,
-            'logo_size_desktop' => 80,
+            'logo_size_desktop' => 256,
         ],
         'internal' => [
             'enabled' => false,
@@ -135,12 +136,15 @@ it('persists and publishes separate responsive preloader settings', function ():
         ->assertOk()
         ->assertJsonPath('data.preloader.initial.logo_url', '/storage/media/animated-logo.mp4')
         ->assertJsonPath('data.preloader.initial.show_logo_frame', false)
+        ->assertJsonPath('data.preloader.initial.logo_size_desktop', 256)
+        ->assertJsonPath('data.preloader.initial_display_duration_ms', 2750)
         ->assertJsonPath('data.preloader.internal.enabled', false);
 
     $this->getJson('/api/v1/bootstrap')
         ->assertOk()
         ->assertJsonPath('preloader.initial.text_fa', 'در حال بارگذاری')
-        ->assertJsonPath('preloader.initial.logo_size_desktop', 80)
+        ->assertJsonPath('preloader.initial_display_duration_ms', 2750)
+        ->assertJsonPath('preloader.initial.logo_size_desktop', 256)
         ->assertJsonPath('preloader.internal.display_mode', 'background_only')
         ->assertJsonPath('preloader.internal.transparent_background', true)
         ->assertJsonPath('preloader.internal.remove_logo_background', true)
@@ -148,10 +152,15 @@ it('persists and publishes separate responsive preloader settings', function ():
 
     $this->withToken($token)->putJson('/api/v1/admin/settings', [
         'preloader' => [
-            'initial' => ['logo_size_mobile' => 256],
+            'initial' => ['logo_size_mobile' => 257],
         ],
     ])->assertUnprocessable()
         ->assertJsonValidationErrors('preloader.initial.logo_size_mobile');
+
+    $this->withToken($token)->putJson('/api/v1/admin/settings', [
+        'preloader' => ['initial_display_duration_ms' => 10001],
+    ])->assertUnprocessable()
+        ->assertJsonValidationErrors('preloader.initial_display_duration_ms');
 });
 
 it('resolves saved public preloader media paths to usable preview URLs', function (): void {

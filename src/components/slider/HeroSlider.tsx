@@ -77,6 +77,7 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 768,
   );
+  const [headerHeight, setHeaderHeight] = useState(92);
   const [isPaused, setIsPaused] = useState(false);
   const activeSlides = useMemo(
     () => slides.filter((slide) => slide.is_active).sort((a, b) => a.sort_order - b.sort_order),
@@ -92,6 +93,25 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    const header = document.querySelector<HTMLElement>('.public-header-shell');
+    const updateHeaderHeight = () => {
+      setHeaderHeight(Math.ceil(header?.getBoundingClientRect().height || 92));
+    };
+    const observer = header && typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateHeaderHeight)
+      : null;
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    if (header) observer?.observe(header);
+
+    return () => {
+      window.removeEventListener('resize', updateHeaderHeight);
+      observer?.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -116,7 +136,8 @@ export const HeroSlider: React.FC<{ slides: Slide[] }> = ({ slides }) => {
 
   return (
     <section
-      className="relative h-135 w-full overflow-hidden bg-slate-950 sm:h-150 lg:h-160"
+      className="relative w-full overflow-hidden bg-slate-950"
+      style={{ height: `calc(100dvh - ${headerHeight}px)` }}
       aria-roledescription="carousel"
       aria-label={language === 'fa' ? 'اسلایدر صفحه' : 'Page slider'}
       onPointerEnter={() => setIsPaused(true)}

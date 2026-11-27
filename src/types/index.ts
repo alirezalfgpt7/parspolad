@@ -612,6 +612,7 @@ export interface PreloaderModeSettings {
 export interface PreloaderSettings {
   initial: PreloaderModeSettings;
   internal: PreloaderModeSettings;
+  initial_display_duration_ms: number;
 }
 
 export type LogoPlacement = keyof BrandLogosSettings;

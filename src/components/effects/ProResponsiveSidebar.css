@@ -74,6 +74,11 @@
   margin-inline-end: 1rem;
 }
 
+.admin-shell[data-sidebar-dock="opposite"] .admin-sidebar-collapse-straddle {
+  inset-inline: auto;
+  inset-inline-start: -14px;
+}
+
 @media (max-width: 1023px) {
   .admin-shell[data-sidebar-dock="opposite"] .admin-sidebar {
     margin: 0;

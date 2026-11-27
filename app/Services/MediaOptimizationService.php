@@ -173,22 +173,39 @@ class MediaOptimizationService
         return $contents;
     }
 
-    public function storeBrowserVideoVariant(MediaFile $source, string $variant, string $contents, string $mimeType): MediaFile
+    public function storeBrowserVariant(MediaFile $source, string $variant, string $contents, string $mimeType): MediaFile
     {
-        abort_unless(in_array($source->mime_type, ['video/mp4', 'video/webm'], true), 422, 'نسخهٔ مرورگری فقط برای فایل ویدئویی مجاز است.');
+        $isVideo = in_array($source->mime_type, ['video/mp4', 'video/webm'], true);
+        $isImage = in_array($source->mime_type, ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true);
+        abort_unless($isVideo || $isImage, 422, 'نوع فایل اصلی برای پردازش مرورگری پشتیبانی نمی‌شود.');
+        abort_unless(
+            $isVideo
+                ? in_array($variant, ['video_720', 'poster'], true)
+                : in_array($variant, ['thumbnail', 'content', 'hero'], true),
+            422,
+            'نوع نسخهٔ تولیدشده با فایل اصلی مطابقت ندارد.',
+        );
 
-        $extension = match ($variant) {
-            'video_720' => 'mp4',
-            'poster' => 'jpg',
-            default => abort(422, 'نوع نسخهٔ ویدئو معتبر نیست.'),
+        $expectedMimeType = match ($variant) {
+            'poster' => 'image/jpeg',
+            'thumbnail', 'content', 'hero' => 'image/webp',
+            default => 'video/mp4',
         };
-        $expectedMimeType = $variant === 'poster' ? 'image/jpeg' : 'video/mp4';
         abort_unless($mimeType === $expectedMimeType, 422, 'فرمت نسخهٔ تولیدشده با نوع آن مطابقت ندارد.');
+        if ($isImage) {
+            $dimensions = getimagesizefromstring($contents);
+            abort_unless($dimensions !== false, 422, 'ساختار تصویر تولیدشده معتبر نیست.');
+            abort_if($dimensions[0] * $dimensions[1] > 25_000_000, 422, 'تصویر بزرگ‌تر از حد امن پردازش است.');
+        }
 
         return $this->persistVariants($source, [
             $variant => [
                 'contents' => $contents,
-                'extension' => $extension,
+                'extension' => match ($variant) {
+                    'poster' => 'jpg',
+                    'thumbnail', 'content', 'hero' => 'webp',
+                    default => 'mp4',
+                },
                 'mime_type' => $expectedMimeType,
             ],
         ])[0];

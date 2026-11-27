@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Film, Image as ImageIcon, LoaderCircle, Sparkles } from 'lucide-react';
 import { ApiError, apiBlob, apiMultipartRequest, apiRequest } from '../../services/api.ts';
+import { isBrowserImageOptimizerAvailable, optimizeImageInBrowser } from '../../services/browserImageOptimizer.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { MediaFile } from '../../types/index.ts';
 import { Modal } from '../ui/Modal.tsx';
@@ -43,6 +44,7 @@ export const MediaOptimizerTab: React.FC<MediaOptimizerTabProps> = ({
   const processingLock = useRef(false);
   const lastAutoOptimizeId = useRef<number | null>(null);
   const browserVideoAvailable = typeof Worker !== 'undefined' && typeof WebAssembly !== 'undefined';
+  const browserImageAvailable = isBrowserImageOptimizerAvailable();
 
   const load = async (targetPage = page) => {
     setLoading(true);
@@ -78,6 +80,31 @@ export const MediaOptimizerTab: React.FC<MediaOptimizerTabProps> = ({
     processingLock.current = true;
     setProcessingId(media.id);
     try {
+      if (!isVideo(media) && !capabilities?.images.available) {
+        if (media.mime_type === 'image/gif') {
+          throw new Error('برای حفظ انیمیشن GIF، پردازش روی سرور با GD/WebP لازم است.');
+        }
+        setProcessingMessage('در حال دریافت تصویر برای پردازش مرورگری...');
+        const source = await apiBlob(`/admin/media/${media.id}/optimizer-source`);
+        const outputFiles = await optimizeImageInBrowser(source);
+        const savedVariants: MediaFile[] = [];
+        for (const output of outputFiles) {
+          setProcessingMessage(`در حال ذخیرهٔ نسخهٔ ${output.variant}...`);
+          const form = new FormData();
+          form.append('file', output.file);
+          form.append('variant', output.variant);
+          const response = await apiMultipartRequest<{ data: MediaFile }>(
+            `/admin/media/${media.id}/optimizer-variant`,
+            form,
+          );
+          savedVariants.push(response.data);
+        }
+        setResults((current) => ({ ...current, [media.id]: savedVariants }));
+        addToast('success', `نسخه‌های WebP «${media.name}» در مرورگر ساخته شد؛ فایل اصلی بدون تغییر باقی ماند.`);
+        onOptimized?.();
+        return;
+      }
+
       if (isVideo(media) && !capabilities?.videos.available) {
         setProcessingMessage('در حال دریافت ویدئو برای پردازش مرورگری...');
         const source = await apiBlob(`/admin/media/${media.id}/optimizer-source`);
@@ -217,7 +244,7 @@ export const MediaOptimizerTab: React.FC<MediaOptimizerTabProps> = ({
         <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
           <span className="inline-flex items-center gap-1 rounded-full bg-(--theme-surface-muted) px-3 py-1.5 text-(--theme-text)">
             <ImageIcon className="h-3.5 w-3.5" />
-            تصویر: {capabilities?.images.available ? 'WebP فعال' : 'GD/WebP در دسترس نیست'}
+            تصویر: {capabilities?.images.available ? 'WebP سرور فعال' : browserImageAvailable ? 'تبدیل WebP مرورگری فعال' : 'WebP در دسترس نیست'}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-(--theme-surface-muted) px-3 py-1.5 text-(--theme-text)">
             <Film className="h-3.5 w-3.5" />
@@ -239,9 +266,10 @@ export const MediaOptimizerTab: React.FC<MediaOptimizerTabProps> = ({
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {files.map((media) => {
             const video = isVideo(media);
+            const browserImageSupported = browserImageAvailable && media.mime_type !== 'image/gif';
             const supported = media.source_available !== false && (video
               ? capabilities?.videos.available || browserVideoAvailable
-              : capabilities?.images.available);
+              : capabilities?.images.available || browserImageSupported);
             const sourceMissing = media.source_available === false;
             const isProcessing = processingId === media.id;
             const variants = media.derived_files?.length ? media.derived_files : results[media.id];
@@ -283,7 +311,9 @@ export const MediaOptimizerTab: React.FC<MediaOptimizerTabProps> = ({
                       ? 'فایل اصلی روی فضای ذخیره‌سازی پیدا نشد؛ این مورد از پردازش کنار گذاشته شد.'
                       : video
                         ? 'مرورگر فعلی از پردازش ویدئو پشتیبانی نمی‌کند.'
-                        : 'پردازش تصویر به GD با پشتیبانی WebP نیاز دارد.'}
+                        : media.mime_type === 'image/gif'
+                          ? 'برای حفظ انیمیشن GIF، پردازش روی سرور با GD/WebP لازم است.'
+                          : 'مرورگر فعلی از ساخت WebP پشتیبانی نمی‌کند؛ GD/WebP سرور را فعال کنید.'}
                   </p>
                 )}
                 {variants && (

@@ -58,4 +58,31 @@ describe('LoginAppearanceAdminPage', () => {
       });
     });
   });
+
+  it('shows one system page at a time in a selector', async () => {
+    render(<LoginAppearanceAdminPage />);
+
+    fireEvent.click(await screen.findByRole('tab', { name: 'صفحات سیستمی' }));
+    const pageSelector = screen.getByRole('combobox', { name: 'انتخاب صفحه سیستمی' });
+    expect(screen.getByLabelText('برچسب محصولات (فارسی)')).toBeTruthy();
+
+    fireEvent.change(pageSelector, { target: { value: 'error_404' } });
+
+    expect(screen.getByLabelText('تیتر (فارسی)')).toBeTruthy();
+    expect(screen.queryByLabelText('برچسب محصولات (فارسی)')).toBeNull();
+  });
+
+  it('places the live preloader preview after its controls and exposes the larger logo range', async () => {
+    render(<LoginAppearanceAdminPage />);
+
+    fireEvent.click(await screen.findByRole('tab', { name: 'تنظیمات پریلودر' }));
+    const desktopLogoSlider = screen.getByRole('slider', { name: 'اندازه لوگو در دسکتاپ' });
+    const previewHeading = screen.getByRole('heading', { name: 'پیش‌نمایش زنده · لود اولیه' });
+    const controlsSection = desktopLogoSlider.closest('section');
+    const previewSection = previewHeading.closest('section');
+
+    expect(desktopLogoSlider.getAttribute('max')).toBe('256');
+    expect(screen.getByText('15 px')).toBeTruthy();
+    expect(controlsSection?.parentElement?.lastElementChild).toBe(previewSection);
+  });
 });

@@ -5,15 +5,18 @@ import { useAppStore, type BootstrapPayload } from '../../store/useAppStore.ts';
 import { DEFAULT_PRELOADER_SETTINGS, normalizePreloaderSettings } from '../../utils/brandingDefaults.ts';
 
 let originalViewportWidth = 0;
+let originalViewportHeight = 0;
 
 describe('EffectPreloader', () => {
   beforeEach(() => {
     originalViewportWidth = window.innerWidth;
+    originalViewportHeight = window.innerHeight;
   });
 
   afterEach(() => {
     cleanup();
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalViewportWidth });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: originalViewportHeight });
     useAppStore.setState({
       bootstrap: null,
       previewPreloader: null,
@@ -142,5 +145,37 @@ describe('EffectPreloader', () => {
       expect(logoFrame?.getAttribute('style')).toContain('width: 40px');
       expect(loader.style.getPropertyValue('--preloader-active-text-size')).toBe('12px');
     });
+  });
+
+  it('scales the full-screen logo to viewport dimensions', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 900 });
+    const settings = {
+      ...DEFAULT_PRELOADER_SETTINGS.initial,
+      show_spinner: false,
+      logo_size_desktop: 128,
+    };
+    const { container } = render(
+      <EffectPreloader label="در حال بارگذاری" mode="initial" modeSettings={settings} fullScreen />,
+    );
+
+    expect(container.querySelector('.effect-preloader-logo-frame')?.getAttribute('style'))
+      .toContain('width: 288px');
+  });
+
+  it('allows the enlarged logo range while keeping it within the viewport', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1440 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 900 });
+    const settings = {
+      ...DEFAULT_PRELOADER_SETTINGS.initial,
+      show_spinner: false,
+      logo_size_desktop: 256,
+    };
+    const { container } = render(
+      <EffectPreloader label="در حال بارگذاری" mode="initial" modeSettings={settings} fullScreen />,
+    );
+
+    expect(container.querySelector('.effect-preloader-logo-frame')?.getAttribute('style'))
+      .toContain('width: 576px');
   });
 });

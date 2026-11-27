@@ -4,13 +4,18 @@ import './Spinners.css';
 
 interface QuartetSpinnerEffectProps {
   className?: string;
+  size?: number;
 }
 
 /**
  * Effect 025: CSS Spinner Animation (Quartet Orbit)
  */
-export const QuartetSpinnerEffect: React.FC<QuartetSpinnerEffectProps> = ({ className }) => (
-  <div className={cn('effect-spinner-quartet', className)} aria-hidden="true">
+export const QuartetSpinnerEffect: React.FC<QuartetSpinnerEffectProps> = ({ className, size }) => (
+  <div
+    className={cn('effect-spinner-quartet', className)}
+    style={size === undefined ? undefined : { width: size, height: size }}
+    aria-hidden="true"
+  >
     <span />
     <span />
     <span />

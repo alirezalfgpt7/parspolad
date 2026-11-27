@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Slide } from '../../types/index.ts';
 import { HeroSlider } from './HeroSlider.tsx';
@@ -64,5 +64,23 @@ describe('HeroSlider responsive media', () => {
     });
     expect(screen.queryByRole('button', { name: /پخش ویدئو/ })).toBeNull();
     expect(container.querySelector('video')).toBeNull();
+  });
+
+  it('fills the viewport area below the measured sticky header', async () => {
+    const header = document.createElement('div');
+    header.className = 'public-header-shell';
+    vi.spyOn(header, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 1440, 104));
+    document.body.append(header);
+
+    const { container } = render(
+      <MemoryRouter>
+        <HeroSlider slides={[videoSlide]} />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(container.querySelector('section')?.getAttribute('style')).toBe('height: calc(100dvh - 104px);');
+    });
+    header.remove();
   });
 });

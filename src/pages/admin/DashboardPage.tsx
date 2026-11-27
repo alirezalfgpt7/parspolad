@@ -79,7 +79,7 @@ export const DashboardPage: React.FC = () => {
   }, []);
 
   if (!data) {
-    return <PagePreloader label="در حال آماده‌سازی داشبورد..." />;
+    return <PagePreloader fullScreen label="در حال آماده‌سازی داشبورد..." />;
   }
 
   const cards = [

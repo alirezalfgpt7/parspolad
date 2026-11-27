@@ -5,12 +5,20 @@ import { MediaOptimizerTab } from './MediaOptimizerTab.tsx';
 const mocks = vi.hoisted(() => ({
   addToast: vi.fn(),
   apiRequest: vi.fn(),
+  apiBlob: vi.fn(),
+  apiMultipartRequest: vi.fn(),
+  optimizeImageInBrowser: vi.fn(),
 }));
 
 vi.mock('../../services/api.ts', () => ({
   apiRequest: mocks.apiRequest,
-  apiBlob: vi.fn(),
-  apiMultipartRequest: vi.fn(),
+  apiBlob: mocks.apiBlob,
+  apiMultipartRequest: mocks.apiMultipartRequest,
+}));
+
+vi.mock('../../services/browserImageOptimizer.ts', () => ({
+  isBrowserImageOptimizerAvailable: () => true,
+  optimizeImageInBrowser: mocks.optimizeImageInBrowser,
 }));
 
 vi.mock('../../store/useAppStore.ts', () => ({
@@ -120,5 +128,59 @@ describe('MediaOptimizerTab', () => {
       });
     });
     expect(onAutoOptimizeStarted).toHaveBeenCalledTimes(1);
+  });
+
+  it('creates image variants in the browser when the server does not support WebP', async () => {
+    const image = {
+      id: 12,
+      name: 'source.png',
+      url: '/storage/source.png',
+      mime_type: 'image/png',
+      extension: 'png',
+      size_bytes: 4096,
+      folder: 'uploads',
+      requires_auth: false,
+      source_available: true,
+      created_at: '2026-01-01T00:00:00Z',
+    };
+    const output = { variant: 'thumbnail', file: new File(['webp'], 'thumbnail.webp', { type: 'image/webp' }) };
+    const savedVariant = {
+      id: 13,
+      variant: 'thumbnail',
+      extension: 'webp',
+      size_bytes: 512,
+      storage_path: 'optimized/12/thumbnail.webp',
+    };
+    mocks.apiRequest.mockImplementation((path: string) => {
+      if (path === '/admin/media?optimizable=1&page=1&per_page=12') {
+        return Promise.resolve({ data: [image], meta: { last_page: 1 } });
+      }
+      if (path === '/admin/media/optimizer/capabilities') {
+        return Promise.resolve({
+          data: { images: { available: false, format: 'webp' }, videos: { available: false, format: 'mp4' } },
+        });
+      }
+      if (path === '/admin/media/12/optimization-check') {
+        return Promise.resolve({ data: { requires_confirmation: false, reason: null } });
+      }
+      throw new Error(`Unexpected API request: ${path}`);
+    });
+    mocks.apiBlob.mockResolvedValue(new Blob(['source']));
+    mocks.optimizeImageInBrowser.mockResolvedValue([output]);
+    mocks.apiMultipartRequest.mockResolvedValue({ data: savedVariant });
+
+    render(<MediaOptimizerTab />);
+    fireEvent.click(await screen.findByRole('button', { name: 'بهینه‌سازی و ساخت نسخه‌ها' }));
+
+    await waitFor(() => {
+      expect(mocks.apiBlob).toHaveBeenCalledWith('/admin/media/12/optimizer-source');
+      expect(mocks.optimizeImageInBrowser).toHaveBeenCalledWith(expect.any(Blob));
+      expect(mocks.apiMultipartRequest).toHaveBeenCalledWith(
+        '/admin/media/12/optimizer-variant',
+        expect.any(FormData),
+      );
+    });
+    const [, form] = mocks.apiMultipartRequest.mock.calls[0] as [string, FormData];
+    expect(form.get('variant')).toBe('thumbnail');
   });
 });

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 it('creates reusable WebP variants without changing the source image', function (): void {
+    if (! function_exists('imagewebp')) {
+        $this->markTestSkipped('The GD extension does not include WebP support.');
+    }
+
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
     Storage::fake('public');
@@ -70,10 +74,15 @@ it('reports when FFmpeg is unavailable without disabling image optimization', fu
     $capabilities = app(MediaOptimizationService::class)->capabilities();
 
     expect($capabilities['videos']['available'])->toBeFalse()
-        ->and($capabilities['images']['available'])->toBeTrue();
+        ->and($capabilities['images']['available'])
+        ->toBe(extension_loaded('gd') && function_exists('imagewebp'));
 });
 
 it('keeps generated files private when the original requires authentication', function (): void {
+    if (! function_exists('imagewebp')) {
+        $this->markTestSkipped('The GD extension does not include WebP support.');
+    }
+
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
     Storage::fake('public');
@@ -109,6 +118,10 @@ it('keeps generated files private when the original requires authentication', fu
 });
 
 it('stores a browser-generated poster as a reusable variant of the source video', function (): void {
+    if (! function_exists('imagejpeg')) {
+        $this->markTestSkipped('The GD extension does not include JPEG support.');
+    }
+
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
     Storage::fake('public');
@@ -141,6 +154,36 @@ it('stores a browser-generated poster as a reusable variant of the source video'
     expect($posterMedia->source_media_id)->toBe($source->id)
         ->and($posterMedia->requires_auth)->toBeFalse();
     Storage::disk('public')->assertExists($posterMedia->storage_path);
+});
+
+it('stores a browser-generated MP4 variant for a WebM source', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    Storage::fake('public');
+    Storage::fake('local');
+    $source = MediaFile::query()->create([
+        'name' => 'source.webm',
+        'url' => '/storage/uploads/source.webm',
+        'mime_type' => 'video/webm',
+        'extension' => 'webm',
+        'size_bytes' => 128,
+        'folder' => 'uploads',
+    ]);
+    $videoContents = str_pad("\x00\x00\x00\x18ftypisom", 256, "\x00");
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->post("/api/v1/admin/media/{$source->id}/optimizer-variant", [
+            'variant' => 'video_720',
+            'file' => UploadedFile::fake()->createWithContent('optimized.mp4', $videoContents),
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.variant', 'video_720')
+        ->assertJsonPath('data.mime_type', 'video/mp4');
+
+    $optimizedMedia = MediaFile::query()->findOrFail($response->json('data.id'));
+    expect($optimizedMedia->source_media_id)->toBe($source->id)
+        ->and($source->fresh()->mime_type)->toBe('video/webm')
+        ->and(Storage::disk('public')->exists($optimizedMedia->storage_path))->toBeTrue();
 });
 
 it('explains when a video poster cannot be generated without FFmpeg or a browser-generated poster', function (): void {
@@ -195,6 +238,31 @@ it('serves a video to the authenticated media manager for local browser conversi
     expect($media->fresh()->storage_path)->toBe('uploads/source.mp4');
 });
 
+it('serves an image source to the authenticated media manager for browser optimization', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $admin = User::role('super_admin')->firstOrFail();
+    Storage::fake('public');
+    $contents = 'original image bytes';
+    Storage::disk('public')->put('uploads/source.png', $contents);
+    $media = MediaFile::query()->create([
+        'name' => 'source.png',
+        'url' => '/storage/uploads/source.png',
+        'storage_path' => 'uploads/source.png',
+        'mime_type' => 'image/png',
+        'extension' => 'png',
+        'size_bytes' => strlen($contents),
+        'folder' => 'uploads',
+    ]);
+
+    $response = $this->actingAs($admin, 'sanctum')
+        ->get("/api/v1/admin/media/{$media->id}/optimizer-source")
+        ->assertOk()
+        ->assertHeader('Cache-Control', 'no-store, private');
+
+    expect($response->streamedContent())->toBe($contents);
+    expect($media->fresh()->storage_path)->toBe('uploads/source.png');
+});
+
 it('asks before processing a small source or replacing complete optimized variants', function (): void {
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
@@ -224,6 +292,10 @@ it('asks before processing a small source or replacing complete optimized varian
 });
 
 it('creates and serves a small reusable thumbnail instead of the original image', function (): void {
+    if (! function_exists('imagewebp')) {
+        $this->markTestSkipped('The GD extension does not include WebP support.');
+    }
+
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
     Storage::fake('public');
@@ -259,6 +331,10 @@ it('creates and serves a small reusable thumbnail instead of the original image'
 });
 
 it('recovers legacy originals stored directly below the public storage directory', function (): void {
+    if (! function_exists('imagewebp')) {
+        $this->markTestSkipped('The GD extension does not include WebP support.');
+    }
+
     $this->seed(DatabaseSeeder::class);
     $admin = User::role('super_admin')->firstOrFail();
     Storage::fake('public');

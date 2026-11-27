@@ -10,9 +10,9 @@ interface PreloaderSettingsEditorProps {
 }
 
 const sizeFields = [
-  { key: 'logo_size_mobile', label: 'اندازه لوگو در موبایل', icon: Smartphone, min: 32, max: 128, step: 4 },
-  { key: 'logo_size_tablet', label: 'اندازه لوگو در تبلت', icon: Tablet, min: 32, max: 128, step: 4 },
-  { key: 'logo_size_desktop', label: 'اندازه لوگو در دسکتاپ', icon: Monitor, min: 32, max: 128, step: 4 },
+  { key: 'logo_size_mobile', label: 'اندازه لوگو در موبایل', icon: Smartphone, min: 32, max: 256, step: 8 },
+  { key: 'logo_size_tablet', label: 'اندازه لوگو در تبلت', icon: Tablet, min: 32, max: 256, step: 8 },
+  { key: 'logo_size_desktop', label: 'اندازه لوگو در دسکتاپ', icon: Monitor, min: 32, max: 256, step: 8 },
   { key: 'text_size_mobile', label: 'اندازه نوشته در موبایل', icon: Smartphone, min: 10, max: 28, step: 1 },
   { key: 'text_size_tablet', label: 'اندازه نوشته در تبلت', icon: Tablet, min: 10, max: 28, step: 1 },
   { key: 'text_size_desktop', label: 'اندازه نوشته در دسکتاپ', icon: Monitor, min: 10, max: 28, step: 1 },
@@ -65,7 +65,7 @@ export const PreloaderSettingsEditor: React.FC<PreloaderSettingsEditorProps> = (
   );
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.7fr)]">
+    <div className="space-y-5">
       <section className="space-y-4 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <div>
           <h2 className="text-sm font-extrabold text-(--theme-text)">تنظیمات پریلودر</h2>
@@ -93,6 +93,30 @@ export const PreloaderSettingsEditor: React.FC<PreloaderSettingsEditorProps> = (
           <input type="checkbox" checked={current.enabled} onChange={(event) => update({ enabled: event.target.checked })} className="h-4 w-4 accent-(--theme-primary)" />
           نمایش این نوع پریلودر
         </label>
+        {mode === 'initial' && (
+          <label className="block space-y-1 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-xs">
+            <span className="flex justify-between font-semibold text-(--theme-text-muted)">
+              <span>مدت نمایش پریلودر ابتدای سایت</span>
+              <span>{(settings.initial_display_duration_ms / 1000).toFixed(1)} ثانیه</span>
+            </span>
+            <input
+              type="range"
+              min="0"
+              max="10000"
+              step="250"
+              value={settings.initial_display_duration_ms}
+              onChange={(event) => onChange({
+                ...settings,
+                initial_display_duration_ms: Number(event.target.value),
+              })}
+              className="w-full accent-(--theme-primary)"
+              aria-label="مدت نمایش پریلودر ابتدای سایت"
+            />
+            <span className="block text-[11px] leading-5 text-(--theme-text-muted)">
+              حداقل زمان نمایش است؛ اگر آماده‌سازی سایت بیشتر طول بکشد، پریلودر تا پایان بارگذاری می‌ماند.
+            </span>
+          </label>
+        )}
 
         <div className="space-y-2 rounded-xl border border-(--theme-border) p-3">
           <p className="text-xs font-bold text-(--theme-text)">چیدمان محتوای پریلودر</p>
@@ -203,9 +227,16 @@ export const PreloaderSettingsEditor: React.FC<PreloaderSettingsEditorProps> = (
         <div className="grid gap-3 sm:grid-cols-2">
           {sizeFields.map(({ key, label, icon: Icon, min, max, step }) => (
             <label key={key} className="space-y-1 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 text-xs">
-              <span className="flex items-center justify-between font-semibold text-(--theme-text)">
-                <span className="flex items-center gap-1.5"><Icon className="h-3.5 w-3.5" />{label}</span>
-                <span className="font-mono">{current[key]} px</span>
+              <span className="flex items-start justify-between gap-2 font-semibold text-(--theme-text)">
+                <span className="flex min-w-0 items-center gap-1.5 text-[11px] leading-5">
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span>{label}</span>
+                </span>
+                <span dir="ltr" className="shrink-0 rounded-full bg-(--theme-surface) px-2 py-1 font-mono text-[10px] leading-none text-(--theme-text-muted)">
+                  {key.startsWith('logo_size_')
+                    ? `${Math.round(current[key] / 128 * 100)}٪`
+                    : `${current[key]} px`}
+                </span>
               </span>
               <input
                 type="range"
@@ -215,21 +246,33 @@ export const PreloaderSettingsEditor: React.FC<PreloaderSettingsEditorProps> = (
                 value={current[key]}
                 onChange={(event) => update({ [key]: Number(event.target.value) })}
                 className="w-full accent-(--theme-primary)"
+                aria-label={label}
               />
             </label>
           ))}
         </div>
+        <p className="text-[11px] leading-5 text-(--theme-text-muted)">
+          اندازهٔ لوگوی خروجی تمام‌صفحه بر اساس نمایشگر محاسبه می‌شود؛ بزرگ‌نمایی تا ۲۰۰٪ اندازهٔ پایه (حداکثر ۶۴٪ ارتفاع و ۹۰٪ عرض صفحه) قابل تنظیم است.
+        </p>
 
       </section>
 
       <section className="space-y-3 rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
         <h3 className="text-xs font-extrabold text-(--theme-text)">پیش‌نمایش زنده · {mode === 'initial' ? 'لود اولیه' : 'لود داخلی'}</h3>
-        <div className="overflow-hidden rounded-xl border border-(--theme-border)" style={{ backgroundColor: mode === 'internal' ? 'var(--theme-surface-muted)' : '#0f172a' }}>
+        <div
+          className="overflow-hidden rounded-xl border border-(--theme-border)"
+          style={{
+            height: 'min(70dvh, 40rem)',
+            minHeight: '28rem',
+            backgroundColor: mode === 'internal' ? 'var(--theme-surface-muted)' : '#0f172a',
+          }}
+        >
           <EffectPreloader
             mode={mode}
             modeSettings={current}
             label="در حال آماده‌سازی نمونه..."
             fullScreen={false}
+            className="h-full"
           />
         </div>
         <p className="text-[11px] leading-5 text-(--theme-text-muted)">پیش‌نمایش اندازه‌های مختلف را بر اساس عرض موبایل، تبلت و دسکتاپ در خروجی واقعی اعمال می‌کند.</p>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BriefcaseBusiness, Cog, Factory, Gauge, Handshake, House, Newspaper } from 'lucide-react';
+import { Boxes, BriefcaseBusiness, Cog, Factory, Gauge, Handshake, House, Newspaper } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore.ts';
 import './HomeQuickNav.css';
 
@@ -28,6 +28,12 @@ const items: QuickNavItem[] = [
     labelFa: 'توانمندی‌ها',
     labelEn: 'Capabilities',
     icon: <Cog strokeWidth={1.8} />,
+  },
+  {
+    id: 'home-products',
+    labelFa: 'تجهیزات',
+    labelEn: 'Products',
+    icon: <Boxes strokeWidth={1.8} />,
   },
   {
     id: 'home-spotlight',

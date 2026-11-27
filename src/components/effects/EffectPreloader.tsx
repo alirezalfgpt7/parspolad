@@ -14,6 +14,7 @@ interface EffectPreloaderProps {
   fullScreen?: boolean;
   mode?: 'initial' | 'internal';
   modeSettings?: PreloaderModeSettings;
+  className?: string;
 }
 
 const getSizeBreakpoint = (width: number): 'mobile' | 'tablet' | 'desktop' => (
@@ -25,10 +26,13 @@ export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
   fullScreen = false,
   mode,
   modeSettings,
+  className,
 }) => {
-  const [sizeBreakpoint, setSizeBreakpoint] = React.useState(() => (
-    typeof window === 'undefined' ? 'desktop' : getSizeBreakpoint(window.innerWidth)
-  ));
+  const [viewport, setViewport] = React.useState(() => ({
+    width: typeof window === 'undefined' ? 1280 : window.innerWidth,
+    height: typeof window === 'undefined' ? 800 : window.innerHeight,
+  }));
+  const sizeBreakpoint = getSizeBreakpoint(viewport.width);
   const bootstrapSettings = useAppStore((state) => state.bootstrap?.preloader);
   const previewSettings = useAppStore((state) => state.previewPreloader);
   const cachedSettings = useAppStore((state) => state.cachedPreloader);
@@ -38,9 +42,9 @@ export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
   const settings = modeSettings || normalizePreloaderSettings(previewSettings || bootstrapSettings || cachedSettings)[settingsMode];
 
   React.useEffect(() => {
-    const updateSizeBreakpoint = () => setSizeBreakpoint(getSizeBreakpoint(window.innerWidth));
-    window.addEventListener('resize', updateSizeBreakpoint);
-    return () => window.removeEventListener('resize', updateSizeBreakpoint);
+    const updateViewport = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
   }, []);
 
   if (!settings.enabled) return null;
@@ -57,8 +61,16 @@ export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
   const showDots = contentEnabled && settings.show_dots;
   const showScene = showLogo || showSpinner;
   const transparentBackground = settings.background_color === 'transparent';
-  const logoSize = settings[`logo_size_${sizeBreakpoint}`];
+  const configuredLogoSize = settings[`logo_size_${sizeBreakpoint}`];
+  const maxLogoSize = Math.min(viewport.height * 0.64, viewport.width * 0.9);
+  const logoSize = fullScreen
+    ? Math.max(32, Math.round(Math.min(
+        maxLogoSize,
+        Math.min(viewport.height * 0.32, viewport.width * 0.68) * configuredLogoSize / 128,
+      )))
+    : configuredLogoSize;
   const textSize = settings[`text_size_${sizeBreakpoint}`];
+  const spinnerSize = showSpinner ? Math.max(112, showLogo ? Math.round(logoSize * 1.35) : 112) : logoSize;
   const style = {
     backgroundColor: transparentBackground ? undefined : settings.background_color,
     '--preloader-active-text-size': `${textSize}px`,
@@ -75,7 +87,8 @@ export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
         'effect-preloader relative flex flex-col items-center justify-center gap-5 overflow-hidden',
         fullScreen
           ? cn('fixed inset-0 z-100 min-h-dvh text-white', !transparentBackground && 'bg-slate-950')
-          : 'min-h-48 w-full text-slate-700 dark:text-slate-200'
+          : 'min-h-48 w-full text-slate-700 dark:text-slate-200',
+        className,
       )}
     >
       {backgroundMedia && (backgroundVideo ? (
@@ -113,12 +126,12 @@ export const EffectPreloader: React.FC<EffectPreloaderProps> = ({
         <div
           className="effect-loader-scene relative z-10 grid place-items-center"
           style={{
-            width: `${showSpinner ? 112 : logoSize}px`,
-            height: `${showSpinner ? 112 : logoSize}px`,
+            width: `${spinnerSize}px`,
+            height: `${spinnerSize}px`,
           }}
           aria-hidden="true"
         >
-          {showSpinner && <QuartetSpinnerEffect />}
+          {showSpinner && <QuartetSpinnerEffect size={spinnerSize} />}
           {showLogo && (
             <div
               className={cn('effect-preloader-logo-frame', !settings.show_logo_frame && 'effect-preloader-logo-frame--plain')}

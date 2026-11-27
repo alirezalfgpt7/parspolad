@@ -248,6 +248,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   return (
     <aside
       id="admin-sidebar"
+      dir={language === 'fa' ? 'rtl' : 'ltr'}
       data-mobile-open={mobileOpen}
       className={cn('admin-sidebar', mini ? 'admin-sidebar--mini' : 'admin-sidebar--wide')}
     >
@@ -278,7 +279,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </Link>
         </div>
 
-        <div className="admin-sidebar-profile">
+        <Link
+          to="/admin/profile"
+          onClick={onCloseMobile}
+          title={mini ? (language === 'fa' ? 'پروفایل' : 'Profile') : undefined}
+          aria-label={language === 'fa' ? 'پروفایل کاربری' : 'User profile'}
+          className="admin-sidebar-profile"
+        >
           <ZeroBrokenImage
             src={user?.avatar || '/storage/logos/logo-small.png'}
             alt=""
@@ -290,7 +297,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               <span className="admin-sidebar-profile-role">{user?.email || 'مدیریت سامانه'}</span>
             </span>
           )}
-        </div>
+        </Link>
       </div>
 
       <div className={cn('admin-sidebar-search', mini && 'admin-sidebar-search--mini')}>

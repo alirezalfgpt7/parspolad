@@ -65,7 +65,11 @@ class MediaOptimizationController extends Controller
     ): StreamedResponse {
         abort_unless($request->user()?->can('media.manage'), 403);
         abort_unless($media->source_media_id === null, 422, 'فقط فایل اصلی قابل دریافت برای پردازش است.');
-        abort_unless(in_array($media->mime_type, ['video/mp4', 'video/webm'], true), 422, 'این رسانه ویدئو نیست.');
+        abort_unless(
+            in_array($media->mime_type, ['video/mp4', 'video/webm', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'], true),
+            422,
+            'این نوع رسانه برای پردازش مرورگری پشتیبانی نمی‌شود.',
+        );
 
         $storage->setVisibility($media, (bool) $media->requires_auth);
         $media->refresh();
@@ -103,17 +107,26 @@ class MediaOptimizationController extends Controller
         MediaOptimizationService $optimizer,
     ): JsonResponse {
         abort_unless($request->user()?->can('media.manage'), 403);
+        $image = str_starts_with($media->mime_type, 'image/');
         $data = $request->validate([
-            'variant' => ['required', 'string', Rule::in(['video_720', 'poster'])],
+            'variant' => [
+                'required',
+                'string',
+                Rule::in($image ? ['thumbnail', 'content', 'hero'] : ['video_720', 'poster']),
+            ],
             'file' => ['required', 'file', 'max:25600'],
         ]);
 
         $file = $request->file('file');
         $contents = $file->get();
         abort_unless(is_string($contents), 422, 'خواندن نسخهٔ تولیدشده ناموفق بود.');
-        $extension = $data['variant'] === 'poster' ? 'jpg' : 'mp4';
+        $extension = match ($data['variant']) {
+            'poster' => 'jpg',
+            'thumbnail', 'content', 'hero' => 'webp',
+            default => 'mp4',
+        };
         $mimeType = $contentValidator->validate($data['variant'].'.'.$extension, $contents);
-        $variant = $optimizer->storeBrowserVideoVariant($media, $data['variant'], $contents, $mimeType);
+        $variant = $optimizer->storeBrowserVariant($media, $data['variant'], $contents, $mimeType);
 
         return response()->json(['data' => $variant]);
     }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, PanelBottom, PanelTop, Plus, Save, Trash2 } from 'lucide-react';
+import { ChevronDown, GripVertical, PanelBottom, PanelTop, Plus, Save, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../services/api.ts';
 import { useAppStore } from '../../store/useAppStore.ts';
 import type { Menu, MenuItem } from '../../types/index.ts';
@@ -31,12 +31,26 @@ const menuItemAccents = [
   },
 ];
 
+type DraggedMenuItem =
+  | { type: 'root'; menuId: number; index: number }
+  | { type: 'child'; menuId: number; parentIndex: number; index: number };
+
+const reorderItems = (items: MenuItem[], fromIndex: number, toIndex: number): MenuItem[] => {
+  const reordered = [...items];
+  const [moved] = reordered.splice(fromIndex, 1);
+  if (!moved) return items;
+  reordered.splice(toIndex, 0, moved);
+
+  return reordered.map((item, index) => ({ ...item, sort_order: index + 1 }));
+};
+
 export const MegaMenuAdminPage: React.FC = () => {
   const { fetchBootstrap, addToast } = useAppStore();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [selectedMenuId, setSelectedMenuId] = useState<number>(1);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(() => new Set());
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'root'; index: number } | { type: 'child'; parentIndex: number; childIndex: number } | null>(null);
+  const [draggedItem, setDraggedItem] = useState<DraggedMenuItem | null>(null);
 
   useEffect(() => {
     apiRequest<{ data: Menu[] }>('/admin/menus')
@@ -62,6 +76,66 @@ export const MegaMenuAdminPage: React.FC = () => {
     if (!currentMenu) return;
     const nextItems = currentMenu.items.map((item, i) => (i === idx ? { ...item, ...patch } : item));
     setMenus((prev) => prev.map((m) => (m.id === currentMenu.id ? { ...m, items: nextItems } : m)));
+  };
+
+  const startDragging = (event: React.DragEvent<HTMLButtonElement>, item: DraggedMenuItem) => {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', `${item.type}:${item.index}`);
+    setDraggedItem(item);
+  };
+
+  const dropRootItem = (event: React.DragEvent<HTMLDivElement>, targetIndex: number) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (
+      !currentMenu
+      || draggedItem?.type !== 'root'
+      || draggedItem.menuId !== currentMenu.id
+      || draggedItem.index === targetIndex
+    ) {
+      setDraggedItem(null);
+      return;
+    }
+
+    setMenus((previous) => previous.map((menu) => (
+      menu.id === currentMenu.id
+        ? { ...menu, items: reorderItems(menu.items, draggedItem.index, targetIndex) }
+        : menu
+    )));
+    setDraggedItem(null);
+  };
+
+  const dropChildItem = (
+    event: React.DragEvent<HTMLDivElement>,
+    parentIndex: number,
+    targetIndex: number,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (
+      !currentMenu
+      || draggedItem?.type !== 'child'
+      || draggedItem.menuId !== currentMenu.id
+      || draggedItem.parentIndex !== parentIndex
+      || draggedItem.index === targetIndex
+    ) {
+      setDraggedItem(null);
+      return;
+    }
+
+    setMenus((previous) => previous.map((menu) => {
+      if (menu.id !== currentMenu.id) return menu;
+      const parent = menu.items[parentIndex];
+      if (!parent?.children) return menu;
+
+      const items = [...menu.items];
+      items[parentIndex] = {
+        ...parent,
+        children: reorderItems(parent.children, draggedItem.index, targetIndex),
+      };
+      return { ...menu, items };
+    }));
+    setDraggedItem(null);
   };
 
   const addChild = (idx: number) => {
@@ -146,7 +220,7 @@ export const MegaMenuAdminPage: React.FC = () => {
         icon={PanelTop}
         eyebrow="Navigation & mega menu"
         title="مدیریت مگا منو و منوهای هدر/فوتر"
-        description="زیرمنوها در مگا منوی سایت به‌شکل فهرست متنی نمایش داده می‌شوند؛ با رفتن نشانگر یا فوکوس روی هر مورد، تصویر و توضیح همان مورد در پیش‌نمایش دیده می‌شود."
+        description="زیرمنوها در مگا منوی سایت به‌شکل فهرست متنی نمایش داده می‌شوند؛ با رفتن نشانگر یا فوکوس روی هر مورد، تصویر و توضیح همان مورد در پیش‌نمایش دیده می‌شود. برای تغییر ترتیب، دستگیره کنار آیتم را بکشید و سپس منو را ذخیره کنید."
         actions={(
           <div className="flex flex-wrap items-center gap-3">
           <div role="group" aria-label="انتخاب منوی اصلی" className="flex flex-wrap gap-1 rounded-2xl border border-(--theme-border) bg-(--theme-surface-muted) p-1.5">
@@ -214,24 +288,44 @@ export const MegaMenuAdminPage: React.FC = () => {
             const accent = menuItemAccents[idx % menuItemAccents.length];
             const isCollapsed = !expandedItems.has(item.id);
             return (
-            <div key={item.id} className={`overflow-hidden rounded-2xl border border-(--theme-card-border) border-s-4 ${accent.border} bg-(--theme-card-surface) shadow-(--theme-card-shadow)`}>
-              <button
-                type="button"
-                aria-label={`${isCollapsed ? 'بازکردن' : 'بستن'} ${item.title_fa || `آیتم اصلی ${idx + 1}`}`}
-                aria-expanded={!isCollapsed}
-                onClick={() => toggleItemCollapsed(item.id)}
-                className={`flex w-full items-center gap-3 border-b px-5 py-2.5 text-start ${accent.header}`}
-              >
-                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${accent.badge}`}>
-                  {String(idx + 1).padStart(2, '0')}
-                </span>
-                <DynamicLucideIcon name={item.icon || undefined} fallback="Layers" className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />
-                <span className="truncate text-xs font-bold text-(--theme-text)">
-                  {item.title_fa || `آیتم اصلی ${idx + 1}`}
-                </span>
-                <span className="ms-auto shrink-0 text-[10px] font-medium text-(--theme-text-muted)">آیتم منوی اصلی</span>
-                <ChevronDown className={`h-4 w-4 shrink-0 text-(--theme-text-muted) transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
-              </button>
+            <div
+              key={item.id}
+              onDragOver={(event) => {
+                if (draggedItem?.type === 'root') event.preventDefault();
+              }}
+              onDrop={(event) => dropRootItem(event, idx)}
+              className={`overflow-hidden rounded-2xl border border-(--theme-card-border) border-s-4 ${accent.border} bg-(--theme-card-surface) shadow-(--theme-card-shadow) ${draggedItem?.type === 'root' && draggedItem.index === idx ? 'opacity-50' : ''}`}
+            >
+              <div className={`flex items-center border-b ${accent.header}`}>
+                <button
+                  type="button"
+                  aria-label={`${isCollapsed ? 'بازکردن' : 'بستن'} ${item.title_fa || `آیتم اصلی ${idx + 1}`}`}
+                  aria-expanded={!isCollapsed}
+                  onClick={() => toggleItemCollapsed(item.id)}
+                  className="flex min-w-0 flex-1 items-center gap-3 px-5 py-2.5 text-start"
+                >
+                  <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-xs font-extrabold ${accent.badge}`}>
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <DynamicLucideIcon name={item.icon || undefined} fallback="Layers" className="h-4 w-4 shrink-0 text-(--theme-primary-ink)" />
+                  <span className="truncate text-xs font-bold text-(--theme-text)">
+                    {item.title_fa || `آیتم اصلی ${idx + 1}`}
+                  </span>
+                  <span className="ms-auto shrink-0 text-[10px] font-medium text-(--theme-text-muted)">آیتم منوی اصلی</span>
+                  <ChevronDown className={`h-4 w-4 shrink-0 text-(--theme-text-muted) transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`} />
+                </button>
+                <button
+                  type="button"
+                  draggable
+                  aria-label={`جابجایی آیتم اصلی ${item.title_fa}`}
+                  title="برای تغییر ترتیب بکشید"
+                  onDragStart={(event) => startDragging(event, { type: 'root', menuId: currentMenu.id, index: idx })}
+                  onDragEnd={() => setDraggedItem(null)}
+                  className="cursor-grab px-3 py-3 text-(--theme-text-muted) active:cursor-grabbing"
+                >
+                  <GripVertical className="h-4 w-4" />
+                </button>
+              </div>
               <div hidden={isCollapsed} className={isCollapsed ? 'hidden' : 'space-y-4 p-5'}>
                 <div className="grid gap-3 sm:grid-cols-5">
                 <label className="block space-y-1 text-xs font-medium text-(--theme-text)">
@@ -279,8 +373,38 @@ export const MegaMenuAdminPage: React.FC = () => {
                 {item.children && item.children.length > 0 && (
                   <div className="grid gap-3 border-t border-(--theme-border) pt-4 sm:grid-cols-2">
                     {item.children.map((ch, cIdx) => (
-                    <div key={ch.id} className="space-y-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3">
+                    <div
+                      key={ch.id}
+                      onDragOver={(event) => {
+                        if (
+                          draggedItem?.type === 'root'
+                          || (draggedItem?.type === 'child' && draggedItem.parentIndex === idx)
+                        ) {
+                          event.preventDefault();
+                        }
+                      }}
+                      onDrop={(event) => draggedItem?.type === 'root'
+                        ? dropRootItem(event, idx)
+                        : dropChildItem(event, idx, cIdx)}
+                      className={`space-y-2 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-3 ${draggedItem?.type === 'child' && draggedItem.parentIndex === idx && draggedItem.index === cIdx ? 'opacity-50' : ''}`}
+                    >
                       <div className="flex items-center justify-between gap-2">
+                        <button
+                          type="button"
+                          draggable
+                          aria-label={`جابجایی زیرمنوی ${ch.title_fa}`}
+                          title="برای تغییر ترتیب بکشید"
+                          onDragStart={(event) => startDragging(event, {
+                            type: 'child',
+                            menuId: currentMenu.id,
+                            parentIndex: idx,
+                            index: cIdx,
+                          })}
+                          onDragEnd={() => setDraggedItem(null)}
+                          className="cursor-grab p-1 text-(--theme-text-muted) active:cursor-grabbing"
+                        >
+                          <GripVertical className="h-4 w-4" />
+                        </button>
                         <label className="min-w-0 flex-1 space-y-1 text-xs font-medium text-(--theme-text)">
                           <span className="block">عنوان فارسی *</span>
                           <input

@@ -118,6 +118,7 @@ export const LoginAppearanceAdminPage: React.FC = () => {
   const [preloaderCfg, setPreloaderCfg] = useState<PreloaderSettings>({ ...DEFAULT_PRELOADER_SETTINGS });
 
   const [previewFlip, setPreviewFlip] = useState<'login' | 'register'>('login');
+  const [selectedSystemPageKey, setSelectedSystemPageKey] = useState(SYSTEM_PAGE_CARDS[0].key);
 
   useEffect(() => {
     let active = true;
@@ -676,8 +677,21 @@ export const LoginAppearanceAdminPage: React.FC = () => {
           {/* System Pages */}
           <section className="rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) p-5 shadow-(--theme-card-shadow)">
             <h2 className="mb-4 text-base font-extrabold text-(--theme-text)">متون و لوگوی صفحات سیستمی و بخش ویژه صفحه اصلی</h2>
-            <div className="grid items-start gap-5 lg:grid-cols-2">
-              {SYSTEM_PAGE_CARDS.map((card) => {
+            <div className="space-y-4">
+              <label className="block max-w-xl space-y-1.5 text-xs">
+                <span className="font-semibold text-(--theme-text-muted)">انتخاب صفحه برای ویرایش</span>
+                <select
+                  aria-label="انتخاب صفحه سیستمی"
+                  value={selectedSystemPageKey}
+                  onChange={(event) => setSelectedSystemPageKey(event.target.value)}
+                  className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2.5 text-sm text-(--theme-input-text)"
+                >
+                  {SYSTEM_PAGE_CARDS.map((card) => (
+                    <option key={card.key} value={card.key}>{card.label}</option>
+                  ))}
+                </select>
+              </label>
+              {SYSTEM_PAGE_CARDS.filter((card) => card.key === selectedSystemPageKey).map((card) => {
                 const entry = pagesConfig[card.key] || {};
                 return (
                   <div key={card.key} className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
