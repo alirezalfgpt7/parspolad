@@ -33,11 +33,14 @@ it('provides fillable-field metadata and CRUD for generic CMS resources', functi
         ->assertJsonPath('data.fields.2.options.0.label_fa', 'ایمیل')
         ->assertJsonPath('data.fields.2.options.0.label_en', 'Email');
 
-    $this->withToken($token)->getJson('/api/v1/admin/content-resources')
+    $resources = $this->withToken($token)->getJson('/api/v1/admin/content-resources')
         ->assertOk()
         ->assertJsonPath('data.0.description_fa', 'دسته‌بندی پروژه‌ها و مشخصات دوزبانهٔ آن‌ها.')
         ->assertJsonPath('data.0.usage_fa', 'در فهرست و فیلتر پروژه‌های سایت استفاده می‌شود.')
-        ->assertJsonPath('data.11.related_admin_path', '/admin/login-appearance');
+        ->json('data');
+
+    expect(collect($resources)->firstWhere('key', 'kpis'))
+        ->toMatchArray(['related_admin_path' => '/admin/login-appearance']);
 
     $articleSchema = $this->withToken($token)->getJson('/api/v1/admin/content-schema/articles')
         ->assertOk()

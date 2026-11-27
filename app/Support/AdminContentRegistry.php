@@ -8,6 +8,7 @@ use App\Models\Banner;
 use App\Models\Department;
 use App\Models\Faq;
 use App\Models\Kpi;
+use App\Models\MachineryAsset;
 use App\Models\NotificationTemplate;
 use App\Models\Page;
 use App\Models\Partner;
@@ -23,6 +24,7 @@ class AdminContentRegistry
         'faqs' => Faq::class,
         'services' => Service::class,
         'products' => Product::class,
+        'machinery' => MachineryAsset::class,
         'departments' => Department::class,
         'team' => TeamMember::class,
         'partners' => Partner::class,
@@ -39,6 +41,7 @@ class AdminContentRegistry
         'faqs' => 'pages.manage',
         'services' => 'pages.manage',
         'products' => 'pages.manage',
+        'machinery' => 'pages.manage',
         'departments' => 'pages.manage',
         'team' => 'pages.manage',
         'partners' => 'pages.manage',
@@ -55,6 +58,7 @@ class AdminContentRegistry
         'faqs' => ['question_fa', 'answer_fa'],
         'services' => ['slug', 'title_fa', 'title_en', 'summary_fa', 'image_url'],
         'products' => ['slug', 'name_fa', 'name_en', 'category_fa', 'category_en', 'model_code', 'standard', 'summary_fa', 'image_url'],
+        'machinery' => [],
         'departments' => ['name_fa', 'name_en', 'head_name_fa', 'head_name_en', 'head_title_fa', 'head_title_en'],
         'team' => ['department_id', 'name_fa', 'name_en', 'role_fa', 'role_en'],
         'partners' => ['name_fa', 'name_en', 'logo_url'],
@@ -71,6 +75,7 @@ class AdminContentRegistry
         'faqs' => ['fa' => 'پرسش‌های متداول', 'en' => 'FAQs'],
         'services' => ['fa' => 'خدمات', 'en' => 'Services'],
         'products' => ['fa' => 'محصولات', 'en' => 'Products'],
+        'machinery' => ['fa' => 'ماشین‌آلات', 'en' => 'Machinery'],
         'departments' => ['fa' => 'واحدهای سازمانی', 'en' => 'Departments'],
         'team' => ['fa' => 'اعضای تیم', 'en' => 'Team members'],
         'partners' => ['fa' => 'کارفرمایان و شرکا', 'en' => 'Clients & partners'],
@@ -97,8 +102,14 @@ class AdminContentRegistry
         ],
         'products' => [
             'description_fa' => 'اطلاعات دوزبانهٔ محصول، مدل، مشخصات فنی، تصویر و فایل کاتالوگ.',
-            'usage_fa' => 'در فهرست عمومی محصولات و صفحهٔ جزئیات محصول استفاده می‌شود.',
+            'usage_fa' => 'در فهرست عمومی محصولات و صفحهٔ مستقل هر محصول بر اساس شناسهٔ یکتا نمایش داده می‌شود.',
             'public_path' => '/products#products-list',
+            'related_admin_path' => null,
+        ],
+        'machinery' => [
+            'description_fa' => 'فهرست ماشین‌آلات و تجهیزات تولیدی؛ همهٔ مشخصات اختیاری هستند و مقادیر ناموجود خالی می‌مانند.',
+            'usage_fa' => 'در بخش ماشین‌آلات صفحهٔ دربارهٔ شرکت نمایش داده می‌شود.',
+            'public_path' => '/about#machinery-inventory',
             'related_admin_path' => null,
         ],
         'articles' => [
@@ -244,6 +255,11 @@ class AdminContentRegistry
         'department' => ['fa' => 'واحد سازمانی', 'en' => 'Department'],
         'role' => ['fa' => 'سمت', 'en' => 'Role'],
         'model_code' => ['fa' => 'کد مدل', 'en' => 'Model code'],
+        'asset_code' => ['fa' => 'کد دستگاه', 'en' => 'Asset code'],
+        'manufacturer' => ['fa' => 'کشور/کارخانه سازنده', 'en' => 'Manufacturer'],
+        'serial_number' => ['fa' => 'شماره سریال', 'en' => 'Serial number'],
+        'model' => ['fa' => 'مدل / مشخصات اصلی', 'en' => 'Model / primary specification'],
+        'notes' => ['fa' => 'یادداشت', 'en' => 'Notes'],
         'pressure_rating' => ['fa' => 'ردهٔ فشار', 'en' => 'Pressure rating'],
         'specs' => ['fa' => 'مشخصات فنی (فارسی)', 'en' => 'Specifications (Persian)'],
         'specs_en' => ['fa' => 'مشخصات فنی (انگلیسی)', 'en' => 'Specifications (English)'],

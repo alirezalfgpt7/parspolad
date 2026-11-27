@@ -7,6 +7,8 @@ interface SeoHeadProps {
   image?: string;
   canonicalUrl?: string;
   language?: 'fa' | 'en';
+  openGraphType?: 'website' | 'article' | 'product';
+  structuredData?: Record<string, unknown>;
 }
 
 const setMeta = (selector: string, attributes: Record<string, string>, content: string): void => {
@@ -36,6 +38,8 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
   image,
   canonicalUrl,
   language = 'fa',
+  openGraphType = 'website',
+  structuredData,
 }) => {
   const company = useAppStore((state) => state.bootstrap?.company);
   const seo = useAppStore((state) => state.bootstrap?.seo);
@@ -80,7 +84,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
 
     setMeta('meta[name="description"]', { name: 'description' }, pageDescription);
     setMeta('meta[name="robots"]', { name: 'robots' }, robots);
-    setMeta('meta[property="og:type"]', { property: 'og:type' }, 'website');
+    setMeta('meta[property="og:type"]', { property: 'og:type' }, openGraphType);
     setMeta('meta[property="og:site_name"]', { property: 'og:site_name' }, brand);
     setMeta('meta[property="og:title"]', { property: 'og:title' }, fullTitle);
     setMeta('meta[property="og:description"]', { property: 'og:description' }, pageDescription);
@@ -126,6 +130,23 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
       schema.dataset.seoPageSchema = 'true';
       document.head.append(schema);
     }
+    const pageSchema = structuredData
+      ? {
+          ...structuredData,
+          '@id': `${pageUrl}#${openGraphType}`,
+          url: pageUrl,
+          inLanguage: language === 'fa' ? 'fa-IR' : 'en-US',
+        }
+      : {
+          '@type': 'WebPage',
+          '@id': `${pageUrl}#webpage`,
+          name: fullTitle,
+          description: pageDescription,
+          url: pageUrl,
+          inLanguage: language === 'fa' ? 'fa-IR' : 'en-US',
+          isPartOf: { '@id': `${window.location.origin}/#organization` },
+          ...(absoluteImage ? { primaryImageOfPage: absoluteImage } : {}),
+        };
     schema.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@graph': [
@@ -138,16 +159,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
           ...(company?.office_email ? { email: company.office_email } : {}),
           ...(company?.office_phone ? { telephone: company.office_phone } : {}),
         },
-        {
-          '@type': 'WebPage',
-          '@id': `${pageUrl}#webpage`,
-          name: fullTitle,
-          description: pageDescription,
-          url: pageUrl,
-          inLanguage: language === 'fa' ? 'fa-IR' : 'en-US',
-          isPartOf: { '@id': `${window.location.origin}/#organization` },
-          ...(absoluteImage ? { primaryImageOfPage: absoluteImage } : {}),
-        },
+        pageSchema,
       ],
     }).replace(/</g, '\\u003c');
   }, [
@@ -156,6 +168,8 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     image,
     canonicalUrl,
     language,
+    openGraphType,
+    structuredData,
     brand,
     siteTitle,
     defaultDescription,

@@ -7,6 +7,7 @@ use App\Models\Banner;
 use App\Models\Kpi;
 use App\Models\Page;
 use App\Models\Partner;
+use App\Models\Product;
 use App\Models\Project;
 use App\Models\Service;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,6 +26,7 @@ class HomepageSectionsService
             'projects' => $this->projects($this->section($sections, 'projects', ['latest', 'oldest', 'featured', 'selected'], 6)),
             'articles' => $this->articles($this->section($sections, 'articles', ['latest', 'oldest', 'selected'], 3)),
             'services' => $this->services($this->section($sections, 'services', ['ordered', 'selected'], 4)),
+            'products' => $this->products($this->section($sections, 'products', ['ordered', 'selected'], 4)),
             'partners' => $this->partners($this->section($sections, 'partners', ['ordered', 'selected'], 50)),
             'kpis' => $this->kpis($this->section($sections, 'kpis', ['ordered', 'selected'], 50)),
             'banners' => $this->banners($this->section($sections, 'banners', ['ordered', 'selected'], 50)),
@@ -86,6 +88,16 @@ class HomepageSectionsService
         ]);
 
         return $this->selectRecords($query, $settings, ['sort_order', 'asc']);
+    }
+
+    private function products(array $settings): Collection
+    {
+        $query = Product::query()->select([
+            'id', 'slug', 'name_fa', 'name_en', 'category_fa', 'category_en',
+            'model_code', 'summary_fa', 'summary_en', 'image_url', 'catalog_url',
+        ]);
+
+        return $this->selectRecords($query, $settings, ['id', 'asc']);
     }
 
     private function partners(array $settings): Collection

@@ -11,6 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleAndAdminSeeder::class,
             PortalContentSeeder::class,
+            SourceCatalogSeeder::class,
+            SourceDocumentsSeeder::class,
         ]);
     }
 }

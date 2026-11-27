@@ -6,11 +6,14 @@ use Database\Seeders\DatabaseSeeder;
 
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
-it('opens the frontend instead of exposing the API status on the root URL', function (): void {
+it('serves the frontend shell with server-rendered SEO on the root URL', function (): void {
     config(['app.frontend_url' => 'http://localhost:3000']);
 
     $this->get('/')
-        ->assertRedirect('http://localhost:3000');
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/html; charset=UTF-8')
+        ->assertSee('rel="canonical"', false)
+        ->assertSee('application/ld+json');
 });
 
 it('provides the legacy frontend bootstrap fields from Laravel data', function (): void {
@@ -29,7 +32,7 @@ it('provides the legacy frontend bootstrap fields from Laravel data', function (
             'is_authenticated',
         ]);
 
-    $this->getJson('/api/v1/products')->assertOk()->assertJsonCount(6, 'data');
+    $this->getJson('/api/v1/products')->assertOk()->assertJsonCount(9, 'data');
     $this->getJson('/api/v1/articles')->assertOk()->assertJsonCount(3, 'data');
 });
 
@@ -40,8 +43,8 @@ it('supports protected admin content endpoints and public account registration',
     $this->withToken($token)
         ->getJson('/api/v1/admin/pages')
         ->assertOk()
-        ->assertJsonCount(14, 'data');
-    $this->withToken($token)->getJson('/api/v1/admin/contracts')->assertOk()->assertJsonCount(5, 'data');
+        ->assertJsonCount(15, 'data');
+    $this->withToken($token)->getJson('/api/v1/admin/contracts')->assertOk()->assertJsonCount(10, 'data');
     $this->withToken($token)->getJson('/api/v1/admin/licenses')->assertOk()->assertJsonCount(8, 'data');
     $this->withToken($token)->getJson('/api/v1/admin/settings')
         ->assertOk()

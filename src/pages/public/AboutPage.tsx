@@ -17,15 +17,54 @@ import {
   WaveHeroEffect,
 } from '../../components/effects/index.ts';
 
+interface MachineryAssetRecord {
+  id: number;
+  name_fa: string | null;
+  name_en: string | null;
+  asset_code: string | null;
+  model: string | null;
+  year: string | null;
+  location_fa: string | null;
+  location_en: string | null;
+  manufacturer_fa: string | null;
+  manufacturer_en: string | null;
+  serial_number: string | null;
+  notes_fa: string | null;
+  notes_en: string | null;
+}
+
 export const AboutPage: React.FC = () => {
   const language = useAppStore((s) => s.language);
   const [page, setPage] = useState<PageContent | null>(null);
   const [error, setError] = useState('');
+  const [machinery, setMachinery] = useState<MachineryAssetRecord[]>([]);
+  const [machineryError, setMachineryError] = useState('');
+  const [machineryLoading, setMachineryLoading] = useState(true);
 
   useEffect(() => {
     apiRequest<{ data: PageContent }>('/pages/about')
       .then((r) => setPage(r.data))
       .catch((requestError: unknown) => setError(requestError instanceof Error ? requestError.message : 'دریافت صفحه ناموفق بود.'));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    apiRequest<{ data: MachineryAssetRecord[] }>('/machinery')
+      .then(({ data }) => {
+        if (active) setMachinery(data);
+      })
+      .catch((requestError: unknown) => {
+        if (active) {
+          setMachineryError(requestError instanceof Error ? requestError.message : 'دریافت فهرست ماشین‌آلات ناموفق بود.');
+        }
+      })
+      .finally(() => {
+        if (active) setMachineryLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const metadata = page?.metadata ?? {};
@@ -165,6 +204,68 @@ export const AboutPage: React.FC = () => {
               </div>
             )}
           </div>
+
+          <section id="machinery-inventory" className="space-y-4">
+            <div>
+              <h2 className="text-xl font-extrabold text-(--theme-text)">
+                {language === 'fa' ? 'فهرست ماشین‌آلات و تجهیزات تولیدی' : 'Manufacturing Machinery & Equipment'}
+              </h2>
+              <p className="mt-1 text-sm text-(--theme-text-muted)">
+                {language === 'fa'
+                  ? 'مشخصات و شماره‌سریال‌ها مطابق فهرست منبع؛ موارد ناموجود در سند با خط تیره نمایش داده می‌شوند.'
+                  : 'Details and serial numbers are shown as recorded in the source register; unavailable source values are shown as a dash.'}
+              </p>
+            </div>
+            {machineryError ? (
+              <p role="alert" className="text-sm text-red-600">{machineryError}</p>
+            ) : machineryLoading ? (
+              <p className="text-sm text-(--theme-text-muted)">
+                {language === 'fa' ? 'در حال دریافت فهرست ماشین‌آلات...' : 'Loading machinery inventory...'}
+              </p>
+            ) : machinery.length === 0 ? (
+              <p className="text-sm text-(--theme-text-muted)">
+                {language === 'fa' ? 'اطلاعاتی برای نمایش ثبت نشده است.' : 'No machinery records are available.'}
+              </p>
+            ) : (
+              <div className="overflow-x-auto rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">
+                <table dir={language === 'fa' ? 'rtl' : 'ltr'} className="min-w-[1100px] w-full text-sm">
+                  <thead className="bg-(--theme-surface-muted) text-(--theme-text)">
+                    <tr>
+                      {[
+                        language === 'fa' ? 'نام دستگاه' : 'Equipment',
+                        language === 'fa' ? 'کد دستگاه' : 'Asset code',
+                        language === 'fa' ? 'مدل / مشخصات' : 'Model / specifications',
+                        language === 'fa' ? 'سال ساخت/خرید' : 'Built / purchased',
+                        language === 'fa' ? 'محل استقرار' : 'Location',
+                        language === 'fa' ? 'کشور/کارخانه سازنده' : 'Manufacturer',
+                        language === 'fa' ? 'شماره سریال' : 'Serial number',
+                        language === 'fa' ? 'یادداشت' : 'Notes',
+                      ].map((label) => (
+                        <th key={label} scope="col" className="whitespace-nowrap px-4 py-3 text-start font-bold">{label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-(--theme-border)">
+                    {machinery.map((asset) => {
+                      const value = (text: string | null): string => text?.trim() || '—';
+                      return (
+                        <tr key={asset.id} className="align-top text-(--theme-text-muted)">
+                          <td className="px-4 py-3 font-semibold text-(--theme-text)">{value(language === 'fa' ? asset.name_fa : asset.name_en)}</td>
+                          <td className="px-4 py-3 font-mono">{value(asset.asset_code)}</td>
+                          <td className="px-4 py-3">{value(asset.model)}</td>
+                          <td className="px-4 py-3 tabular-nums">{value(asset.year)}</td>
+                          <td className="px-4 py-3">{value(language === 'fa' ? asset.location_fa : asset.location_en)}</td>
+                          <td className="px-4 py-3">{value(language === 'fa' ? asset.manufacturer_fa : asset.manufacturer_en)}</td>
+                          <td className="px-4 py-3 font-mono">{value(asset.serial_number)}</td>
+                          <td className="max-w-sm px-4 py-3">{value(language === 'fa' ? asset.notes_fa : asset.notes_en)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
 
           {/* Effect 004: Overlapping Card Reveal Stack */}
           <section className="space-y-4">

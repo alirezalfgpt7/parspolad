@@ -143,6 +143,11 @@ export default defineConfig(() => {
             return;
           }
           const distDir = path.resolve(import.meta.dirname, 'dist');
+          const builtIndex = path.resolve(distDir, 'index.html');
+          if (fs.existsSync(builtIndex)) {
+            const html = fs.readFileSync(builtIndex, 'utf8').replace(/\r\n?/g, '\n');
+            fs.writeFileSync(builtIndex, html, 'utf8');
+          }
           const srcAssets = path.resolve(import.meta.dirname, 'src/assets');
           const distAssets = path.resolve(distDir, 'src/assets');
           for (const entrypoint of ['index.php', '.htaccess']) {
@@ -153,6 +158,16 @@ export default defineConfig(() => {
           }
           if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {
             fs.cpSync(srcAssets, distAssets, { recursive: true, force: true });
+          }
+          const publicDir = path.resolve(import.meta.dirname, 'public');
+          const builtAssets = path.resolve(distDir, 'assets');
+          if (fs.existsSync(builtAssets)) {
+            fs.cpSync(builtAssets, path.resolve(publicDir, 'assets'), { recursive: true, force: true });
+          }
+          for (const file of fs.readdirSync(distDir)) {
+            if (file === 'sw.js' || file === 'registerSW.js' || file === 'manifest.webmanifest' || /^workbox-.*\\.js$/.test(file)) {
+              fs.copyFileSync(path.resolve(distDir, file), path.resolve(publicDir, file));
+            }
           }
         },
       },
@@ -169,6 +184,10 @@ export default defineConfig(() => {
         '/api': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/captcha': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/storage': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/products/': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/projects/': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/news/': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
+        '/albums/': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/sitemap.xml': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
         '/robots.txt': process.env.LARAVEL_URL || 'http://127.0.0.1:8000',
       },

@@ -1,0 +1,1 @@
+var e=e=>{switch(e){case`fit`:return`contain`;case`stretch`:return`fill`;case`center`:return`none`;default:return`cover`}};export{e as t};

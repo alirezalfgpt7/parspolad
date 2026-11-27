@@ -24,4 +24,21 @@ describe('SeoHead', () => {
     expect(document.querySelector('meta[property="og:url"]')?.getAttribute('content')).toBe(`${window.location.origin}/projects/wellhead`);
     expect(document.querySelector<HTMLScriptElement>('script[data-seo-page-schema]')?.textContent).toContain('"inLanguage":"en-US"');
   });
+
+  it('uses product Open Graph and structured data when provided', () => {
+    render(
+      <SeoHead
+        title="Hydraulic Liner Hanger"
+        description="A hydraulic liner hanger"
+        image="/storage/products/liner-hanger.webp"
+        canonicalUrl="/products/hydraulic-liner-hanger"
+        openGraphType="product"
+        structuredData={{ '@type': 'Product', sku: 'PPA-LH-01' }}
+      />,
+    );
+
+    expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('product');
+    expect(document.querySelector<HTMLScriptElement>('script[data-seo-page-schema]')?.textContent)
+      .toContain('"sku":"PPA-LH-01"');
+  });
 });

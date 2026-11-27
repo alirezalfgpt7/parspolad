@@ -359,6 +359,13 @@ export const DEFAULT_PAGES_CONFIG: PagesConfigSettings = {
     section_accent_color: '#fbbf24',
     section_background_url: '',
     section_background_overlay_opacity: 35,
+    products_eyebrow_fa: 'محصولات اصلی',
+    products_eyebrow_en: 'CORE EQUIPMENT',
+    products_title_fa: 'زنجیره‌ای از تجهیزات، یکپارچگی مهندسی',
+    products_title_en: 'A Complete Equipment Chain, Integrated Engineering',
+    products_background_url: '',
+    products_background_color: '#07111f',
+    products_overlay_opacity: 0,
   },
 };
 

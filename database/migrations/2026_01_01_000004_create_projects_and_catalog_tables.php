@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('color', 20)->default('#B91C1C');
             $table->text('description_fa')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('projects', function (Blueprint $table): void {
@@ -40,7 +41,14 @@ return new class extends Migration {
             $table->json('standards')->nullable();
             $table->string('cover_image');
             $table->boolean('is_featured')->default(false)->index();
+            $table->index(['category_id', 'year'], 'projects_category_year_index');
+            $table->index(['status', 'year'], 'projects_status_year_index');
+            $table->index('location_fa', 'projects_location_fa_index');
+            $table->index('location_en', 'projects_location_en_index');
+            $table->index('contract_type_fa', 'projects_contract_type_fa_index');
+            $table->index('contract_type_en', 'projects_contract_type_en_index');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('project_images', function (Blueprint $table): void {
@@ -83,6 +91,7 @@ return new class extends Migration {
             $table->string('image_url');
             $table->unsignedInteger('sort_order')->default(0)->index();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('products', function (Blueprint $table): void {
@@ -98,14 +107,36 @@ return new class extends Migration {
             $table->text('summary_fa');
             $table->text('summary_en')->nullable();
             $table->json('specs')->nullable();
+            $table->json('specs_en')->nullable();
             $table->string('image_url');
             $table->string('catalog_url')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('machinery_assets', function (Blueprint $table): void {
+            $table->id();
+            $table->string('source_key')->nullable()->unique();
+            $table->string('name_fa')->nullable();
+            $table->string('name_en')->nullable();
+            $table->string('asset_code')->nullable();
+            $table->string('model')->nullable();
+            $table->string('year')->nullable();
+            $table->string('location_fa')->nullable();
+            $table->string('location_en')->nullable();
+            $table->string('manufacturer_fa')->nullable();
+            $table->string('manufacturer_en')->nullable();
+            $table->string('serial_number')->nullable();
+            $table->text('notes_fa')->nullable();
+            $table->text('notes_en')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('machinery_assets');
         Schema::dropIfExists('products');
         Schema::dropIfExists('services');
         Schema::dropIfExists('project_documents');

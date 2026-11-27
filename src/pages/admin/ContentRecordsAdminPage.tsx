@@ -313,6 +313,8 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
       const value = record[field.name];
       const normalized = field.type === 'json'
         ? JSON.stringify(value ?? [], null, 2)
+        : field.type === 'select'
+          ? String(value ?? '')
         : field.type === 'date' || field.type === 'datetime' || field.type === 'jalali-date'
           ? normalizeDateInput(value, field.type)
           : value ?? emptyValue(field, 0);
@@ -328,6 +330,8 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
       field.name,
       field.unique ? emptyValue(field, 0) : field.type === 'json'
         ? JSON.stringify(record[field.name] ?? [], null, 2)
+        : field.type === 'select'
+          ? String(record[field.name] ?? '')
         : field.type === 'date' || field.type === 'datetime' || field.type === 'jalali-date'
           ? normalizeDateInput(record[field.name], field.type)
           : record[field.name] ?? emptyValue(field, 0),
@@ -377,6 +381,8 @@ export const ContentRecordsAdminPage: React.FC<ContentRecordsAdminPageProps> = (
         payload[field.name] = value === '' ? null : String(value).replace(/-/g, '/');
       } else if (field.type === 'boolean') {
         payload[field.name] = Boolean(value);
+      } else if (field.name === 'article_category_id') {
+        payload[field.name] = value === '' || value === null || value === undefined ? null : Number(value);
       } else {
         if (value === '' && !field.required && formMode === 'create') continue;
         payload[field.name] = value === '' && !field.required ? null : value;

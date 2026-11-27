@@ -571,7 +571,7 @@ textarea::placeholder {
   transform: translateY(-2px);
 }
 
-:root[data-theme-style="glass"] header:not(.admin-topbar):not(.public-navbar--landing) {
+:root[data-theme-style="glass"] header:not(.admin-topbar):not(.public-navbar--landing):not(.home-product-chain-heading) {
   background-color: color-mix(in srgb, var(--theme-header-bg) 86%, transparent) !important;
   backdrop-filter: blur(18px);
 }

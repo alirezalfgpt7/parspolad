@@ -1,6 +1,6 @@
-import type { Article, Banner, KPI, Partner, Project, Service } from '../types/index.ts';
+import type { Article, Banner, KPI, Partner, Product, Project, Service } from '../types/index.ts';
 
-export type HomepageSectionKey = 'projects' | 'articles' | 'services' | 'partners' | 'kpis' | 'banners';
+export type HomepageSectionKey = 'projects' | 'articles' | 'services' | 'products' | 'partners' | 'kpis' | 'banners';
 
 export interface HomepageSelectedItem {
   id: number;
@@ -31,11 +31,17 @@ export type HomepageService = Pick<
   Service,
   'id' | 'slug' | 'title_fa' | 'title_en' | 'summary_fa' | 'summary_en' | 'sort_order'
 >;
+export type HomepageProduct = Pick<
+  Product,
+  'id' | 'slug' | 'name_fa' | 'name_en' | 'category_fa' | 'category_en'
+  | 'model_code' | 'summary_fa' | 'summary_en' | 'image_url' | 'catalog_url'
+>;
 
 export interface HomepageSectionData {
   projects: HomepageProject[];
   articles: HomepageArticle[];
   services: HomepageService[];
+  products: HomepageProduct[];
   partners: Partner[];
   kpis: KPI[];
   banners: Banner[];
@@ -45,6 +51,7 @@ const sectionDefaults: Record<HomepageSectionKey, { mode: string; limit: number;
   projects: { mode: 'latest', limit: 6, modes: ['latest', 'oldest', 'featured', 'selected'], max: 12 },
   articles: { mode: 'latest', limit: 3, modes: ['latest', 'oldest', 'selected'], max: 12 },
   services: { mode: 'ordered', limit: 4, modes: ['ordered', 'selected'], max: 4 },
+  products: { mode: 'ordered', limit: 4, modes: ['ordered', 'selected'], max: 12 },
   partners: { mode: 'ordered', limit: 50, modes: ['ordered', 'selected'], max: 50 },
   kpis: { mode: 'ordered', limit: 50, modes: ['ordered', 'selected'], max: 50 },
   banners: { mode: 'ordered', limit: 50, modes: ['ordered', 'selected'], max: 50 },
@@ -57,6 +64,7 @@ export const defaultHomepageSectionsSettings = (): HomepageSectionsSettings => (
   projects: { mode: 'latest', limit: 6, selected_items: [] },
   articles: { mode: 'latest', limit: 3, selected_items: [] },
   services: { mode: 'ordered', limit: 4, selected_items: [] },
+  products: { mode: 'ordered', limit: 4, selected_items: [] },
   partners: { mode: 'ordered', limit: 50, selected_items: [] },
   kpis: { mode: 'ordered', limit: 50, selected_items: [] },
   banners: { mode: 'ordered', limit: 50, selected_items: [] },

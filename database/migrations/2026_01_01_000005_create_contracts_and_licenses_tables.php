@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('client_fa')->index();
             $table->string('client_en');
             $table->decimal('amount_billion_irr', 12, 2)->default(0);
-            $table->unsignedSmallInteger('start_year')->index();
+            $table->unsignedSmallInteger('start_year')->nullable()->index();
             $table->unsignedSmallInteger('end_year')->nullable();
             $table->string('status', 32)->default('active')->index();
             $table->text('scope_fa')->nullable();
@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->string('document_url')->nullable();
             $table->boolean('requires_auth')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('contract_documents', function (Blueprint $table): void {
@@ -49,6 +50,7 @@ return new class extends Migration {
             $table->string('document_url')->nullable();
             $table->boolean('requires_auth')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('license_attachments', function (Blueprint $table): void {

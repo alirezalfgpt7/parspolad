@@ -38,7 +38,7 @@ type CommentFormValues = z.infer<typeof commentSchema>;
 
 export const NewsPage: React.FC = () => {
   const { slug } = useParams();
-  const language = useAppStore((s) => s.language);
+  const { language, bootstrap } = useAppStore();
   const addToast = useAppStore((s) => s.addToast);
   const [articles, setArticles] = useState<Article[]>([]);
   const [articlePage, setArticlePage] = useState(1);
@@ -170,6 +170,15 @@ export const NewsPage: React.FC = () => {
           description={language === 'fa' ? single.excerpt_fa : single.excerpt_en}
           image={single.cover_image}
           language={language}
+          openGraphType="article"
+          structuredData={{
+            '@type': 'Article',
+            headline: language === 'fa' ? single.title_fa : single.title_en,
+            description: language === 'fa' ? single.excerpt_fa : single.excerpt_en,
+            image: single.cover_image,
+            datePublished: single.published_at,
+            author: { '@type': 'Organization', name: bootstrap?.company?.name_fa || 'پارس پولاد آقایی' },
+          }}
         />
         <Breadcrumb items={[{ label: 'اخبار و مقالات', to: '/news' }, { label: single.title_fa }]} />
         <article className="overflow-hidden rounded-2xl border border-(--theme-card-border) bg-(--theme-card-surface) shadow-(--theme-card-shadow)">

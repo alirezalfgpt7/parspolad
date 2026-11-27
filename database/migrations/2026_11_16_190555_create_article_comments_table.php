@@ -10,6 +10,9 @@ return new class extends Migration {
         Schema::create('article_comments', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('article_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('parent_id')->nullable()
+                ->constrained('article_comments')
+                ->cascadeOnDelete();
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('author_name', 120);
             $table->text('body');
@@ -18,6 +21,7 @@ return new class extends Migration {
             $table->timestamps();
             $table->softDeletes();
             $table->index(['article_id', 'status', 'created_at']);
+            $table->index(['status', 'created_at'], 'article_comments_status_created_at_index');
         });
     }
 

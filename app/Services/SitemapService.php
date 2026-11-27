@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Page;
 use App\Models\Project;
 use App\Models\PhotoAlbum;
+use App\Models\Product;
 use Illuminate\Support\Collection;
 
 class SitemapService
@@ -51,6 +52,16 @@ class SitemapService
                     'title_fa' => $project->title_fa,
                     'title_en' => $project->title_en,
                     'updated_at' => $project->updated_at,
+                ]);
+            });
+
+        Product::query()->get(['slug', 'name_fa', 'name_en', 'updated_at'])
+            ->each(function (Product $product) use ($entries): void {
+                $entries->put('/products/'.$product->slug, [
+                    'path' => '/products/'.$product->slug,
+                    'title_fa' => $product->name_fa,
+                    'title_en' => $product->name_en,
+                    'updated_at' => $product->updated_at,
                 ]);
             });
 

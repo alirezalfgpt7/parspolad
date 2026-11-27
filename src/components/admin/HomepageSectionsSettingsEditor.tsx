@@ -56,6 +56,16 @@ const sectionDefinitions: SectionDefinition[] = [
     max: 4,
   },
   {
+    key: 'products',
+    label: 'زنجیرهٔ محصولات و تجهیزات',
+    resource: 'products',
+    modes: [
+      { value: 'ordered', label: 'ترتیب ثبت‌شده در محصولات' },
+      { value: 'selected', label: 'انتخاب دستی' },
+    ],
+    max: 12,
+  },
+  {
     key: 'partners',
     label: 'کارفرمایان و شرکا',
     resource: 'partners',

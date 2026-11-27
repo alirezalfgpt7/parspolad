@@ -44,7 +44,9 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
     Route::get('/projects/filters', [ProjectController::class, 'filters']);
     Route::get('/projects/{slug}', [ProjectController::class, 'show']);
     Route::get('/products/filters', [PublicController::class, 'productFilters']);
+    Route::get('/products/{slug}', [PublicController::class, 'product']);
     Route::get('/products', [PublicController::class, 'products']);
+    Route::get('/machinery', [PublicController::class, 'machinery']);
     Route::get('/services', [PublicController::class, 'services']);
     Route::get('/contracts', [ContractController::class, 'index']);
     Route::get('/licenses', [LicenseController::class, 'index']);
@@ -206,16 +208,16 @@ Route::prefix('v1')->middleware(MaintenanceMode::class)->group(function (): void
 
             Route::get('/content-resources', [AdminContentController::class, 'resources']);
             Route::get('/content-schema/{resource}', [AdminContentController::class, 'schema'])
-                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates');
+                ->where('resource', 'categories|faqs|services|products|machinery|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates');
             Route::get('/{resource}', [AdminContentController::class, 'index'])
-                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates');
+                ->where('resource', 'categories|faqs|services|products|machinery|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates');
             Route::post('/{resource}', [AdminContentController::class, 'store'])
-                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates');
+                ->where('resource', 'categories|faqs|services|products|machinery|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates');
             Route::put('/{resource}/{id}', [AdminContentController::class, 'update'])
-                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates')
+                ->where('resource', 'categories|faqs|services|products|machinery|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates')
                 ->whereNumber('id');
             Route::delete('/{resource}/{id}', [AdminContentController::class, 'destroy'])
-                ->where('resource', 'categories|faqs|services|products|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates')
+                ->where('resource', 'categories|faqs|services|products|machinery|departments|team|partners|articles|article-categories|pages|banners|kpis|notification-templates')
                 ->whereNumber('id');
         });
     });

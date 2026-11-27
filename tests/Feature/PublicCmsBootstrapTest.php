@@ -1,6 +1,7 @@
 <?php
 
 use Database\Seeders\DatabaseSeeder;
+use App\Models\Product;
 
 beforeEach(fn () => $this->seed(DatabaseSeeder::class));
 
@@ -28,4 +29,21 @@ it('uses the same dynamic page and content entries in HTML and XML sitemaps', fu
     $this->get('/sitemap.xml')
         ->assertOk()
         ->assertSee(url('/projects/nisoc-surface-safety-valve-wellhead'), false);
+});
+
+it('provides standalone public product records and includes their URLs in the sitemap', function (): void {
+    $product = Product::factory()->create([
+        'slug' => 'seo-product-record',
+        'name_fa' => 'محصول آزمایشی برای سئو',
+        'image_url' => '/storage/products/seo-product.jpg',
+    ]);
+
+    $this->getJson('/api/v1/products/'.$product->slug)
+        ->assertOk()
+        ->assertJsonPath('data.slug', $product->slug)
+        ->assertJsonPath('data.image_url', '/storage/products/seo-product.jpg');
+
+    $this->getJson('/api/v1/sitemap')
+        ->assertOk()
+        ->assertJsonFragment(['path' => '/products/'.$product->slug]);
 });

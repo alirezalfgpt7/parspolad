@@ -99,7 +99,7 @@ describe('effect primitives & standalone effects', () => {
     expect(tab.classList.contains('effect-tab')).toBe(true);
   });
 
-  it('renders AnimatedTabsEffect (022) and switches active tab', () => {
+  it('renders modern tabs and switches the highlighted tab on hover', () => {
     const onChange = vi.fn();
     render(
       <AnimatedTabsEffect
@@ -113,8 +113,31 @@ describe('effect primitives & standalone effects', () => {
     );
 
     const targetTab = screen.getByRole('tab', { name: 'سرچاهی' });
+    const tabList = screen.getByRole('tablist');
+    const navigation = screen.getByRole('navigation', { name: 'Tabs' });
+
+    fireEvent.mouseEnter(targetTab);
+    expect(targetTab.classList.contains('modern-tab')).toBe(true);
+    expect(targetTab.getAttribute('data-highlighted')).toBe('true');
+    expect(tabList.querySelector('.modern-tab-indicator')).not.toBeNull();
     fireEvent.click(targetTab);
     expect(onChange).toHaveBeenCalledWith('wellhead');
+    fireEvent.mouseLeave(navigation);
+    expect(targetTab.getAttribute('data-highlighted')).toBe('false');
+  });
+
+  it('supports a compact vertical tab layout', () => {
+    const { container } = render(
+      <AnimatedTabsEffect
+        items={[{ id: 'all', label: 'همه' }]}
+        activeId="all"
+        onChange={vi.fn()}
+        orientation="vertical"
+      />
+    );
+
+    expect(container.querySelector('[role="tablist"]')?.getAttribute('aria-orientation')).toBe('vertical');
+    expect(container.querySelector('nav')?.getAttribute('data-orientation')).toBe('vertical');
   });
 
   it('renders FlipAuthCardEffect (083) and updates flipped face accessibility state', () => {

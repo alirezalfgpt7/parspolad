@@ -18,7 +18,13 @@ return new class extends Migration {
             $table->longText('content_en')->nullable();
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
+            $table->json('metadata')->nullable();
+            $table->string('meta_title_en')->nullable();
+            $table->text('meta_description_en')->nullable();
+            $table->string('meta_image')->nullable();
+            $table->string('canonical_url')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('menus', function (Blueprint $table): void {
@@ -35,6 +41,7 @@ return new class extends Migration {
             $table->string('title_fa');
             $table->string('title_en');
             $table->string('url');
+            $table->string('icon', 60)->nullable();
             $table->string('image')->nullable();
             $table->string('description_fa')->nullable();
             $table->string('description_en')->nullable();
@@ -77,6 +84,7 @@ return new class extends Migration {
             $table->unsignedInteger('sort_order')->default(0)->index();
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('banners', function (Blueprint $table): void {
@@ -92,6 +100,7 @@ return new class extends Migration {
             $table->string('placement', 40)->default('landing_mid')->index();
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('kpis', function (Blueprint $table): void {
@@ -102,9 +111,13 @@ return new class extends Migration {
             $table->unsignedInteger('value')->default(0);
             $table->string('suffix_fa', 30)->default('+');
             $table->string('suffix_en', 30)->default('+');
+            $table->string('icon', 60)->nullable();
+            $table->string('background_color', 20)->nullable();
             $table->unsignedInteger('sort_order')->default(0)->index();
             $table->timestamps();
+            $table->softDeletes();
         });
+
     }
 
     public function down(): void

@@ -22,7 +22,7 @@ class StoreContractRequest extends FormRequest
             'client_fa' => ['required', 'string', 'max:255'],
             'client_en' => ['required', 'string', 'max:255'],
             'amount_billion_irr' => ['required', 'numeric', 'min:0'],
-            'start_year' => ['required', 'integer', 'min:1348', 'max:1450'],
+            'start_year' => ['nullable', 'integer', 'min:1348', 'max:1450'],
             'end_year' => ['nullable', 'integer', 'min:1348', 'max:1450'],
             'status' => ['required', new Enum(ContractStatusEnum::class)],
             'scope_fa' => ['nullable', 'string'],

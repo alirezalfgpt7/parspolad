@@ -31,8 +31,8 @@ export const useCmsPage = (slug: string) => {
       : '',
     metaDescription: page
       ? language === 'fa'
-        ? page.meta_description || ''
-        : page.meta_description_en || page.meta_description || ''
+        ? page.meta_description || page.subtitle_fa || ''
+        : page.meta_description_en || page.meta_description || page.subtitle_en || page.subtitle_fa || ''
       : '',
   };
 };

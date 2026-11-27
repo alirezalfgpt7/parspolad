@@ -12,6 +12,7 @@ use App\Models\Contract;
 use App\Models\Department;
 use App\Models\Faq;
 use App\Models\License;
+use App\Models\MachineryAsset;
 use App\Models\Notification;
 use App\Models\Page;
 use App\Models\Partner;
@@ -130,6 +131,23 @@ class PublicController extends Controller
         return $this->paginatedResponse(
             $query->orderBy('id')->paginate($perPage)->withQueryString(),
         );
+    }
+
+    public function product(string $slug): JsonResponse
+    {
+        return response()->json([
+            'data' => Product::query()->where('slug', $slug)->firstOrFail(),
+        ]);
+    }
+
+    public function machinery(): JsonResponse
+    {
+        return response()->json([
+            'data' => MachineryAsset::query()
+                ->where(fn ($query) => $query->whereNotNull('name_fa')->orWhereNotNull('name_en'))
+                ->orderBy('id')
+                ->get(['id', ...(new MachineryAsset)->getFillable()]),
+        ]);
     }
 
     public function productFilters(): JsonResponse

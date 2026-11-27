@@ -1,10 +1,11 @@
 <?php
 
 use App\Services\SitemapService;
+use App\Http\Controllers\SpaController;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect()->away(config('app.frontend_url', 'http://localhost:3000')));
+Route::get('/', [SpaController::class, 'show']);
 
 Route::get('/sitemap.xml', function (SitemapService $sitemap): Response {
     $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
@@ -23,3 +24,6 @@ Route::get('/robots.txt', function (): Response {
         'Content-Type' => 'text/plain',
     ]);
 });
+
+Route::get('/{path?}', [SpaController::class, 'show'])
+    ->where('path', '^(?!api(?:/|$)|assets(?:/|$)|storage(?:/|$)|build(?:/|$)|vendor(?:/|$)|_test(?:/|$)|robots\\.txt$|sitemap\\.xml$).*$');

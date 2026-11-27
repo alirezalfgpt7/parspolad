@@ -233,6 +233,62 @@ export const ContentCmsAdminPage: React.FC = () => {
                 accept=".jpg,.jpeg,.png,.webp,.gif"
                 placeholder="/storage/hero/hero-banner.jpg"
               />
+              <section className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+                <div>
+                  <h3 className="text-xs font-bold text-(--theme-text)">تنظیمات اختیاری SEO این صفحه</h3>
+                  <p className="mt-1 text-[11px] leading-5 text-(--theme-text-muted)">
+                    در صورت خالی بودن، عنوان و زیرعنوان صفحه و تنظیمات عمومی سایت به‌صورت خودکار استفاده می‌شوند.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                    عنوان SEO (فارسی)
+                    <input
+                      value={editPage.meta_title || ''}
+                      onChange={(event) => setEditPage({ ...editPage, meta_title: event.target.value })}
+                      className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                    SEO title (English)
+                    <input
+                      dir="ltr"
+                      value={editPage.meta_title_en || ''}
+                      onChange={(event) => setEditPage({ ...editPage, meta_title_en: event.target.value })}
+                      className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                    توضیحات SEO (فارسی)
+                    <textarea
+                      rows={3}
+                      value={editPage.meta_description || ''}
+                      onChange={(event) => setEditPage({ ...editPage, meta_description: event.target.value })}
+                      className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                    SEO description (English)
+                    <textarea
+                      dir="ltr"
+                      rows={3}
+                      value={editPage.meta_description_en || ''}
+                      onChange={(event) => setEditPage({ ...editPage, meta_description_en: event.target.value })}
+                      className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                    />
+                  </label>
+                </div>
+                <label className="block space-y-1.5 text-xs font-semibold text-(--theme-text)">
+                  Canonical URL (اختیاری)
+                  <input
+                    dir="ltr"
+                    value={editPage.canonical_url || ''}
+                    onChange={(event) => setEditPage({ ...editPage, canonical_url: event.target.value })}
+                    placeholder={publicPagePaths[editPage.slug] || `/${editPage.slug}`}
+                    className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                  />
+                </label>
+              </section>
               {isHomeSpotlight && (
                 <div className="space-y-4 rounded-xl border border-(--theme-border) p-4">
                   <h3 className="text-sm font-bold text-(--theme-text)">محتوای بخش ویژه صفحه اصلی</h3>
@@ -299,6 +355,56 @@ export const ContentCmsAdminPage: React.FC = () => {
                       className="w-full accent-(--theme-primary)"
                     />
                   </label>
+                  <section className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface-muted) p-4">
+                    <div>
+                      <h3 className="text-xs font-bold text-(--theme-text)">بخش زنجیرهٔ محصولات صفحهٔ اصلی</h3>
+                      <p className="mt-1 text-[11px] leading-5 text-(--theme-text-muted)">
+                        متن‌ها و پس‌زمینهٔ سکشن را اینجا تنظیم کنید؛ انتخاب و تعداد کارت‌ها از تب «منبع و تعداد نمایش» و اطلاعات واقعی هر کارت از «مدیریت محصولات» دریافت می‌شود.
+                      </p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {([
+                        ['products_eyebrow_fa', 'برچسب بالای عنوان (فارسی)'],
+                        ['products_eyebrow_en', 'Section eyebrow (English)'],
+                        ['products_title_fa', 'عنوان سکشن (فارسی)'],
+                        ['products_title_en', 'Section title (English)'],
+                      ] as const).map(([key, label]) => (
+                        <label key={key} className="space-y-1 text-[11px] font-semibold text-(--theme-text-muted)">
+                          {label}
+                          <input
+                            dir={key.endsWith('_en') ? 'ltr' : 'rtl'}
+                            value={getPageMetadataText(key)}
+                            onChange={(event) => updatePageMetadata(key, event.target.value)}
+                            className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <MediaUrlField
+                      label="تصویر پس‌زمینه سکشن محصولات"
+                      value={getPageMetadataText('products_background_url')}
+                      onChange={(url) => updatePageMetadata('products_background_url', url)}
+                      folder="pages"
+                      accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                      placeholder="/storage/pages/home-products-background.jpg"
+                      hint="اگر خالی باشد، رنگ پایه و تصویرسازی گرافیکی سکشن استفاده می‌شود."
+                    />
+                    <label className="block space-y-1 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
+                      <span className="flex items-center justify-between text-[11px] font-semibold text-(--theme-text)">
+                        <span>تیرگی روی پس‌زمینهٔ سکشن محصولات</span>
+                        <span>{getPageMetadataText('products_overlay_opacity') || '0'}%</span>
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value={getPageMetadataText('products_overlay_opacity') || '0'}
+                        onChange={(event) => updatePageMetadata('products_overlay_opacity', event.target.value)}
+                        className="w-full accent-(--theme-primary)"
+                      />
+                    </label>
+                  </section>
                   <div className="grid gap-4 lg:grid-cols-2">
                     <RichTextEditor
                       label="توضیحات بخش (فارسی)"

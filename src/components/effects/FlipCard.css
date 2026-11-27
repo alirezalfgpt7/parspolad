@@ -34,28 +34,28 @@
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .flip-card-container:hover .flip-card,
-  .flip-card-container:focus-within .flip-card {
+  .flip-card-container:not(.product-card-flip):hover .flip-card,
+  .flip-card-container:not(.product-card-flip):focus-within .flip-card {
     transform: rotateY(180deg);
   }
 
-  .flip-card-container:hover .flip-card-face--front,
-  .flip-card-container:focus-within .flip-card-face--front {
+  .flip-card-container:not(.product-card-flip):hover .flip-card-face--front,
+  .flip-card-container:not(.product-card-flip):focus-within .flip-card-face--front {
     visibility: hidden;
     transition-delay: 425ms;
     pointer-events: none;
   }
 
-  .flip-card-container:hover .flip-card-face--back,
-  .flip-card-container:focus-within .flip-card-face--back {
+  .flip-card-container:not(.product-card-flip):hover .flip-card-face--back,
+  .flip-card-container:not(.product-card-flip):focus-within .flip-card-face--back {
     visibility: visible;
     transition-delay: 0s;
   }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: reduce) {
-  .flip-card-container:hover .flip-card,
-  .flip-card-container:focus-within .flip-card {
+  .flip-card-container:not(.product-card-flip):hover .flip-card,
+  .flip-card-container:not(.product-card-flip):focus-within .flip-card {
     transform: rotateY(180deg);
   }
 
@@ -63,14 +63,35 @@
     transition: none;
   }
 
-  .flip-card-container:hover .flip-card-face--front,
-  .flip-card-container:focus-within .flip-card-face--front {
+  .flip-card-container:not(.product-card-flip):hover .flip-card-face--front,
+  .flip-card-container:not(.product-card-flip):focus-within .flip-card-face--front {
     visibility: hidden;
     pointer-events: none;
   }
 
-  .flip-card-container:hover .flip-card-face--back,
-  .flip-card-container:focus-within .flip-card-face--back {
+  .flip-card-container:not(.product-card-flip):hover .flip-card-face--back,
+  .flip-card-container:not(.product-card-flip):focus-within .flip-card-face--back {
     visibility: visible;
+  }
+}
+
+.product-card-flip[data-flipped="true"] .flip-card {
+  transform: rotateY(180deg);
+}
+
+.product-card-flip[data-flipped="true"] .flip-card-face--front {
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 425ms;
+}
+
+.product-card-flip[data-flipped="true"] .flip-card-face--back {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card-face {
+    transition: none;
   }
 }

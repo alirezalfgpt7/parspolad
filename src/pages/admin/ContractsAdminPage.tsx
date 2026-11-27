@@ -18,7 +18,7 @@ const contractFormSchema = z.object({
   client_fa: z.string().trim().min(1, 'نام فارسی کارفرما الزامی است.').max(255),
   client_en: z.string().trim().min(1, 'نام انگلیسی کارفرما الزامی است.').max(255),
   amount_billion_irr: z.number().min(0, 'مبلغ نمی‌تواند منفی باشد.'),
-  start_year: z.number().int().min(1348).max(1450),
+  start_year: z.number().int().min(1348).max(1450).nullable().optional(),
   end_year: z.number().int().min(1348).max(1450).nullable().optional(),
   status: z.enum(['active', 'completed', 'pending', 'archived']),
   scope_fa: z.string().nullable().optional(),
@@ -167,7 +167,7 @@ export const ContractsAdminPage: React.FC = () => {
     { key: 'title', sortKey: 'title_fa', header: 'عنوان قرارداد', className: 'min-w-[180px]', render: (row) => <span className="font-semibold">{row.title_fa}</span> },
     { key: 'client', sortKey: 'client_fa', hideable: true, header: 'کارفرما', className: 'hidden md:table-cell min-w-[140px]', render: (row) => row.client_fa },
     { key: 'amount', sortKey: 'amount_billion_irr', hideable: true, header: 'مبلغ (میلیارد ریال)', className: 'hidden lg:table-cell whitespace-nowrap', render: (row) => Number(row.amount_billion_irr).toLocaleString('fa-IR') },
-    { key: 'years', sortKey: 'start_year', hideable: true, header: 'مدت قرارداد', className: 'whitespace-nowrap', render: (row) => `${row.start_year}${row.end_year ? ` تا ${row.end_year}` : ' به بعد'}` },
+    { key: 'years', sortKey: 'start_year', hideable: true, header: 'مدت قرارداد', className: 'whitespace-nowrap', render: (row) => row.start_year === null ? (row.end_year ? `تا ${row.end_year}` : 'سال نامشخص') : `${row.start_year}${row.end_year ? ` تا ${row.end_year}` : ' به بعد'}` },
     {
       key: 'status',
       sortKey: 'status',
@@ -286,8 +286,8 @@ export const ContractsAdminPage: React.FC = () => {
                 <input type="number" min={0} value={contractModal.amount_billion_irr ?? 0} onChange={(event) => setContractModal({ ...contractModal, amount_billion_irr: Number(event.target.value) })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
               </label>
               <label className="block space-y-1 text-xs text-(--theme-text-muted)">
-                <span className="block">سال شروع *</span>
-                <input required type="number" min={1348} max={1450} value={contractModal.start_year || ''} onChange={(event) => setContractModal({ ...contractModal, start_year: Number(event.target.value) })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
+                <span className="block">سال شروع (اختیاری)</span>
+                <input type="number" min={1348} max={1450} value={contractModal.start_year ?? ''} onChange={(event) => setContractModal({ ...contractModal, start_year: event.target.value ? Number(event.target.value) : null })} className="w-full rounded-xl border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2 text-sm text-(--theme-input-text)" />
               </label>
               <label className="block space-y-1 text-xs text-(--theme-text-muted)">
                 <span className="block">سال پایان (اختیاری)</span>

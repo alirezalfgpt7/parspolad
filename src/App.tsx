@@ -24,10 +24,12 @@ const SitemapPage = lazy(() => import('./pages/public/MiscPages.tsx').then((modu
 const FaqAdminPage = lazy(() => import('./pages/admin/FaqAdminPage.tsx').then((module) => ({ default: module.FaqAdminPage })));
 const ContentRecordsAdminPage = lazy(() => import('./pages/admin/ContentRecordsAdminPage.tsx').then((module) => ({ default: module.ContentRecordsAdminPage })));
 const ProductsAdminPage = lazy(() => import('./pages/admin/ProductsAdminPage.tsx').then((module) => ({ default: module.ProductsAdminPage })));
+const MachineryAdminPage = lazy(() => import('./pages/admin/MachineryAdminPage.tsx').then((module) => ({ default: module.MachineryAdminPage })));
 const ArticlesAdminPage = lazy(() => import('./pages/admin/ArticlesAdminPage.tsx').then((module) => ({ default: module.ArticlesAdminPage })));
 const NewsPage = lazy(() => import('./pages/public/NewsPage.tsx').then((module) => ({ default: module.NewsPage })));
 const OrgChartPage = lazy(() => import('./pages/public/OrgChartPage.tsx').then((module) => ({ default: module.OrgChartPage })));
 const ProductsPage = lazy(() => import('./pages/public/ProductsPage.tsx').then((module) => ({ default: module.ProductsPage })));
+const ProductDetailPage = lazy(() => import('./pages/public/ProductDetailPage.tsx').then((module) => ({ default: module.ProductDetailPage })));
 const ProjectDetailPage = lazy(() => import('./pages/public/ProjectDetailPage.tsx').then((module) => ({ default: module.ProjectDetailPage })));
 const ProjectsPage = lazy(() => import('./pages/public/ProjectsPage.tsx').then((module) => ({ default: module.ProjectsPage })));
 const RfqPage = lazy(() => import('./pages/public/RfqPage.tsx').then((module) => ({ default: module.RfqPage })));
@@ -104,6 +106,7 @@ export default function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:slug" element={<ProductDetailPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/projects/:slug" element={<ProjectDetailPage />} />
               <Route path="/contracts-licenses" element={<ContractsLicensesPage />} />
@@ -146,6 +149,7 @@ export default function App() {
               <Route path="faqs" element={<FaqAdminPage />} />
               <Route path="content-records" element={<ContentRecordsAdminPage />} />
               <Route path="products" element={<ProductsAdminPage />} />
+              <Route path="machinery" element={<MachineryAdminPage />} />
               <Route path="articles" element={<ArticlesAdminPage />} />
               <Route path="comments" element={<ArticleCommentsAdminPage />} />
               <Route path="organization" element={<OrganizationAdminPage />} />

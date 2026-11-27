@@ -104,7 +104,7 @@ export const GlobalSearchModal: React.FC = () => {
                     <button
                       key={pr.id}
                       type="button"
-                      onClick={() => go('/products')}
+                      onClick={() => go(`/products/${pr.slug}`)}
                       className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-start text-sm text-(--theme-text) transition-colors hover:bg-(--theme-surface-muted)"
                     >
                       <span className="font-medium">{language === 'fa' ? pr.name_fa : pr.name_en}</span>

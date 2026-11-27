@@ -37,7 +37,6 @@ it('returns public bootstrap payload with active industrial crimson theme', func
             'theme_presets',
             'theme_settings',
             'kpis',
-            'projects',
             'contracts',
             'licenses',
             'settings',

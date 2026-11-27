@@ -22,6 +22,9 @@ return new class extends Migration {
             $table->string('name_fa');
             $table->string('name_en');
             $table->boolean('is_default')->default(false);
+            $table->string('design_style', 20)->default('modern');
+            $table->string('button_shape', 20)->default('rounded');
+            $table->string('button_effect', 20)->default('shimmer');
             $table->json('palette');
             $table->timestamps();
         });
@@ -30,9 +33,21 @@ return new class extends Migration {
             $table->id();
             $table->string('active_preset_slug', 80)->default('industrial-crimson');
             $table->string('default_mode', 10)->default('light');
+            $table->string('design_style', 20)->default('modern');
+            $table->string('button_shape', 20)->default('rounded');
+            $table->string('button_effect', 20)->default('shimmer');
             $table->json('active_palette');
             $table->boolean('landing_theme_enabled')->default(true);
             $table->json('landing_palette');
+            $table->string('landing_design_style', 20)->default('modern');
+            $table->string('landing_button_shape', 20)->default('rounded');
+            $table->string('landing_button_effect', 20)->default('liquid');
+            $table->json('admin_palette')->nullable();
+            $table->string('admin_design_style', 20)->default('modern');
+            $table->string('admin_button_shape', 20)->default('rounded');
+            $table->string('admin_button_effect', 20)->default('glow');
+            $table->json('landing_header_settings')->nullable();
+            $table->json('public_page_title_settings')->nullable();
             $table->timestamps();
         });
 

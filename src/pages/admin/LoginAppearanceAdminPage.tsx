@@ -287,8 +287,9 @@ export const LoginAppearanceAdminPage: React.FC = () => {
       />
 
       {/* Effect 022 Animated Tabs */}
-      <div className="overflow-x-auto pb-1">
+      <div className="w-full min-w-0 pb-1">
         <AnimatedTabsEffect
+          ariaLabel="تب‌های تنظیمات ظاهری"
           activeId={tab}
           onChange={(next) => setTab(next as StudioTab)}
           items={[
@@ -771,6 +772,56 @@ export const LoginAppearanceAdminPage: React.FC = () => {
                             بازگشت به پس‌زمینهٔ صنعتی پیش‌فرض
                           </button>
                         )}
+                      </div>
+                    )}
+                    {card.key === 'home_spotlight' && (
+                      <div className="space-y-3 rounded-xl border border-(--theme-border) bg-(--theme-surface) p-3">
+                        <div>
+                          <h4 className="text-xs font-bold text-(--theme-text)">ظاهرسازی سکشن زنجیرهٔ محصولات</h4>
+                          <p className="mt-1 text-[11px] leading-5 text-(--theme-text-muted)">
+                            عنوان، رنگ پایه و تصویر پس‌زمینهٔ کارت‌های تجهیزات صفحهٔ اصلی را تنظیم کنید.
+                          </p>
+                        </div>
+                        <div className="grid gap-2.5 sm:grid-cols-2">
+                          <TextField label="برچسب محصولات (فارسی)" value={entry.products_eyebrow_fa || ''} onChange={(v) => updatePageOverride(card.key, { products_eyebrow_fa: v })} />
+                          <TextField label="Products eyebrow (EN)" dir="ltr" value={entry.products_eyebrow_en || ''} onChange={(v) => updatePageOverride(card.key, { products_eyebrow_en: v })} />
+                          <TextField label="عنوان سکشن محصولات (فارسی)" value={entry.products_title_fa || ''} onChange={(v) => updatePageOverride(card.key, { products_title_fa: v })} />
+                          <TextField label="Products title (EN)" dir="ltr" value={entry.products_title_en || ''} onChange={(v) => updatePageOverride(card.key, { products_title_en: v })} />
+                        </div>
+                        <MediaUrlField
+                          label="پس‌زمینهٔ سکشن محصولات"
+                          value={entry.products_background_url || ''}
+                          onChange={(url) => updatePageOverride(card.key, { products_background_url: url })}
+                          folder="pages"
+                          accept=".jpg,.jpeg,.png,.webp,.gif,.svg"
+                          placeholder="/storage/pages/home-products-background.jpg"
+                        />
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <ColorPicker
+                            label="رنگ پایه سکشن"
+                            value={entry.products_background_color || '#07111f'}
+                            onChange={(color) => updatePageOverride(card.key, { products_background_color: color })}
+                          />
+                          <label className="space-y-1 rounded-lg border border-(--theme-input-border) bg-(--theme-input-bg) px-3 py-2">
+                            <span className="flex items-center justify-between text-[11px] font-semibold text-(--theme-text-muted)">
+                              <span>تیرگی روی تصویر</span>
+                              <span>{entry.products_overlay_opacity ?? 0}%</span>
+                            </span>
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={entry.products_overlay_opacity ?? 0}
+                              onChange={(event) =>
+                                updatePageOverride(card.key, {
+                                  products_overlay_opacity: Number(event.target.value),
+                                })
+                              }
+                              className="w-full accent-(--theme-primary)"
+                            />
+                          </label>
+                        </div>
                       </div>
                     )}
                     {card.key === 'home_spotlight' && (

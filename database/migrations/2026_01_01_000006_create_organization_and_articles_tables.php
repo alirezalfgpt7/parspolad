@@ -18,7 +18,9 @@ return new class extends Migration {
             $table->string('head_title_en');
             $table->string('color', 20)->default('#B91C1C');
             $table->unsignedInteger('member_count')->default(1);
+            $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('team_members', function (Blueprint $table): void {
@@ -32,7 +34,9 @@ return new class extends Migration {
             $table->string('email')->nullable();
             $table->string('phone', 30)->nullable();
             $table->string('avatar_url')->nullable();
+            $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('partners', function (Blueprint $table): void {
@@ -44,11 +48,24 @@ return new class extends Migration {
             $table->string('website')->nullable();
             $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('article_categories', function (Blueprint $table): void {
+            $table->id();
+            $table->string('slug', 120)->unique();
+            $table->string('name_fa', 100);
+            $table->string('name_en', 100);
+            $table->timestamps();
         });
 
         Schema::create('articles', function (Blueprint $table): void {
             $table->id();
             $table->string('slug', 160)->unique();
+            $table->foreignId('article_category_id')
+                ->nullable()
+                ->constrained('article_categories')
+                ->nullOnDelete();
             $table->string('title_fa');
             $table->string('title_en');
             $table->text('excerpt_fa');
@@ -58,16 +75,19 @@ return new class extends Migration {
             $table->string('category_fa', 80)->index();
             $table->string('category_en', 80);
             $table->string('cover_image');
+            $table->string('image_fit', 16)->default('cover');
             $table->string('author_fa', 120);
             $table->string('published_at', 30)->index();
             $table->unsignedSmallInteger('read_minutes')->default(5);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('articles');
+        Schema::dropIfExists('article_categories');
         Schema::dropIfExists('partners');
         Schema::dropIfExists('team_members');
         Schema::dropIfExists('departments');

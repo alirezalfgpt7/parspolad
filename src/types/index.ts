@@ -220,7 +220,7 @@ export interface Contract {
   client_fa: string;
   client_en: string;
   amount_billion_irr: number;
-  start_year: number;
+  start_year: number | null;
   end_year?: number | null;
   status: ContractStatus;
   scope_fa: string;
@@ -659,6 +659,13 @@ export interface PageOverrideEntry {
   section_accent_color?: string;
   section_background_url?: string;
   section_background_overlay_opacity?: number;
+  products_eyebrow_fa?: string;
+  products_eyebrow_en?: string;
+  products_title_fa?: string;
+  products_title_en?: string;
+  products_background_url?: string;
+  products_background_color?: string;
+  products_overlay_opacity?: number;
 }
 
 export type PagesConfigSettings = Record<string, PageOverrideEntry>;

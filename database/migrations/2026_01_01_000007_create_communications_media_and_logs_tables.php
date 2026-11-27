@@ -19,7 +19,9 @@ return new class extends Migration {
             $table->string('attachment_url')->nullable();
             $table->string('status', 20)->default('new')->index();
             $table->text('admin_note')->nullable();
+            $table->index('created_at', 'contact_messages_created_at_index');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('notifications', function (Blueprint $table): void {
@@ -31,6 +33,8 @@ return new class extends Migration {
             $table->text('body_en');
             $table->string('channel', 20)->default('in_app')->index();
             $table->boolean('is_read')->default(false)->index();
+            $table->index('created_at', 'notifications_created_at_index');
+            $table->index(['user_id', 'created_at'], 'notifications_user_created_at_index');
             $table->timestamps();
         });
 
@@ -44,18 +48,29 @@ return new class extends Migration {
             $table->text('sms_text')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('media_files', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->string('url');
+            $table->string('storage_path')->nullable();
+            $table->foreignId('source_media_id')->nullable()
+                ->constrained('media_files')
+                ->nullOnDelete();
+            $table->string('variant', 32)->nullable();
             $table->string('mime_type', 100);
             $table->string('extension', 20)->index();
             $table->unsignedBigInteger('size_bytes')->default(0);
             $table->string('folder', 80)->default('uploads')->index();
             $table->boolean('requires_auth')->default(false);
+            $table->string('alt_text', 255)->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+            $table->unique(['source_media_id', 'variant'], 'media_files_source_variant_unique');
+            $table->index('created_at', 'media_files_created_at_index');
         });
 
         Schema::create('activity_log', function (Blueprint $table): void {
@@ -68,6 +83,7 @@ return new class extends Migration {
             $table->string('ip_address', 45)->nullable();
             $table->string('event')->nullable();
             $table->uuid('batch_uuid')->nullable();
+            $table->index('created_at', 'activity_log_created_at_index');
             $table->timestamps();
         });
     }

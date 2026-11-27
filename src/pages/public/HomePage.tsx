@@ -38,6 +38,7 @@ export const HomePage: React.FC = () => {
           !Array.isArray(data?.projects) ||
           !Array.isArray(data.articles) ||
           !Array.isArray(data.services) ||
+          !Array.isArray(data.products) ||
           !Array.isArray(data.partners) ||
           !Array.isArray(data.kpis) ||
           !Array.isArray(data.banners)
@@ -55,6 +56,7 @@ export const HomePage: React.FC = () => {
 
   const kpis = homeContent?.kpis || [];
   const services = homeContent?.services || [];
+  const products = homeContent?.products || [];
   const capabilityStages = [
     {
       slug: 'design-engineering',
@@ -161,6 +163,21 @@ export const HomePage: React.FC = () => {
   const spotlightBackgroundOpacity = Number.isFinite(configuredBackgroundOpacity)
     ? Math.min(100, Math.max(0, configuredBackgroundOpacity)) / 100
     : 0.35;
+  const productsEyebrow =
+    (language === 'fa' ? spotlightOverride.products_eyebrow_fa : spotlightOverride.products_eyebrow_en) ||
+    (language === 'fa' ? 'محصولات اصلی' : 'CORE EQUIPMENT');
+  const productsTitle =
+    (language === 'fa' ? spotlightOverride.products_title_fa : spotlightOverride.products_title_en) ||
+    (language === 'fa'
+      ? 'زنجیره‌ای از تجهیزات، یکپارچگی مهندسی'
+      : 'A Complete Equipment Chain, Integrated Engineering');
+  const productsBackgroundUrl = spotlightOverride.products_background_url || '';
+  const productsBackgroundColor = /^#[\da-f]{6}$/i.test(spotlightOverride.products_background_color || '')
+    ? (spotlightOverride.products_background_color as string)
+    : '#07111f';
+  const productsOverlayOpacity = Number.isFinite(Number(spotlightOverride.products_overlay_opacity))
+    ? Math.min(100, Math.max(0, Number(spotlightOverride.products_overlay_opacity))) / 100
+    : 0;
   const companyTitle =
     (language === 'fa' ? bootstrap?.company?.name_fa : bootstrap?.company?.name_en) ||
     (language === 'fa' ? 'پارس پولاد آقایی' : 'PARS POOLAD AGHAEE');
@@ -452,6 +469,91 @@ export const HomePage: React.FC = () => {
           </ol>
         </div>
       </section>
+      )}
+
+      {/* Configurable real-product chain */ }
+      {products.length > 0 && (
+        <section
+          id="home-products"
+          className="home-product-chain home-page-snap-section"
+          style={{
+            '--home-products-background': productsBackgroundColor,
+            '--home-products-overlay': productsOverlayOpacity,
+          } as React.CSSProperties}
+        >
+          {productsBackgroundUrl && (
+            <img
+              src={productsBackgroundUrl}
+              alt=""
+              aria-hidden="true"
+              className="home-product-chain-background"
+              onError={(event) => {
+                console.error('Could not load the home product section background:', event.currentTarget.src);
+                event.currentTarget.hidden = true;
+              }}
+            />
+          )}
+          {productsBackgroundUrl && <div className="home-product-chain-overlay" aria-hidden="true" />}
+          <div className="home-product-chain-grid" aria-hidden="true" />
+          <div className="home-product-chain-content mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+            <Reveal>
+              <header className="home-product-chain-heading">
+                <div>
+                  <p className="home-product-chain-eyebrow">{productsEyebrow} / 02</p>
+                  {(() => {
+                    const accentIndex = productsTitle.indexOf('،');
+                    if (accentIndex >= 0) {
+                      return (
+                        <h2 className="home-product-chain-title" style={{ textWrap: 'balance' }}>
+                          {productsTitle.slice(0, accentIndex + 1)}
+                          <span>{productsTitle.slice(accentIndex + 1)}</span>
+                        </h2>
+                      );
+                    }
+                    return <h2 className="home-product-chain-title" style={{ textWrap: 'balance' }}>{productsTitle}</h2>;
+                  })()}
+                </div>
+                <Link to="/products" className="home-product-chain-all-link">
+                  <span>{language === 'fa' ? 'مشاهده همه محصولات' : 'View all products'}</span>
+                  <ArrowIcon className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </header>
+            </Reveal>
+            <div className="home-product-chain-grid-cards">
+              {products.map((product, index) => (
+                <Reveal key={product.id} delay={shouldReduceMotion ? 0 : index * 0.08}>
+                  <article className="home-product-chain-card">
+                    <div className="home-product-chain-card-top">
+                      <span>{product.model_code || String(product.id).padStart(2, '0')}</span>
+                      <span>{language === 'fa' ? product.category_fa : product.category_en}</span>
+                    </div>
+                    <div className="home-product-chain-image">
+                      <ZeroBrokenImage
+                        src={product.image_url}
+                        alt={language === 'fa' ? product.name_fa : product.name_en}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <h3>
+                      <Link to={`/products/${product.slug}`} className="hover:text-(--theme-primary-ink)">
+                        {language === 'fa' ? product.name_fa : product.name_en}
+                      </Link>
+                    </h3>
+                    <p>{language === 'fa' ? product.summary_fa : product.summary_en}</p>
+                    <Link to={`/products/${product.slug}`} className="home-product-chain-link">
+                      <span>{language === 'fa' ? 'مشاهده جزئیات محصول' : 'View product details'}</span>
+                      <ArrowIcon className="h-4 w-4" />
+                    </Link>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+            <div className="home-product-chain-bottom-note" aria-hidden="true">
+              <span>DESIGNED FOR OPERATIONAL RELIABILITY</span>
+              <span>02 / 04</span>
+            </div>
+          </div>
+        </section>
       )}
 
       {spotlight && (
